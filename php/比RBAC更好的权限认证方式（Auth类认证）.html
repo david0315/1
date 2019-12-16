@@ -1,0 +1,140 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修比RBAC更好的权限认证方式（Auth类认证）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>比RBAC更好的权限认证方式（Auth类认证）</center></div><div class='banquan'>原文出处:本文由博客园博主PHP程序媛提供。<br/>
+原文连接:https://www.cnblogs.com/993089249a/p/11701118.html</div><br>
+    <p><span style="font-size: 16px;"><span style="background-color: #ff6600;">Auth 类</span>已经在ThinkPHP代码仓库中存在很久了，但是因为一直没有出过它的教程， 很少人知道它， 它其实比<span style="background-color: #ffff00;">RBAC</span>更方便 。&nbsp;</span><br /><span style="font-size: 16px;"><span style="background-color: #ffff00;">RBAC</span>是按节点进行认证的，如果要控制比节点更细的权限就有点困难了，比如页面上面的操作按钮， 我想判断用户权限来显示这个按钮， 如果没有权限就不会显示这个按钮； 再比如我想按积分进行权限认证， 积分在0-100时能干什么， 在101-200时能干什么。 这些权限认证用<span style="background-color: #ffff00;">RABC</span>都很困难。&nbsp;</span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 16px;">下面介绍 Auth权限认证， 它几乎是全能的， 除了能进行节点认证， 上面说的RABC很难认证的两种情况，它都能实现。&nbsp;</span><br /><span style="font-size: 16px;"><span style="background-color: #ff6600;">&nbsp;Auth</span>权限认证是按规则进行认证。我先说说它的原理。 在数据库中我们有 规则表<span style="background-color: #ff6600;">（think_auth_rule）</span> ,用户组表<span style="background-color: #ffff00;">(think_auth_group)</span>, 用户组明显表<span style="background-color: #ffff00;">（think_auth_group_access）</span></span><br /><span style="font-size: 16px;">我们在规则表中定义权限规则 ， 在用户组表中定义每个用户组有哪些权限规则，在用户组明显表中 定义用户所属的用户组。 下面举例说明。&nbsp;</span><br /><span style="font-size: 16px;">我们要判断用户是否有显示一个操作按钮的权限， 首先定义一个规则， 在规则表中添加一个名为<span style="background-color: #ffff00;"> show_button</span> 的规则。 然后在用户组表添加一个用户组，定义这个用户组有<span style="background-color: #ffff00;">show_button</span> 的权限规则（think_auth_group表中rules字段存得时规则ID，多个以逗号隔开）， 然后在用户组明细表定义 UID 为1 的用户 属于刚才这个的这个用户组。&nbsp;</span><br /><span style="font-size: 16px;">ok，表数据定义好后， 判断权限很简单</span></p>
+<src class="cnblogs_code">
+<pre><code><strong> import('ORG.Util.Auth');<span style="color: #008000;">//</span><span style="color: #008000;">加载类库</span>
+    <span style="color: #800080;">$auth</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> Auth();
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$auth</span>-&gt;check('show_button',1)){<span style="color: #008000;">//</span><span style="color: #008000;"> 第一个参数是规则名称,第二个参数是用户UID
+     //有显示操作按钮的权限</span>
+   }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+     </span><span style="color: #008000;">//</span><span style="color: #008000;">没有显示操作按钮的权限</span>
+   }</strong></code></pre>
+
+<p><span style="font-size: 18px;"><span style="background-color: #ffff00;">Auth</span>类同样可以做像<span style="background-color: #ffff00;">RBAC</span>一样的对节点进行认证。 我们只要将规则名称，定义为节点名称就行了。&nbsp;</span><br /><span style="font-size: 18px;">和RABC一样 在公共控制器<span style="background-color: #ffff00;">CommonAction</span> 中定义<span style="background-color: #ff6600;">_initialize</span> 方法，</span></p>
+<src class="cnblogs_code">
+<pre><code><strong><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> <span style="color: #0000ff;">class</span> CommonAction <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Action{
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _initialize(){
+</span><span style="color: #008080;">4</span>        import('ORG.Util.Auth');<span style="color: #008000;">//</span><span style="color: #008000;">加载类库</span>
+<span style="color: #008080;">5</span>        <span style="color: #800080;">$auth</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> Auth();
+</span><span style="color: #008080;">6</span>        <span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$auth</span>-&gt;check(MODULE_NAME.'-'.ACTION_NAME,session('uid'<span style="color: #000000;">))){
+</span><span style="color: #008080;">7</span>             <span style="color: #800080;">$this</span>-&gt;error('你没有权限'<span style="color: #000000;">);
+</span><span style="color: #008080;">8</span> <span style="color: #000000;">       }
+</span><span style="color: #008080;">9</span>     }</strong></code></pre>
+
+<p><strong>这时候我们可以在数据库中添加的节点规则， 格式为： &ldquo;控制器名称-方法名称&rdquo;</strong><br /><br /><strong>Auth 类 还可以多个规则一起认证 如：&nbsp;</strong></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><strong><span style="color: #800080;">$auth</span>-&gt;check('rule1,rule2',uid);</strong> </code></pre>
+
+<p><strong>表示 认证用户只要有rule1的权限或rule2的权限，只要有一个规则的权限，认证返回结果就为true 即认证通过。 默认多个权限的关系是 &ldquo;or&rdquo; 关系，也就是说多个权限中，只要有个权限通过则通过。 我们也可以定义为 &ldquo;and&rdquo; 关系</strong></p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><strong><span style="color: #008080;">1</span> <span style="color: #800080;">$auth</span>-&gt;check('rule1,rule2',uid,'and');</strong> </code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p><strong>第三个参数指定为"and" 表示多个规则以and关系进行认证， 这时候多个规则同时通过认证 才有权限。只要一个规则没有权限则就会返回false。</strong><br /><br /><strong>Auth认证，一个用户可以属于多个用户组。 比如我们对 show_button这个规则进行认证， 用户A 同时属于 用户组1 和用户组2 两个用户组 ， 用户组1 没有show_button 规则权限， 但如果用户组2 有show_button 规则权限，则一样会权限认证通过。</strong>&nbsp;</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><strong><span style="color: #008080;">1</span>      <span style="color: #800080;">$auth</span>-&gt;<span style="color: #000000;">getGroups(uid)
+</span></strong><span style="color: #008080;">2</span>     </code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p><strong> 通过上面代码，可以获得用户所属的所有用户组，方便我们在网站上面显示。</strong><br /><br /><strong>Auth类还可以按用户属性进行判断权限， 比如 按照用户积分进行判断， 假设我们的用户表 (think_members) 有字段 score 记录了用户积分。&nbsp;</strong><br /><strong>我在规则表添加规则时，定义规则表的<span style="background-color: #ffff00;">condition</span> 字段，<span style="background-color: #ffff00;">condition字</span>段是规则条件， 默认为空 表示没有附加条件， 用户组中只有规则 就通过认证。 如果定义了 condition字段， 用户组中有规则 不一定能通过认证， 程序还会判断是否满足 附加条件。 比如我们添加几条规则：&nbsp;phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，<strong>需要的请点击（&rarr;）</strong><a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群</a></strong><br /><strong>name字段： grade1 , condition字段： {score}&lt;100&nbsp;</strong><br /><strong>name字段： grade2, condition字段： {score}&gt;100 and {score}&lt;200</strong><br /><strong>name 字段: grade3, condition字段 : {score}&gt;200 and {score}&lt;300</strong><br /><br /><strong>这里 {score} 表示 think_members 表 中字段 score的值。&nbsp;</strong><br /><br /><strong>那么这时候&nbsp;</strong><br /><strong>$auth-&gt;check('grade1',uid) 是判断用户积分是不是0-100</strong><br /><strong>$auth-&gt;check('grade2',uid) 判断用户积分是不是在100-200</strong><br /><strong>$auth-&gt;check('grade3',uid) 判断用户积分是不是在200-300</strong><br /><br /><strong>Auth 类认证的使用方法 大致如上，是否有点相见恨晚的感觉？&nbsp;</strong><br /><br /><strong>----------------------------------------------------</strong><br /><br /><strong>在使用Auth类前需要配置config.php</strong></p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><strong><span style="color: #008080;">1</span> 'AUTH_CONFIG'=&gt;<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">2</span>         'AUTH_ON' =&gt; <span style="color: #0000ff;">true</span>, <span style="color: #008000;">//</span><span style="color: #008000;">认证开关</span>
+<span style="color: #008080;">3</span>         'AUTH_TYPE' =&gt; 1, <span style="color: #008000;">//</span><span style="color: #008000;"> 认证方式，1为时时认证；2为登录认证。</span>
+<span style="color: #008080;">4</span>         'AUTH_GROUP' =&gt; 'think_auth_group', <span style="color: #008000;">//</span><span style="color: #008000;">用户组数据表名</span>
+<span style="color: #008080;">5</span>         'AUTH_GROUP_ACCESS' =&gt; 'think_auth_group_access', <span style="color: #008000;">//</span><span style="color: #008000;">用户组明细表</span>
+<span style="color: #008080;">6</span>         'AUTH_RULE' =&gt; 'think_auth_rule', <span style="color: #008000;">//</span><span style="color: #008000;">权限规则表</span>
+<span style="color: #008080;">7</span>         'AUTH_USER' =&gt; 'think_members'<span style="color: #008000;">//</span><span style="color: #008000;">用户信息表</span>
+<span style="color: #008080;">8</span>     )</strong></code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p><strong> 需要导入数据库</strong></p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span><strong> -- ----------------------------
+<span style="color: #008080;"> 2</span> --<span style="color: #000000;"> think_auth_rule，规则表，
+</span><span style="color: #008080;"> 3</span> -- id:主键，name：规则唯一标识,<span style="color: #000000;"> title：规则中文名称 status 状态：为1正常，为0禁用，condition：规则表达式，为空表示存在就验证，不为空表示按照条件验证
+</span><span style="color: #008080;"> 4</span> -- ----------------------------
+<span style="color: #008080;"> 5</span>  DROP TABLE <span style="color: #0000ff;">IF</span><span style="color: #000000;"> EXISTS `think_auth_rule`;
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">CREATE TABLE `think_auth_rule` (  
+</span><span style="color: #008080;"> 7</span>     `id` mediumint(8) unsigned NOT <span style="color: #0000ff;">NULL</span> AUTO_INCREMENT,  
+<span style="color: #008080;"> 8</span>     `name` char(80) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '',  
+<span style="color: #008080;"> 9</span>     `title` char(20) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '',  
+<span style="color: #008080;">10</span>     `status` tinyint(1) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '1',  
+<span style="color: #008080;">11</span>     `condition` char(100) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '',  
+<span style="color: #008080;">12</span>     PRIMARY <span style="color: #008080;">KEY</span> (`id`),  
+<span style="color: #008080;">13</span>     UNIQUE <span style="color: #008080;">KEY</span><span style="color: #000000;"> `name` (`name`)
+</span><span style="color: #008080;">14</span> ) ENGINE=MyISAM  <span style="color: #0000ff;">DEFAULT</span> CHARSET=<span style="color: #000000;">utf8;
+</span><span style="color: #008080;">15</span> -- ----------------------------
+<span style="color: #008080;">16</span> --<span style="color: #000000;"> think_auth_group 用户组表， 
+</span><span style="color: #008080;">17</span> -- id：主键， title:用户组中文名称， rules：用户组拥有的规则id， 多个规则","<span style="color: #000000;">隔开，status 状态：为1正常，为0禁用
+</span><span style="color: #008080;">18</span> -- ----------------------------
+<span style="color: #008080;">19</span>  DROP TABLE <span style="color: #0000ff;">IF</span><span style="color: #000000;"> EXISTS `think_auth_group`;
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">CREATE TABLE `think_auth_group` ( 
+</span><span style="color: #008080;">21</span>     `id` mediumint(8) unsigned NOT <span style="color: #0000ff;">NULL</span> AUTO_INCREMENT, 
+<span style="color: #008080;">22</span>     `title` char(100) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '', 
+<span style="color: #008080;">23</span>     `status` tinyint(1) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '1', 
+<span style="color: #008080;">24</span>     `rules` char(80) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '', 
+<span style="color: #008080;">25</span>     PRIMARY <span style="color: #008080;">KEY</span><span style="color: #000000;"> (`id`)
+</span><span style="color: #008080;">26</span> ) ENGINE=MyISAM  <span style="color: #0000ff;">DEFAULT</span> CHARSET=<span style="color: #000000;">utf8;
+</span><span style="color: #008080;">27</span> -- ----------------------------
+<span style="color: #008080;">28</span> --<span style="color: #000000;"> think_auth_group_access 用户组明细表
+</span><span style="color: #008080;">29</span> -- uid:<span style="color: #000000;">用户id，group_id：用户组id
+</span><span style="color: #008080;">30</span> -- ----------------------------
+<span style="color: #008080;">31</span> DROP TABLE <span style="color: #0000ff;">IF</span><span style="color: #000000;"> EXISTS `think_auth_group_access`;
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">CREATE TABLE `think_auth_group_access` (  
+</span><span style="color: #008080;">33</span>     `uid` mediumint(8) unsigned NOT <span style="color: #0000ff;">NULL</span>,  
+<span style="color: #008080;">34</span>     `group_id` mediumint(8) unsigned NOT <span style="color: #0000ff;">NULL</span>, 
+<span style="color: #008080;">35</span>     UNIQUE <span style="color: #008080;">KEY</span> `uid_group_id` (`uid`,`group_id`),  
+<span style="color: #008080;">36</span>     <span style="color: #008080;">KEY</span> `uid` (`uid`), 
+<span style="color: #008080;">37</span>     <span style="color: #008080;">KEY</span><span style="color: #000000;"> `group_id` (`group_id`)
+</span><span style="color: #008080;">38</span> ) ENGINE=MyISAM <span style="color: #0000ff;">DEFAULT</span> CHARSET=utf8;</strong></code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p><strong><span style="font-size: 18pt;">&nbsp;</span></strong></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

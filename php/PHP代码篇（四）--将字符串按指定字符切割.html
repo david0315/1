@@ -1,0 +1,74 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP代码篇（四）--将字符串按指定字符切割' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP代码篇（四）--将字符串按指定字符切割</center></div><div class='banquan'>原文出处:本文由博客园博主在斑马线上散布提供。<br/>
+原文连接:https://www.cnblogs.com/camg/p/11249011.html</div><br>
+    <p>　　说，我有一个中间接手的需求，什么叫中间接手呢，就是这个功能已经上线了，并且已经产生数据了，现在要对这个功能进行修改，所以既要满足当下开发的需求，又要兼容以前的功能。简单说来，就是我们有一个后台添加商品的功能，之前是前端写的后台页面，这次进行了平台切换，所以是后端写的页面。于是对于数据，就有了些变化，具体如下：</p>
+<p>一、老版实际情况</p>
+<p>　　1、商品的添加，字段有商品的属性，包括名称、价格、积分这些就不说了，直接是一个input提交过来的，主要是商品详情，就是平时大家购物，往下滑动查看到的商品图文详情，例如下面图1。就是产品详情那一块，由后台添加多张规格相当的图片，然后首位拼接在一起，就类似我们经常看见的&ldquo;长微信聊天截图一样&rdquo;。查看前端代码，发现具体实现过程是：将每一张上传的图片的完整地址，再加上&ldquo;&lt;img src=&rdquo;和&ldquo;&lt;param&gt;&rdquo;标签，然后拼接在一起，然后encodeURIComponent()进行编码，如图4Js代码：</p>
+<p><img style="border: 2px solid black;" src="./images/PHP代码篇（四）--将字符串按指定字符切割0.jpg" alt="" /></p>
+<p>　　2、现在功能是变更了平台，就是服务器换了，之前的资源地址，访问有效，但是不再继续添加，添加的新商品图片地址存在新的服务器里面。并且由后端对数据格式进行处理，为了保持访问端，就是客户访问端页面不做任何修改，所以提交的数据格式，还是保持如上不变，只是实现方式又后端实现。</p>
+<p>二、新版PHP实现方式</p>
+<p>　　1、前端在添加图片的时候，只用传多张图片的URL地址，数组格式。然后对这些URL资源地址进行拼接，然后写入数据库，代码如下：</p>
+<src class="cnblogs_code">
+<pre><code></code></pre>
+<pre><code>$content_arr = [<br />　　'0' =&gt; '/upload/goods/20190722/f4aed6055dfeb6f9f6db41095bb2777a.jpg',<br />　　'1' =&gt; '/upload/goods/20190722/f4aed6055dfeb6f9f6db41095bb4578f.jpg',<br />　　'2' =&gt; '/upload/goods/20190722/f4aed6055dfeb6f9f6db41095bb2575e.jpg',<br />]</code></pre>
+<pre><code><span style="color: #008000;"><br />//</span><span style="color: #008000;">定义一个商品详情</span>
+<span style="color: #800080;">$content</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">对传过来的商品图片数组进行处理</span>
+<span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$content_arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">){
+</span><span style="color: #0000ff;">   if</span>(!<span style="color: #800080;">$k</span><span style="color: #000000;">){
+</span><span style="color: #008000;">       //</span><span style="color: #008000;">第一张为商品主图片</span>
+       <span style="color: #800080;">$info</span>['image'] =  request()-&gt;domain().<span style="color: #800080;">$v</span><span style="color: #000000;">;
+   }</span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008000;">       //</span><span style="color: #008000;">剩余为商品详情，进行拼接</span>
+       <span style="color: #800080;">$content</span> .= '&lt;img src='.'"'. request()-&gt;domain().<span style="color: #800080;">$v</span>.'"'.' /&gt;&lt;param&gt;'<span style="color: #000000;">;
+   }<br />}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">最后进行编码</span>
+<span style="color: #800080;">$info</span>['content'] = <span style="color: #008080;">rawurlencode</span>(<span style="color: #800080;">$content</span>);<br />//最后得到就是</code></pre>
+<pre><code>$info['content'] = "%3Cimg%20src%3D%22http%3A%2F%2Fniushop.jingjinglego.com%2Fupload%2Fgoods%2F20190722%2Ff4aed6055dfeb6f9f6db41095bb2777a.jpg%22%20%2F%3E%3Cparam%3E%3Cimg%20src%3D%22http%3A%2F%2Fniushop.jingjinglego.com%2Fupload%2Fgoods%2F20190722%2F042ae67a6fd89faee455527ac10ca877.png%22%20%2F%3E%3Cparam%3E";</code></pre>
+
+<p>　　2、后端展示，因为后端页面的展示有所变化，之前前端写的是直接获取原数据后进行解码，然后插入到页面里面，这次后端实现的方式是，对rawurlencode()编码后的数据进行还原，还原成传过来数组格式$content_arr一样：代码实现如下</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$we7_set</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> We7AdminSet();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">前端传来的商品id</span>
+<span style="color: #800080;">$id</span> = request()-&gt;get('id',0<span style="color: #000000;">);
+</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$id</span><span style="color: #000000;">){
+   </span><span style="color: #800080;">$goods_info</span> = <span style="color: #800080;">$we7_set</span>-&gt;getEidGoodsWay(<span style="color: #800080;">$id</span><span style="color: #000000;">);
+   </span><span style="color: #800080;">$content</span> = <span style="color: #008080;">rawurldecode</span>(<span style="color: #800080;">$goods_info</span>['content']);<span style="color: #008000;">//对原数据进行</span><span style="color: #008000;">解码</span>
+   <span style="color: #800080;">$content</span> = <span style="color: #008080;">str_replace</span>("&lt;img src=","",<span style="color: #800080;">$content</span>);<span style="color: #008000;">//</span><span style="color: #008000;">替换调标签字符</span>
+   <span style="color: #800080;">$content</span> = <span style="color: #008080;">str_replace</span>("&lt;param&gt;", ",", <span style="color: #800080;">$content</span><span style="color: #000000;">);
+   </span><span style="color: #800080;">$content</span> = <span style="color: #008080;">str_replace</span>(" /&gt;", "", <span style="color: #800080;">$content</span><span style="color: #000000;">);
+   </span><span style="color: #800080;">$content</span> = <span style="color: #008080;">str_replace</span>('"', "", <span style="color: #800080;">$content</span><span style="color: #000000;">);
+   </span><span style="color: #800080;">$content</span> = <span style="color: #008080;">str_replace</span>(request()-&gt;domain().'/', "", <span style="color: #800080;">$content</span><span style="color: #000000;">);//替换掉域名前缀
+   </span><span style="color: #800080;">$content</span> = <span style="color: #008080;">rtrim</span>(<span style="color: #800080;">$content</span>,","<span style="color: #000000;">);//去除前后杂质
+   </span><span style="color: #800080;">$content</span> = <span style="color: #008080;">explode</span>(",", <span style="color: #800080;">$content</span>);<span style="color: #008000;">//</span><span style="color: #008000;">转成数组</span>
+   <span style="color: #800080;">$goods_info</span>['image'] = <span style="color: #008080;">str_replace</span>(request()-&gt;domain().'/', "", <span style="color: #800080;">$goods_info</span>['image'<span style="color: #000000;">]);
+   </span><span style="color: #008080;">array_unshift</span>(<span style="color: #800080;">$content</span>,<span style="color: #800080;">$goods_info</span>['image']);<span style="color: #008000;">//</span><span style="color: #008000;">将商品主图片追加进去</span>
+   <span style="color: #800080;">$goods_info</span>['content'] = <span style="color: #800080;">$content</span><span style="color: #000000;">;
+   </span><span style="color: #800080;">$this</span>-&gt;assign("goods_info", <span style="color: #800080;">$goods_info</span>);<span style="color: #008000;">//</span><span style="color: #008000;">获取修改商品数据</span>
+}</code></pre>
+
+<p>　　3、里面主要是用到编码rawurlencode()解码rawurldecode()方法，和字符替换str_replace(str,string)方法，还有往数组第一个位置添加一个元素array_unshift(array,value)的方法。</p>
+<p>　　ps：本次主要是对字符串进行处理，总结就是，既要能按格式保存数据，又要能还原原来的数据格式，当然还要更好的方法，和实现过程，欢迎大家的评论留言，谢谢！</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

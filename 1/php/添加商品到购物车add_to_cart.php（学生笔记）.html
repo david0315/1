@@ -1,0 +1,127 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修添加商品到购物车add_to_cart.php（学生笔记）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>添加商品到购物车add_to_cart.php（学生笔记）</center></div><div class='banquan'>原文出处:本文由博客园博主维京人~提供。<br/>
+原文连接:https://www.cnblogs.com/mzzone/p/11026965.html</div><br>
+    <src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+		<span style="color: #ff0000;">session_start();//启动session</span>
+		
+		$goods_id = $_POST['goods_id'];//获取商品id
+		
+		$number = $_POST['num'];//获取商品数量
+
+		if(empty($_SESSION["gwc"]))
+		{
+
+		    //1.购物车是空的，第一次点击添加购物车
+
+		    $arr[$goods_id] =array(
+		    				'goods_id'  =&gt;	$goods_id,
+		    				
+		    				'num'  =&gt;	$number
+		    				
+		    				);
+
+		    $_SESSION["gwc"]=$arr;
+
+		}
+		else//_1 购物车不是空的
+		{
+
+		    
+
+		    //判断购物车中是否存在该商品
+
+		    $arr = $_SESSION["gwc"]; //先存一下
+
+		    $chuxian = false;
+
+		    //2.查询购物车中是否有该商品,K是商品id,做个标记
+		    foreach($arr as $k=&gt; $v)
+		    {
+		    	
+		        if($k==$goods_id)
+		        {
+
+		            $chuxian = true;
+
+		        }
+
+		    }
+
+		 
+		// 3.购物车中已有该商品，则只需将它的数量增加
+		    if($chuxian)
+		    {
+
+		    	$arr[$goods_id]['num']+=$number;
+		        
+		        $_SESSION["gwc"] = $arr;
+		    }
+		    else
+		    {
+
+		        //_3.如果购物车中没有该商品
+		        $arr[$goods_id] = array(
+		    				'goods_id'  =&gt;	$goods_id,		    				
+		    				'num'  =&gt;	$number		    				
+		    				);		         
+		        $_SESSION["gwc"] = $arr;		        
+		        // print_r($arr);
+		        //  die();
+		    }
+
+		}
+
+		echo "OK";
+		// echo '&lt;script language="JavaScript"&gt;;
+  //         alert("加购成功!");location.href="#";&lt;/script&gt;;';
+          
+  //         exit;
+
+ // var_dump($_SESSION);
+
+ //    die();
+		
+		
+	?&gt;
+</code></pre>
+
+<p>　　一.首先要明白添加一件商品到购物车的状态有3种情况。</p>
+<p>1.还没有购物车。</p>
+<p>2.有购物车了，但加入购物车的商品是购物车没有的。</p>
+<p>3.有购车了，加入购物车的商品在购物车也已经有了，那就值增加它在购物车的数量。</p>
+<p>&nbsp;</p>
+<p>二.加入购物车页面需要传2个参数到php，商品id和加购的商品数量。在php前面几行就是接受那2个参数。</p>
+<p>&nbsp;</p>
+<p>三.要开通session。第一行的seesion_start();否则存进session的信息是不起作用的。虽然在后面能var_dump()出来。但在购物车展示商品页面var_dump的session还是之前的。</p>
+<p>&nbsp;</p>
+<p>四.这么多项的商品如何存进session？其实就是对session数组的增删改查操作。</p>
+<p>session就是一个数组。只是它能跨页面访问。存进session，最终目的还是为了在别的页面能再次用到它。比如上面的代码把商品信息存到$_SESSION['gwc']中，就是为了在购物车页面能够再次获取$_SESSION['gwc']，<em><span style="color: #ff0000;"><strong>利用foreach循环把你存到$_SESSION['gwc']的商品遍历出来。</strong></span></em></p>
+<p>&nbsp;</p>
+<p><span style="color: #808080;"><strong>五.至于</strong></span></p>
+<pre><code> $arr[<span style="color: #ff0000;">$goods_id</span>] =array(
+		    	'goods_id'  =&gt;	$goods_id,		    				
+		    	'num'  =&gt;	$number
+		    				);<br />这句代码为什么里面只存或要存这2个参数，这也是根据购物车页面展示时的要求来的，数量不难理解，你加购了几件就展示几件。id又到底是为什么要存进去，购物车展示的业务逻辑就是，根据商品id，然后从数据库中该<br />id 的所有商品信息。即执行&ldquo;select* form goods where id = 商品id&rdquo;获得</code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

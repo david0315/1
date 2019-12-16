@@ -1,0 +1,301 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP代码审计基础-初级篇' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP代码审计基础-初级篇</center></div><div class='banquan'>原文出处:本文由博客园博主痱子﹑提供。<br/>
+原文连接:https://www.cnblogs.com/feizianquan/p/11637318.html</div><br>
+    <p>对于php代码审计我也是从0开始学的，对学习过程进行整理输出沉淀如有不足欢迎提出共勉。对学习能力有较高要求，整个系列主要是在工作中快速精通php代码审计，整个学习周期5天 ，建议花一天时间熟悉php语法。</p>
+<p>&nbsp;</p>
+<p>我是直接phpstudy2019一键搭建小白首选</p>
+<p>所谓工欲善其事必先利其器，找一款适合自己的php开发工具自行百度搭建，我用的是phpstrom .</p>
+<p>&nbsp;</p>
+<p>初级篇主要讲</p>
+<p>1. php历史版本漏洞。</p>
+<p>2. 变量配置缺陷。</p>
+<p>3. 函数缺陷。</p>
+<p>4. 弱语言缺陷。</p>
+<p>&nbsp;</p>
+<h1 id="PHP代码审计初级篇--PHP配置漏洞">PHP配置漏洞</h1>
+<p>&nbsp;</p>
+<p>我们要熟知php各版本漏洞</p>
+<h3 id="PHP代码审计初级篇--Register_globals全局变量注册开关">Register_globals&nbsp; 全局变量注册开关</h3>
+<p>在该选项为on情况下，会直接把用户GET，POST等方式提交的参数注册成全局变量并初始化值为参数对应的值</p>
+<p>Php小于4.2.3默认打开 5.3废弃 5.4移除</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--Allow_url_include是否允许包含远程文件">Allow_url_include&nbsp; 是否允许包含远程文件</h3>
+<p>Php 5.2 后默认设置off</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--Magic_quotes_gpc魔术引号自动过滤">Magic_quotes_gpc 魔术引号自动过滤</h3>
+<p>会自动在get post,cookie 变量对单引号，双引号，反斜杠，空字符的前面加反斜杠</p>
+<p>缺陷不会过滤$_SERVER 变量&nbsp;</p>
+<p>Php5.3后废弃，5.4移除 小于4.2.3 默认打开</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--Magic_quotes_runtime魔术引号自动过滤">Magic_quotes_runtime&nbsp; 魔术引号自动过滤</h3>
+<p>和上面一样 却是对从数据库取出的数据进行转义&nbsp; 防止二次注入 同样在5.4取消</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--Safe_mode安全模式">Safe_mode&nbsp; 安全模式</h3>
+<p>在开启时做命令执行操作会提示执行命令失败，和一些敏感操作. 可以查看配置是否开启。</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--Open_basedir可访问目录">Open_basedir&nbsp; 可访问目录</h3>
+<p>默认web目录，查看配置是否出现全目录可访问情况</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--Disable_functions禁用函数">Disable_functions 禁用函数</h3>
+<p>禁用敏感函数如exec&nbsp; 可以通过dl()函数来绕过自定义php扩展方法实现命令执行，这个函数并不安全。</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--Display_errors错误显示">Display_errors&nbsp; 错误显示</h3>
+<p>生产环境关闭错误回显 display_errors=off</p>
+<p>&nbsp;</p>
+<h1 id="PHP代码审计初级篇--PHP漏洞函数">PHP漏洞函数</h1>
+<h2 id="PHP代码审计初级篇--变量覆盖">&nbsp;变量覆盖</h2>
+<h3 id="PHP代码审计初级篇--extract()">&nbsp; &nbsp; &nbsp; extract()</h3>
+<p>该函数使用数组键名作为变量名，使用数组键值作为变量值。针对数组中的每个元素，将在当前符号表中创建对应的一个变量。条件：若有EXTR_SKIP则不行。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$a</span> = "Original"<span style="color: #000000;">;
+</span><span style="color: #800080;">$my_array</span> = <span style="color: #0000ff;">array</span>("a" =&gt; "Cat", "b" =&gt; "Dog", "c" =&gt; "Horse"<span style="color: #000000;">);
+</span><span style="color: #008080;">extract</span>(<span style="color: #800080;">$my_array</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$a</span> = <span style="color: #800080;">$a</span>; <span style="color: #800080;">$b</span> = <span style="color: #800080;">$b</span>; <span style="color: #800080;">$c</span> = <span style="color: #800080;">$c</span>"<span style="color: #000000;">;
+</span>?&gt;
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;"> 结果：$a = Cat; $b = Dog; $c = Horse</span></code></pre>
+
+<h3 id="PHP代码审计初级篇--parse_str()">&nbsp; &nbsp; &nbsp; parse_str()</h3>
+<p>解析字符串并注册成变量</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$b</span>=1<span style="color: #000000;">;
+</span><span style="color: #008080;">Parse_str</span>('b=2'<span style="color: #000000;">);
+</span><span style="color: #008080;">Print_r</span>(<span style="color: #800080;">$b</span><span style="color: #000000;">);
+</span><span style="color: #008000;">#</span><span style="color: #008000;"> 结果: $b=2</span></code></pre>
+
+<h3 id="PHP代码审计初级篇--import_request_variables()">&nbsp; &nbsp; &nbsp; import_request_variables()</h3>
+<p>将 GET/POST/Cookie 变量导入到全局作用域中，全局变量注册。在5.4之后被取消，只可在4-4.1.0和5-5.4.0可用。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">导入POST提交的变量值，前缀为post_</span>
+import_request_variable("p"， "post_"<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">导入GET和POST提交的变量值，前缀为gp_，GET优先于POST</span>
+import_request_variable("gp"， "gp_"<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">导入Cookie和GET的变量值，Cookie变量值优先于GET</span>
+import_request_variable("cg"， "cg_");</code></pre>
+
+<h3 id="PHP代码审计初级篇--$$变量覆盖">&nbsp; &nbsp; $$变量覆盖</h3>
+<p>## 提交参数chs，则可覆盖变量"$chs"的值。$key为chs时，$$key就变成$chs</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?
+<span style="color: #800080;">$chs</span> = ''<span style="color: #000000;">;
+</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$_POST</span> &amp;&amp; <span style="color: #800080;">$charset</span> != 'utf-8'<span style="color: #000000;">){
+    </span><span style="color: #800080;">$chs</span> = <span style="color: #0000ff;">new</span> Chinese('UTF-8', <span style="color: #800080;">$charset</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$_POST</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">){
+        $</span><span style="color: #800080;">$key</span> = <span style="color: #800080;">$chs</span>-&gt;Convert(<span style="color: #800080;">$value</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$chs</span><span style="color: #000000;">);
+}</span></code></pre>
+
+<h2 id="PHP代码审计初级篇--绕过过滤的空白字符">绕过过滤的空白字符</h2>
+<src class="cnblogs_code">
+<pre><code>" "%00"<span style="color: #000000;"> (ASCII  0 (0x00))，空字节符。
+制表符
+</span>"\t"<span style="color: #000000;"> (ASCII  9 (0x09))，水平制表符。
+空白字符：
+</span>"\n"<span style="color: #000000;"> (ASCII 10 (0x0A))，换行符。
+</span>"\v" "\x0b"<span style="color: #000000;"> (ASCII  11 (0x0B))，垂直制表符。
+</span>"\f" "%0c"<span style="color: #000000;"> 换页符
+</span>"\r" "%0d"<span style="color: #000000;">(ASCII  13 (0x0D))，回车符。
+空格:
+</span>" " "%20" (ASCII  32 (0x20))，普通空格符。</code></pre>
+
+<p>Trim 函数过滤 \t\n\r 缺少了\f（%0c）</p>
+<p>从而绕过%0c过滤</p>
+<h2 id="PHP代码审计初级篇--截断">截断</h2>
+<p>&nbsp; &nbsp;</p>
+<p>&nbsp; &nbsp;&nbsp;<strong>&nbsp;Iconv 异常字符截断问题</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">#</span><span style="color: #008000;"># 因iconv遇到异常字符就不转后面的内容了，所以可以截断。</span><span style="color: #008000;">
+#</span><span style="color: #008000;"># 这里chr(128)到chr(255)都可以截断。</span>
+<span style="color: #800080;">$a</span>='1'.char(130).'2'<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> <span style="color: #008080;">iconv</span>("UTF-8","gbk",<span style="color: #800080;">$a</span>); <span style="color: #008000;">//</span><span style="color: #008000;">将字符串的编码从UTF-8转到gbk</span>
+<span style="color: #0000ff;">echo</span> <span style="color: #008080;">iconv</span>('GB2312', 'UTF-8', <span style="color: #800080;">$str</span>); <span style="color: #008000;">//</span><span style="color: #008000;">将字符串的编码从GB2312转到UTF-8</span></code></pre>
+
+<h3 id="PHP代码审计初级篇--eregi、ereg可用%00截断">&nbsp; eregi、ereg可用%00截断</h3>
+<p>功能：正则匹配过滤 条件：要求php&lt;5.3.4可以把非法的数据放在%00后面进行绕过我们可以看一个ctf题就是考察了这个知识</p>
+<p>##&nbsp;<a class="external-link" href="http://127.0.0.1/Php_Bug/05.php?password=1e9%00*-*" rel="nofollow">http://127.0.0.1/Php_Bug/05.php?password=1e9%00*-*</a><br />#GET方式提交password，然后用ereg()正则限制了password的形式，只能是一个或者多个数字、大小写字母，继续strlen()限制了长度小于8并且大小必须大于9999999，继续strpos()对password进行匹配，必须含有-，最终才输出flag<br />#因为ereg函数存在NULL截断漏洞，导致了正则过滤被绕过,所以可以使用%00截断正则匹配。<br />#对于另一个难题可以使用科学计数法表示，计算器或电脑表达10的的幂是一般是e，也就是1.99714e13=19971400000000，所以构造 1e8 即 100000000 &gt; 9999999，在加上-。于是乎构造password=1e8%00*-*,成功得到答案</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span> (<span style="color: #800080;">$_GET</span>['password'<span style="color: #000000;">])) {
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">ereg</span> ("^[a-zA-Z0-9]+$",<span style="color: #800080;">$_GET</span>['password']) === <span style="color: #0000ff;">FALSE</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">echo</span> '&lt;p&gt;You password must be alphanumeric&lt;/p&gt;'<span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$_GET</span>['password']) &lt; 8 &amp;&amp; <span style="color: #800080;">$_GET</span>['password'] &gt; 9999999<span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">strpos</span> (<span style="color: #800080;">$_GET</span>['password'], '*-*') !== <span style="color: #0000ff;">FALSE</span><span style="color: #000000;">)
+        {
+            </span><span style="color: #0000ff;">die</span>('Flag: ' . <span style="color: #800080;">$flag</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+        {
+            </span><span style="color: #0000ff;">echo</span>('&lt;p&gt;*-* have not been found&lt;/p&gt;'<span style="color: #000000;">);
+        }
+    }
+    </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+    {
+        </span><span style="color: #0000ff;">echo</span> '&lt;p&gt;Invalid password&lt;/p&gt;'<span style="color: #000000;">;
+    }
+}</span></code></pre>
+
+<h3 id="PHP代码审计初级篇--move_uploaded_file用\0截断">&nbsp; &nbsp; &nbsp;move_uploaded_file 用\0截断</h3>
+<p>5.4.x&lt;= 5.4.39, 5.5.x&lt;= 5.5.23, 5.6.x &lt;= 5.6.7 原来在高版本（受影响版本中），PHP把长度比较的安全检查逻辑给去掉了，导致了漏洞的发生</p>
+<p>获取文件名不一致%00 \0&nbsp; 导致截断后面的文件名</p>
+<h3 id="PHP代码审计初级篇--inclue用？截断">&nbsp; &nbsp; &nbsp;inclue用？截断</h3>
+<p>&lt;?php $name=$_GET['name']; $filename=$name.'.php'; include $filename; ?&gt;</p>
+<p>当输入的文件名包含URL时，问号截断则会发生，并且这个利用方式不受PHP版本限制，原因是Web服务其会将问号看成一个请求参数。 测试POC：&nbsp;<span style="text-decoration: underline;"><a class="external-link" href="http://127.0.0.1/test/t1.php?name=http://127.0.0.1/test/secret.txt" rel="nofollow">http://127.0.0.1/test/t1.php?name=http://127.0.0.1/test/secret.txt</a></span>? 则会打开secret.txt中的文件内容。本测试用例在PHP5.5.38版本上测试通过。</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--系统长度截断">&nbsp; &nbsp; &nbsp;系统长度截断</h3>
+<p>这种方式在PHP5.3以后的版本中都已经得到了修复。 win260个字符，linux下4*1024=4096字节</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--mysql长度截断">&nbsp; &nbsp;<strong>mysql长度截断</strong></h3>
+<p>mysql内的默认字符长度为255，超过的就没了。 由于mysql的sql_mode设置为default的时候，即没有开启STRICT_ALL_TABLES选项时，MySQL对于插入超长的值只会提示warning</p>
+<h3 id="PHP代码审计初级篇--mysql中utf-8截断">&nbsp; &nbsp;&nbsp;<strong>&nbsp;</strong>mysql中utf-8截断</h3>
+<p><code>insert into dvwa.test values (14,concat("admin",0xc1,"abc"))</code>写入为admin&nbsp;&nbsp;</p>
+<h2 id="PHP代码审计初级篇--弱类型比较">弱类型比较</h2>
+<p>&nbsp;</p>
+<p>以下等式会成立</p>
+<src class="cnblogs_code">
+<pre><code>'' == 0 == <span style="color: #0000ff;">false</span>
+ 
+'123' == 123
+ 
+'abc' == 0
+ 
+'123a' == 123
+ 
+'0x01' == 1
+ 
+'0e123456789' == '0e987654321'<span style="color: #000000;">
+ 
+[</span><span style="color: #0000ff;">false</span>] == [0] == [<span style="color: #0000ff;">NULL</span>] == [''<span style="color: #000000;">]
+ 
+</span><span style="color: #0000ff;">NULL</span> == <span style="color: #0000ff;">false</span> == 0
+ 
+<span style="color: #0000ff;">true</span> == 1</code></pre>
+
+<h3 id="PHP代码审计初级篇--==、&gt;、&lt;的弱类型比较">&nbsp; &nbsp; ==、&gt;、&lt;的弱类型比较</h3>
+<p>这里用到了PHP弱类型的一个特性，当一个整形和一个其他类型行比较的时候，会先把其他类型转换成整型再比。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">#</span><span style="color: #008000;">#方法1</span>
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;">#$a["a1"]="1e8%00";</span>
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;">#这里用%00绕过is_numeric,然后1e8可以比1336大，因此最后能$v1=1</span>
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;">#方法2</span>
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;">#$a["a1"]=["a"];</span>
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;">#使用数组，可以，因为数组恒大于数字或字符串</span>
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;">#方法3</span>
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;">#$a["a1"]=1337a;</span>
+ 
+<span style="color: #008000;">#</span><span style="color: #008000;">#1337a过is_numeric，又由&gt;转成1337与1336比较</span>
+ 
+&lt;?<span style="color: #000000;">php
+ 
+</span><span style="color: #008080;">is_numeric</span>(@<span style="color: #800080;">$a</span>["a1"])?<span style="color: #0000ff;">die</span>("nope"):<span style="color: #0000ff;">NULL</span><span style="color: #000000;">;   
+ 
+</span><span style="color: #0000ff;">if</span>(@<span style="color: #800080;">$a</span>["a1"<span style="color: #000000;">]){
+ 
+    </span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">);
+ 
+    (</span><span style="color: #800080;">$a</span>["a1"]&gt;1336)?<span style="color: #800080;">$v1</span>=1:<span style="color: #0000ff;">NULL</span><span style="color: #000000;">;
+ 
+}
+ 
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$v1</span>);</code></pre>
+
+<h3 id="PHP代码审计初级篇--switch弱类型">&nbsp; &nbsp; &nbsp; switch 弱类型</h3>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> 第一种：弱类型，1e==1
+// $x1=1e
+// 第二种：利用数组名字bypass
+// $x1=1[]
+// 传入后为string(3) "1[]",但在switch那里为1</span>
+<span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_GET</span>['x1'<span style="color: #000000;">]))
+{
+    </span><span style="color: #800080;">$x1</span> = <span style="color: #800080;">$_GET</span>['x1'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$x1</span>=="1"?<span style="color: #0000ff;">die</span>("ha?"):<span style="color: #0000ff;">NULL</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$x1</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">case</span> 0:
+        <span style="color: #0000ff;">case</span> 1:
+            <span style="color: #800080;">$a</span>=1<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+    }
+}</span></code></pre>
+
+<h3 id="PHP代码审计初级篇--md5比较（0e相等、数组为Null）">&nbsp; &nbsp; &nbsp; md5比较（0e相等、数组为Null）</h3>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">md5</span>('240610708') <span style="color: #008000;">//</span><span style="color: #008000;">0e462097431906509019562988736854</span>
+ 
+<span style="color: #008080;">md5</span>('QNKCDZO') <span style="color: #008000;">//</span><span style="color: #008000;">0e830400451993494058024219903391</span>
+<span style="color: #000000;"> 
+0e 纯数字这种格式的字符串在判断相等的时候会被认为是科学计数法的数字，先做字符串到数字的转换。
+ 
+</span><span style="color: #008080;">md5</span>('240610708')==<span style="color: #008080;">md5</span>('QNKCDZO'); <span style="color: #008000;">//</span><span style="color: #008000;">True</span>
+ 
+<span style="color: #008080;">md5</span>('240610708')===<span style="color: #008080;">md5</span>('QNKCDZO'); <span style="color: #008000;">//</span><span style="color: #008000;">False</span>
+<span style="color: #000000;"> 
+ 
+ 
+这样的对应数值还有：
+ 
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #008080;">md5</span>('240610708') == <span style="color: #008080;">md5</span>('QNKCDZO'<span style="color: #000000;">));
+ 
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #008080;">md5</span>('aabg7XSs') == <span style="color: #008080;">md5</span>('aabC9RqS'<span style="color: #000000;">));
+ 
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #008080;">sha1</span>('aaroZmOk') == <span style="color: #008080;">sha1</span>('aaK1STfY'<span style="color: #000000;">));
+ 
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #008080;">sha1</span>('aaO8zKZF') == <span style="color: #008080;">sha1</span>('aa3OFF9m'<span style="color: #000000;">));
+ 
+</span><span style="color: #008080;">var_dump</span>('0010e2' == '1e3'<span style="color: #000000;">);
+ 
+</span><span style="color: #008080;">var_dump</span>('0x1234Ab' == '1193131'<span style="color: #000000;">);
+ 
+</span><span style="color: #008080;">var_dump</span>('0xABCdef' == ' 0xABCdef');</code></pre>
+
+<p>可以用于登录判断</p>
+<p>240610708</p>
+<p>技巧：找出在某一位置开始是0e的，并包含&ldquo;XXX&rdquo;的字符串</p>
+<p>Md5 加密数组都是空 可以利用绕过&nbsp; &nbsp;</p>
+<h3 id="PHP代码审计初级篇--json传数据{&ldquo;key&rdquo;:0}">&nbsp; &nbsp; json传数据{&ldquo;key&rdquo;:0}</h3>
+<p>PHP将POST的数据全部保存为字符串形式，也就没有办法注入数字类型的数据了而JSON则不一样，JSON本身是一个完整的字符串，经过解析之后可能有字符串，数字，布尔等多种类型。</p>
+<p>第一个application/x-www-form-urlencoded，是一般表单形式提交的content-type第二个，是包含文件的表单。第三，四个，分别是json和xml，一般是js当中上传的.</p>
+<p>{&ldquo;key&rdquo;:&rdquo;0&Prime;}</p>
+<p>这是一个字符串0，我们需要让他为数字类型，用burp拦截，把两个双引号去掉，变成这样：</p>
+<p>{&ldquo;key&rdquo;:0}</p>
+<p>&nbsp;</p>
+<h3 id="PHP代码审计初级篇--十六进制与十进制比较">&nbsp; &nbsp; &nbsp;十六进制与十进制比较</h3>
+<p>== 两边的十六进制与十进制比较，是可以相等的。</p>
+<p>&nbsp;</p>
+<p>至此已经介绍完了php常规函数缺陷，版本漏洞，语言特性导致的漏洞。需要熟记这些缺陷的利用方法。</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

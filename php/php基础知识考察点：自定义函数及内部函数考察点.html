@@ -1,0 +1,150 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php基础知识考察点：自定义函数及内部函数考察点' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php基础知识考察点：自定义函数及内部函数考察点</center></div><div class='banquan'>原文出处:本文由博客园博主无色诏提供。<br/>
+原文连接:https://www.cnblogs.com/izch/p/10659888.html</div><br>
+    <src>1.变量的作用域和静态变量
+<src>　　函数的参数以及参数的引用传递
+<src>　　函数的返回值以及引用返回
+<src>　　外部文件的导入
+<src>　　系统内置函数的考察
+<p>&nbsp;</p>
+<src>　　　变量的作用域也称为变量的范围，变量的范围即他定义上下文的背景（也是它生效的范围）。大部分php变量只有一生效的范围，这个单独的范围也包括include 和require 引入的文件。
+<src>　　global关键字
+<src>　　$GLOBALS 及其他超全局数组
+<p>&nbsp;</p>
+<src>静态变量仅在局部函数域中存在，当程序执行离开扯作用域时，其值不会消失。
+<p>&nbsp;</p>
+<src>　　static关键字
+<src>　　　　1.仅初始化一次
+<src>　　　　2.初始化时需要赋值
+<src>　　　　3.每次执行函数该值会保留
+<src>　　　　4.修饰的函数是局部的，仅在函数内部保存
+<src>　　　　5.可记录函数的调用次数，从而在某些条件下终止递归
+<src>&nbsp;
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span><span style="color: #000000;"> myFunc(){
+</span><span style="color: #0000ff;">static</span> <span style="color: #800080;">$a</span> = 1<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$a</span>++<span style="color: #000000;">;
+}
+myFunc()；        </span><span style="color: #008000;">//</span><span style="color: #008000;">1</span>
+myFunc()；        <span style="color: #008000;">//</span><span style="color: #008000;">2</span>
+myFunc()；        <span style="color: #008000;">//</span><span style="color: #008000;">3</span></code></pre>
+
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$count</span> = 5<span style="color: #000000;">;
+</span><span style="color: #0000ff;">function</span><span style="color: #000000;"> getCount(){
+</span><span style="color: #0000ff;">static</span> <span style="color: #800080;">$count</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$count</span>++<span style="color: #000000;">;
+}
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$count</span>;        <span style="color: #008000;">//</span><span style="color: #008000;">5</span>
+<span style="color: #800080;">$count</span>++<span style="color: #000000;">;
+
+
+</span><span style="color: #0000ff;">echo</span> getCount();    <span style="color: #008000;">//</span><span style="color: #008000;">null</span>
+<span style="color: #0000ff;">echo</span> getCount();    <span style="color: #008000;">//</span><span style="color: #008000;">1 null + 1 = 1</span>
+?&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+<src>　　默认情况下函数通过值传递，如果希望函数修改它的值，则必须通过引用传递。
+<src>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$a</span> = 1<span style="color: #000000;">;
+</span><span style="color: #0000ff;">function</span> myFun(&amp;<span style="color: #800080;">$a</span><span style="color: #000000;">){
+</span><span style="color: #800080;">$a</span> = 100<span style="color: #000000;">;
+}
+myFun(</span><span style="color: #800080;">$a</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$a</span>;        <span style="color: #008000;">//</span><span style="color: #008000;">100</span>
+?&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+<src>2.函数的返回值
+<src>　　值通过可选的放回语句（return）返回
+<src>　　可以返回包含数组或对象的任意类型
+<src>　　返回语句会终止函数的执行，将控制权交回函数的控制处
+<src>　　省略return 返回值为null
+<src>　　不可能有多个返回值
+<p>&nbsp;</p>
+<src>　　从函数返回一个引用，必须在函数声明和指派返回值时给派返回值给一个变量时，都使用引用运算符&amp;
+<src>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">function</span> &amp;<span style="color: #000000;">myFun(){
+</span><span style="color: #0000ff;">static</span> <span style="color: #800080;">$b</span> = 1<span style="color: #000000;">;
+</span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$b</span><span style="color: #000000;">;
+}
+
+
+</span><span style="color: #800080;">$a</span> =<span style="color: #000000;"> myFun();
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$a</span>;    <span style="color: #008000;">//</span><span style="color: #008000;"> 10</span>
+
+
+<span style="color: #800080;">$a</span> = &amp;<span style="color: #000000;">myfun();
+</span><span style="color: #800080;">$a</span> = 100<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> myfun();   <span style="color: #008000;">//</span><span style="color: #008000;">100</span></code></pre>
+
+<p>&nbsp;</p>
+
+<src>&nbsp;
+<src>外部文件的导入
+<src>include/reqlude 的区别 警告/致命错误 include_once/reqlude_once
+<p>&nbsp;</p>
+<src>3.系统内置函数
+<src>　　
+<src>
+<src>
+<src>　　时间与日期：date(),strtottime(),time(),miketime(),microtime(),date_default_timezone_set()
+<br />
+<src>　　ip处理函数：iptolong(),longtoip()
+
+
+<br />
+<src>　　打印处理：print(),printf(),print_r(),echo,sprintf(), var_dump(), var_export()
+
+
+<br />
+<src>　　序列化和反序列化函数：serialize(),unserialize() &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://www.cnblogs.com/yamtsin/p/5922872.html
+
+
+<br />
+<src>　　字符串处理函数：implod()
+
+
+<br />
+<src>　　数组处理函数：
+
+
+
+
+
+<src>&nbsp;
+<src>解题方法：
+<src>　　着重记忆php函数定义的相关内容，理解变量作用域，静态变量，函数参数，和返回值得相关内容，重点记忆总结的内置函数。
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

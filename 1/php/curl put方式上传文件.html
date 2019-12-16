@@ -1,0 +1,115 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修curl put方式上传文件' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>curl put方式上传文件</center></div><div class='banquan'>原文出处:本文由博客园博主宋建明提供。<br/>
+原文连接:https://www.cnblogs.com/songjianming/p/11072958.html</div><br>
+    <p>发送端</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">function</span> curlPut(<span style="color: #800080;">$destUrl</span>, <span style="color: #800080;">$sourceFileDir</span>, <span style="color: #800080;">$headerArr</span> = <span style="color: #0000ff;">array</span>(), <span style="color: #800080;">$timeout</span> = 10<span style="color: #000000;">)
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 5</span>     <span style="color: #800080;">$ch</span> = curl_init(); <span style="color: #008000;">//</span><span style="color: #008000;">初始化curl</span>
+<span style="color: #008080;"> 6</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_RETURNTRANSFER, <span style="color: #0000ff;">true</span>); <span style="color: #008000;">//</span><span style="color: #008000;">返回字符串,而不直接输出</span>
+<span style="color: #008080;"> 7</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_URL, <span style="color: #800080;">$destUrl</span>); <span style="color: #008000;">//</span><span style="color: #008000;">设置put到的url</span>
+<span style="color: #008080;"> 8</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_HTTPHEADER, <span style="color: #800080;">$headerArr</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_TIMEOUT, <span style="color: #800080;">$timeout</span><span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">false</span>); <span style="color: #008000;">//</span><span style="color: #008000;">不验证对等证书</span>
+<span style="color: #008080;">11</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYHOST, 0); <span style="color: #008000;">//</span><span style="color: #008000;">不检查服务器SSL证书</span>
+<span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_PUT, <span style="color: #0000ff;">true</span>); <span style="color: #008000;">//</span><span style="color: #008000;">设置为PUT请求</span>
+<span style="color: #008080;">14</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_INFILE, <span style="color: #008080;">fopen</span>(<span style="color: #800080;">$sourceFileDir</span>, 'rb')); <span style="color: #008000;">//</span><span style="color: #008000;">设置资源句柄</span>
+<span style="color: #008080;">15</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_INFILESIZE, <span style="color: #008080;">filesize</span>(<span style="color: #800080;">$sourceFileDir</span><span style="color: #000000;">));
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span>     <span style="color: #800080;">$response</span> = curl_exec(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">18</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$error</span> = curl_error(<span style="color: #800080;">$ch</span><span style="color: #000000;">))
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">20</span>         <span style="color: #800080;">$bkArr</span> =  <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">21</span>             'code' =&gt; 0,
+<span style="color: #008080;">22</span>             'msg' =&gt; <span style="color: #800080;">$error</span>,
+<span style="color: #008080;">23</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">25</span>     <span style="color: #0000ff;">else</span>
+<span style="color: #008080;">26</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">27</span>         <span style="color: #800080;">$bkArr</span> =  <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">28</span>             'code' =&gt; 1,
+<span style="color: #008080;">29</span>             'msg' =&gt; 'ok',
+<span style="color: #008080;">30</span>             'resp' =&gt; <span style="color: #800080;">$response</span>,
+<span style="color: #008080;">31</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">33</span> 
+<span style="color: #008080;">34</span>     curl_close(<span style="color: #800080;">$ch</span>); <span style="color: #008000;">//</span><span style="color: #008000;"> 关闭 cURL 释放资源</span>
+<span style="color: #008080;">35</span> 
+<span style="color: #008080;">36</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$bkArr</span><span style="color: #000000;">;
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">38</span> 
+<span style="color: #008080;">39</span> <span style="color: #800080;">$destUrl</span> = 'http://www.songjm.com/http_put_save.php'<span style="color: #000000;">;
+</span><span style="color: #008080;">40</span> <span style="color: #800080;">$sourceFileDir</span> = 'asset/pic.png'<span style="color: #000000;">;
+</span><span style="color: #008080;">41</span> <span style="color: #800080;">$headerArr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">42</span>     'filename:newname.png',
+<span style="color: #008080;">43</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">44</span> 
+<span style="color: #008080;">45</span> <span style="color: #800080;">$bkJson</span> = curlPut(<span style="color: #800080;">$destUrl</span>, <span style="color: #800080;">$sourceFileDir</span>, <span style="color: #800080;">$headerArr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">46</span> <span style="color: #800080;">$bkArr</span> = json_decode(<span style="color: #800080;">$bkJson</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">47</span> <span style="color: #0000ff;">echo</span> "&lt;pre&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;">48</span> <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$bkArr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">49</span> <span style="color: #0000ff;">die</span>;</code></pre>
+
+<p>接收端</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_SERVER</span>['REQUEST_METHOD'] != 'PUT'<span style="color: #000000;">)
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 5</span>     <span style="color: #800080;">$bkMsg</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;"> 6</span>         'code' =&gt; -1,
+<span style="color: #008080;"> 7</span>         'msg' =&gt; 'not put',
+<span style="color: #008080;"> 8</span> <span style="color: #000000;">    );
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$bkMsg</span><span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">exit</span><span style="color: #000000;">();
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> <span style="color: #800080;">$filename</span> = <span style="color: #800080;">$_SERVER</span>['HTTP_FILENAME'<span style="color: #000000;">];
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span> <span style="color: #800080;">$fileSaveDir</span> = 'upload/'<span style="color: #000000;">;
+</span><span style="color: #008080;">16</span> <span style="color: #800080;">$newFile</span> = <span style="color: #800080;">$fileSaveDir</span>.<span style="color: #800080;">$filename</span><span style="color: #000000;">;
+</span><span style="color: #008080;">17</span> 
+<span style="color: #008080;">18</span> <span style="color: #800080;">$handleToSave</span> = <span style="color: #008080;">fopen</span>(<span style="color: #800080;">$newFile</span>,'wb+'<span style="color: #000000;">); 
+</span><span style="color: #008080;">19</span> <span style="color: #800080;">$handleSource</span> = <span style="color: #008080;">fopen</span>('php://input','rb'<span style="color: #000000;">);
+</span><span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span> <span style="color: #0000ff;">while</span> (!<span style="color: #008080;">feof</span>(<span style="color: #800080;">$handleSource</span><span style="color: #000000;">))
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">23</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$handleToSave</span>, <span style="color: #008080;">fread</span>(<span style="color: #800080;">$handleSource</span>, 1024<span style="color: #000000;">));
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span> <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$handleToSave</span><span style="color: #000000;">);
+</span><span style="color: #008080;">27</span> <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$handleSource</span><span style="color: #000000;">);
+</span><span style="color: #008080;">28</span> 
+<span style="color: #008080;">29</span> <span style="color: #800080;">$bkMsg</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">30</span>     'code' =&gt; 1,
+<span style="color: #008080;">31</span>     'msg' =&gt; 'ok',
+<span style="color: #008080;">32</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">33</span> <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$bkMsg</span><span style="color: #000000;">);
+</span><span style="color: #008080;">34</span> <span style="color: #0000ff;">exit</span>();</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

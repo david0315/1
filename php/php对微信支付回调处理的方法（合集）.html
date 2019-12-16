@@ -1,0 +1,321 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php对微信支付回调处理的方法（合集）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php对微信支付回调处理的方法（合集）</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/11244656.html</div><br>
+    <p>支付完成后，微信会把相关支付结果和用户信息发送给商户，商户需要接收处理，并返回应答。</p>
+<p>对后台通知交互时，如果微信收到商户的应答不是成功或超时，微信认为通知失败，微信会通过一定的策略定期重新发起通知，尽可能提高通知的成功率，但微信不保证通知最终能成功。 （通知频率为15/15/30/180/1800/1800/1800/1800/3600，单位：秒）</p>
+<p>注意：同样的通知可能会多次发送给商户系统。商户系统必须能够正确处理重复的通知。</p>
+<p>推荐的做法是，当收到通知进行处理时，首先检查对应业务数据的状态，判断该通知是否已经处理过，如果没有处理过再进行处理，如果处理过直接返回结果成功。在对业务数据进行状态检查和处理之前，要采用数据锁进行并发控制，以避免函数重入造成的数据混乱。</p>
+<p>特别提醒：商户系统对于支付结果通知的内容一定要做签名验证,并校验返回的订单金额是否与商户侧的订单金额一致，防止数据泄漏导致出现&ldquo;假通知&rdquo;，造成资金损失。</p>
+<p>微信支付回调处理分为</p>
+<p>1.同步<br />2.异步</p>
+<p><strong>这里微信官方推荐使用 第二种</strong></p>
+<p>php对微信回调异步处理</p>
+<p>微信无论是微信内置JSAPI支付、H5外部浏览器支付、扫码支付，都需要通过异步回调接收支付结果。</p>
+<p>本文简介如何获取微信支付通知。</p>
+<p>仅需要一个在之前设置好的回调地址的方法里写上如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">处理微信支付回调</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> notify(){
+        </span><span style="color: #800080;">$testxml</span>  = <span style="color: #008080;">file_get_contents</span>("php://input"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$jsonxml</span> = json_encode(<span style="color: #008080;">simplexml_load_string</span>(<span style="color: #800080;">$testxml</span>, 'SimpleXMLElement',<span style="color: #000000;"> LIBXML_NOCDATA));
+        </span><span style="color: #800080;">$result</span> = json_decode(<span style="color: #800080;">$jsonxml</span>, <span style="color: #0000ff;">true</span>);<span style="color: #008000;">//</span><span style="color: #008000;">转成数组，</span>
+        <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">){
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">如果成功返回了</span>
+            <span style="color: #800080;">$out_trade_no</span> = <span style="color: #800080;">$result</span>['out_trade_no'<span style="color: #000000;">];
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span>['return_code'] == 'SUCCESS' &amp;&amp; <span style="color: #800080;">$result</span>['result_code'] == 'SUCCESS'<span style="color: #000000;">){
+      　　　　　　</span><span style="color: #008000;">//</span><span style="color: #008000;">执行业务逻辑改变订单状态等操作
+　　　　　　　　　　//查询创建订单表 where("out_trade_no='".$out_trade_no."' and status=1") status为1表示待支付状态 1 待支付
+　　　　　　　　　　//查询出来有该订单 就改变支付状态 status=2 2表示支付成功</span>
+<span style="color: #000000;"> 
+            }
+        }
+    }</span></code></pre>
+
+<p>对后台通知交互时，如果微信收到商户的应答不是成功或超时，微信认为通知失败，<br />微信会通过一定的策略定期重新发起通知，尽可能提高通知的成功率，但微信不保证通知最终能成功。&nbsp;<br />（通知频率为15/15/30/180/1800/1800/1800/1800/3600，单位：秒）&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp; &nbsp;<br />结束微信重新通知用代码：echo 'SUCCESS';</p>
+<p>附上：<br />微信支付返回的xml转化为json格式如下：&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">{
+  </span>"appid": "12345",
+  "attach": "pay", 
+  "bank_type": "CFT",
+  "cash_fee": "1",
+  "fee_type": "CNY",
+  "is_subscribe": "Y",
+  "mch_id": "12345",
+  "nonce_str": "dZYFpaDYRpF5rwhv",
+  "openid": "onhwF1hiutUySKCsrV21A6MCtT5Q",
+  "out_trade_no": "SH201808222055598628",
+  "result_code": "SUCCESS",
+  "return_code": "SUCCESS",
+  "sign": "5A019F52BEF1C3A98AE0F1FF29D01574",
+  "time_end": "20180822205606",
+  "total_fee": "1",
+  "trade_type": "MWEB",
+  "transaction_id": "4200000171201808221550954201"<span style="color: #000000;"> 
+}</span></code></pre>
+
+<p>其中</p>
+<p>&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>"result_code": "SUCCESS",
+
+"return_code": "SUCCESS",</code></pre>
+
+<src class="table-box">&nbsp;
+<p>是判断用户是否已经支付的依据&nbsp;</p>
+<h2>第二种处理方式&darr;</h2>
+<p><img src="./images/php对微信支付回调处理的方法（合集）0.jpg" alt="" /></p>
+<p><img src="./images/php对微信支付回调处理的方法（合集）1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>因为微信在后台通知交互时，如果微信收到商户的应答不符合规范或超时，微信会判定本次通知失败，重新发送通知，直到成功为止（在通知一直不成功的情况下，微信总共会发起10次通知，每次通知时间距离最近一次的间隔为15/15/30/180/1800/1800/1800/1800/3600，单位：秒），但微信不保证通知最终一定能成功。</p>
+<p>&nbsp;</p>
+<p>所以进来回调方法就要判断这笔订单在我们后台数据库是否支付成功了！</p>
+<p>&nbsp;</p>
+<p><strong><span style="font-size: 18px;">php对微信回调异步处理</span></strong></p>
+<p>微信无论是微信内置JSAPI支付、H5外部浏览器支付、扫码支付，都需要通过异步回调接收支付结果。</p>
+<p>本文简介如何获取微信支付通知。</p>
+<p>仅需要一个在之前设置好的回调地址的方法里写上如下：</p>
+<src class="cnblogs_code">
+<pre><code>//处理微信支付回调
+    public function<span> notify(){
+        $testxml  = file_get_contents("php://input"<span>);
+        $jsonxml = json_encode(simplexml_load_string($testxml, 'SimpleXMLElement',<span> LIBXML_NOCDATA));
+        $result = json_decode($jsonxml, true);//转成数组，
+        if($result<span>){
+            //如果成功返回了
+            $out_trade_no = $result['out_trade_no'<span>];
+            if($result['return_code'] == 'SUCCESS' &amp;&amp; $result['result_code'] == 'SUCCESS'<span>){
+      　　　　　　//执行业务逻辑改变订单状态等操作
+　　　　　　　　　　//查询创建订单表 where("out_trade_no='".$out_trade_no."' and status=1") status为1表示待支付状态 1 待支付
+　　　　　　　　　　//查询出来有该订单 就改变支付状态 status=2 2表示支付成功
+<span> 
+            }
+        }
+    }</span></span></span></span></span></span></span></code></pre>
+<p><span>&nbsp;</span></p>
+
+<p>&nbsp;</p>
+<p>需要特别注意的地方：微信支付结果通知，会按一定规则重复发送通知，因此执行业务逻辑之前，需要判断是否是重复通知。</p>
+<p>如果自己的业务逻辑执行成功后，可以return一个规定格式的XML，来告诉微信你已成功收到通知，并做好了相应处理。（当然不return也行。。。做好重复验证机制就好）</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong>以下是自己实际项目中的处理支付回调的详细流程，不完善（比如并发问题没处理），大家有更好的建议欢迎提出来以使得处理逻辑更严密</strong></span></p>
+<p><span style="font-size: 18px;"><strong>（自己处理过程中遇到一些关于jsapi的demo的小问题，在下面给大家罗列出来）</strong></span></p>
+<src class="cnblogs_code">
+<pre><code>public function wycz(){//我要充值
+        if(session('uid') ==NULL || session('uid') == "" || session('uid') == false<span>){
+            //没有登录 跳转到登录页
+            $this-&gt;redirect('/Login/login');exit<span>;
+       }else<span> {
+            //接受参数
+            if($_POST<span>){
+                $Total_fee = trim(I("post.fotal_fee"<span>));
+                if(!empty($Total_fee<span>)){
+                    if($Total_fee&lt;=0<span>){
+                        //提示输入正整数金额
+                        $arr['code'] = "301"<span>;
+                        $arr['msg']  = "输入正整数"<span>;
+                        echo json_encode($arr);exit<span>();
+                    }else<span>{
+
+                        session("total_fee",$Total_fee<span>);
+                        $arr['code'] = "200"<span>;
+                        $arr['msg'] = "确认充值吗？"<span>;
+                        echo json_encode($arr);exit<span>();
+                    }
+                }else<span>{
+                    //提示输入正整数金额
+                    $arr['code'] = "302"<span>;
+                    $arr['msg']  = "输入充值金额"<span>;
+                    echo json_encode($arr);exit<span>();
+                }
+            }
+            $this-&gt;<span>display();
+       }
+    }
+
+    //充值确认页面
+    public function<span> confirmPay(){
+        if(session('uid') ==NULL || session('uid') == "" || session('uid') == false<span>){
+            //没有登录 跳转到登录页
+            $this-&gt;redirect('/Login/login');exit<span>;
+        }else<span> {
+            $result = $this-&gt;<span>wapPay();
+            $this-&gt;assign('jsApiParameters',$result['jsApiParameters'<span>]);
+            $this-&gt;assign('editAddress', $result['editAddress'<span>]);
+            $this-&gt;<span>display();
+        }
+    }
+    //操作充值
+    public function wapPAy($Total_fee<span>)
+    {
+        /**
+         *
+         * example目录下为简单的支付样例，仅能用于搭建快速体验微信支付使用
+         * 样例的作用仅限于指导如何使用sdk，在安全上面仅做了简单处理， 复制使用样例代码时请慎重
+         * 请勿直接直接使用样例对外提供服务
+         *
+         **/<span>
+        Vendor('Wxpaysdk.lib.WxPay#Api'<span>);
+        Vendor('Wxpaysdk.example.WxPay#JsApiPay'<span>);
+        // Vendor('Wxpaysdk.example.WxPay#Config');
+        //①、获取用户openid
+        $tools = new<span> \JsApiPay();
+        $openId = $tools-&gt;<span>GetOpenid();
+        $Total_fee = session("total_fee")*100<span>;
+        //$Total_fee = session("total_fee");
+        //②、统一下单
+        $input = new<span> \WxPayUnifiedOrder();
+        $input-&gt;SetBody("vip充值"<span>);
+        $input-&gt;SetAttach("vip充值"<span>);
+        $input-&gt;SetOut_trade_no("klkq".date("YmdHis"<span>));
+        $input-&gt;SetTotal_fee($Total_fee<span>);
+        $input-&gt;SetTime_start(date("YmdHis"<span>));
+        $input-&gt;SetTime_expire(date("YmdHis", time() + 600<span>));
+        $input-&gt;SetGoods_tag("vip充值"<span>);
+        //$input-&gt;SetNotify_url("http://paysdk.weixin.qq.com/notify.php");
+        $input-&gt;SetNotify_url("http://wap.yuming.com/Member/notify"<span>);
+        $input-&gt;SetTrade_type("JSAPI"<span>);
+        $input-&gt;SetOpenid($openId<span>);
+        $config = new<span> \WxPayConfig();
+        $order = \WxPayApi::unifiedOrder($config, $input<span>);
+        //echo '&lt;font color="#f00"&gt;&lt;b&gt;统一下单支付单信息&lt;/b&gt;&lt;/font&gt;&lt;br/&gt;';
+        //printf_info($order);
+        $jsApiParameters = $tools-&gt;GetJsApiParameters($order<span>);
+        //获取共享收货地址js函数参数
+        $editAddress = $tools-&gt;<span>GetEditAddressParameters();
+        $data['jsApiParameters'] = $jsApiParameters<span>;
+        $data['editAddress'] = $editAddress<span>;
+
+        //写入订单表对应数据
+        $arr = array<span>(
+            'w_mId'=&gt;session('uid'),
+            'w_openid'=&gt;$openId,
+            'w_title'=&gt;'vip充值',
+            'w_time_create'=&gt;date("YmdHis"),
+            'w_times_create'=&gt;date("Y-m-d H:i:s"),
+            'w_out_trade_no'=&gt;"klkq".date("YmdHis"),<span>
+        );
+        M('wxpay_order')-&gt;add($arr<span>);
+        
+        return $data<span>;
+    }
+
+    //处理微信支付回调
+    public function<span> notify(){
+    $testxml = file_get_contents("php://input"<span>);
+    $jsonxml = json_encode(simplexml_load_string($testxml,'SimpleXMLElement',<span>LIBXML_NOCDATA));
+        $result = json_decode($jsonxml,true<span>);
+    if($result<span>){
+        $out_trade_no = $result['out_trade_no'<span>];
+        if($result['return_code'] == 'SUCCESS' &amp;&amp; $result['result_code'] =='SUCCESS'<span>){
+                //先判断订单状态是否已经改变
+                $orderData = M("wxpay_order")-&gt;where("w_out_trade_no='".$result['out_trade_no']."' and w_status=1")-&gt;<span>find();
+                if(!empty($orderData<span>)){
+                    //支付成功改变支付状态
+                    $arr = array<span>(
+                        'w_id'=&gt;$orderData['w_id'],
+                        'w_openid'=&gt;$result['openid'],
+                        'w_transaction_id'=&gt;$result['transaction_id'],
+                        'w_time_end'=&gt;$result['time_end'],
+                        'w_times_end'=&gt;$result['time_end'],
+                        'w_total_fee'=&gt;$result['total_fee']/100,
+                        'w_status'=&gt;2,//支付成功 1 待支付 2支付成功 3 支付失败
+<span>
+                    );
+                    M('wxpay_order')-&gt;save($arr<span>);
+
+                    //操作积分
+                    $uid = $orderData['w_mId'<span>];
+                    //对该人增加$result['total_fee']积分
+                    $zz_grade = M('grade'<span>);
+                    $g_Integral = $zz_grade-&gt;where("g_mId=".$uid)-&gt;getField('g_Integral'<span>);
+                    $zz_grade-&gt;g_Integral = $g_Integral + intval($result['total_fee']/100<span>);
+                    //更新积分
+                    $giddd = $zz_grade-&gt;where("g_mId=".$uid)-&gt;<span>save();
+
+                    //操作积分日志表
+                    $zz_grade_log = M('grade_log'<span>);
+                    $zz_grade_log-&gt;g_gContent = '充值'.intval($result['total_fee']/100).'积分'<span>;
+                    $zz_grade_log-&gt;g_mId = $uid;//邀请者会员id
+                    $zz_grade_log-&gt;g_gNum = intval($result['total_fee']/100);//充值积分
+                    $zz_grade_log-&gt;g_gDate = date('Y-m-d');//注册日期
+                    $zz_grade_log-&gt;g_gTime = date('Y-m-d H:i:s');//注册时间
+                    //写入数据库
+                    $liddd = $zz_grade_log-&gt;<span>add();
+
+                }
+            }
+
+        }
+
+    }</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></pre>
+<p><span>&nbsp;</span></p>
+
+<p>&nbsp;</p>
+<p><strong><span style="font-size: 18px;">以下是关于微信jsapi的demo出现的小问题：</span></strong></p>
+<p><span style="color: #ff0000;"><strong>1、WxPay.Config</strong></span></p>
+<p>官方demo用的是require_once引入，如下图</p>
+<p><img src="./images/php对微信支付回调处理的方法（合集）2.jpg" alt="" /></p>
+<p><strong>你如果用Vendor引入就会报WxPay.Config.php被重复引用的错误，所以这里根据你的实际情况是完全按照demo写，还是变通下</strong></p>
+<p><strong>这里是放在thinkphp3.2框架下接入微信支付的，所以这里实例化类 就要在 前面加 \&nbsp;</strong></p>
+<p><img src="./images/php对微信支付回调处理的方法（合集）3.jpg" alt="" /></p>
+<p><strong><span style="color: #ff0000;">&nbsp;2、如果在类文件里发现进入不正确，建议采取如下引入方式</span></strong></p>
+<p>　　a、定义根目录常量</p>
+<p><img src="./images/php对微信支付回调处理的方法（合集）4.jpg" alt="" /></p>
+<p>　　b、绝对路径引入文件</p>
+<p><img src="./images/php对微信支付回调处理的方法（合集）5.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="color: #ff0000;">3、WxPay.JsApiPay.php文件里授权获取openid问题</span></p>
+<p><span style="color: #000000;"><img src="./images/php对微信支付回调处理的方法（合集）6.jpg" alt="" /></span></p>
+<p>图中红框白箭头是官方demo给的，但是在我的这个场景中不合适，总是造出这样的url http://wap.abc.com/index.php/Member/cz.htmls=/Member/cz.html?callback=.....</p>
+<p>程序报非法访问cz.htmls，当我用红箭头指定的那个便是成功的获取正确的url，获取openid便是成功的。</p>
+<p>情况不止于此：下面是对</p>
+<pre><code>$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$_SERVER['QUERY_STRING']<br />的搜索结果如下：</code></pre>
+<pre><code>$_SERVER['HTTP_HOST']：获取当前域名</code></pre>
+<pre><code>$_SERVER['REQUEST_URI']：这是取得当前URL的 路径地址 比如:&nbsp;<a href="http://zhidao.baidu.com/question/469321857.html?push=core&amp;group=1" rel="nofollow noopener" target="_blank">http://zhidao.baidu.com/question/469321857.html?push=core&amp;group=1</a> 他获得是这个路径 <em id="__mceDel"><em id="__mceDel"><em id="__mceDel">question/469321857.html?push=core&amp;group=1</em></em></em></code></pre>
+<pre><code>$_SERVER['QUERY_STRING']：获取的是?后面的值</code></pre>
+<p>&nbsp;上述问题解决完，支付流程就可以走通了</p>
+<p>&nbsp;</p>
+<p><strong><span style="font-size: 16px; color: #000000;">延伸：</span></strong></p>
+<p>&nbsp;</p>
+<p>相同点：<br />当满足以下三个条件时，两者会输出相同信息。<br />1. 服务器为80端口<br />2. apache的conf中ServerName设置正确<br />3. HTTP/1.1协议规范</p>
+<p>&nbsp;</p>
+<p>不同点：<br />1. 通常情况：<br />_SERVER["HTTP_HOST"] 在HTTP/1.1协议规范下，会根据客户端的HTTP请求输出信息。<br />_SERVER["SERVER_NAME"] 默认情况下直接输出apache的配置文件httpd.conf中的ServerName值。</p>
+<p>&nbsp;</p>
+<p>2. 当服务器为非80端口时：<br />_SERVER["HTTP_HOST"] 会输出端口号，例如：mimiz.cn:8080<br />_SERVER["SERVER_NAME"] 会直接输出ServerName值<br />因此在这种情况下，可以理解为：HTTP_HOST = SERVER_NAME : SERVER_PORT</p>
+<p>&nbsp;</p>
+<p>3. 当配置文件httpd.conf中的ServerName与HTTP/1.0请求的域名不一致时：<br />httpd.conf配置如下：<br />&lt;virtualhost *&gt;<br />ServerName mimiz.cn<br />ServerAlias&nbsp;<a href="http://www.mimiz.cn/" rel="nofollow">www.mimiz.cn</a><br />&lt;/virtualhost&gt;<br />客户端访问域名<a href="http://www.mimiz.cn/" rel="nofollow">www.mimiz.cn</a><br />_SERVER["HTTP_HOST"] 输出&nbsp;<a href="http://www.mimiz.cn/" rel="nofollow">www.mimiz.cn</a><br />_SERVER["SERVER_NAME"] 输出 mimiz.cn</p>
+<p>&nbsp;</p>
+<p>所以，在实际程序中，应尽量使用_SERVER["HTTP_HOST"] ，比较保险和可靠。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src class="articalTitle">
+<h2 id="t_686999de0100jgda" class="titName SG_txta">详解&nbsp;$_SERVER&nbsp;函数中QUERY_STRING和REQUEST_URI区别</h2>
+<src class="turnBoxzz"><a href="http://blog.sina.com.cn/s/blog_686999de0100jgda.html">http://blog.sina.com.cn/s/blog_686999de0100jgda.html</a>
+<src class="turnBoxzz">&nbsp;
+
+<src id="sina_keyword_ad_area2" class="articalContent   "><strong>实例：<br /><br /></strong><strong>1，http://localhost/aaa/</strong>&nbsp;(打开aaa中的index.php)<br />结果：<br />$_SERVER['QUERY_STRING'] = "";<br />$_SERVER['REQUEST_URI']&nbsp;&nbsp;= "/aaa/";<br />$_SERVER['SCRIPT_NAME']&nbsp;&nbsp;= "/aaa/index.php";<br />$_SERVER['PHP_SELF']&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= "/aaa/index.php";<br /><br /><strong>2，</strong>http://localhost/aaa/?p=222&nbsp;(附带查询)<br />结果：<br />$_SERVER['QUERY_STRING'] = "p=222";<br />$_SERVER['REQUEST_URI']&nbsp;&nbsp;= "/aaa/?p=222";<br />$_SERVER['SCRIPT_NAME']&nbsp;&nbsp;= "/aaa/index.php";<br />$_SERVER['PHP_SELF']&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= "/aaa/index.php";<br /><br /><strong>3，http://localhost/aaa/index.php?p=222&amp;q=333</strong><br />结果：<br />$_SERVER['QUERY_STRING'] = "p=222&amp;q=333";<br />$_SERVER['REQUEST_URI']&nbsp;&nbsp;= "/aaa/index.php?p=222&amp;q=333";<br />$_SERVER['SCRIPT_NAME']&nbsp;&nbsp;= "/aaa/index.php";<br />$_SERVER['PHP_SELF']&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= "/aaa/index.php";<br /><br />由实例可知：<br />$_SERVER["QUERY_STRING"]&nbsp;&nbsp;获取查询 语句，实例中可知，获取的是?后面的值<br />$_SERVER["REQUEST_URI"]&nbsp;&nbsp;&nbsp;获取 http://localhost 后面的值，包括/<br />$_SERVER["SCRIPT_NAME"]&nbsp;&nbsp;&nbsp;获取当前脚本的路径，如：index.php<br />$_SERVER["PHP_SELF"]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当前正在执行脚本的文件名
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

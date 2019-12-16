@@ -1,0 +1,130 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel + Vue + Element 考勤应用 - 人力资源系统' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel + Vue + Element 考勤应用 - 人力资源系统</center></div><div class='banquan'>原文出处:本文由博客园博主SexyPhoenix提供。<br/>
+原文连接:https://www.cnblogs.com/SexyPhoenix/p/11770089.html</div><br>
+    <p>项目地址 <a href="https://github.com/SexyPhoenix/Bee">Bee</a></p>
+<h4 id="介绍">介绍</h4>
+<hr />
+<p>Bee 是人力资源系统中的考勤应用，主要功能用于员工申请假单。Bee具有较高的性能、扩展性等，其中包括前后端分离、插拔式的规则验证（验证器）、数据过滤（装饰器）、消息队列等，后端在Laravel 的MVC模式上，又添加了Services、Repositories层，明确每个类的职责，使用Passport 的密码模式获取接口数据。</p>
+<h4 id="技术栈">技术栈</h4>
+<hr />
+<ul>
+<li>服务器：Linux（Centos 7）、Nginx</li>
+<li>前端：Element、Vue、Vue-Router、Vuex、Webpack、V-calendar</li>
+<li>资源：Elephant</li>
+<li>后端：Laravel</li>
+<li>缓存：Redis<br />
+其他的就是一些基本工具了，比如node、npm（cnpm）、composer、git等</li>
+</ul>
+<h4 id="演示">演示</h4>
+<h6 id="登录">1. 登录</h6>
+<p><img src="./images/Laravel + Vue + Element 考勤应用 - 人力资源系统0.jpg" alt="1" /></p>
+<h6 id="申请">2. 申请</h6>
+<p><img src="./images/Laravel + Vue + Element 考勤应用 - 人力资源系统1.jpg" alt="2" /></p>
+<h6 id="编辑">3. 编辑</h6>
+<p><img src="./images/Laravel + Vue + Element 考勤应用 - 人力资源系统2.jpg" alt="3" /></p>
+<h6 id="审批">4. 审批</h6>
+<p><img src="./images/Laravel + Vue + Element 考勤应用 - 人力资源系统3.jpg" alt="4" /></p>
+<h6 id="搜索">5. 搜索</h6>
+<p><img src="./images/Laravel + Vue + Element 考勤应用 - 人力资源系统4.jpg" alt="5" /></p>
+<h4 id="安装">安装</h4>
+<hr />
+<h6 id="下载">1. 下载</h6>
+<pre><code><code>git clone git@github.com:SexyPhoenix/Bee.git </code></code></pre>
+<h6 id="laravel">2. Laravel</h6>
+<pre><code><code>composer install
+chmod -R 777 storage
+php artisan key:generate</code></code></pre>
+<h6 id="上传文件夹">3. 上传文件夹</h6>
+<pre><code><code>mkdir -p uploads/bee
+chmod -R 777 uploads</code></code></pre>
+<h6 id="配置.env">4. 配置.env</h6>
+<pre><code><code>cp .env.example .env</code></code></pre>
+<pre><code><code>APP_URL=http://localhost
+ASSET_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=homestead
+DB_USERNAME=homestead
+DB_PASSWORD=secret
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379</code></code></pre>
+<h6 id="数据库">5. 数据库</h6>
+<pre><code><code>php artisan migrate</code></code></pre>
+<h6 id="passport">6. Passport</h6>
+<pre><code><code>php artisan passport:keys
+php artisan passport:client --password --name=&#39;bee&#39;  //name 自定义</code></code></pre>
+<h6 id="开启消息队列">7. 开启消息队列</h6>
+<pre><code><code>php artisan queue:work bee --queue=apply --sleep=3 --tries=3 &amp; &gt; /dev/null</code></code></pre>
+<h6 id="nginx">8. Nginx</h6>
+<pre><code><code>server {
+    listen 80;
+    server_name dev.bee.goods; // 自定义
+    index index.html index.htm index.php;
+
+    location / {
+        rewrite ^/(.*)$ /index.php/$1 last;
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ /uploads/ {
+       root &quot;/var/www/Bee&quot;; // 自定义
+    }
+
+    location ~ \.(html|gif|jpg|jpeg|css|js|eot|svg|ttf|woff|woff2|png)$ {
+      root &quot;/var/www/Bee/public&quot;; // 自定义
+    }
+
+    location ~ (.+\.php)(.*)$ {
+
+        root /var/www/Bee/public; // 自定义
+        fastcgi_split_path_info ^(.+\.php)(.+)$;
+        fastcgi_pass unix:/var/run/php-fpm/php7-fpm.sock;  // 自定义
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+
+        fastcgi_intercept_errors off;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 4 16k;
+        fastcgi_connect_timeout 300;
+        fastcgi_send_timeout 300;
+        fastcgi_read_timeout 300;
+     }
+}</code></code></pre>
+<h6 id="前端">9. 前端</h6>
+<pre><code><code>cnpm install //cnpm淘宝的
+
+export const API_DOMAIN = &#39;http://xxx/beeapi&#39;  //resources\js\config\bee.js 文件中修改域名
+npm run dev</code></code></pre>
+<h6 id="导入基本数据databasesqlbee.sql">10. 导入基本数据（database\sql\bee.sql）</h6>
+<p>最后，注意配置域名到host。</p>
+<p>打开 http://xxx/bee#/<br />
+账号：zhangxiaofan@qq.com 密码：123456</p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

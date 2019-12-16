@@ -1,0 +1,305 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php+redis实现注册、删除、编辑、分页、登录、关注等功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php+redis实现注册、删除、编辑、分页、登录、关注等功能</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11908261.html</div><br>
+    <p>本文实例讲述了php+redis实现注册、删除、编辑、分页、登录、关注等功能。分享给大家供大家参考，具体如下：</p>
+<p><strong>主要界面</strong></p>
+<p><strong><span class="cke_widget_wrapper cke_widget_inline cke_widget_image cke_image_nocaption cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="图像" data-cke-widget-id="10"><img class="has cke_widget_element" src="./images/php+redis实现注册、删除、编辑、分页、登录、关注等功能0.jpg" alt="" data-cke-saved-src="./images/php+redis实现注册、删除、编辑、分页、登录、关注等功能0.jpg" data-cke-widget-data="{&amp;quot;hasCaption&amp;quot;:false,&amp;quot;src&amp;quot;:&amp;quot;./images/php+redis实现注册、删除、编辑、分页、登录、关注等功能0.jpg&amp;quot;,&amp;quot;alt&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;width&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;height&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;lock&amp;quot;:true,&amp;quot;align&amp;quot;:&amp;quot;none&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="image" /><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /><span class="cke_image_resizer" title="点击并拖拽以改变尺寸">​</span></span></span></strong></p>
+<p>&nbsp;</p>
+<p><strong>连接redis</strong></p>
+<p>redis.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="9">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span>   <span style="color: #008000;">//</span><span style="color: #008000;">实例化</span>
+<span style="color: #008080;">3</span>   <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;">4</span>   <span style="color: #008000;">//</span><span style="color: #008000;">连接服务器</span>
+<span style="color: #008080;">5</span>   <span style="color: #800080;">$a</span>=<span style="color: #800080;">$redis</span>-&gt;connect("localhost",6379<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span>   <span style="color: #008000;">//</span><span style="color: #008000;">var_dump($a);
+</span><span style="color: #008080;">7</span> <span style="color: #008000;">  //授权</span>
+<span style="color: #008080;">8</span>   <span style="color: #800080;">$redis</span>-&gt;auth("107lab");</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p><strong>注册界面</strong></p>
+<p>add.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="8">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;form action="reg.php" method="post"&gt;
+<span style="color: #008080;">2</span>   用户名:&lt;input type="text" name="username"&gt;&lt;br&gt;
+<span style="color: #008080;">3</span>   密码:&lt;input type="password" name="password"&gt;&lt;br&gt;
+<span style="color: #008080;">4</span>   年龄:&lt;input type="text" name="age"&gt;&lt;br&gt;
+<span style="color: #008080;">5</span>   &lt;input type="submit" value="注册"&gt;
+<span style="color: #008080;">6</span>   &lt;input type="reset" value="重填"&gt;
+<span style="color: #008080;">7</span> &lt;/form&gt;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p><strong>注册实现</strong></p>
+<p>reg.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="7">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>   <span style="color: #0000ff;">require</span>("redis.php"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span>   <span style="color: #800080;">$username</span> = <span style="color: #800080;">$_POST</span>['username'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 4</span>   <span style="color: #800080;">$password</span> = <span style="color: #008080;">md5</span>(<span style="color: #800080;">$_POST</span>['password'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 5</span>   <span style="color: #800080;">$age</span> = <span style="color: #800080;">$_POST</span>['age'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 6</span>   <span style="color: #008000;">//</span><span style="color: #008000;">echo $username.$password.$age;</span>
+<span style="color: #008080;"> 7</span>   <span style="color: #800080;">$uid</span> = <span style="color: #800080;">$redis</span>-&gt;incr("userid");<span style="color: #008000;">//</span><span style="color: #008000;">设置自增id，相当于主键</span>
+<span style="color: #008080;"> 8</span>   <span style="color: #800080;">$redis</span>-&gt;hMset("user:".<span style="color: #800080;">$uid</span>,<span style="color: #0000ff;">array</span>("uid"=&gt;<span style="color: #800080;">$uid</span>,"username"=&gt;<span style="color: #800080;">$username</span>,"password"=&gt;<span style="color: #800080;">$password</span>,"age"=&gt;<span style="color: #800080;">$age</span>));<span style="color: #008000;">//</span><span style="color: #008000;">用hash类型存储用户比较方便
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">  //将用户id存入一个链表中，便于统计数据</span>
+<span style="color: #008080;">10</span>   <span style="color: #800080;">$redis</span>-&gt;rpush("uid",<span style="color: #800080;">$uid</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>   <span style="color: #008000;">//</span><span style="color: #008000;">将用id存入以用户名为键的字符类型中，便于查看用户是否存在。</span>
+<span style="color: #008080;">12</span>   <span style="color: #800080;">$redis</span>-&gt;set("username:".<span style="color: #800080;">$username</span>,<span style="color: #800080;">$uid</span><span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>   <span style="color: #008080;">header</span>('location:list.php'<span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>列表页面</strong></p>
+<p>list.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="6">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;a href="add.php" rel="external nofollow" &gt;注册&lt;/a&gt;
+<span style="color: #008080;">  2</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  3</span>   <span style="color: #0000ff;">require</span>("redis.php"<span style="color: #000000;">);
+</span><span style="color: #008080;">  4</span>   <span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_COOKIE</span>['auth'<span style="color: #000000;">])){
+</span><span style="color: #008080;">  5</span>     <span style="color: #800080;">$id</span> = <span style="color: #800080;">$redis</span>-&gt;get("auth:".<span style="color: #800080;">$_COOKIE</span>['auth'<span style="color: #000000;">]);
+</span><span style="color: #008080;">  6</span>     <span style="color: #800080;">$name</span> = <span style="color: #800080;">$redis</span>-&gt;hget("user:".<span style="color: #800080;">$id</span>,"username"<span style="color: #000000;">);
+</span><span style="color: #008080;">  7</span> ?&gt;
+<span style="color: #008080;">  8</span>     欢迎您：&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$name</span>;?&gt; &lt;a href="logout.php" rel="external nofollow" &gt;退出&lt;/a&gt;
+<span style="color: #008080;">  9</span>   &lt;?php } <span style="color: #0000ff;">else</span> { ?&gt;
+<span style="color: #008080;"> 10</span>   &lt;a href="login.php" rel="external nofollow" &gt;登录&lt;/a&gt;
+<span style="color: #008080;"> 11</span>   &lt;?php } ?&gt;
+<span style="color: #008080;"> 12</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 13</span>   <span style="color: #0000ff;">require</span>("redis.php"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 14</span>   <span style="color: #008000;">//</span><span style="color: #008000;">用户总数</span>
+<span style="color: #008080;"> 15</span>   <span style="color: #800080;">$count</span> = <span style="color: #800080;">$redis</span>-&gt;lsize("uid");<span style="color: #008000;">//</span><span style="color: #008000;">获取链表的长度
+</span><span style="color: #008080;"> 16</span> <span style="color: #008000;">  //echo $count;
+</span><span style="color: #008080;"> 17</span> <span style="color: #008000;">  //页大小</span>
+<span style="color: #008080;"> 18</span>   <span style="color: #800080;">$page_size</span> = 3<span style="color: #000000;">;
+</span><span style="color: #008080;"> 19</span>   <span style="color: #008000;">//</span><span style="color: #008000;">当前页码</span>
+<span style="color: #008080;"> 20</span>   <span style="color: #800080;">$page_num</span>=(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_GET</span>['page']))?<span style="color: #800080;">$_GET</span>['page']:1<span style="color: #000000;">;
+</span><span style="color: #008080;"> 21</span>   <span style="color: #008000;">//</span><span style="color: #008000;">页总数</span>
+<span style="color: #008080;"> 22</span>   <span style="color: #800080;">$page_count</span> = <span style="color: #008080;">ceil</span>(<span style="color: #800080;">$count</span>/<span style="color: #800080;">$page_size</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 23</span>   <span style="color: #800080;">$ids</span> = <span style="color: #800080;">$redis</span>-&gt;lrange("uid",(<span style="color: #800080;">$page_num</span>-1)*<span style="color: #800080;">$page_size</span>,((<span style="color: #800080;">$page_num</span>-1)*<span style="color: #800080;">$page_size</span>+<span style="color: #800080;">$page_size</span>-1<span style="color: #000000;">));
+</span><span style="color: #008080;"> 24</span>   <span style="color: #008000;">//</span><span style="color: #008000;">var_dump($ids);</span>
+<span style="color: #008080;"> 25</span>   <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$ids</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 26</span>     <span style="color: #800080;">$data</span>[]=<span style="color: #800080;">$redis</span>-&gt;hgetall("user:".<span style="color: #800080;">$v</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 27</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;"> 28</span>   <span style="color: #008000;">/*</span>
+<span style="color: #008080;"> 29</span> <span style="color: #008000;">  //以下为最初想到的分页处理，放入一个数组中，根据uid的最大值来当总个数，但是删除个别用户以后，uid不会变小，所以建议用链表，因为他有个lsize函数可以求出链表长度
+</span><span style="color: #008080;"> 30</span> <span style="color: #008000;">  //根据userid获取所有用户
+</span><span style="color: #008080;"> 31</span> <span style="color: #008000;">  for($i=1;$i&lt;=($redis-&gt;get("userid"));$i++){
+</span><span style="color: #008080;"> 32</span> <span style="color: #008000;">    $data[]=$redis-&gt;hgetall("user:".$i);
+</span><span style="color: #008080;"> 33</span> <span style="color: #008000;">  }
+</span><span style="color: #008080;"> 34</span> <span style="color: #008000;">  //过滤空值
+</span><span style="color: #008080;"> 35</span> <span style="color: #008000;">  $data = array_filter($data);
+</span><span style="color: #008080;"> 36</span> <span style="color: #008000;">  //var_dump($data);
+</span><span style="color: #008080;"> 37</span>   <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 38</span> ?&gt;
+<span style="color: #008080;"> 39</span> &lt;table border=1&gt;
+<span style="color: #008080;"> 40</span>   &lt;tr&gt;
+<span style="color: #008080;"> 41</span>     &lt;th&gt;uid&lt;/th&gt;
+<span style="color: #008080;"> 42</span>     &lt;th&gt;username&lt;/th&gt;
+<span style="color: #008080;"> 43</span>     &lt;th&gt;age&lt;/th&gt;
+<span style="color: #008080;"> 44</span>     &lt;th&gt;操作&lt;/th&gt;
+<span style="color: #008080;"> 45</span>   &lt;/tr&gt;
+<span style="color: #008080;"> 46</span>   &lt;?php <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span>){ ?&gt;
+<span style="color: #008080;"> 47</span>   &lt;tr&gt;
+<span style="color: #008080;"> 48</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$v</span>['uid']?&gt;&lt;/td&gt;
+<span style="color: #008080;"> 49</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$v</span>['username']?&gt;&lt;/td&gt;
+<span style="color: #008080;"> 50</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$v</span>['age']?&gt;&lt;/td&gt;
+<span style="color: #008080;"> 51</span>     &lt;td&gt;
+<span style="color: #008080;"> 52</span>       &lt;a href="del.php?id=&lt;?php echo <span style="color: #800080;">$v</span>['uid'];?&gt;" rel="external nofollow" &gt;删除&lt;/a&gt;
+<span style="color: #008080;"> 53</span>       &lt;a href="mod.php?id=&lt;?php echo <span style="color: #800080;">$v</span>['uid'];?&gt;" rel="external nofollow" &gt;编辑&lt;/a&gt;
+<span style="color: #008080;"> 54</span>       &lt;?php <span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_COOKIE</span>['auth']) &amp;&amp; <span style="color: #800080;">$id</span> != <span style="color: #800080;">$v</span>['uid']){ ?&gt;
+<span style="color: #008080;"> 55</span>       &lt;a href="addfans.php?id=&lt;?php echo <span style="color: #800080;">$v</span>['uid'];?&gt;&amp;uid=&lt;?php echo <span style="color: #800080;">$id</span>;?&gt;" rel="external nofollow" &gt;加关注&lt;/a&gt;
+<span style="color: #008080;"> 56</span>       &lt;?php } ?&gt;
+<span style="color: #008080;"> 57</span>     &lt;/td&gt;
+<span style="color: #008080;"> 58</span>   &lt;/tr&gt;
+<span style="color: #008080;"> 59</span>   &lt;?php } ?&gt;
+<span style="color: #008080;"> 60</span>   &lt;tr&gt;
+<span style="color: #008080;"> 61</span>     &lt;td colspan="4"&gt;
+<span style="color: #008080;"> 62</span>       &lt;?php <span style="color: #0000ff;">if</span>((<span style="color: #800080;">$page_num</span>-1)&gt;=1){ ?&gt;
+<span style="color: #008080;"> 63</span>       &lt;a href="?page=&lt;?php echo (<span style="color: #800080;">$page_num</span>-1);?&gt;" rel="external nofollow" &gt;上一页&lt;/a&gt;
+<span style="color: #008080;"> 64</span>       &lt;?php } ?&gt;
+<span style="color: #008080;"> 65</span>       &lt;?php <span style="color: #0000ff;">if</span>((<span style="color: #800080;">$page_num</span>+1)&lt;=<span style="color: #800080;">$page_count</span>){ ?&gt;
+<span style="color: #008080;"> 66</span>       &lt;a href="?page=&lt;?php echo (<span style="color: #800080;">$page_num</span>+1);?&gt;" rel="external nofollow" &gt;下一页&lt;/a&gt;
+<span style="color: #008080;"> 67</span>       &lt;?php } ?&gt;
+<span style="color: #008080;"> 68</span>       &lt;a href="?page=1" rel="external nofollow" &gt;首页&lt;/a&gt;
+<span style="color: #008080;"> 69</span>       &lt;a href="?page=&lt;?php echo (<span style="color: #800080;">$page_count</span>);?&gt;" rel="external nofollow" &gt;尾页&lt;/a&gt;
+<span style="color: #008080;"> 70</span>       当前&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$page_num</span>;?&gt;<span style="color: #000000;">页
+</span><span style="color: #008080;"> 71</span>       总共&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$page_count</span>;?&gt;<span style="color: #000000;">页
+</span><span style="color: #008080;"> 72</span>       总共&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$count</span>;?&gt;<span style="color: #000000;">个用户
+</span><span style="color: #008080;"> 73</span>     &lt;/td&gt;
+<span style="color: #008080;"> 74</span>   &lt;/tr&gt;
+<span style="color: #008080;"> 75</span> &lt;/table&gt;
+<span style="color: #008080;"> 76</span> &lt;!--关注功能，建议用集合实现，因为集合元素唯一，并且可以容易求出两个用户粉丝之间交集与差集，进而进行好友推荐功能--&gt;
+<span style="color: #008080;"> 77</span> &lt;table border=1&gt;
+<span style="color: #008080;"> 78</span>   &lt;caption&gt;我关注了谁&lt;/caption&gt;
+<span style="color: #008080;"> 79</span>   &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 80</span>     <span style="color: #800080;">$data</span> = <span style="color: #800080;">$redis</span>-&gt;smembers("user:".<span style="color: #800080;">$id</span>.":following"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 81</span>     <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 82</span>       <span style="color: #800080;">$row</span> = <span style="color: #800080;">$redis</span>-&gt;hgetall("user:".<span style="color: #800080;">$v</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 83</span>   ?&gt;
+<span style="color: #008080;"> 84</span>   &lt;tr&gt;
+<span style="color: #008080;"> 85</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$row</span>['uid'];?&gt;&lt;/td&gt;
+<span style="color: #008080;"> 86</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$row</span>['username'];?&gt;&lt;/td&gt;
+<span style="color: #008080;"> 87</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$row</span>['age'];?&gt;&lt;/td&gt;
+<span style="color: #008080;"> 88</span>   &lt;/tr&gt;
+<span style="color: #008080;"> 89</span>   &lt;?php } ?&gt;
+<span style="color: #008080;"> 90</span> &lt;table&gt;
+<span style="color: #008080;"> 91</span> &lt;table border=1&gt;
+<span style="color: #008080;"> 92</span>   &lt;caption&gt;我的粉丝&lt;/caption&gt;
+<span style="color: #008080;"> 93</span>   &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 94</span>     <span style="color: #800080;">$data</span> = <span style="color: #800080;">$redis</span>-&gt;smembers("user:".<span style="color: #800080;">$id</span>.":followers"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 95</span>     <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 96</span>       <span style="color: #800080;">$row</span> = <span style="color: #800080;">$redis</span>-&gt;hgetall("user:".<span style="color: #800080;">$v</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 97</span>   ?&gt;
+<span style="color: #008080;"> 98</span>   &lt;tr&gt;
+<span style="color: #008080;"> 99</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$row</span>['uid'];?&gt;&lt;/td&gt;
+<span style="color: #008080;">100</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$row</span>['username'];?&gt;&lt;/td&gt;
+<span style="color: #008080;">101</span>     &lt;td&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$row</span>['age'];?&gt;&lt;/td&gt;
+<span style="color: #008080;">102</span>   &lt;/tr&gt;
+<span style="color: #008080;">103</span>   &lt;?php } ?&gt;
+<span style="color: #008080;">104</span> &lt;table&gt;</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p><strong>退出</strong></p>
+<p>logout.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="5">
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+  </span><span style="color: #008080;">setcookie</span>("auth","",<span style="color: #008080;">time</span>()-1<span style="color: #000000;">);
+  </span><span style="color: #008080;">header</span>("location:list.php");</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p><strong>登录</strong></p>
+<p>login.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="4">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>   <span style="color: #0000ff;">require</span>("redis.php"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span>   <span style="color: #800080;">$username</span> = <span style="color: #800080;">$_POST</span>['username'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 4</span>   <span style="color: #800080;">$pass</span> = <span style="color: #800080;">$_POST</span>['password'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 5</span>   <span style="color: #008000;">//</span><span style="color: #008000;">根据注册时存储的以用户名为键的字符类型中查找用户id</span>
+<span style="color: #008080;"> 6</span>   <span style="color: #800080;">$id</span> = <span style="color: #800080;">$redis</span>-&gt;get("username:".<span style="color: #800080;">$username</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span>   <span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$id</span><span style="color: #000000;">)){
+</span><span style="color: #008080;"> 8</span>     <span style="color: #800080;">$password</span> = <span style="color: #800080;">$redis</span>-&gt;hget("user:".<span style="color: #800080;">$id</span>,"password"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">if</span>(<span style="color: #008080;">md5</span>(<span style="color: #800080;">$pass</span>) == <span style="color: #800080;">$password</span><span style="color: #000000;">){
+</span><span style="color: #008080;">10</span>       <span style="color: #800080;">$auth</span> = <span style="color: #008080;">md5</span>(<span style="color: #008080;">time</span>().<span style="color: #800080;">$username</span>.<span style="color: #008080;">rand</span><span style="color: #000000;">());
+</span><span style="color: #008080;">11</span>       <span style="color: #800080;">$redis</span>-&gt;set("auth:".<span style="color: #800080;">$auth</span>,<span style="color: #800080;">$id</span><span style="color: #000000;">);
+</span><span style="color: #008080;">12</span>       <span style="color: #008080;">setcookie</span>("auth",<span style="color: #800080;">$auth</span>,<span style="color: #008080;">time</span>()+86400<span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>       <span style="color: #008080;">header</span>("location:list.php"<span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">16</span> ?&gt;
+<span style="color: #008080;">17</span> &lt;form action="" method="post"&gt;
+<span style="color: #008080;">18</span>   用户名:&lt;input type="text" name="username"/&gt;&lt;br&gt;
+<span style="color: #008080;">19</span>   密码:&lt;input type="password" name="password"&gt;&lt;br&gt;
+<span style="color: #008080;">20</span>   &lt;input type="submit" value="登录"/&gt;
+<span style="color: #008080;">21</span> &lt;/form&gt;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p><strong>删除</strong></p>
+<p>del.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="3">
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+  </span><span style="color: #0000ff;">require</span>("redis.php"<span style="color: #000000;">);
+  </span><span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_GET</span>['id'<span style="color: #000000;">];
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">echo $uid;</span>
+  <span style="color: #800080;">$username</span> = <span style="color: #800080;">$redis</span>-&gt;hget("user:".<span style="color: #800080;">$id</span>,"username"<span style="color: #000000;">);
+  </span><span style="color: #800080;">$a</span>=<span style="color: #800080;">$redis</span>-&gt;del("user:".<span style="color: #800080;">$uid</span><span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;del("username:".<span style="color: #800080;">$username</span><span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lrem("uid",<span style="color: #800080;">$uid</span><span style="color: #000000;">);
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">var_dump($a);</span>
+  <span style="color: #008080;">header</span>("location:list.php");</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p><strong>编辑界面</strong></p>
+<p>mod.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="2">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>   <span style="color: #0000ff;">require</span>("redis.php"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span>   <span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_GET</span>['id'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 4</span>   <span style="color: #800080;">$data</span>=<span style="color: #800080;">$redis</span>-&gt;hgetall("user:".<span style="color: #800080;">$uid</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 5</span> ?&gt;
+<span style="color: #008080;"> 6</span> &lt;form action="doedit.php" method="post"&gt;
+<span style="color: #008080;"> 7</span>   &lt;input type="hidden" value="&lt;?php echo <span style="color: #800080;">$data</span>['uid'];?&gt;" name="uid"&gt;
+<span style="color: #008080;"> 8</span>   用户名:&lt;input type="text" name="username" value="&lt;?php echo <span style="color: #800080;">$data</span>['username'];?&gt;"&gt;&lt;br&gt;
+<span style="color: #008080;"> 9</span>   年龄:&lt;input type="text" name="age" value="&lt;?php echo <span style="color: #800080;">$data</span>['age'];?&gt;"&gt;&lt;br&gt;
+<span style="color: #008080;">10</span>   &lt;input type="submit" value="提交"&gt;
+<span style="color: #008080;">11</span>   &lt;input type="reset" value="重填"&gt;
+<span style="color: #008080;">12</span> &lt;/form&gt;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p><strong>编辑功能</strong></p>
+<p>doedit.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>   <span style="color: #0000ff;">require</span>('redis.php'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span>   <span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_POST</span>['uid'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 4</span>   <span style="color: #800080;">$username</span> = <span style="color: #800080;">$_POST</span>['username'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 5</span>   <span style="color: #800080;">$age</span> = <span style="color: #800080;">$_POST</span>['age'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 6</span>   <span style="color: #800080;">$a</span>=<span style="color: #800080;">$redis</span>-&gt;hmset("user:".<span style="color: #800080;">$uid</span>,<span style="color: #0000ff;">array</span>("username"=&gt;<span style="color: #800080;">$username</span>,"age"=&gt;<span style="color: #800080;">$age</span><span style="color: #000000;">));
+</span><span style="color: #008080;"> 7</span>   <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 8</span>     <span style="color: #008080;">header</span>("location:list.php"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>   }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">10</span>     <span style="color: #008080;">header</span>("location:mod.php?id=".<span style="color: #800080;">$uid</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>   }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+<p><strong>加关注</strong></p>
+<p>addfans.php</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> <span style="color: #008000;">//</span><span style="color: #008000;">关注功能，建议用集合实现，因为集合元素唯一，并且可以容易求出两个用户粉丝之间交集与差集，进而进行好友推荐功能</span>
+<span style="color: #008080;">3</span>   <span style="color: #800080;">$id</span> = <span style="color: #800080;">$_GET</span>['id'<span style="color: #000000;">];
+</span><span style="color: #008080;">4</span>   <span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_GET</span>['uid'<span style="color: #000000;">];
+</span><span style="color: #008080;">5</span>   <span style="color: #0000ff;">require</span>("redis.php"<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span>   <span style="color: #800080;">$redis</span>-&gt;sadd("user:".<span style="color: #800080;">$uid</span>.":following",<span style="color: #800080;">$id</span><span style="color: #000000;">);
+</span><span style="color: #008080;">7</span>   <span style="color: #800080;">$redis</span>-&gt;sadd("user:".<span style="color: #800080;">$id</span>.":followers",<span style="color: #800080;">$uid</span><span style="color: #000000;">);
+</span><span style="color: #008080;">8</span>   <span style="color: #008080;">header</span>("location:list.php");</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container">很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p><strong>&nbsp;</strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

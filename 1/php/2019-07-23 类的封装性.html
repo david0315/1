@@ -1,0 +1,191 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修2019-07-23 类的封装性' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>2019-07-23 类的封装性</center></div><div class='banquan'>原文出处:本文由博客园博主筏愫提供。<br/>
+原文连接:https://www.cnblogs.com/zhangxu-fasu/p/11232587.html</div><br>
+    <p>类的封装性，简单来说就是在属性和方法前加了一个限定词，在php中有三个限定词：public（公共的）、protected（被保护的）、private（私有的），如果属性前加了任何一个限制词var要省略。它们具体有什么区别呢？它们的关系又是什么呢？下面做一个解析。</p>
+<p>&nbsp;</p>
+<p>首先来看一个表格：</p>
+<table style="height: 183px; width: 456px;" border="1" align="left"><caption>&nbsp;</caption>
+<tbody>
+<tr>
+<td>&nbsp;</td>
+<td>public</td>
+<td>protected</td>
+<td>private</td>
+</tr>
+<tr>
+<td>类中</td>
+<td>可以被访问</td>
+<td>可以被访问</td>
+<td>可以被访问</td>
+</tr>
+<tr>
+<td>类外</td>
+<td>可以被访问</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>子类</td>
+<td>可以被访问</td>
+<td>可以被访问</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>上面的表格已经可以让我们对这三个属性做一个清楚地认知，下面通过实例简述：</p>
+<p>&nbsp;</p>
+<p><strong>1.public（公共的）</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Person{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$age</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$sex</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> say()
+    {
+        </span><span style="color: #0000ff;">echo</span> "My name is ".<span style="color: #800080;">$this</span>-&gt;name.". I am ".<span style="color: #800080;">$this</span>-&gt;age." years old.".<span style="color: #800080;">$this</span>-&gt;sex." in sex."<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Person();
+</span><span style="color: #800080;">$obj</span>-&gt;name = "ZhangSan"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj</span>-&gt;age = "20"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj</span>-&gt;sex = "male"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj</span>-&gt;say();</code></pre>
+
+<p>输出结果为：My name is ZhangSan. I am 20 years old.male in sex.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">继承</span>
+<span style="color: #0000ff;">class</span> Student <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Person{
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> sing()
+     {
+         </span><span style="color: #0000ff;">echo</span> "My name is ".<span style="color: #800080;">$this</span>-&gt;name.". I am ".<span style="color: #800080;">$this</span>-&gt;age." years old.".<span style="color: #800080;">$this</span>-&gt;sex." in sex."<span style="color: #000000;">;
+     }
+}
+
+</span><span style="color: #800080;">$obj1</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Student();
+</span><span style="color: #800080;">$obj1</span>-&gt;name = "ZhangSan"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj1</span>-&gt;age = "20"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj1</span>-&gt;sex = "male"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj1</span>-&gt;sing();</code></pre>
+
+<p>输出结果为：My name is ZhangSan. I am 20 years old.male in sex.</p>
+<p>可以看到，无论是在外部还是在继承中，public 属性都可以被访问到。还要注意一点，如果不加任何限定词，默认限定词即为public。</p>
+<p>&nbsp;</p>
+<p><strong>2.protected（受保护的）</strong></p>
+<p>我们把上个例子当中的方法设为受保护的，试一下在类外能否被访问到：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Person{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$age</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$sex</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> say()
+    {
+        </span><span style="color: #0000ff;">echo</span> "My name is ".<span style="color: #800080;">$this</span>-&gt;name.". I am ".<span style="color: #800080;">$this</span>-&gt;age." years old.".<span style="color: #800080;">$this</span>-&gt;sex." in sex."<span style="color: #000000;">;
+    }
+}
+
+
+</span><span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Person();
+</span><span style="color: #800080;">$obj</span>-&gt;name = "ZhangSan"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj</span>-&gt;age = "20"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj</span>-&gt;sex = "male"<span style="color: #000000;">;
+</span><span style="color: #800080;">$obj</span>-&gt;say();</code></pre>
+
+<p>&nbsp;</p>
+<p>输出结果是会报错：<strong>Fatal error</strong>: Call to protected method Person::say() from context ''；提示我们在类外是不能访问受保护的方法的。&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Person{
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> say()
+     {
+
+         </span><span style="color: #0000ff;">echo</span> "我是父类"<span style="color: #000000;">;
+     }
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">子类继承父类</span>
+<span style="color: #0000ff;">class</span> Student <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Person{
+    </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> sing()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">调用父类受保护的方法</span>
+        <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">say();
+    }
+}
+
+</span><span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Student();
+</span><span style="color: #800080;">$obj</span>-&gt;sing();</code></pre>
+
+<p>&nbsp;输出结果为：我是父类。说明继承的子类可以调用父类中受保护的方法。</p>
+<p>&nbsp;</p>
+<p><strong>3.private（私有的）</strong></p>
+<p>看名字我们就大概可以看到，这个限制词把属性和方法限制成类私有的，所以在类外部和子类中都是不可访问的。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Preson{
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> say(){
+        </span><span style="color: #0000ff;">echo</span> "我是父类"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Preson();
+</span><span style="color: #800080;">$obj</span>-&gt;say();</code></pre>
+
+<p>&nbsp;输出结果为报错：<strong>Fatal error</strong>: Call to private method Preson::say() from context ''；</p>
+<p>&nbsp;</p>
+<p>在继承中怎么样呢？</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Preson{
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> say(){
+        </span><span style="color: #0000ff;">echo</span> "我是父类"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span> Student <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Preson
+ {
+     </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> sing()
+      {
+          </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">say();
+      }
+ }
+
+</span><span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Student();
+</span><span style="color: #800080;">$obj</span>-&gt;sing();</code></pre>
+
+<p>&nbsp;输出结果为报错：<strong>Fatal error</strong>: Call to private method Preson::say() from context ''；</p>
+<p>&nbsp;</p>
+<p><span style="font-family: 微软雅黑;">子类覆盖父类的方法时也要注意一点，</span><strong><span style="font-family: 微软雅黑;">子类中方法的访问权限一定不能低于父类被覆盖方法的访问权限，也就是一定要高于或等于父类方法的访问权限。</span></strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

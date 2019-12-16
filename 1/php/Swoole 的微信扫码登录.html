@@ -1,0 +1,201 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole 的微信扫码登录' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole 的微信扫码登录</center></div><div class='banquan'>原文出处:本文由博客园博主我爱读活法提供。<br/>
+原文连接:https://www.cnblogs.com/wadhf/p/11815413.html</div><br>
+    <table id="blogContentTable" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="top">
+<src id="blogContainer">
+<src id="blogDetailDiv" data-webp-ctx-e="1">
+<src class="blog_details_20120222">
+<src>今天来一个大家都会使用的实战功能<img src="./images/Swoole 的微信扫码登录0.jpg" alt="呲牙" />&nbsp;。学习就是要折腾，但折腾要去提炼
+<src>
+<p>微信应用的便捷，扫码登录方式越来越被现在的应用所使用。它因为不用去记住密码，只要有微信号即可方便快捷登录。微信的开放平台原生就有支持扫码登录的功能，不过大部分人还是在用公众平台，所以扫码登录只能自行实现。这里基于微信公众平台的带参数临时二维码，并且结合 Swoole 的 WebSocket 服务实现扫码登录。大体流程如下：</p>
+<ol>
+<li>客户端打开登录界面，连接到 WebSocket 服务</li>
+<li>WebScoket 服务生成带参数二维码返回给客户端</li>
+<li>用户扫描展示的带参数二维码</li>
+<li>微信服务器回调扫码事件并通知开发者服务器</li>
+<li>开发者服务器通知 WebSocket 服务</li>
+<li>WebSocket 服务通知客户端登录成功</li>
+</ol>
+<h2 data-id="heading-0">连接 WebSocket 服务</h2>
+<p>安装完 Swoole 之后，我们需用使用到 WebSocket 服务。新建一个 WebSocket 服务非常简单：</p>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$server</span> = <span style="color: #0000ff;">new</span> swoole_websocket_server("0.0.0.0", 1099<span style="color: #000000;">);
+</span><span style="color: #800080;">$server</span>-&gt;on('open', <span style="color: #0000ff;">function</span> (swoole_websocket_server <span style="color: #800080;">$server</span>, <span style="color: #800080;">$request</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$config</span><span style="color: #000000;">){
+    </span><span style="color: #0000ff;">echo</span> "server: handshake success with fd{<span style="color: #800080;">$request</span>-&gt;fd}\n"<span style="color: #000000;">;
+});
+ 
+</span><span style="color: #800080;">$server</span>-&gt;on('message', <span style="color: #0000ff;">function</span> (swoole_websocket_server <span style="color: #800080;">$server</span>, <span style="color: #800080;">$frame</span><span style="color: #000000;">) {
+ 
+});
+ </span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>这里的 message 回调其实用不到，因为都是服务端下发消息的，但是必须设定一个。设定的端口号如果低于 1024 则必须要有 root 权限，服务器记得去防火墙开启该端口。</p>
+<h2 data-id="heading-1">生成带参数二维码</h2>
+<p>WebSocket 服务在客户端连接成功后，需要生成一张微信的带参数二维码返回给客户端展示：</p>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$server</span>-&gt;on('open', <span style="color: #0000ff;">function</span> (swoole_websocket_server <span style="color: #800080;">$server</span>, <span style="color: #800080;">$request</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$config</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$app</span> = Factory::officialAccount(<span style="color: #800080;">$config</span>['wechat'<span style="color: #000000;">]);
+    </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$app</span>-&gt;qrcode-&gt;temporary(<span style="color: #800080;">$request</span>-&gt;fd, 120<span style="color: #000000;">);
+    </span><span style="color: #800080;">$url</span> = <span style="color: #800080;">$app</span>-&gt;qrcode-&gt;url(<span style="color: #800080;">$result</span>['ticket'<span style="color: #000000;">]);
+    </span><span style="color: #800080;">$server</span>-&gt;push(<span style="color: #800080;">$request</span>-&gt;fd,<span style="color: #000000;"> json_encode([
+        </span>'message_type'    =&gt;  'qrcode_url',
+        'url'       =&gt;  <span style="color: #800080;">$url</span><span style="color: #000000;">
+    ]));
+});</span></code></pre>
+
+<p>&nbsp;</p>
+
+<src>&nbsp;
+<p>我们在 open 回调中，生成一张临时的二维码，二维码的场景值就是客户端连接的文件描述符，这样就可以保证每个客户端的唯一性.有效时间设置为 120 秒，防止一张二维码被多次扫码使用。消息 push 到客户端的时候必须要 json，方便客户端处理。客户端代码也很简单：</p>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">const</span> socket = <span style="color: #0000ff;">new</span> WebSocket('ws://127.0.0.1:1099'<span style="color: #000000;">);
+    socket</span>.addEventListener('message', <span style="color: #0000ff;">function</span><span style="color: #000000;"> (event) {
+        </span><span style="color: #0000ff;">var</span> data = JSON.parse(event.<span style="color: #000000;">data);
+        </span><span style="color: #0000ff;">if</span> (data.message_type == 'qrcode_url'<span style="color: #000000;">){
+            $(</span>'#qrcode').attr('src', data.<span style="color: #000000;">url);
+        }
+    });</span></code></pre>
+
+<p>&nbsp;</p>
+
+<src>&nbsp;
+<h2 data-id="heading-2">回调扫码事件</h2>
+<p>在客户端展示二维码后，需要提示用户扫码。对于用户扫临时的二维码，微信会触发相应的回调事件，我们需要在该回调事件中处理用户的扫码行为。其中我们需要用到微信传递过来的一些参数：</p>
+<src>FromUserName&nbsp; &nbsp; 发送方帐号（一个OpenID）
+<src>MsgType&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;消息类型，event
+<src>Event&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;事件类型，subscribe
+<src>EventKey&nbsp; &nbsp; 事件 KEY 值，qrscene_为前缀，后面为二维码的参数值
+<src>&nbsp;
+<blockquote>
+<p>这里要注意一点：微信已关注扫码推送的&nbsp;<code>EventKey</code>&nbsp;是没有&nbsp;<code>qrscene_</code>&nbsp;前缀的，只有未关注扫码然后关注才有。</p>
+</blockquote>
+<p>收到微信回调后我们首先要根据不同的事件类型做不同处理：</p>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$message</span>['MsgType'] == 'event'<span style="color: #000000;">){
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$message</span>['Event'] == 'subscribe'){  <span style="color: #008000;">//</span><span style="color: #008000;">关注</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;subscribe(<span style="color: #800080;">$message</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$message</span>['Event'] == 'unsubscribe') {  <span style="color: #008000;">//</span><span style="color: #008000;">取消关注</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;unsubscribe(<span style="color: #800080;">$message</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$message</span>['Event'] == 'SCAN'){   <span style="color: #008000;">//</span><span style="color: #008000;">已关注扫码</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;scan(<span style="color: #800080;">$message</span><span style="color: #000000;">);
+    }
+}</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+    </span><span style="color: #0000ff;">return</span> "您好！欢迎使用 SwooleWechat 扫描登录"<span style="color: #000000;">;
+}
+ </span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>这里只讲解一个关注事件的业务逻辑，其他根据需要自行编码：</p>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> subscribe(<span style="color: #800080;">$message</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$eventKey</span> = <span style="color: #008080;">intval</span>(<span style="color: #008080;">str_replace</span>('qrscene_', '', <span style="color: #800080;">$message</span>['EventKey'<span style="color: #000000;">]));
+    </span><span style="color: #800080;">$openId</span> = <span style="color: #800080;">$message</span>['FromUserName'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$user</span> = <span style="color: #800080;">$this</span>-&gt;app-&gt;user-&gt;get(<span style="color: #800080;">$openId</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">notify(json_encode([
+        </span>'type'  =&gt;  'scan',
+        'fd'    =&gt;  <span style="color: #800080;">$eventKey</span>,
+        'nickname'  =&gt;  <span style="color: #800080;">$user</span>['nickname'<span style="color: #000000;">]
+    ]));
+    </span><span style="color: #800080;">$count</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">count</span>(<span style="color: #800080;">$openId</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$msgTemp</span> = "%s，登录成功！\n这是你第%s次登录，玩的开心！"<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$msgTemp</span>, <span style="color: #800080;">$user</span>['nickname'], <span style="color: #800080;">$count</span><span style="color: #000000;">);
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<src>&nbsp;
+<p>这里的&nbsp;<code>EventKey</code>实际上就是连接 WebSocket 的客户端文件描述符，获取到扫码用户的&nbsp;<code>OPEN_ID</code>,根据用户的<code>OPEN_ID</code>获取用户信息，通知 WebSocket 服务，响应文本消息给微信。这里一个比较麻烦的点就是如何通知 WebSocket 服务，我们知道处理微信回调的代码是是不在 WebSocket 服务上的，那么不同 Server 间如何通信呢？Swoole 官方给出的解决方案有两个：</p>
+<ol>
+<li>额外监听一个UDP端口</li>
+<li>使用 swoole_client 作为客户端访问 Server</li>
+</ol>
+<p>这里我们选择第二个方案，让 Server 监听多个端口，我们在 WebSocket 服务新增监听一个 TCP 的端口：</p>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$tcp_server</span> = <span style="color: #800080;">$server</span>-&gt;addListener('0.0.0.0', 9999,<span style="color: #000000;"> SWOOLE_SOCK_TCP);
+</span><span style="color: #800080;">$tcp_server</span>-&gt;<span style="color: #000000;">set([]);
+</span><span style="color: #800080;">$tcp_server</span>-&gt;on('receive', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$threadId</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+    
+});
+ </span></code></pre>
+
+<p>&nbsp;</p>
+
+<blockquote>
+<p>主服务器是 WebSocket 或 Http 协议，新监听的 TCP 端口默认会继承主 Server 的协议设置，必须单独调用 set 方法设置新的协议才会启用新协议</p>
+</blockquote>
+<p>然后我们就可以在扫码回调的进程中去通知 WebSocket 服务：</p>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> notify(<span style="color: #800080;">$message</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$client</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> swoole_client(SWOOLE_SOCK_TCP);
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$client</span>-&gt;connect('127.0.0.1', <span style="color: #800080;">$this</span>-&gt;config['notify_port'], -1<span style="color: #000000;">)) {
+        </span><span style="color: #0000ff;">return</span> "connect failed. Error: {<span style="color: #800080;">$client</span>-&gt;errCode}\n"<span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$ret</span> = <span style="color: #800080;">$client</span>-&gt;send(<span style="color: #800080;">$message</span><span style="color: #000000;">);
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<src>&nbsp;
+<h2 data-id="heading-3">通知登录成功</h2>
+<p>在 WebSocket 服务收到登录成功的通知后，就可以根据需要处理一下用户信息，然后把用户信息传递给客户端的浏览器展示结果，还记得我们刚刚新监听的 TCP 端口吗？就可以在 receive 事件中处理：</p>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$tcp_server</span>-&gt;on('receive', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$threadId</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+    </span><span style="color: #800080;">$data</span> = json_decode(<span style="color: #800080;">$data</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$data</span>['type'] == 'scan'<span style="color: #000000;">){
+        </span><span style="color: #800080;">$serv</span>-&gt;push(<span style="color: #800080;">$data</span>['fd'],<span style="color: #000000;"> json_encode([
+            </span>'message_type'    =&gt;  'scan_success',
+            'user'  =&gt;  <span style="color: #800080;">$data</span>['nickname'<span style="color: #000000;">]
+        ]));
+    }
+    </span><span style="color: #800080;">$serv</span>-&gt;close(<span style="color: #800080;">$fd</span><span style="color: #000000;">);
+});</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+
+
+
+</td>
+</tr>
+</tbody>
+</table>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

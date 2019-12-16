@@ -1,0 +1,76 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP-Curl模拟HTTPS请求' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP-Curl模拟HTTPS请求</center></div><div class='banquan'>原文出处:本文由博客园博主我爱读活法提供。<br/>
+原文连接:https://www.cnblogs.com/wadhf/p/11799388.html</div><br>
+    <src>&nbsp;使用PHP-Curl方式模拟HTTPS请求，测试接口传参和返回值状态
+<src>&nbsp;
+<src>上代码！！
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 模拟post进行url请求
+ * @param string $url
+ * @param array $postData
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> request_post(<span style="color: #800080;">$url</span> = '', <span style="color: #800080;">$postData</span> =<span style="color: #000000;"> []) {
+     </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$url</span><span style="color: #000000;">)) {
+         </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+     }
+     </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$postData</span> !=<span style="color: #000000;"> []) {
+          </span><span style="color: #800080;">$vars</span> = <span style="color: #008080;">http_build_query</span>(<span style="color: #800080;">$postData</span>, '', '&amp;'<span style="color: #000000;">); 
+        curl_setopt(</span><span style="color: #800080;">$ch</span>, CURLOPT_POSTFIELDS, <span style="color: #800080;">$vars</span><span style="color: #000000;">);
+     } 
+     </span><span style="color: #800080;">$postUrl</span> = <span style="color: #800080;">$url</span><span style="color: #000000;">;
+     </span><span style="color: #008000;">//</span><span style="color: #008000;">初始化curl //转义</span>
+     <span style="color: #800080;">$ch</span> =<span style="color: #000000;"> curl_init();            
+     </span><span style="color: #008000;">//</span><span style="color: #008000;">抓取指定网页 </span>
+     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_URL,<span style="color: #800080;">$postUrl</span><span style="color: #000000;">);
+     </span><span style="color: #008000;">//</span><span style="color: #008000;">设置header </span>
+     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_HEADER, 0<span style="color: #000000;">);
+     </span><span style="color: #008000;">//</span><span style="color: #008000;">要求结果为字符串且输出到屏幕上 </span>
+     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_RETURNTRANSFER, 1<span style="color: #000000;">);
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">规避SSL验证</span>
+     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">false</span><span style="color: #000000;">);
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">跳过HOST验证</span>
+     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span style="color: #0000ff;">false</span><span style="color: #000000;">);
+     </span><span style="color: #008000;">//</span><span style="color: #008000;">运行curl</span>
+     <span style="color: #800080;">$data</span> = curl_exec(<span style="color: #800080;">$ch</span><span style="color: #000000;">); 
+     curl_close(</span><span style="color: #800080;">$ch</span><span style="color: #000000;">);
+     </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+}
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 测试
+ * @param string $url
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> testAction() {
+     </span><span style="color: #800080;">$url</span> = 'https://www.sojson.com/open/api/weather/json.shtml?city=北京'<span style="color: #000000;">;
+    </span><span style="color: #800080;">$res</span> = request_post(<span style="color: #800080;">$url</span><span style="color: #000000;">);
+    </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">);
+}
+testAction();</span></code></pre>
+
+<p>&nbsp;</p>
+<p>结果:</p>
+<p>
+<code><img src="./images/PHP-Curl模拟HTTPS请求0.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="0" data-src="./images/PHP-Curl模拟HTTPS请求0.jpg" /></code></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

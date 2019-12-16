@@ -1,0 +1,88 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php+lottery.js制作九宫格抽奖实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php+lottery.js制作九宫格抽奖实例</center></div><div class='banquan'>原文出处:本文由博客园博主我乐意啊提供。<br/>
+原文连接:https://www.cnblogs.com/woleyia/p/11220723.html</div><br>
+    <p>php+lottery.js制作九宫格抽奖实例，本抽奖功能效果表现好，定制方便简单，新手学习跟直接拿来用都非常不错，兼容IE、火狐、谷歌等浏览器。</p>
+<p><img src="./images/php+lottery.js制作九宫格抽奖实例0.jpg" alt="" width="590" height="303" /></p>
+<p><br />引入抽奖插件lottery.js</p>
+<src class="cnblogs_code">
+<pre><code>&lt;script type="text/javascript" src="js/lottery.js"&gt;&lt;/script&gt;</code></pre>
+
+<p><br />开始抽奖函数start_lottery()</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> start_lottery(){ 
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">if</span><span style="color: #000000;">(flag){ 
+</span><span style="color: #008080;"> 3</span>         <span style="color: #008000;">//</span><span style="color: #008000;">alert('正在抽奖，请等待抽奖结果！'); </span>
+<span style="color: #008080;"> 4</span>         <span style="color: #008000;">//</span><span style="color: #008000;">return false; </span>
+<span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">void</span>(0<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;"> 7</span>     flag=<span style="color: #0000ff;">true</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 8</span>     index = 1;              <span style="color: #008000;">//</span><span style="color: #008000;">当前选中对象的位置 </span>
+<span style="color: #008080;"> 9</span>     fast  = rand(3,6);      <span style="color: #008000;">//</span><span style="color: #008000;">在哪个位置开始加速 </span>
+<span style="color: #008080;">10</span>     cycle = rand(3,5);      <span style="color: #008000;">//</span><span style="color: #008000;">转动多少圈 </span>
+<span style="color: #008080;">11</span>     speed = 300;            <span style="color: #008000;">//</span><span style="color: #008000;">开始时速度 </span>
+<span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #000000;">    $.ajax({ 
+</span><span style="color: #008080;">14</span>         url: 'lottery.php'<span style="color: #000000;">, 
+</span><span style="color: #008080;">15</span>         type: "post"<span style="color: #000000;">, 
+</span><span style="color: #008080;">16</span>         data:<span style="color: #0000ff;">null</span><span style="color: #000000;">, 
+</span><span style="color: #008080;">17</span>         dataType: "json"<span style="color: #000000;">, 
+</span><span style="color: #008080;">18</span>         timeout: 20000<span style="color: #000000;">, 
+</span><span style="color: #008080;">19</span>         cache: <span style="color: #0000ff;">false</span><span style="color: #000000;">, 
+</span><span style="color: #008080;">20</span>         beforeSend: <span style="color: #0000ff;">function</span>(){<span style="color: #008000;">//</span><span style="color: #008000;"> 提交之前 </span>
+<span style="color: #008080;">21</span> <span style="color: #000000;">        }, 
+</span><span style="color: #008080;">22</span>         error: <span style="color: #0000ff;">function</span>(){<span style="color: #008000;">//</span><span style="color: #008000;">出错 </span>
+<span style="color: #008080;">23</span>             flag=<span style="color: #0000ff;">false</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">        }, 
+</span><span style="color: #008080;">25</span>         success: <span style="color: #0000ff;">function</span>(res){<span style="color: #008000;">//</span><span style="color: #008000;">成功 </span>
+<span style="color: #008080;">26</span>             <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">typeof</span>(res.award_id)!='undefined'<span style="color: #000000;">){ 
+</span><span style="color: #008080;">27</span>                 lucky = res.award_id;    <span style="color: #008000;">//</span><span style="color: #008000;">中奖号码 </span>
+<span style="color: #008080;">28</span>                 award = res.award_name;  <span style="color: #008000;">//</span><span style="color: #008000;">奖品名称 </span>
+<span style="color: #008080;">29</span> <span style="color: #000000;">                show_lottery(); 
+</span><span style="color: #008080;">30</span>             }<span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+</span><span style="color: #008080;">31</span>                 flag=<span style="color: #0000ff;">false</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">                alert(res.err); 
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">    }); 
+</span><span style="color: #008080;">36</span> }</code></pre>
+
+<p><br />PHP里奖品配置</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">奖品配置 </span>
+<span style="color: #008080;"> 2</span> <span style="color: #800080;">$award</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">( 
+</span><span style="color: #008080;"> 3</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 奖品ID =&gt; array('奖品名称',概率) </span>
+<span style="color: #008080;"> 4</span>     1 =&gt; <span style="color: #0000ff;">array</span>('悟空公仔',0.1), 
+<span style="color: #008080;"> 5</span>     2 =&gt; <span style="color: #0000ff;">array</span>('小乖虎公仔',0.1), 
+<span style="color: #008080;"> 6</span>     3 =&gt; <span style="color: #0000ff;">array</span>('神秘大礼包',0.1), 
+<span style="color: #008080;"> 7</span>     4 =&gt; <span style="color: #0000ff;">array</span>('智能游戏手柄',0.1), 
+<span style="color: #008080;"> 8</span>     5 =&gt; <span style="color: #0000ff;">array</span>('小角鹿公仔',0.1), 
+<span style="color: #008080;"> 9</span>     6 =&gt; <span style="color: #0000ff;">array</span>('豆蛙抱枕',0.1), 
+<span style="color: #008080;">10</span>     7 =&gt; <span style="color: #0000ff;">array</span>('游戏耳机',0.2), 
+<span style="color: #008080;">11</span>     8 =&gt; <span style="color: #0000ff;">array</span>('雷蛇键盘',0.2), 
+<span style="color: #008080;">12</span> <span style="color: #000000;">); 
+</span><span style="color: #008080;">13</span>  
+<span style="color: #008080;">14</span> <span style="color: #800080;">$r</span> =<span style="color: #008080;">rand</span>(1,100);</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/724.html" target="_blank">https://www.sucaihuo.com/php/724.html</a> 转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

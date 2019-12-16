@@ -1,0 +1,63 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 基于redis的分布式锁防止高并发重复请求' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 基于redis的分布式锁防止高并发重复请求</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11711098.html</div><br>
+    <p>需求：<br />我们先举个某系统验证的列子：(A渠道系统，业务B系统，外部厂商C系统) <br />(1)B业务系统调用A渠道系统，验证传入的手机、身份证、姓名三要素是否一致。 <br />(2)A渠道系统再调用外部厂商C系统。 <br />(3)A渠道系统将结果返回给B业务系统。 <br />这3个过程中，(2)过程，调用外部厂商是需要计费的。 <br />当B业务系统并发量很高时，有100笔相同的三要素校验，由于是相同的三要素，A渠道只要调用一次厂商即可知道结果。为了防止在某一请求还没响应结束的同时，其他请求也去调用外部系统，这个时候就需要加锁处理</p>
+<p>分布式锁的特点<br />原子性：同一时刻，只能有一个机器的一个线程得到锁；<br />可重入性：同一对象（如线程、类）可以重复、递归调用该锁而不发生死锁；<br />可阻塞：在没有获得锁之前，只能阻塞等待直至获得锁；<br />高可用：哪怕发生程序故障、机器损坏，锁仍然能够得到被获取、被释放；<br />高性能：获取、释放锁的操作消耗小。</p>
+<p>要实现：加锁，减锁，锁超时<br />实现方式可以是：数据库 mc redis 系统文件 zookeeper</p>
+<p>我现在就是渠道系统，当100个相同的业务请求传递过来，我的第一个请求要先加锁，然后请求外部厂商系统，等响应结果以后，插入另一个key中，然后再删除锁。<br />其他请求先去获取下锁，如果已经存在锁就轮寻等待，如果锁不在了，直接去查询结果。<br />如果第一个请求失败了，结果并没有插入到位，就继续获取锁再去查询外部系统。</p>
+<p>获取锁：<br />$redis-&gt;set('lock:手机号&amp;身份证&amp;姓名', 1, ['nx', 'ex'=&gt;10]);<br />释放锁：<br />就是直接删除这个key<br />锁超时:<br />lock的key有超时时间</p>
+<p>新版的redis set命令就可以实现分布式锁，可以同时实现如果不存在时才去set和超时时间两项。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$redis</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #800080;">$redis</span>-&gt;connect("127.0.0.1",6379<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">高并发时防止重复请求
+
+//渠道系统传递过来的key</span>
+<span style="color: #800080;">$lockKey</span>='lock:18806767777&amp;37781991111629092&amp;taoshihan'<span style="color: #000000;">;
+</span><span style="color: #800080;">$resultKey</span>='res:18806767777&amp;37781991111629092&amp;taoshihan'<span style="color: #000000;">;
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">如果已经查询过值，可以直接返回</span>
+<span style="color: #800080;">$info</span>=<span style="color: #800080;">$redis</span>-&gt;get(<span style="color: #800080;">$resultKey</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$info</span><span style="color: #000000;">){
+    </span><span style="color: #0000ff;">exit</span>(<span style="color: #800080;">$info</span><span style="color: #000000;">);
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">如果没有值的，获取锁</span>
+<span style="color: #800080;">$lock</span>=<span style="color: #800080;">$redis</span>-&gt;set(<span style="color: #800080;">$lockKey</span>, 1, ['nx', 'ex'=&gt;10<span style="color: #000000;">]);
+</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$lock</span><span style="color: #000000;">){
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">请求外部系统获取结果,比如响应结果比较慢</span>
+    <span style="color: #008080;">sleep</span>(8<span style="color: #000000;">);
+    </span><span style="color: #800080;">$info</span>='{"name":"taoshihan"}'<span style="color: #000000;">;
+    </span><span style="color: #800080;">$ret</span>=<span style="color: #800080;">$redis</span>-&gt;set(<span style="color: #800080;">$resultKey</span>,<span style="color: #800080;">$info</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$ret</span><span style="color: #000000;">){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">删除锁</span>
+        <span style="color: #800080;">$redis</span>-&gt;del(<span style="color: #800080;">$lockKey</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">exit</span>(<span style="color: #800080;">$info</span><span style="color: #000000;">);
+    }
+}
+</span><span style="color: #0000ff;">echo</span> "请稍后重试！";</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

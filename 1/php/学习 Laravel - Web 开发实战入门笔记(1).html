@@ -1,0 +1,265 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修学习 Laravel - Web 开发实战入门笔记(1)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>学习 Laravel - Web 开发实战入门笔记(1)</center></div><div class='banquan'>原文出处:本文由博客园博主比特君提供。<br/>
+原文连接:https://www.cnblogs.com/codingbit/p/11188250.html</div><br>
+    <blockquote>
+<p>本笔记根据 <a href="https://learnku.com/courses/laravel-essential-training/5.8">LearnKu</a> 教程边学边记而成。该教程以搭建出一个类似微博的Web 应用为最终成果，在过程中学习 Laravel 的相关知识。</p>
+</blockquote>
+<h2 id="准备开发环境">准备开发环境</h2>
+<p>原教程使用官方推荐的 Homestead 开发环境。由于最近 Docker 开始流行，并且也有相应的 Laravel 对应的容器。所以本文以 <a href="http://laradock.io/">Laradock</a> 作为开发环境。</p>
+<h3 id="安装-laradock">安装 Laradock</h3>
+<ol>
+<li><p>克隆 Laradock 仓库到本地。</p>
+<pre><code><code>git clone https://github.com/laradock/laradock.git</code></code></pre>
+<p>最终文件夹结构应该像这样：</p>
+<pre><code><code>+ laradock
++ project-z</code></code></pre></li>
+<li><p>配置 Laradock</p>
+<p><strong>复制配置文件</strong><br />
+<code>bash  cd laradock  cp env-example .env    #复制配置文件</code></p>
+<p><strong>进入 Workspace</strong><br />
+<code>bash  #运行 Laradock  docker-compose up -d nginx  #进入 Laradock Workspace docker-compose exec --user=laradock workspace bash  #For Git Bash  winpty docker-compose exec --user=laradock workspace bash</code></p>
+<p><strong>配置国内加速镜像</strong></p>
+<pre><code><code># Workspace
+composer config -gl    #查看composer设置
+composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/    #设置国内加速镜像</code></code></pre></li>
+</ol>
+<h2 id="构建页面">构建页面</h2>
+<h3 id="创建应用">创建应用</h3>
+<pre><code><code># Workspace
+composer create-project laravel/laravel weibo --prefer-dist &quot;5.8.*&quot;</code></code></pre>
+<p><strong>配置 Nginx 域名</strong></p>
+<pre><code><code>cp nginx/sites/laravel.conf.example nginx/sites/weibo.conf</code></code></pre>
+<p>修改新复制出的配置文件里的路径为将要创建的项目路径。</p>
+<p><strong>修改 Host</strong></p>
+<p>编辑 <code>C:/Windows/System32/Drivers/etc/hosts</code><br />
+增加一条 <code>127.0.0.1 weibo.test</code></p>
+<p><strong>.env 文件</strong><br />
+<code>.env</code> 文件包含了项目的一些设置，我们进行一些修改。</p>
+<pre><code><code>APP_NAME=Weibo
+APP_ENV=local
+APP_KEY=base64:nsvnM5l0N5cOzT/dFqfUoYlkYffhDPnKPuYU4AWMdPc=
+APP_DEBUG=true
+APP_URL=http://weibo.test</code></code></pre>
+<p>为了方便，我们在本地使用 sqlite 数据库。<br />
+注释掉原有 DB 相关设置，添加下面内容</p>
+<pre><code><code>DB_CONNECTION=sqlite
+DB_DATABASE=/database/database.sqlite</code></code></pre>
+<p>并且创建相应数据库文件</p>
+<pre><code><code>touch database/database.sqlite</code></code></pre>
+<h3 id="使用-git-管理代码">使用 Git 管理代码</h3>
+<pre><code><code>cd weibo
+git init
+git add -A
+git commit -m &quot;Initial commit&quot;</code></code></pre>
+<p><strong>上传到 Gitee</strong></p>
+<pre><code><code>git remote add origin git@gitee.com:codingbit/weibo.git
+git push -u origin master</code></code></pre>
+<h3 id="使用-heroku-部署应用">使用 Heroku 部署应用</h3>
+<blockquote>
+<p>需要先安装 heroku-cli 工具。</p>
+</blockquote>
+<ol>
+<li><p>创建 Heroku App</p>
+<pre><code><code>heroku create</code></code></pre></li>
+<li><p>配置 <code>Procfile</code> 文件：</p>
+<pre><code><code>echo web: vendor/bin/heroku-php-apache2 public/ &gt; Procfile
+git add -A
+git commit -m &quot;Procfile for Heroku&quot;
+git push
+heroku buildpacks:set heroku/php</code></code></pre></li>
+<li><p>生成 App Key</p>
+<pre><code><code>#Workspace
+$ php artisan key:generate --show
+base64:ta1aE+E8kuyDFlURbUrHEtL4HY71WtoffyNgUKldMWw=</code></code></pre>
+<pre><code><code>#Host
+heroku config:set APP_KEY=base64:ta1aE+E8kuyDFlURbUrHEtL4HY71WtoffyNgUKldMWw=</code></code></pre></li>
+<li><p>推送到 Heroku 上</p>
+<pre><code><code>git push heroku master</code></code></pre></li>
+</ol>
+<p>上传成功，访问地址 <a href="https://cbit-weibo.herokuapp.com/" class="uri">https://cbit-weibo.herokuapp.com/</a> 即可看到效果。</p>
+<h3 id="统一代码风格">统一代码风格</h3>
+<p>通过编辑器的 EditorConfig 插件，统一代码风格。</p>
+<p><em>.editorconfig</em></p>
+<pre class="php"><code>root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.yml]
+indent_size = 2
+
+[*.{js,html,blade.php,css,scss}]
+indent_style = space
+indent_size = 2</code></code></pre>
+<h2 id="静态页面">静态页面</h2>
+<p>架子搭好了，开始学习创建基础静态页面。</p>
+<h3 id="新建分支">新建分支</h3>
+<pre><code><code>git checkout master
+git checkout -b static-pages</code></code></pre>
+<h3 id="移除无用视图">移除无用视图</h3>
+<p>默认的 <code>welcome.blade.php</code> 视图文件，没有用，删掉。</p>
+<pre><code><code>rm resources/views/welcome.blade.php</code></code></pre>
+<h3 id="配置路由">配置路由</h3>
+<p><em>routes/web.php</em></p>
+<pre class="php"><code>&lt;?php
+
+Route::get(&#39;/&#39;, &#39;StaticPagesController@home&#39;);
+Route::get(&#39;/help&#39;, &#39;StaticPagesController@help&#39;);
+Route::get(&#39;/about&#39;, &#39;StaticPagesController@about&#39;);</code></code></pre>
+<p>get 方法有两个参数：1. 访问的URL；2. 操作的控制器及对应的方法</p>
+<p>在 Laravel 中我们较为常用的几个基本的 HTTP 操作分别为 GET、POST、PATCH、DELETE。</p>
+<ul>
+<li>GET 常用于页面读取</li>
+<li>POST 常用于数据提交</li>
+<li>PATCH 常用于数据更新</li>
+<li>DELETE 常用于数据删除</li>
+</ul>
+<p>其中，PATCH 和 DELETE 是不被浏览器所支持的，我们可以通过在提交表单中做一些手脚，让服务器以为这两个动作是从浏览器中发出的一样。</p>
+<h3 id="生成静态页面控制器">生成静态页面控制器</h3>
+<p>生成静态页面控制器：</p>
+<pre><code><code>php artisan make:controller StaticPagesController</code></code></pre>
+<p>添加三个方法</p>
+<pre class="php"><code>class StaticPagesController extends Controller
+{
+    public function home()
+    {
+        return &#39;主页&#39;;
+    }
+
+    public function help()
+    {
+        return &#39;帮助页&#39;;
+    }
+
+    public function about()
+    {
+        return &#39;关于页&#39;;
+    }
+}</code></code></pre>
+<h3 id="添加静态页面视图">添加静态页面视图</h3>
+<p>控制器中渲染视图，需要用到 <code>view</code> 方法，<code>view</code> 方法接收两个参数，第一个参数是视图的路径名称，第二个参数是与视图绑定的数据，第二个参数为可选参数。</p>
+<p><em>app/Http/Controllers/StaticPagesController.php</em></p>
+<pre class="php"><code>class StaticPagesController extends Controller
+{
+    public function home()
+    {
+        return view(&#39;static_pages/home&#39;);
+    }
+
+    public function help()
+    {
+        return view(&#39;static_pages/help&#39;);
+    }
+
+    public function about()
+    {
+        return view(&#39;static_pages/about&#39;);
+    }
+}</code></code></pre>
+<p>默认情况下，所有的视图文件都存放在 <code>resources/views</code> 文件夹下。</p>
+<p>下面创建三个视图。</p>
+<p><em>resources/views/static_pages/home.blade.php</em></p>
+<pre class="html"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Weibo App&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;主页&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p><em>resources/views/static_pages/help.blade.php</em></p>
+<pre class="html"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Weibo App&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;帮助页&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p><em>resources/views/static_pages/about.blade.php</em></p>
+<pre class="html"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Weibo App&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;关于页&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<h3 id="使用通用视图">使用通用视图</h3>
+<p>使用通用视图避免代码重复的问题。</p>
+<p><em>resources/views/layouts/default.blade.php</em></p>
+<pre class="html"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;@yield(&#39;title&#39;, &#39;Weibo App&#39;) - Laravel 新手入门教程&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    @yield(&#39;content&#39;)
+  &lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p>Laravel 的 Blade 模板支持继承，这意味多个子视图可以共用父视图提供的视图模板。</p>
+<p>修改视图模板。</p>
+<p><em>resources/views/static_pages/home.blade.php</em></p>
+<pre class="html"><code>@extends(&#39;layouts.default&#39;)
+@section(&#39;content&#39;)
+  &lt;h1&gt;主页&lt;/h1&gt;
+@stop</code></code></pre>
+<p><em>resources/views/static_pages/help.blade.php</em></p>
+<pre class="html"><code>@extends(&#39;layouts.default&#39;)
+@section(&#39;title&#39;, &#39;帮助&#39;)
+
+@section(&#39;content&#39;)
+  &lt;h1&gt;帮助页&lt;/h1&gt;
+@stop</code></code></pre>
+<p><em>resources/views/static_pages/about.blade.php</em></p>
+<pre class="html"><code>@extends(&#39;layouts.default&#39;)
+@section(&#39;title&#39;, &#39;关于&#39;)
+
+@section(&#39;content&#39;)
+  &lt;h1&gt;关于页&lt;/h1&gt;
+@stop</code></code></pre>
+<h3 id="git-代码版本控制">Git 代码版本控制</h3>
+<p>接着让我们将本次更改纳入版本控制中：</p>
+<pre class="php"><code>git add -A
+git commit -m &quot;基础页面&quot;</code></code></pre>
+<h2 id="提交代码">提交代码</h2>
+<p>将 Git 切换到 master 分支，并合并 static-pages 分支上的修改：</p>
+<pre><code><code>git checkout master
+git merge static-pages</code></code></pre>
+<p>最后将代码推送到 GitHub 和 Heroku 上：</p>
+<pre><code><code>git push                     # 推送到 Gitee
+git push heroku master       # 上线到 Heorku</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,99 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修 PHP Laravel-包含你自己的帮助函数' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center> PHP Laravel-包含你自己的帮助函数</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11831895.html</div><br>
+    <p>你可能想创建一个在应用的任何地方都可以访问的函数，这个教程将帮你实现 👏</p>
+<p>很多教程都会说，你在 composer.json 这个文件中通过添加一个自动加载的文件，就可以实现这个需求。但我认为这不是一个好的方式，当你在 helpers.php 文件中添加了更多的函数时，可读性将变得很差。</p>
+<p>下面我将介绍一种方式，让你可以定义很多文件，来包含不同的函数。这将让我们的程序更加整洁和更具可读性。</p>
+<p>我们开始吧.. 🔥</p>
+<p>首先创建一个 HelperServiceProvider.php 服务提供者文件:</p>
+<src class="cnblogs_code">
+<pre><code>php artisan make:provider HelperServiceProvider</code></pre>
+
+<p>&nbsp;</p>
+<p>使用上面命令，你将在 app\Providers 文件中生成 HelperServiceProvider.php</p>
+<p>你可以简单的移除 boot() 方法，我们在这儿不会使用它。</p>
+<p>在 register() 方法中我们添加以下代码:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> register()
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #008080;">glob</span>(app_path('Helpers') . '/*.php') <span style="color: #0000ff;">as</span> <span style="color: #800080;">$file</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span> <span style="color: #0000ff;">require_once</span> <span style="color: #800080;">$file</span><span style="color: #000000;">;
+</span><span style="color: #008080;">5</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">6</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>这个循环将会遍历 app/Heplers 目录下的所有文件，你可能已经猜到了，现在你可以在这个目录下随便创建文件，它们将会被加载到你的应用程序中，这些帮助函数在你的代码的任何地方都可以被访问（views, models, controllers...）</p>
+<p>我们还需要加载这个服务提供者，打开 config/app.php，然后将 HelperServiceProvider 放在你的 AppServiceProvider 上面</p>
+<src class="cnblogs_code">
+<pre><code>...<span style="color: #000000;">
+App\Providers\HelperServiceProvider</span>::<span style="color: #0000ff;">class</span>,<span style="color: #000000;">
+App\Providers\AppServiceProvider</span>::<span style="color: #0000ff;">class</span>,<span style="color: #000000;">
+App\Providers\AuthServiceProvider</span>::<span style="color: #0000ff;">class</span>,<span style="color: #000000;">
+App\Providers\BroadcastServiceProvider</span>::<span style="color: #0000ff;">class</span>,
+...</code></pre>
+
+<p>&nbsp;</p>
+<p><br />现在让我们创建一个简单的函数，在 app/Helpers 目录中创建一个 Carbon.php 文件，文件中包含以下代码:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">* Carbon helper
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">* @param $time
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">* @param $tz
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">* @return Carbon\Carbon
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">11</span> <span style="color: #0000ff;">function</span> carbon(<span style="color: #800080;">$time</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$tz</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> \Carbon\Carbon(<span style="color: #800080;">$time</span>, <span style="color: #800080;">$tz</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>你不需要添加任何命令空间。如果你想，你可以使用 function_exists 检测这个函数是否存在。</p>
+<p>现在，你可以在应用程序的任何你喜欢的位置使用帮助函数 carbon()。现在，如果您需要另一个返回特定格式的函数（仅针对本教程的用例），则可以在同一文件（Carbon.php）中输入该函数：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">* Carbon helper
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">* @param $time
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">* @param $tz
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">* @return Carbon\Carbon
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">11</span> <span style="color: #0000ff;">function</span> carbon(<span style="color: #800080;">$time</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$tz</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> \Carbon\Carbon(<span style="color: #800080;">$time</span>, <span style="color: #800080;">$tz</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">15</span> <span style="color: #0000ff;">function</span> carbonFormatted(<span style="color: #800080;">$time</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$tz</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">17</span> <span style="color: #0000ff;">return</span> carbon(<span style="color: #800080;">$time</span>, <span style="color: #800080;">$tz</span>)-&gt;format('Y-m-d'<span style="color: #000000;">)
+</span><span style="color: #008080;">18</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>好的！ 现在，您可以开始使用自己的PHP文件填充 app / Helpers目录，其中包含您经常使用的帮助程序 💪<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

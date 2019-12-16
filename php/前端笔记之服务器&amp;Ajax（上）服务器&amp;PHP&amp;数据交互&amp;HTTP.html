@@ -1,0 +1,742 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP</center></div><div class='banquan'>原文出处:本文由博客园博主RopeHuo提供。<br/>
+原文连接:https://www.cnblogs.com/rope/p/10696568.html</div><br>
+    <h1>一、<strong>服务器</strong></h1>
+<h2><strong>1.1 <span style="font-family: 宋体;">什么是服务器，做什么的？</span></strong></h2>
+<p><span style="font-family: 宋体;">服务器，就是放在机房中的电脑，和我们的电脑的区别在与服务器有固定的</span>IP<span style="font-family: 宋体;">，服务器的安全性和稳定性相当的高</span><span style="font-family: 'Times New Roman';">;</span><span style="font-family: 宋体;">性能一般就可以了，但是</span><span style="font-family: 'Times New Roman';">CPU</span><span style="font-family: 宋体;">的性能要比普通的客户机高的多。</span></p>
+<p>服务器，就是给计算机网络提供服务的设备。服务器要长时间的运行，所以要求稳定性极强。</p>
+<p>服务器的硬件：处理器、硬盘、内存、系统总线等等和我们的电脑一样。但是系统架构是服务器级别的。所有的硬件基础设施都是在处理能力、稳定性、可靠性、安全性、扩展性、管理性能都要求高。</p>
+<hr />
+<h2><strong>1.2 <span style="font-family: 宋体;">服务器呢是做什么的？</span></strong></h2>
+<p>我们看到的网页上所有的信息内容都来源于服务器。</p>
+<p>服务器就是存储网站上所有的数据信息的（数据库、后台的语言、前端的语言、服务器环境）。</p>
+<p><span style="font-family: 宋体;">我们通过浏览器发送</span>HTTP<span style="font-family: 宋体;">（超文本协议）请求到服务器。请求的内容（图片、文字、视频、音频等等），服务器再通过响应把数据发送到客户机上。</span></p>
+<hr />
+<p>&nbsp;</p>
+<h2><strong>1.3 <span style="font-family: 宋体;">服务的信息从何而来？</span></strong></h2>
+<p><span style="font-family: 宋体;">通过</span>FTP<span style="font-family: 宋体;">（文件传输协议）工具把本地的数据上传到服务器上的。</span></p>
+<p><span style="font-family: 宋体;"><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP0.jpg" alt="" /></span></p>
+<p>在公司怎样管理服务器呢？是运维工程师们（直接操作服务器环境）或产品、运营（后台的图形页面）来管理。</p>
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP1.jpg" alt="" /></p>
+<hr />
+<h2><strong>1.4 <span style="font-family: 宋体;">什么是虚拟主机？</span></strong></h2>
+<p>简单来说，就是把一台服务器很具容量的大小，划分给不同的多个用户使用。</p>
+<p>目前的互联网上，很多都是几百元的虚拟主机。大多数使用的是低配的服务器，网速很，导致的问题很多。</p>
+<hr />
+<h2><strong>1.5 <span style="font-family: 宋体;">服务器的分类</span></strong></h2>
+<p><span style="font-family: 宋体;">根据服务器的用途分类：</span></p>
+<p><span style="font-family: 宋体;">国内的服务器：</span> <span style="font-family: 宋体;">一般都是电信和网通的机房。是纯物理服务器。</span> <span style="font-family: 宋体;">（需要备案）</span></p>
+<p><span style="font-family: 宋体;">云服务器：</span> <span style="font-family: 宋体;">一般是多线路机房。采用的是云端的技术，但是费用高。一般用于大型的商业项目</span></p>
+<p>免备案的服务器：一般指的是放置在香港、韩国、美国等海外的服务器。</p>
+<hr />
+<h1>二、<strong><span style="font-family: 宋体;">在浏览器地址栏中输入</span>URL<span style="font-family: 宋体;">，按下回车后究竟发生了什么？</span></strong></h1>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP2.jpg" alt="" /></p>
+<p>答：当用户在地址栏当中输入网址之后，它会发起上行请求（<span style="color: #ff0000;">get<span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">post</span></span><span style="font-family: 宋体;">、</span>delete<span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">checkout</span><span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">delete...</span><span style="font-family: 宋体;">）</span><span style="font-family: 'Times New Roman';">;</span><span style="font-family: 宋体;">当服务器接收到请求之后做出相应的响应；客户端就能看见页面（请求回来的数据）；</span></p>
+<table style="height: 196px; width: 946px;" border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="15">&nbsp;1<span style="font-family: 宋体;">、在浏览器中输入网址（域名）</span></p>
+<p class="15">&nbsp;2<span style="font-family: 宋体;">、浏览器会查找对应的服务器</span><span style="font-family: Consolas;">IP</span><span style="font-family: 宋体;">地址（去</span><span style="font-family: Consolas;">DNS</span><span style="font-family: 宋体;">服务器上【域名和</span><span style="font-family: Consolas;">IP</span><span style="font-family: 宋体;">对应的一个关系型服务器】）</span></p>
+<p class="15">&nbsp;3<span style="font-family: 宋体;">、浏览器打开</span><span style="font-family: Consolas;">TCP</span><span style="font-family: 宋体;">连接（默认端口是</span><span style="font-family: Consolas;">80</span><span style="font-family: 宋体;">），向查过来的</span><span style="font-family: Consolas;">IP</span><span style="font-family: 宋体;">服务器发送一条</span><span style="font-family: Consolas;">HTTP</span><span style="font-family: 宋体;">请求，如果浏览器存储了</span><span style="font-family: Consolas;">cookie</span><span style="font-family: 宋体;">的</span>话，那么<span style="font-family: Consolas;">cookie</span><span style="font-family: 宋体;">也会放入</span><span style="font-family: Consolas;">HTTP</span><span style="font-family: 宋体;">请求中去。</span></p>
+<p class="15">&nbsp;4<span style="font-family: 宋体;">、服务器接收</span><span style="font-family: Consolas;">HTTP</span><span style="font-family: 宋体;">请求 解析请求的文件（后台语言的文件），再生成</span><span style="font-family: Consolas;">HTTP</span><span style="font-family: 宋体;">响应，将响应发给客户端。</span></p>
+<p class="15">&nbsp;5<span style="font-family: 宋体;">、浏览器接收到响应的内容，生成页面的框架，进行渲染。请求的页面中若有</span><span style="font-family: Consolas;">2</span><span style="font-family: 宋体;">级或多级请求（</span><span style="font-family: Consolas;">img</span><span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">css</span><span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">js</span><span style="font-family: 宋体;">）再次的向服务器发送</span><span style="font-family: Consolas;">HTTP</span><span style="font-family: 宋体;">请求，</span>直到页面所有的信息接收完成。</p>
+<p class="15">&nbsp;6<span style="font-family: 宋体;">、整个过程结束后，浏览器将关闭</span><span style="font-family: Consolas;">TCP</span><span style="font-family: 宋体;">连接。</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="347">&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP3.jpg" alt="" />
+<p>&nbsp;</p>
+</td>
+<td valign="top" width="347">
+<p>在浏览器里输入要网址:</p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="347">&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP4.jpg" alt="" />
+<p>&nbsp;</p>
+</td>
+<td valign="top" width="347">
+<p>浏览器查找域名的IP地址</p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="347">&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP5.jpg" alt="" />
+<p>&nbsp;</p>
+</td>
+<td valign="top" width="347">
+<p>浏览器给web服务器发送一个HTTP请求</p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="347">&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP6.jpg" alt="" />
+<p>&nbsp;</p>
+</td>
+<td valign="top" width="347">
+<p>&nbsp;服务器&ldquo;处理&rdquo;请求</p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="347">&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP7.jpg" alt="" />
+<p>&nbsp;</p>
+</td>
+<td valign="top" width="347">
+<p>&nbsp;服务器发回一个HTTP响应</p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="347">&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP8.jpg" alt="" />
+<p>&nbsp;</p>
+</td>
+<td valign="top" width="347">
+<p>浏览器开始显示HTML</p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="347">
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP9.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</td>
+<td valign="top" width="347">
+<p>浏览器发送获取嵌入在HTML中的对象</p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="347">
+<p>客户机与服务器断开！</p>
+</td>
+<td valign="top" width="347">
+<p>最后完成</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>DNS（Domain Name &nbsp;server）：域名服务器，是进行域名和与之对应的IP地址转换的一个关系型服务器。</p>
+<p>TCP/IP 协议：是网络层和传输层的协议。（主要是解决数据如何在网络中传输的）</p>
+<p>HTTP（HyperText Transfer Protocol）：是超文本协议。（主要是解决数据如何在服务器端和客户机上应用的）。</p>
+<p>&nbsp;</p>
+<p><a href="https://www.taobao.com/"><span style="color: #ff0000;"><strong><span style="text-decoration: underline;">https://</span></strong></span><span style="color: #0000ff;"><strong><span style="text-decoration: underline;">www</span></strong></span><strong><span style="text-decoration: underline;">.</span></strong><span style="color: #ffcc00;"><strong><span style="text-decoration: underline;">taobao</span></strong></span><strong><span style="text-decoration: underline;">.</span></strong><span style="color: #339966;"><strong><span style="text-decoration: underline;">com</span></strong></span><strong><span style="text-decoration: underline;">/</span></strong></a><span style="color: #800080;"><strong>:80</strong></span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="17">&nbsp;1<span style="font-family: 宋体;">、红色部分：</span><span style="font-family: Consolas;">https</span><span style="font-family: 宋体;">超文本传输协议；应用层的一个协议</span></p>
+<p class="17">&nbsp;2<span style="font-family: 宋体;">、蓝色部分：二级域名的别名</span></p>
+<p class="17">&nbsp;3<span style="font-family: 宋体;">、黄色部分：域名</span></p>
+<p class="17">&nbsp;4<span style="font-family: 宋体;">、绿色部分：域名的后缀</span></p>
+<p class="17">&nbsp;5<span style="font-family: 宋体;">：紫色部分：端口号（</span><span style="font-family: Consolas;">port</span><span style="font-family: 宋体;">），虚拟短裤、实际端口（</span><span style="font-family: Consolas;">USB</span><span style="font-family: 宋体;">），虚拟端口一般默认为</span><span style="font-family: Consolas;">80</span><span style="font-family: 宋体;">，（</span><span style="font-family: Consolas;">0~65535</span><span style="font-family: 宋体;">）</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<hr />
+<h1>三、<strong>PHP<span style="font-family: 宋体;">后端语言</span></strong></h1>
+<h2><strong>3.1 PHP<span style="font-family: 宋体;">介绍</span></strong></h2>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP10.jpg" alt="" /></p>
+<p><span style="font-family: 宋体;">所有的后台都要运行在服务器环境上（</span>Java<span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">PHP</span><span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">node</span><span style="font-family: 宋体;">），在不同的服务器环境运行不同的语言。</span></p>
+<p>PHP<span style="font-family: 宋体;">要运行在</span><span style="font-family: 'Times New Roman';">Apache</span><span style="font-family: 宋体;">服务器环境上，需要安装</span><strong><span style="font-family: 'Times New Roman'; color: #ff0000;">PHPnow</span></strong><span style="font-family: 宋体;">，</span><span style="font-family: 'Times New Roman';">PHPnow</span><span style="font-family: 宋体;">集成包已经包含</span><span style="font-family: 'Times New Roman';">Apache</span><span style="font-family: 宋体;">服务器环境，并且还一起安装了</span><span style="font-family: 'Times New Roman';">MySQL</span><span style="font-family: 宋体;">数据库。</span></p>
+<p>&nbsp;</p>
+<p>提示：</p>
+<p>1、PHP<span style="font-family: 宋体;">文件的文件夹、文件名都不能是汉字和空格，就要是英文、数字</span></p>
+<p>2、PHP<span style="font-family: 宋体;">的程序可以嵌套到</span><span style="font-family: 'Times New Roman';">HTML</span><span style="font-family: 宋体;">的任意一个位置。【</span><span style="font-family: 'Times New Roman';">PHP</span><span style="font-family: 宋体;">也称为&ldquo;狗皮膏药&rdquo;】</span></p>
+<p align="justify"><span style="font-family: 宋体;">举个例子，在</span>HTML<span style="font-family: 宋体;">中写</span><span style="font-family: 'Times New Roman';">PHP</span><span style="font-family: 宋体;">语法：</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="15">&nbsp;&lt;h1&gt;<span style="font-family: 宋体;">我买了一个</span><span style="font-family: Consolas;">iPhone</span><span style="color: #ff0000;">&lt;?php echo 5+3; ?&gt;</span>，花了<span style="color: #ff0000;">&lt;?php echo 1000+7000; ?&gt;</span>块钱<span style="font-family: Consolas;">&lt;/h1&gt;</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP11.jpg" alt="" /><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP12.jpg" alt="" /></p>
+<p><span style="font-family: 宋体;">提示：在本地（没有在服务器上）运行的时候，会发现</span>PHP<span style="font-family: 宋体;">代码当做了注释。</span></p>
+<p>&nbsp;</p>
+<p>将文件放在服务器上运行，访问，结果：</p>
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP13.jpg" alt="" /><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP14.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>通过源代码查看：没有任何的php<span style="font-family: 宋体;">代码，也就是说，</span><span style="font-family: 'Times New Roman';">php</span><span style="font-family: 宋体;">文件在访问后，被服务端执行了。</span></p>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP15.jpg" alt="" /><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP16.jpg" alt="" /></p>
+<p>提示：</p>
+<p>1<span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">PHP</span><span style="font-family: 宋体;">代码是在服务器上执行的，将执行完毕的结果返回给客户端</span></p>
+<p>2<span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">HTML</span><span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">CSS</span><span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">JS</span><span style="font-family: 宋体;">都在本地执行</span></p>
+<hr />
+<h2><strong>3.2 PHP<span style="font-family: 宋体;">基本语法</span></strong></h2>
+<p>php<span style="font-family: 宋体;">壳子：</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="16">&nbsp;&lt;?php ?&gt;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><span style="font-family: 宋体;">所有的</span>PHP<span style="font-family: 宋体;">语句要在壳子里面写，</span><span style="font-family: Consolas;">PHP</span><span style="font-family: 宋体;">文件扩展名是</span><span style="font-family: Consolas;">.php</span><span style="font-family: 宋体;">，壳子可以写在</span><span style="font-family: Consolas;">HTML</span><span style="font-family: 宋体;">的任意位置</span></p>
+<p>echo<span style="font-family: 宋体;">输出：在</span><span style="font-family: Consolas;">PHP</span><span style="font-family: 宋体;">中输出到页面中，</span><span style="font-family: Consolas;">echo</span><span style="font-family: 宋体;">是关键字，所以没有括号。</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="16">&nbsp;echo &nbsp;"<span style="font-family: 宋体;">输出的语句</span><span style="font-family: Consolas;">";</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><span style="font-family: 宋体;">注意：</span>PHP<span style="font-family: 宋体;">的每一条语句必须加分号，如果没有分号会严重出错。</span></p>
+<p>&nbsp;</p>
+<p>echo<span style="font-family: 宋体;">还可以当函数：</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;p&gt;
+    &lt;?<span style="color: #000000;">php
+        </span><span style="color: #ff0000;">echo(1+2+3*5);
+    </span>?&gt;
+&lt;/p&gt;</code></pre>
+<p><span style="font-family: 宋体;">页面输出：</span>18</p>
+
+<hr />
+<h2><strong>3.3 PHP<span style="font-family: 宋体;">变量</span></strong></h2>
+<src class="cnblogs_code">
+<pre><code>&lt;p&gt;
+    &lt;?<span style="color: #000000;">php
+        </span><span style="color: #0000ff;">echo</span>(1+2+3*5<span style="color: #000000;">);
+        </span><span style="color: #ff0000;">$i = 8888;
+    </span>?&gt;
+&lt;/p&gt;
+&lt;h1&gt;
+    &lt;?<span style="color: #000000;">php
+        </span><span style="color: #ff0000;">echo $i;
+    </span>?&gt;
+&lt;/h1&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">壳子没有闭包的性质，所以</span>php<span style="font-family: 宋体;">所有的壳子其实是一句话。</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$j</span> = 5<span style="color: #000000;">;
+    </span><span style="color: #800080;">$k</span> = 3<span style="color: #000000;">;
+    </span><span style="color: #800080;">$str</span> = "abc"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$boo</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$num</span> = <span style="color: #800080;">$j</span> + <span style="color: #800080;">$k</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">echo</span> "结果是：".<span style="color: #800080;">$num</span>."字符串：".<span style="color: #800080;">$str</span>."布尔类型：".<span style="color: #800080;">$boo</span><span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP17.jpg" alt="" /></p>
+<p>PHP<span style="font-family: 宋体;">中变量命名：以</span><span style="font-family: 'Times New Roman';">$</span><span style="font-family: 宋体;">开头，变量名区分大小写。</span></p>
+<p>PHP<span style="font-family: 宋体;">中变量不需要定义，可以直接使用。</span></p>
+<p>&nbsp;</p>
+<p>提示：</p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="15">&nbsp;1<span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">PHP</span><span style="font-family: 宋体;">文件可以没有</span><span style="font-family: Consolas;">HTML</span><span style="font-family: 宋体;">骨架，因为服务器返回的时候已经变为静态页面返回</span></p>
+<p class="15">&nbsp;2<span style="font-family: 宋体;">、出现乱码使用</span><span style="font-family: Consolas;">&lt;meta charset="UTF-8" /&gt;</span><span style="font-family: 宋体;">标签</span></p>
+<p class="15">&nbsp;3<span style="font-family: 宋体;">、变量可以进行简单的数学运算（数字与数字）</span></p>
+<p class="15">&nbsp;4<span style="font-family: 宋体;">、字符串拼接有两种方式</span></p>
+<p class="15">&nbsp; &nbsp; &nbsp;第一种：用&ldquo;<span style="font-family: Consolas;">.</span><span style="font-family: 宋体;">&rdquo;进行拼接</span></p>
+<p class="15">&nbsp; &nbsp; &nbsp;第二种：<span style="font-family: Consolas;">{$</span><span style="font-family: 宋体;">变量名称</span><span style="font-family: Consolas;">}</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code> &lt;?<span style="color: #000000;">php
+     </span><span style="color: #800080;">$year</span> = 2018<span style="color: #000000;">;
+     </span><span style="color: #0000ff;">echo</span> "今年是"<span style="color: #ff0000;">.$year.</span>"年"<span style="color: #000000;">;
+     </span><span style="color: #0000ff;">echo</span> "今年是<span style="color: #ff0000;">{$year}</span>年"<span style="color: #000000;">;
+ </span>?&gt;</code></pre>
+
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP18.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>在花括号中不能有逻辑运算：</p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="16">&nbsp;echo "a<span style="font-family: 宋体;">和</span><span style="font-family: Consolas;">b</span><span style="font-family: 宋体;">的和是：</span><span style="color: #ff0000;">{$a+$b}</span>";</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP19.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>解决方案：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$a</span> = 1<span style="color: #000000;">;
+    </span><span style="color: #800080;">$b</span> = 2<span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">echo "a和b的和是：{$a+$b}";</span>
+<span style="color: #ff0000;">    $sum = $a + $b; //先运算，再输出</span>
+    <span style="color: #0000ff;">echo</span> "a和b的和是：<span style="color: #ff0000;">{$sum}</span>"<span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<hr />
+<h2><strong>3.4 PHP<span style="font-family: 宋体;">运算符和条件语句</span></strong></h2>
+<p>PHP<span style="font-family: 宋体;">运算符和</span><span style="font-family: 'Times New Roman';">JavaScript</span><span style="font-family: 宋体;">是一样的</span></p>
+<p>PHP<span style="font-family: 宋体;">核心语句（</span><span style="font-family: 'Times New Roman';">for</span><span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">if...esle...while</span><span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">switch</span><span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">do while</span><span style="font-family: 宋体;">）和</span><span style="font-family: 'Times New Roman';">JS</span><span style="font-family: 宋体;">一样。</span></p>
+<p>PHP<span style="font-family: 宋体;">运算符和</span>JavaScript<span style="font-family: 宋体;">一样的。</span></p>
+<p>PHP<span style="font-family: 宋体;">的核心语句（</span>for<span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">if&hellip;&hellip;else()</span><span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">while</span><span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">switch</span><span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">do while</span><span style="font-family: 宋体;">）和</span>JavaScript<span style="font-family: 宋体;">一样。</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;p&gt;
+    <span style="color: #ff0000;">&lt;?php
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0; <span style="color: #800080;">$i</span> &lt; 100; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #ff0000;">echo "&lt;span&gt;❤&lt;/span&gt;"</span><span style="color: #000000;"><span style="color: #ff0000;">;</span>
+        }
+    </span><span style="color: #ff0000;">?&gt;</span>
+&lt;/p&gt;</code></pre>
+
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP20.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>推荐使用下面的写法：循环语句是分开的。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #ff0000;">for ($i=0; $i &lt; 100; $i++) {
+</span>?&gt;
+        &lt;span&gt;❤&lt;/span&gt;
+&lt;?<span style="color: #000000;">php
+  <span style="color: #ff0000;">  }
+ </span></span>?&gt;</code></pre>
+
+<hr />
+<h2><strong>3.5 PHP<span style="font-family: 宋体;">函数</span></strong></h2>
+<p>PHP<span style="font-family: 宋体;">中的函数和</span>JS<span style="font-family: 宋体;">中一样</span>，<span style="font-family: 宋体;">但是</span>php<span style="font-family: 宋体;">中的函数不能</span><span style="font-family: Consolas;">new</span>，<span style="font-family: 宋体;">只能</span>用()<span style="font-family: 宋体;">执行。</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span> fun(<span style="color: #800080;">$a</span>,<span style="color: #800080;">$b</span><span style="color: #000000;">){
+     </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$a</span>+<span style="color: #800080;">$b</span><span style="color: #000000;">;
+}
+</span><span style="color: #0000ff;">echo</span> fun(1,2); </code></pre>
+
+<p>PHP<span style="font-family: 宋体;">的作用域：在</span><span style="font-family: 'Times New Roman';">PHP</span><span style="font-family: 宋体;">当中</span><span style="color: #ff0000;"><span style="font-family: 宋体;">并没有</span>JS<span style="font-family: 宋体;">世界当中全局变量</span></span><span style="font-family: 宋体;">。</span>if<span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">for </span><span style="font-family: 宋体;">也不产生作用域。</span></p>
+<p>&nbsp;</p>
+<p>在函数体内部使用<span style="color: #ff0000;">global</span><span style="font-family: 宋体;"><span style="color: #ff0000;">关键字声明，使用的是全局当中变量。</span></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$a</span> = 123<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> fn(){
+        </span><span style="color: #ff0000;">global</span> <span style="color: #800080;">$a</span>; <span style="color: #008000;">//</span><span style="color: #008000;">声明可以使用全局的$a变量</span>
+        <span style="color: #ff0000;">echo $a</span>; <span style="color: #008000;">//</span><span style="color: #008000;">默认情况下不能用函数外的全局变量</span>
+<span style="color: #000000;">    }
+    fn();
+</span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>找质数：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #0000ff;">function</span> checkzhishu(<span style="color: #800080;">$num</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$count</span> = 0<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=1; <span style="color: #800080;">$i</span> &lt;= <span style="color: #800080;">$num</span>; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span>( <span style="color: #800080;">$num</span> % <span style="color: #800080;">$i</span> == 0<span style="color: #000000;">){
+                </span><span style="color: #800080;">$count</span>++<span style="color: #000000;"> ;
+            };
+        };
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$count</span> == 2<span style="color: #000000;">){
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        };
+    };
+    </span><span style="color: #0000ff;">if</span>( checkzhishu(88<span style="color: #000000;">)){
+        </span><span style="color: #0000ff;">echo</span> "是质数"<span style="color: #000000;">;
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #0000ff;">echo</span> "不是质数"<span style="color: #000000;">;
+    }
+</span>?&gt;</code></pre>
+
+<hr />
+<h2><strong>3.6 PHP<span style="font-family: 宋体;">的数组</span></strong></h2>
+<p><span style="font-family: 宋体;">概述：</span>PHP<span style="font-family: 宋体;">中也有数组，数组是一个容器，这个容器可以装任意类型的数据，也有下标，</span><span style="font-family: 'Times New Roman';">JS</span><span style="font-family: 宋体;">中数组的下标是</span><span style="font-family: 'Times New Roman';">length</span><span style="font-family: 宋体;">。</span></p>
+<p>array()<span style="font-family: 宋体;">函数创建数组。</span></p>
+<p class="p"><span style="font-family: PingFangSC-Regular;">在</span> PHP 中，有三种数组类型：</p>
+<ul>
+<li><strong><span style="font-family: PingFangSC-Regular;">索引数组</span></strong>&nbsp;- 带有数字索引的数组</li>
+<li><strong><span style="font-family: PingFangSC-Regular;">关联数组</span></strong>&nbsp;- 带有指定键的数组</li>
+</ul>
+<p><strong><span style="font-family: PingFangSC-Regular;">多维数组</span></strong>&nbsp;- 包含一个或多个数组的数组</p>
+<p>数组方法大全：<span style="text-decoration: underline;"><a href="http://www.w3school.com.cn/php/php_ref_array.asp">http://www.w3school.com.cn/php/php_ref_array.asp</a></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">数组的声明方式</span>1<span style="font-family: 宋体;">：</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="16">1&nbsp;$arr = array('<span style="font-family: 宋体;">李达康</span><span style="font-family: Consolas;">','黄小明</span><span style="font-family: Consolas;">','李云龙</span><span style="font-family: Consolas;">','曹操</span><span style="font-family: Consolas;">','吕布</span><span style="font-family: Consolas;">');</span></p>
+<p class="16">2&nbsp;<span style="color: #ff0000;">print_r($arr);</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><span style="font-family: 宋体;">结果：</span>Array ( [0] =&gt; <span style="font-family: 宋体;">李达康 </span><span style="font-family: Consolas;">[1] =&gt; 黄小明</span><span style="font-family: 宋体;">&nbsp;</span><span style="font-family: Consolas;">[2] =&gt; 李云龙</span><span style="font-family: 宋体;">&nbsp;</span><span style="font-family: Consolas;">[3] =&gt; 曹操</span><span style="font-family: 宋体;">&nbsp;</span><span style="font-family: Consolas;">[4] =&gt; 吕布</span><span style="font-family: 宋体;">&nbsp;</span><span style="font-family: Consolas;">)</span><span style="font-family: 宋体;">。</span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">数组的声明方式</span>2<span style="font-family: 宋体;">，可以指定键值对：</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span>("姓名"=&gt;"李达康","年龄"=&gt;88,"性别"=&gt;"不详"<span style="color: #000000;">);
+    </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span>?&gt;</code></pre>
+
+<p>Array( [<span style="font-family: 宋体;">姓名</span><span style="font-family: Consolas;">] =&gt; </span><span style="font-family: 宋体;">李达康 </span><span style="font-family: Consolas;">[</span><span style="font-family: 宋体;">年龄</span><span style="font-family: Consolas;">] =&gt; 88 [</span><span style="font-family: 宋体;">性别</span><span style="font-family: Consolas;">] =&gt; </span><span style="font-family: 宋体;">不详 </span><span style="font-family: Consolas;">)</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$arr2</span>= <span style="color: #0000ff;">array</span>(1,2,3,4,5,6,7,8<span style="color: #000000;">);
+</span><span style="color: #800080;">$sum</span> = <span style="color: #008080;">array_sum</span>(<span style="color: #800080;">$arr2</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$sum</span> .'&lt;br /&gt;';</code></pre>
+
+<p><span style="font-family: 宋体;">结果：</span>36</p>
+<p>&nbsp;</p>
+<p>array_unique() <span style="font-family: 宋体;">删除数组中的重复值</span>，并返回结果数组：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$arr3</span> = <span style="color: #0000ff;">array</span>(1,2,3,4,5,6,7,8,8,8,9,9,10,11,11<span style="color: #000000;">);
+</span><span style="color: #800080;">$arr4</span> = <span style="color: #008080;">array_unique</span>(<span style="color: #800080;">$arr3</span><span style="color: #000000;">);
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$arr4</span>);</code></pre>
+
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP21.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">数组的声明方式</span>3<span style="font-family: 宋体;">：数组嵌套数组</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span>("水果"=&gt;<span style="color: #0000ff;">array</span>('苹果','香蕉','鸭梨'<span style="color: #000000;">));
+    </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span>?&gt;</code></pre>
+
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP22.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>提示：</p>
+<p>1、PHP<span style="font-family: 宋体;">中声明数组的方法</span><span style="font-family: 'Times New Roman';">array()</span><span style="font-family: 宋体;">内置方法</span></p>
+<p>2、<span style="font-family: 宋体;">第一种创建方式，圆括号里面传递元素，如果有多个用逗号隔开，通过枚举索引值从</span>0<span style="font-family: 宋体;">开始</span></p>
+<p>3、<span style="font-family: 宋体;">第二种，键值对用</span>=&gt;<span style="font-family: 宋体;">箭头这种形式，如果要使用数据，需要</span><span style="font-family: 'Times New Roman';">[key]</span></p>
+<p>&nbsp;</p>
+<p>方法：</p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="16">&nbsp;echo<span style="font-family: 宋体;">一般输出的是字符串、变量、数字、布尔值</span></p>
+<p class="16">&nbsp;print_r<span style="font-family: 宋体;">：也是输出方法，输出的是引用类型（数组）</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<hr />
+<h1>四、<strong>前后端数据交互方式</strong></h1>
+<h2><strong>4.1<span style="font-family: 宋体;">两种请求方式</span></strong></h2>
+<p><span style="font-family: 宋体;">概述：</span>GET<span style="font-family: 宋体;">和</span><span style="font-family: 'Times New Roman';">POST</span><span style="font-family: 宋体;">是两种</span><span style="color: #ff0000;">上行请求</span>的方式。</p>
+<p><span style="font-family: 宋体;">需求：写</span>JS<span style="font-family: 宋体;">代码，用户在浏览器输入年龄和性别，验证是否可婚。</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">var</span> age = document.getElementById('age'<span style="color: #000000;">);
+</span><span style="color: #0000ff;">var</span> sex = document.getElementById('sex'<span style="color: #000000;">);
+</span><span style="color: #0000ff;">var</span> btn = document.getElementsByTagName('button')[0<span style="color: #000000;">];
+btn.onclick </span>= <span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+   </span><span style="color: #0000ff;">var</span> ageVal =<span style="color: #000000;"> age.value;
+   </span><span style="color: #0000ff;">var</span> sexVal =<span style="color: #000000;"> sex.value;
+   </span><span style="color: #0000ff;">if</span>(sexVal == "男" &amp;&amp; ageVal &gt;= 22 || sexVal == "女" &amp;&amp; ageVal &gt;= 20<span style="color: #000000;">){
+       alert(</span>'可以领证结婚'<span style="color: #000000;">);
+   }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+       alert(</span>'不可以结婚'<span style="color: #000000;">);
+   }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>提示：现在这个判断是否可婚的业务，是在本地浏览器客户端进行处理的。</p>
+<p>现在想让服务器给解决出能否可婚，需要将判断的逻辑放到服务器去执行，那么需要向服务器传递一些数据（年龄、性别）。</p>
+<p><span style="font-family: 宋体;">服务器判断的逻辑和</span>JS<span style="font-family: 宋体;">一样，但是我们遇到一个问题，用户填写的信息怎么传到后台？</span></p>
+<p><span style="font-family: 宋体;">有两种方式：</span>GET<span style="font-family: 宋体;">和</span><span style="font-family: Consolas;">POST</span><span style="font-family: 宋体;">上行请求发送</span><span style="font-family: Consolas;">HTTP</span><span style="font-family: 宋体;">到服务器。</span></p>
+<p>&nbsp;</p>
+<p>1<span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">GET</span><span style="font-family: 宋体;">请求：通过请求的地址后面追加一些参数</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="16">&nbsp;http://127.0.0.1/01.php<span style="color: #ff0000;">?user=20&amp;pwd=<span style="font-family: 宋体;">男</span></span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>2<span style="font-family: 宋体;">、</span><span style="font-family: Consolas;">POST</span><span style="font-family: 宋体;">请求，参数不是通过</span><span style="font-family: Consolas;">URL</span><span style="font-family: 宋体;">携带的，我们请求的数据时，发送</span><span style="font-family: Consolas;">HTTP</span><span style="font-family: 宋体;">请求，这个请求里面有</span><span style="color: #ff0000;">报文（包含报文头和报文体）</span>，每次请求都会携带报文。我们将数据通过报文体携带到服务器中。</p>
+<p><span style="font-family: 宋体;"><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP23.jpg" alt="" /></span></p>
+<hr />
+<h2><strong>4.2 GET<span style="font-family: 宋体;">上行请求</span></strong></h2>
+<p><span style="font-family: 宋体;">通过</span>GET<span style="font-family: 宋体;">请求</span><span style="color: #ff0000;"><span style="font-family: 宋体;">伪装</span>URL<span style="font-family: 宋体;">网址</span></span>的形式向服务器传递数据，<span style="color: #ff0000;">?k=v&amp;k=v</span>形式传递数据。</p>
+<p>get<span style="font-family: 宋体;">请求的信息也就是</span><span style="font-family: 'Times New Roman';">?</span><span style="font-family: 宋体;">后面一堆参数，这堆参数有个术语叫&ldquo;</span><span style="font-family: 'Times New Roman';">query string</span><span style="font-family: 宋体;">&rdquo;【查询字符串】</span></p>
+<p>PHP<span style="font-family: 宋体;">获取</span><span style="font-family: 'Times New Roman';">GET</span><span style="font-family: 宋体;">中的参数：</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="15"><span style="color: #ff0000;">&nbsp;$_GET["key"]</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>请求的服务器地址及参数：</p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="15">&nbsp;http://127.0.0.1/04-GET.php<span style="color: #ff0000;">?age=23&amp;sex=男</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">服务器的</span>PHP<span style="font-family: 宋体;">语句获取数据的和处理逻辑：</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;meta charset="UTF-8" /&gt;
+&lt;?<span style="color: #000000;">php
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">获取GET请求的数据</span>
+    <span style="color: #800080;">$age</span> = <span style="color: #800080;">$_GET</span>["age"<span style="color: #000000;">];
+    </span><span style="color: #800080;">$sex</span> = <span style="color: #800080;">$_GET</span>["sex"<span style="color: #000000;">];
+
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$sex</span> == "男" &amp;&amp; <span style="color: #800080;">$age</span> &gt;= 22 || <span style="color: #800080;">$sex</span> == "女" &amp;&amp; <span style="color: #800080;">$age</span> &gt;= 20<span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "可以结婚"<span style="color: #000000;">;
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #0000ff;">echo</span> "不可以结婚"<span style="color: #000000;">;
+    }
+</span>?&gt;</code></pre>
+
+<p><span style="font-family: 宋体;">现在点击前端的页面验证信息，会发送</span>HTTP<span style="font-family: 宋体;">请求。请求的地址是</span>http://127.0.0.1/04-GET.php。携带的信息是：<span style="color: #ff0000;">?age=23&amp;sex=男</span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">提示：</span>http://127.0.0.1/<span style="color: #ff0000;">?k = v &amp;k = v(<span style="font-family: 宋体;">红色部分称之为</span><span style="font-family: 'Times New Roman';">queryString)</span></span><span style="font-family: 宋体;">。</span>相当于你去淘宝买东西前半部分相当于你家的地址；问号后面的数据是额外信息（相当于客户端给服务器传递的一些额外数据）</p>
+<p>如果<span style="color: #ff0000;">客户端</span>发起的是GET上行请求，那么<span style="color: #ff0000;">服务器端</span><span style="font-family: 宋体;">（</span>PHP<span style="font-family: 宋体;">文件）接受数据也必须是</span><span style="color: #ff0000;">GET<span style="font-family: 宋体;">方法</span></span>；</p>
+<p>$_GET[&ldquo;key&rdquo;]<span style="font-family: 宋体;">后台工程师管它叫&lsquo;超全局变量&rsquo;。</span></p>
+<p>&nbsp;</p>
+<p>form <span style="font-family: 宋体;">标签</span>的两个属性：</p>
+<p>action&nbsp;&nbsp;<span style="font-family: 宋体;">是请求的接口地址，通常请求的页面以</span>php<span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">aspx</span><span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">jsp</span><span style="font-family: 宋体;">后缀结尾的文件。</span></p>
+<p>method&nbsp;<span style="font-family: 宋体;">是这个表单提交的方式：</span>get<span style="font-family: 宋体;">和</span><span style="font-family: 'Times New Roman';">post</span><span style="font-family: 宋体;">，小写。</span></p>
+<p>submit&nbsp;<span style="font-family: 宋体;">的功能。本质上不是提交。就是帮我们生成一个</span>get<span style="font-family: 宋体;">请求的地址</span><span style="font-family: 'Times New Roman';">,</span><span style="font-family: 宋体;">访问了你的接口页面。</span></p>
+<p>name<span style="font-family: 宋体;">值对应是</span><span style="font-family: 'Times New Roman';">query string </span><span style="font-family: 宋体;">中的</span><span style="font-family: 'Times New Roman';">k</span><span style="font-family: 宋体;">。</span><span style="font-family: 'Times New Roman';">Value </span><span style="font-family: 宋体;">值对应是</span><span style="font-family: 'Times New Roman';">query string </span><span style="font-family: 宋体;">中的</span><span style="font-family: 'Times New Roman';">v</span><span style="font-family: 宋体;">。 没有其中任意一个值，</span><span style="font-family: 'Times New Roman';">php</span><span style="font-family: 宋体;">端无法识别。</span></p>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP24.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>GET<span style="font-family: 宋体;">请求的优点和缺点：</span></p>
+<p><span style="font-family: 宋体;">优点：</span> get<span style="font-family: 宋体;">便于分享网址。网络中</span><span style="font-family: 'Times New Roman';">90%</span><span style="font-family: 宋体;">以上请求都是</span><span style="font-family: 'Times New Roman';">get</span><span style="font-family: 宋体;">请求。</span></p>
+<p><span style="font-family: 宋体;">缺点：</span> <span style="font-family: 宋体;">相对而言不安全（见仁见智），不能提交很多字节。</span></p>
+<p>Http GET<span style="font-family: 宋体;">方法提交的数据大小长度并没有限制，</span><span style="font-family: 'Times New Roman';">HTTP</span><span style="font-family: 宋体;">协议规范没有对</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">长度进行限制。这个限制是特定的浏览器及服务器对它的限制。</span></p>
+<p>IE<span style="font-family: 宋体;">浏览器对</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">的最大限制为</span><span style="font-family: 'Times New Roman';">2083</span><span style="font-family: 宋体;">个字符，超过这个数字，提交按钮没有任何反应。</span></p>
+<p>Firefox<span style="font-family: 宋体;">浏览器：</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">的长度限制为</span><span style="font-family: 'Times New Roman';">65536</span><span style="font-family: 宋体;">个字符。</span></p>
+<p>Safari<span style="font-family: 宋体;">浏览器：</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">最大长度限制为</span><span style="font-family: 'Times New Roman';">80000</span><span style="font-family: 宋体;">个字符。</span></p>
+<p>Opera<span style="font-family: 宋体;">浏览器：</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">最大长度限制为</span><span style="font-family: 'Times New Roman';">190000</span><span style="font-family: 宋体;">个字符。</span></p>
+<p>Chrome<span style="font-family: 宋体;">浏览器：</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">最大长度限制为</span><span style="font-family: 'Times New Roman';">8182</span><span style="font-family: 宋体;">个字符。</span></p>
+<p>Apache<span style="font-family: 宋体;">服务器：能接受最大</span><span style="font-family: 'Times New Roman';">url</span><span style="font-family: 宋体;">长度为</span><span style="font-family: 'Times New Roman';">8192</span><span style="font-family: 宋体;">个字符。</span></p>
+<p>IIS<span style="font-family: 宋体;">服务器：能接受最大</span><span style="font-family: 'Times New Roman';">url</span><span style="font-family: 宋体;">的长度为</span><span style="font-family: 'Times New Roman';">16384</span><span style="font-family: 宋体;">个字符。</span></p>
+<p><span style="font-family: 宋体;">通过上面的数据可知，为了让所有的用户都能正常浏览，</span> URL<span style="font-family: 宋体;">最好不要超过</span><span style="font-family: 'Times New Roman';">IE</span><span style="font-family: 宋体;">的最大长度限制</span><span style="font-family: 'Times New Roman';">(2083</span><span style="font-family: 宋体;">个字符），当然，如果</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">不直接提供给用户，而是提供给程序调用，这时的长度就只受</span><span style="font-family: 'Times New Roman';">Web</span><span style="font-family: 宋体;">服务器影响了。</span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">理论上讲，</span>POST<span style="font-family: 宋体;">是没有大小限制的。</span><span style="font-family: Consolas;">HTTP</span><span style="font-family: 宋体;">协议规范也没有进行大小限制，起限制作用的是服务器的处理程序的处理能力。</span></p>
+<p><span style="color: #ff0000;"><strong>GET<span style="font-family: 宋体;">请求超出最大长度，报错：</span></strong></span></p>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP25.jpg" alt="" /></p>
+<hr />
+<h3><strong>4.2.1<span style="font-family: 宋体;">学习小调查</span><span style="font-family: 'Times New Roman';">-GET</span><span style="font-family: 宋体;">请求</span></strong></h3>
+<p>案例：需要有一些调查的数据；学习的情况，留言部分这些是需要用户端提交的数据</p>
+<p><span style="font-family: 宋体;">将这些数据写入一个文件，保存</span>&lsquo;我&rsquo;服务器这里。</p>
+<p>HTML<span style="font-family: 宋体;">：</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="06.php"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="get"</span><span style="color: #0000ff;">&gt;</span>
+   <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+       学习情况：
+        </span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="qingkuang"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="一脸懵逼"</span><span style="color: #0000ff;">/&gt;</span>一脸懵逼<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="qingkuang"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="有点懵逼"</span><span style="color: #0000ff;">/&gt;</span>有点懵逼<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="qingkuang"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="还行还行"</span><span style="color: #0000ff;">/&gt;</span>还行还行<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="qingkuang"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="还跟得上"</span><span style="color: #0000ff;">/&gt;</span>还跟得上<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="qingkuang"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="很好很好"</span><span style="color: #0000ff;">/&gt;</span>很好很好<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+   <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;</span>
+   <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+       晚上回家干什么？
+        </span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="huijia"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="玩游戏"</span><span style="color: #0000ff;">/&gt;</span>玩游戏<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="huijia"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="电视剧"</span><span style="color: #0000ff;">/&gt;</span>电视剧<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="huijia"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="发呆"</span><span style="color: #0000ff;">/&gt;</span>发呆<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="huijia"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="学习"</span><span style="color: #0000ff;">/&gt;</span>学习<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="radio"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="huijia"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="其它"</span><span style="color: #0000ff;">/&gt;</span>其它<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+   <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;</span>
+   <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+       留言？
+      </span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">textarea  </span><span style="color: #ff0000;">name</span><span style="color: #0000ff;">="liuyan"</span><span style="color: #ff0000;"> cols</span><span style="color: #0000ff;">="30"</span><span style="color: #ff0000;"> rows</span><span style="color: #0000ff;">="5"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">textarea</span><span style="color: #0000ff;">&gt;</span>
+   <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;</span>
+   <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span> <span style="color: #0000ff;">/&gt;&lt;/</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>PHP<span style="font-family: 宋体;">：</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$qingkuang</span> = <span style="color: #800080;">$_GET</span>["qingkuang"<span style="color: #000000;">];
+    </span><span style="color: #800080;">$huijia</span> = <span style="color: #800080;">$_GET</span>["huijia"<span style="color: #000000;">];
+    </span><span style="color: #800080;">$liuyan</span> = <span style="color: #800080;">$_GET</span>["liuyan"<span style="color: #000000;">];
+    </span><span style="color: #800080;">$myfile</span> = <span style="color: #008080;">fopen</span>("result/jieguo.txt","a"<span style="color: #000000;">);<span style="color: #ff0000;">①创建文件对象，a代表追加</span>
+    <span style="color: #ff0000;">②写入文件
+ </span></span><span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$myfile</span>,"情况：".<span style="color: #800080;">$qingkuang</span> ."---"."回家做：".<span style="color: #800080;">$huijia</span>."留言：".<span style="color: #800080;">$liuyan</span>."\r\n"<span style="color: #000000;">);
+    </span><span style="color: #008080;">fclose</span>(<span style="color: #800080;">$myfile</span><span style="color: #000000;">); ③关闭文件
+    </span><span style="color: #0000ff;">echo</span> "提交成功"<span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<hr />
+<h3><strong>4.2.1<span style="font-family: 宋体;">新闻</span><span style="font-family: 'Times New Roman';">-GET</span><span style="font-family: 宋体;">请求</span></strong></h3>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="15">&nbsp;http://127.0.0.1/0_9.php<span style="color: #ff0000;">?id=2</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$array</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">( 
+        </span><span style="color: #0000ff;">array</span>("title"=&gt;"标题1","content"=&gt;"内容1"),
+        <span style="color: #0000ff;">array</span>("title"=&gt;"标题2","content"=&gt;"内容2"),
+        <span style="color: #0000ff;">array</span>("title"=&gt;"标题3","content"=&gt;"内容3"<span style="color: #000000;">)
+    );
+</span>?&gt;
+&lt;h1&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$arr</span>[0]["title"];?&gt;&lt;/h1&gt;
+&lt;h1&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$arr</span>[<span style="color: #ff0000;">$_GET["id"]</span>]["title"];?&gt;&lt;/h1&gt;
+&lt;p&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$arr</span>[<span style="color: #ff0000;">$_GET["id"]</span>]["content"];?&gt;&lt;/p&gt;</code></pre>
+
+<hr />
+<h2><strong>4.3 POST<span style="font-family: 宋体;">上行请求</span></strong></h2>
+<p>Post<span style="font-family: 宋体;">请求不多见，</span><span style="font-family: 'Times New Roman';">POST</span><span style="font-family: 宋体;">请求发送信息的时候很复杂。携带的信息将在发送的报文体中。</span></p>
+<p>Post<span style="font-family: 宋体;">请求一般发送</span><span style="font-family: 'Times New Roman';">form</span><span style="font-family: 宋体;">表单。（保密的数据、大文件【图片、</span><span style="font-family: 'Times New Roman';">doc</span><span style="font-family: 宋体;">文件】、长文本、视频、音频），信息量比较大的内容用</span><span style="font-family: 'Times New Roman';">post</span><span style="font-family: 宋体;">请求。因为</span><span style="font-family: 'Times New Roman';">post</span><span style="font-family: 宋体;">不限制字节数。</span></p>
+<p><span style="font-family: 宋体;">概述：</span>GET<span style="font-family: 宋体;">向服务器传递数据是以伪装</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">形式上传数据。但是</span><span style="color: #ff0000;">POST</span><span style="font-family: 宋体;">就不一样了，</span>POST<span style="font-family: 宋体;">用的是</span><span style="color: #ff0000;">报文</span>的<span style="color: #ff0000;">报文体</span>上传数据。</p>
+<p><span style="font-family: 宋体;">报文：报文头</span>+<span style="font-family: 宋体;">报文体</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="15">&nbsp;报文头：一般装载的是浏览器的信息</p>
+<p class="15">&nbsp;报文体：一般是空的</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>报文：</p>
+<p>1、客户端与服务器端传递数据的基本（报文体和报文头），不管是上行请求，还是下行响应都有报文</p>
+<p>2、GET<span style="font-family: 宋体;">、</span><span style="font-family: 'Times New Roman';">POST</span><span style="font-family: 宋体;">请求都有报文，只不过</span><span style="font-family: 'Times New Roman';">GET</span><span style="font-family: 宋体;">伪装</span><span style="font-family: 'Times New Roman';">URL</span><span style="font-family: 宋体;">形式报文体为空，</span><span style="font-family: 'Times New Roman';">POST</span><span style="font-family: 宋体;">请求向服务器传递数据用报文体。</span></p>
+<p>3、<span style="font-family: 宋体;">客户端发起的是</span>GET<span style="font-family: 宋体;">服务器端就用</span><span style="font-family: 'Times New Roman';">GET</span><span style="font-family: 宋体;">，客户端发起的是</span><span style="font-family: 'Times New Roman';">POST</span><span style="font-family: 宋体;">服务端就用</span><span style="font-family: 'Times New Roman';">POST</span></p>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP26.jpg" alt="" /></p>
+<p><span style="font-family: 宋体;">当你点击</span>submit<span style="font-family: 宋体;">时候，浏览器会帮你组件报文中的信息，在报文体中插入有关</span><span style="font-family: 'Times New Roman';">post</span><span style="font-family: 宋体;">请求的信息。</span></p>
+<hr />
+<h2><strong>4.4 GET<span style="font-family: 宋体;">和</span><span style="font-family: 华文中宋;">POST</span><span style="font-family: 宋体;">的区别</span></strong></h2>
+<p><span style="font-family: 宋体;">概述：市场上几乎都是</span>GET<span style="font-family: 宋体;">请求；登录、注册等可以用</span><span style="font-family: 'Times New Roman';">POST</span><span style="font-family: 宋体;">请求</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="347">
+<p>GET<span style="font-family: 宋体;">请求：</span></p>
+</td>
+<td valign="top" width="347">
+<p>POST<span style="font-family: 宋体;">请求：</span></p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="347">
+<p>GET<span style="font-family: 宋体;">请求便于分享</span></p>
+<p>GET<span style="font-family: 宋体;">请求可被缓存</span></p>
+<p>GET<span style="font-family: 宋体;">请求保留在浏览器历史记录中</span></p>
+<p>GET<span style="font-family: 宋体;">请求可被收藏为书签</span></p>
+<p>GET<span style="font-family: 宋体;">请求不应在处理敏感数据时使用</span></p>
+<p>GET<span style="font-family: 宋体;">请求有长度限制</span></p>
+<p>GET<span style="font-family: 宋体;">请求只应当用于取回数据</span></p>
+</td>
+<td valign="top" width="347">
+<p>POST<span style="font-family: 宋体;">请求不便于分享</span></p>
+<p>POST<span style="font-family: 宋体;">请求不会被缓存</span></p>
+<p>POST<span style="font-family: 宋体;">请求不会保留在浏览器历史记录中</span></p>
+<p>POST<span style="font-family: 宋体;">请求不能被收藏为书签</span></p>
+<p>POST<span style="font-family: 宋体;">请求对数据长度没有要求</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">那，有了这个比较，你应该知道什么时候用</span>get<span style="font-family: 宋体;">什么时候用</span><span style="font-family: 'Times New Roman';">post</span><span style="font-family: 宋体;">了。</span></p>
+<p>get<span style="font-family: 宋体;">：一般用于信息获取使用</span><span style="font-family: 'Times New Roman';">url</span><span style="font-family: 宋体;">传递参数，对发送的数据有字节限制，</span><span style="font-family: 'Times New Roman';">get</span><span style="font-family: 宋体;">请求是向服务器获取消息</span></p>
+<p>post<span style="font-family: 宋体;">：一般用于存储或修改服务器上的资源，</span><span style="font-family: 'Times New Roman';">post</span><span style="font-family: 宋体;">请求都是通过</span><span style="font-family: 'Times New Roman';">form</span><span style="font-family: 宋体;">表单形式提交，</span><span style="font-family: 'Times New Roman';">post</span><span style="font-family: 宋体;">请求可以看成向服务器推送消息</span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">一个完整的</span>URL<span style="font-family: 宋体;">包括哪些部分：</span></p>
+<table border="1" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="694">
+<p class="16">&nbsp;<a href="https://mbd.baidu.com/newspage/data/landingsuper?newsid=12345%pagenum=10#name">https://mbd.baidu.com/newspage/data/index.php?newsid=12345%pagenum=10#name</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<hr />
+<h1>五、<strong>HTTP<span style="font-family: 宋体;">请求和响应</span></strong></h1>
+<p><span style="font-family: 宋体;">不管是什么文件，只要从服务器过来，就是</span>http<span style="font-family: 宋体;">请求和响应的这个过程。</span></p>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP27.jpg" alt="" /><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP28.jpg" alt="" /></p>
+<p>HTTP<span style="font-family: 宋体;">报文详解：</span><span style="text-decoration: underline;"><a href="http://blog.csdn.net/wzx19840423/article/details/47811559">http://blog.csdn.net/wzx19840423/article/details/47811559</a></span></p>
+<p>通用：</p>
+<p>Request URL: <span style="font-family: 宋体;">请求地址</span></p>
+<p>Request Method:<span style="font-family: 宋体;">请求方式</span></p>
+<p>Status Code:<span style="font-family: 宋体;">状态码</span></p>
+<hr />
+<h2><strong>5.1 <span style="font-family: 宋体;">响应的报文头</span></strong></h2>
+<p>Cache-Control: <span style="font-family: 宋体;">告诉浏览器的如何缓存页面</span></p>
+<p>Connection:keep-alive &nbsp;<span style="font-family: 宋体;">保持连接</span></p>
+<p>Content-Encoding:gzip &nbsp;<span style="font-family: 宋体;">表示服务器发送压缩的数据格式</span></p>
+<p>Content-Type:text/html;charset=utf-8 &nbsp;<span style="font-family: 宋体;">内容的格式和编码</span></p>
+<p>Date:Sat, 09 Dec 2017 06:23:56 GMT &nbsp;<span style="font-family: 宋体;">服务器的时间</span></p>
+<p>Server:BWS <span style="font-family: 宋体;">服务器环境</span></p>
+<p><span style="font-family: 宋体;"><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP29.jpg" alt="" /></span></p>
+<hr />
+<h2><strong>5.2 <span style="font-family: 宋体;">响应的报文体</span></strong></h2>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP30.jpg" alt="" /></p>
+<p>Response Header它代表的是下行响应的报文头</p>
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP31.jpg" alt="" /></p>
+<p>Query String：是GET请求向服务器传递的数据，伪装URL</p>
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP32.jpg" alt="" /></p>
+<p><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP33.jpg" alt="" /></p>
+<hr />
+<h2><strong>5.3 <span style="font-family: 宋体;">请求报文头</span></strong></h2>
+<p>Accept:text/html,application/xhtml+xml &nbsp;&nbsp;(<span style="font-family: 宋体;">告诉服务器浏览器所接收的文本，网页的图片、视频</span><span style="font-family: 'Times New Roman';">)</span></p>
+<p>Accept-Encoding:gzip, deflate, br <span style="font-family: 宋体;">（可以接收</span><span style="font-family: 'Times New Roman';">gzip,deflate</span><span style="font-family: 宋体;">压缩后的数据）</span></p>
+<p>Accept-Language:zh-CN,zh;q=0.9 <span style="font-family: 宋体;">（浏览器支持的语言）</span></p>
+<p>Cache-Control:max-age=0 &nbsp;&nbsp;<span style="font-family: 宋体;">（浏览器的缓存）</span></p>
+<p>Connection:keep-alive <span style="font-family: 宋体;">（请求数据后，保持连接）</span></p>
+<p>Cookie: <span style="font-family: 宋体;">（身份验证信息）</span></p>
+<p>Host:mbd.baidu.com <span style="font-family: 宋体;">（浏览器要找的主机）</span></p>
+<p>User-Agent: <span style="font-family: 宋体;">（浏览器内核）</span></p>
+<p>&nbsp;<img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP34.jpg" alt="" /></p>
+<p>它代表的是上行请求的报文头</p>
+<hr />
+<p>&nbsp;</p>
+<h2><strong>5.4&nbsp;</strong><strong>请求的报文体</strong></h2>
+<h2><span style="font-size: 14px;"><strong>Form Data：是post请求上行请求的报文体</strong></span></h2>
+<p><strong><img src="./images/前端笔记之服务器&amp;Ajax（上）服务器&amp;PHP&amp;数据交互&amp;HTTP35.jpg" alt="" /></strong></p>
+<hr />
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,77 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【php设计模式】桥接模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【php设计模式】桥接模式</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10954306.html</div><br>
+    <p><span style="font-size: 18px;"><span style="color: #99cc00; background-color: #ff9900;">&nbsp;</span> 定义：</span><br />　　<span style="font-size: 15px;">将抽象与实现分离，使它们可以独立变化。它是用组合关系代替继承关系来实现，从而降低了抽象和实现这两个可变维度的耦合度。</span></p>
+<p><span style="font-size: 18px;"><span style="background-color: #ff9900;">&nbsp;</span> 角色：</span><br />　　<span style="font-size: 15px;">抽象化（Abstraction）角色：定义抽象类，并包含一个对实现化对象的引用。</span><br /><span style="font-size: 15px;">　　扩展抽象化（Refined Abstraction）角色：是抽象化角色的子类，实现父类中的业务方法，并通过组合关系调用实现化角色中的业务方法。</span><br /><span style="font-size: 15px;">　　实现化（Implementor）角色：定义实现化角色的接口，供扩展抽象化角色调用。</span><br /><span style="font-size: 15px;">　　具体实现化（Concrete Implementor）角色：给出实现化角色接口的具体实现。</span></p>
+<p><span style="font-size: 18px;"><span style="background-color: #ff9900;">&nbsp;</span> 举例：</span></p>
+<p>　　<span style="font-size: 15px;">车分为很多种（小轿车，公交车），并且每种车都会跑在不同的道路上（街道，高速路），如果使用继承的方式我们可以实现这些场景</span><br /><span style="font-size: 15px;">　　但是那样做的话会使得代码变得可扩展行很差，但是使用桥接模式就不一样啦</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Road{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$car</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Car <span style="color: #800080;">$car</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;car = <span style="color: #800080;">$car</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> run();
+}
+
+</span><span style="color: #0000ff;">class</span> SpeedWay <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Road{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> run(){
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$this</span>-&gt;car-&gt;name." run on SpeedWay\n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span> Street <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Road{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> run(){
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$this</span>-&gt;car-&gt;name." run on Street\n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Car{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #0000ff;">class</span> SmallCar <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Car{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct(){
+        </span><span style="color: #800080;">$this</span>-&gt;name = "SmallCar"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span> Bus <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Car{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct(){
+        </span><span style="color: #800080;">$this</span>-&gt;name = "Bus"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #800080;">$small_car</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> SmallCar();
+</span><span style="color: #800080;">$SpeedWay</span> = <span style="color: #0000ff;">new</span> SpeedWay(<span style="color: #800080;">$small_car</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$SpeedWay</span>-&gt;<span style="color: #000000;">run();
+
+</span><span style="color: #800080;">$bus</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Bus();
+</span><span style="color: #800080;">$Street</span> = <span style="color: #0000ff;">new</span> Street(<span style="color: #800080;">$bus</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$Street</span>-&gt;run();</code></pre>
+
+<p><span style="font-size: 18px;"><span style="background-color: #ff9900;">&nbsp;</span> 使用场景：</span></p>
+<p>　　<span style="font-size: 15px;">当一个类存在两个独立变化的维度，且这两个维度都需要进行扩展时。</span><br /><span style="font-size: 15px;">　　当一个系统不希望使用继承或因为多层次继承导致系统类的个数急剧增加时。</span><br /><span style="font-size: 15px;">　　当一个系统需要在构件的抽象化角色和具体化角色之间增加更多的灵活性时。</span></p>
+<pre><code><br /><br /><br /></code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

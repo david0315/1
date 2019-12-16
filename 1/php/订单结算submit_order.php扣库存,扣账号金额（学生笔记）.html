@@ -1,0 +1,77 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修订单结算submit_order.php扣库存,扣账号金额（学生笔记）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>订单结算submit_order.php扣库存,扣账号金额（学生笔记）</center></div><div class='banquan'>原文出处:本文由博客园博主维京人~提供。<br/>
+原文连接:https://www.cnblogs.com/mzzone/p/11027509.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #008080;">header</span>("Content-type: text/html; charset=utf-8"<span style="color: #000000;">);
+    </span><span style="color: #008080;">session_start</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">include_once</span>("DB.class.php"<span style="color: #000000;">);
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">测试数据,初始化金额为1000.
+    // $_SESSION['account'] = 1000;
+
+
+    // 获得订单总额</span>
+    <span style="color: #800080;">$order_money</span> = <span style="color: #800080;">$_GET</span>['total'<span style="color: #000000;">];
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">获得账户余额</span>
+    <span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_SESSION</span>['uid'<span style="color: #000000;">];
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($uid);</span>
+    <span style="color: #800080;">$sql</span> = "select account from tb_user where id = <span style="color: #800080;">$uid</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$account</span> = <span style="color: #800080;">$dao</span>-&gt;getOne(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$account</span>&gt;=<span style="color: #800080;">$order_money</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$order</span> = <span style="color: #800080;">$_SESSION</span>['order'<span style="color: #000000;">] ;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 从数据库中减掉库存</span>
+        
+        <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$order</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$item</span><span style="color: #000000;">){
+            </span><span style="color: #800080;">$kucun</span> = <span style="color: #800080;">$item</span>['num'<span style="color: #000000;">];
+            </span><span style="color: #800080;">$id</span> = <span style="color: #800080;">$item</span>['goods_id'<span style="color: #000000;">];
+            </span><span style="color: #800080;">$sql</span> = "update tb_goods set number =number-{<span style="color: #800080;">$kucun</span>} where id ={<span style="color: #800080;">$id</span>}"<span style="color: #000000;">;
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($sql);
+            // die();</span>
+            <span style="color: #800080;">$dao</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        }
+        
+        
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">减去金额    </span>
+        <span style="color: #800080;">$account</span>-=<span style="color: #800080;">$order_money</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$sql</span> = "update tb_user set account = {<span style="color: #800080;">$account</span>} where id = <span style="color: #800080;">$uid</span>"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$dao</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">echo</span> "下单成功！账户余额：￥<span style="color: #800080;">$account</span>"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$_SESSION</span>['order'] = ''<span style="color: #000000;">;
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #0000ff;">echo</span> "下单失败！订单所需金额:<span style="color: #800080;">$order_money</span>,账户余额：￥<span style="color: #800080;">$account</span>,余额不足!!"<span style="color: #000000;">;
+        
+    }
+    
+    
+</span>?&gt;</code></pre>
+
+<p><span style="font-size: 16px; color: #000000;">工具类代码DB.class.ph获取：https://www.cnblogs.com/mzzone/p/10911891.html</span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 16px;">业务逻辑</span></p>
+<p>下单之后用户要进行判断库存，和用户金额是否充足。</p>
+<p>充足的话进行修改数据库的库存和余额。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

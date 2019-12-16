@@ -1,0 +1,52 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 接口增加recaptcha行为验证' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 接口增加recaptcha行为验证</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/12016564.html</div><br>
+    <p>需要先翻墙创建一个谷歌账户和创建recaptcha验证的网站域名,获取到两个secrect<br />https://www.google.com/recaptcha/admin</p>
+<p><img src="./images/[PHP] 接口增加recaptcha行为验证0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>前端增加html和js代码,例如</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="hidden"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="token"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="token"</span> <span style="color: #0000ff;">/&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">script </span><span style="color: #ff0000;">src</span><span style="color: #0000ff;">="https://www.recaptcha.net/recaptcha/api.js?render=客户端scerect"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span><span style="background-color: #f5f5f5; color: #000000;">
+grecaptcha.ready(</span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;">() {
+    grecaptcha.execute(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">客户端scerect</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">, {action: </span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">homepage</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">}).then(</span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;">(token) {
+       $(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">#token</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">).val(token);
+    });
+});
+</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>后端增加验证代码,例如:</p>
+<src class="cnblogs_code">
+<pre><code>post请求https:<span style="color: #008000;">//</span><span style="color: #008000;">www.recaptcha.net/recaptcha/api/siteverify,</span>
+<span style="color: #800080;">$tokenVerify</span>=<span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #800080;">$tokenVerify</span>['secret']='服务端secrect'<span style="color: #000000;">;
+</span><span style="color: #800080;">$tokenVerify</span>['response']=<span style="color: #800080;">$params</span>['token'<span style="color: #000000;">];
+</span><span style="color: #800080;">$tokenResponse</span>=post("https://www.recaptcha.net/recaptcha/api/siteverify", <span style="color: #800080;">$tokenVerify</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$tokenArr</span>)||!<span style="color: #800080;">$tokenArr</span>['success'<span style="color: #000000;">]){
+    </span>...<span style="color: #000000;">
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

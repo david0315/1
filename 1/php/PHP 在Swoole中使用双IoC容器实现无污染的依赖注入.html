@@ -1,0 +1,376 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 在Swoole中使用双IoC容器实现无污染的依赖注入' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 在Swoole中使用双IoC容器实现无污染的依赖注入</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11782438.html</div><br>
+    <p>&nbsp;</p>
+<src>
+<h2>简介:</h2>
+<p>容器(container)技术(可以理解为全局的工厂方法), 已经是现代项目的标配. 基于容器, 可以进一步实现控制反转, 依赖注入. <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/laravel/laravel" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">Laravel</a> 的巨大成功就是构建在它非常强大的IoC容器 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/illuminate/container" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">illuminate/container</a> 基础上的. 而 PSR-11 定义了标准的 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/php-fig/container" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">container</a> , 让更多的 PHP 项目依赖容器实现依赖解耦, 面向接口编程.</p>
+<p>另一方面, PHP 天生一个进程响应一次请求的模型, 已经不能完全适应开发的需要. 于是 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//www.swoole.com/" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">Swoole</a>, <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//reactphp.org/" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">reactPHP</a>, <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/spiral/roadrunner" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">roadrunner</a> 也越来越流行. 它们共同的特点是一个 php worker 进程在生命周期内要响应多个请求, 甚至同一时间同时运行多个请求 (协程).</p>
+<p>在这些引擎上使用传统只考虑单请求的容器技术, 就容易发生单例相互污染, 内存泄露等问题 (姑且称之为&rdquo;IoC容器的请求隔离问题&rdquo; ). 于是出现了各种策略以解决之.</p>
+<p>多轮对话机器人框架 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/chatbot-studio" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">CommuneChatbot</a> 使用 swoole 做通信引擎, 同时非常广泛地使用了容器和依赖注入. 在本项目中使用了 &ldquo;双容器策略&rdquo; 来解决 &ldquo;请求隔离问题&rdquo; .</p>
+<p>所谓&rdquo;双容器策略&rdquo;, 总结如下:</p>
+<ul>
+<li>同时运行 &ldquo;进程级容器&rdquo; 与 &ldquo;请求级容器&rdquo;</li>
+<li>&ldquo;进程级容器&rdquo; :</li>
+<ul>
+<li>传统的IoC 容器, 例如 Illuminate/container</li>
+</ul>
+</ul>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<ul>
+<li>&ldquo;请求级容器&rdquo; :</li>
+<ul>
+<li>所有工厂方法注册到容器的静态属性上</li>
+<li>在 worker 进程初始化阶段 注册服务</li>
+<li>每个请求到来后, 实例化一个请求容器.</li>
+<li>请求中生成的单例, 挂载到容器的动态属性上.</li>
+<li>持有&rdquo;进程级容器&rdquo;, 当绑定不存在时, 到&rdquo;进程级容器&rdquo; 上查找之.</li>
+<li>请求结束时进行必要清理, 防止内存泄露</li>
+</ul>
+</ul>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>解决方案的代码在 <a class=" external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/container" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">github.com/thirdgerb/co<span class="invisible">ntainer</span></span></span></a> 创建了一个 composer 包 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//packagist.org/packages/commune/container" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">commune/container</a></p>
+<p>&nbsp;</p>
+<h2>容器的&rdquo;请求隔离&rdquo;问题</h2>
+<h3>关于容器, 控制反转与依赖注入</h3>
+<p>为防止部分读者不了这些概念, 简单说明一下.</p>
+<p>所谓容器, 相当于一个全局的工厂. 可以在这里 &ldquo;注册&rdquo; 各种服务的工厂方法, 再使用容器统一地获取. 例如</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$container</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Container();
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 绑定一个单例</span>
+<span style="color: #008080;"> 4</span> <span style="color: #800080;">$container</span>-&gt;<span style="color: #000000;">singleton(
+</span><span style="color: #008080;"> 5</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 绑定对象的ID, 通常是 interface, 以实现面向接口编程.</span>
+<span style="color: #008080;"> 6</span>     UserInterface::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 7</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 生成实例的工厂方法.</span>
+<span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">function</span><span style="color: #000000;">() {
+</span><span style="color: #008080;"> 9</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">class</span> <span style="color: #0000ff;">implements</span><span style="color: #000000;"> UserInterface{};
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 从容器中获取实例</span>
+<span style="color: #008080;">14</span> <span style="color: #800080;">$user</span> = <span style="color: #800080;">$container</span>-&gt;get(UserInterfacle::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">15</span> 
+<span style="color: #008080;">16</span> <span style="color: #800080;">$user</span> instanceof UserInterface; <span style="color: #008000;">//</span><span style="color: #008000;">  true</span></code></pre>
+
+<src><br />
+<src>
+<p>当一个类的实例在容器中生成, 或者一个方法被容器调用时, 就可以方便地实现依赖注入.</p>
+<p>简单来说, 容器通过反射机制可获取目标方法的依赖 ( laravel 用反射来获取 typehint 类型约束, 而 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/swoft-cloud/swoft" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">Swoft</a>项目似乎与spring 相似, 是从注释上获取的).</p>
+<p>然后容器查找是否已注册了 依赖 (dependency) 的实现 (resolver), 如果已注册, 就从容器中生成该依赖, 再注入给目标方法.</p>
+<p>具有依赖注入能力的容器, 我们称之为 IoC (控制反转) 容器. 关于IoC 容器的好处不是本文重点, 先跳过去了.</p>
+<h3>IoC 容器的请求隔离问题</h3>
+<p>容器最典型的应用场景之一, 就是持有单例. 但在 swoole 等引擎上, 一个 worker 进程要响应多个请求, 单例的数据就容易相互污染.</p>
+<p>例如我们把 session 的数据放在 一个 SessionInterface 中, 每个逻辑调用时都用容器来取:</p>
+<src class="highlight">
+<pre><code><code class="language-text">$sessionInstance = container()-&gt;make(SessionInterface::class);
+</code></code></pre>
+
+<p>由于单例在容器内只生成一次, 那第二次请求时, 容器会给出第一次请求的session单例, 从而逻辑就乱套了.</p>
+<p>所以容器要运行在 swoole 等引擎上, 必须做到请求与请求相隔离.</p>
+<h3>常见的解决策略</h3>
+<p>由于 Laravel 等使用了IoC 容器的项目能带来极好的工程体验, 而Swoole 能带来极大的性能提升, 于是有许多试图结合两者的项目, 都面临了 &ldquo;请求隔离问题&rdquo;.</p>
+<p>我个人看到过的解决策略有以下三种, 都能一定程度解决问题, 但也有美中不足之处.</p>
+<ul>
+<li>克隆策略:</li>
+<ul>
+<li>方案: 每次请求, 克隆一个新的 container</li>
+<li>问题:</li>
+<ul>
+<li>要递归地 clone 属性, 才能避免浅拷贝导致的污染</li>
+<li>无法区分进程共享的单例, 和请求隔离的单例.</li>
+</ul>
+</ul>
+<li>清洗策略:</li>
+<ul>
+<li>方案: 每次请求结束时, 主动清洗掉已注册的单例</li>
+<li>问题:</li>
+<ul>
+<li>定义类时就要考虑清洗逻辑, 可能要实现interface, 耦合较重</li>
+<li>swoole 发展到协程后, 同时可能相应多个请求, 清晰策略失效了.</li>
+</ul>
+</ul>
+<li>重新注册:</li>
+<ul>
+<li>方案: 每个请求到来时, 实例化一个新容器, 重新注册所有服务</li>
+<li>问题:</li>
+<ul>
+<li>注册服务其实开销很大, 尤其是需要大量读文件的初始化(比如翻译组件)</li>
+<li>无法区分进程共享的单例, 和请求隔离的单例.</li>
+<li>利用不了 swoole 的优势, 比起多进程模型只少了 composer autoloader 的加载.</li>
+</ul>
+</ul>
+</ul>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<h3>CommuneChatbot 遇到的请求隔离问题</h3>
+<p>多轮对话机器人框架 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/chatbot-studio" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">CommuneChatbot</a> 在启动时需要加载大量多轮对话的逻辑, 消耗时间长 (&gt;100ms), 但实际响应对话的时间不到 10ms. 所以本项目 必须使用 swoole 这类引擎, 不可能用PHP天生的多进程, 那样就只是一个低性能的玩具了.</p>
+<p>另一方面, 为了实现</p>
+<ul>
+<li>可配置化</li>
+<li>组件化</li>
+<li>面向接口编程</li>
+<li>灵活的闭包</li>
+</ul>
+<p>等 feature, <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/chatbot-studio" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">CommuneChatbot</a> 严重依赖 IoC 容器. 所以识别要解决请求隔离的问题.</p>
+<p>由于原有三种策略的不足之处都是本项目无法绕开的, 因此设计了 &ldquo;双容器策略&rdquo;.</p>
+<h2>CommuneChatbot 的双容器策略</h2>
+<p>本项目使用的双容器策略是一个通用的策略, 代码在 <a class=" external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/container" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">github.com/thirdgerb/co<span class="invisible">ntainer</span></span></span></a>, 是由 Illuminate/Container 项目修改而来.</p>
+<p>暂未发布版本, clone 后可以查看实现.</p>
+<p>简单来说, 就是在一个 worker 进程中, 存在两种级别的容器:</p>
+<ul>
+<li>进程级容器: 一个进程只有一个实例</li>
+<li>请求级容器: 每一个请求拥有一个独立的实例</li>
+</ul>
+<h3>&ldquo;进程级&rdquo; 与 &ldquo;请求级&rdquo; 容器分开注册服务</h3>
+<p>CommuneChatbot 中, 类似 laravel 的 serviceProvider 分两处注册.</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 在worker中注册的服务, 多个请求共享</span>
+<span style="color: #008080;"> 2</span> 'processProviders' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 基础组件加载</span>
+<span style="color: #008080;"> 5</span>     Studio\Providers\StudioServiceProvider::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 6</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 默认的情感单元, 可以把意图或者message 映射成情感</span>
+<span style="color: #008080;"> 7</span>     Studio\Providers\FeelingServiceProvider::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> ],
+<span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 在conversation开始时才注册服务, 其单例在每个请求之间是隔离的.</span>
+<span style="color: #008080;">12</span> 'conversationProviders' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 数据读写的组件, 用到了laravel DB 的redis 和 mysql</span>
+<span style="color: #008080;">15</span>     \Commune\Chatbot\Laravel\Providers\LaravelDBServiceProvider::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">16</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 各种权限功能的管理.</span>
+<span style="color: #008080;">17</span>     Studio\Providers\AbilitiesServiceProvider::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span> ],</code></pre>
+
+<src>
+<src>
+<p>服务开发者不需要太多考虑是进程级, 还是请求级, 只要避免用到静态属性. 系统搭建者才要考虑</p>
+<h3>&ldquo;请求级&rdquo;容器持有&rdquo;进程级&rdquo;容器</h3>
+<p>CommuneChatbot 使用 trait 改造了 laravel 的 illuminate/container, 以此为基础实现了 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/container/blob/master/src/RecursiveContainer.php" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">递归容器 RecursiveContainer</a>.</p>
+
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">trait RecursiveContainer
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> ContainerTrait;
+</span><span style="color: #008080;"> 4</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * 不用静态属性, 静态属性在子类继承上会有问题.
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">     * @var ContainerContract
+</span><span style="color: #008080;"> 8</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$parentContainer</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">     * RecursiveContainer constructor.
+</span><span style="color: #008080;">12</span> <span style="color: #008000;">     * @param ContainerContract $parentContainer
+</span><span style="color: #008080;">13</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">14</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(ContainerContract <span style="color: #800080;">$parentContainer</span><span style="color: #000000;">)
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">16</span>         <span style="color: #800080;">$this</span>-&gt;parentContainer = <span style="color: #800080;">$parentContainer</span><span style="color: #000000;">;
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getParentContainer() :<span style="color: #000000;"> ContainerContract
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">21</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">parentContainer;
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> has(<span style="color: #800080;">$abstract</span><span style="color: #000000;">)
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">26</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;bound(<span style="color: #800080;">$abstract</span>) || <span style="color: #800080;">$this</span>-&gt;parentContainer-&gt;has(<span style="color: #800080;">$abstract</span><span style="color: #000000;">);
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">28</span> 
+<span style="color: #008080;">29</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">30</span> <span style="color: #008000;">     * @param string $abstract
+</span><span style="color: #008080;">31</span> <span style="color: #008000;">     * @param array $parameters
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">     * @return mixed
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">     * @throws
+</span><span style="color: #008080;">34</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">35</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> make(<span style="color: #0000ff;">string</span> <span style="color: #800080;">$abstract</span>, <span style="color: #0000ff;">array</span> <span style="color: #800080;">$parameters</span> =<span style="color: #000000;"> [])
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">37</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 做个最高效的判断环节. 绝大部分都是单例.</span>
+<span style="color: #008080;">38</span>         <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;shared[<span style="color: #800080;">$abstract</span><span style="color: #000000;">])) {
+</span><span style="color: #008080;">39</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;shared[<span style="color: #800080;">$abstract</span><span style="color: #000000;">];
+</span><span style="color: #008080;">40</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">41</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 优先自己绑定的对象.
+</span><span style="color: #008080;">42</span> <span style="color: #008000;">        // 只有自己没有绑定, 且父容器有绑定的情况下, 才通过父类来做实例化.</span>
+<span style="color: #008080;">43</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$this</span>-&gt;bound(<span style="color: #800080;">$abstract</span>) &amp;&amp; <span style="color: #800080;">$this</span>-&gt;parentContainer-&gt;has(<span style="color: #800080;">$abstract</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">44</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;parentContainer-&gt;make(<span style="color: #800080;">$abstract</span>, <span style="color: #800080;">$parameters</span><span style="color: #000000;">);
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">46</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;resolve(<span style="color: #800080;">$abstract</span>, <span style="color: #800080;">$parameters</span><span style="color: #000000;">);
+</span><span style="color: #008080;">47</span>     }</code></pre>
+
+<p>&nbsp;</p>
+<src>
+<src>
+<p>简单来说, 每个递归容器都可以持有一个父容器. 如果某个服务调用 在自己内未注册, 就会到父容器里查找. 父容器也是递归容器的话, 就会递归式查找.</p>
+<p>这样, 进程级共享的单例, 就可以注册到 &ldquo;进程级容器&rdquo; . 而请求相互隔离的单例, 就注册到 &ldquo;请求级容器&rdquo;.</p>
+<p>请求内都用 &ldquo;请求级容器&rdquo; 来获取实例, 这样就充分灵活了.</p>
+<h3>&ldquo;请求级&rdquo; 容器用静态属性注册服务, 动态属性持有单例</h3>
+<p>伪代码如下:</p>
+
+<br /><br />
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">trait ContainerTrait
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">    * 请求级容器持有的单例
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">    * @var array
+</span><span style="color: #008080;"> 7</span>     <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 8</span>    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$shared</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">    * 请求级容器注册的服务
+</span><span style="color: #008080;">12</span> <span style="color: #008000;">    *
+</span><span style="color: #008080;">13</span> <span style="color: #008000;">    * @var callable[]
+</span><span style="color: #008080;">14</span>     <span style="color: #008000;">*/</span>
+<span style="color: #008080;">15</span>    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$bindings</span> = [];</code></pre>
+
+<p>&nbsp;</p>
+<p>这样, 所有服务只需要注册一次, 但服务的单例在每个请求内会重新生成一次.</p>
+<h3>&ldquo;请求级容器&rdquo; 在worker进程初期boot, 每个请求到来时实例化</h3>
+<p>CommuneChatbot 中的一个<a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/chatbot/blob/master/src/Chatbot/App/Platform/SwooleConsole/SwooleConsoleServer.php" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">代码示例</a></p>
+<p>伪代码如下:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> SwoolServer
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">     * Swoole/Server
+</span><span style="color: #008080;"> 5</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$server</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$app</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> run()
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bootstrap();
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> bootstrap()
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">17</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 注册 service provider
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">        // 运行 service provider 的boot 方法
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">        // 进程级和请求级都在这个环节完成初始化</span>
+<span style="color: #008080;">20</span>         <span style="color: #800080;">$this</span>-&gt;app-&gt;<span style="color: #000000;">bootWorker();
+</span><span style="color: #008080;">21</span> 
+<span style="color: #008080;">22</span>         <span style="color: #800080;">$this</span>-&gt;server-&gt;<span style="color: #000000;">on(
+</span><span style="color: #008080;">23</span>             'receive',
+<span style="color: #008080;">24</span>             <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$server</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$rid</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">){
+</span><span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 获取 请求级容器 的 公共容器.</span>
+<span style="color: #008080;">27</span>                 <span style="color: #800080;">$container</span> = <span style="color: #800080;">$this</span>-&gt;app-&gt;<span style="color: #000000;">getRequestContainer();
+</span><span style="color: #008080;">28</span> 
+<span style="color: #008080;">29</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 实例化一个请求隔离的 容器</span>
+<span style="color: #008080;">30</span>                 <span style="color: #800080;">$requestContainer</span> = <span style="color: #800080;">$container</span>-&gt;<span style="color: #0000ff;">new</span>(<span style="color: #800080;">$server</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$rid</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #008080;">31</span> 
+<span style="color: #008080;">32</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 运行请求内的逻辑</span>
+<span style="color: #008080;">33</span>                 <span style="color: #800080;">$requestContainer</span>-&gt;<span style="color: #000000;">run();
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">37</span> 
+<span style="color: #008080;">38</span> 
+<span style="color: #008080;">39</span> }</code></pre>
+
+<src><br /><br />
+<src>
+<h3>使用 Laravel Application 作为 进程级容器</h3>
+<p>CommuneChatbot 的 framework 是不依赖大型项目的. 但在开发 Studio 时, 发现还是需要一个类似 Laravel 的全栈框架.</p>
+<p>所以直接使用了 Laravel 的 Application 做 &ldquo;进程级容器&rdquo;, 确保自己请求中用到的核心业务逻辑都不注册到 laravel中, 避免污染.</p>
+<p>由于双容器策略基于共同的 interface 开发, 所以只需要为 Laravel Application 定制一个 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/container/blob/master/src/IlluminateAdapter.php" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">illuminateAdapter</a> 就可以了</p>
+<h3>防止内存泄露</h3>
+<p>使用 swoole, 如果逻辑写得不好导致一些对象相互持有, 无法释放, 则会导致内存泄露. 而且 php 目前排查内存泄露挺有难度.</p>
+<p>使用双容器技术, 反而某种意义上方便了排查内存泄露.</p>
+<p>因为 CommuneChatbot 是基于依赖注入来启动, 运行的, 请求内生成的绝大多数对象都来自于 IoC 容器, 并为之持有.</p>
+<p>一旦 IoC 容器自身在请求结束后无法释放, 就一定发生了请求内的内存泄露.</p>
+<p><a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/chatbot-studio" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">CommuneChatbot</a> 定义的 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/chatbot/blob/master/src/Chatbot/Framework/Conversation/ConversationImpl.php" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">请求级容器</a>, 在 __construct 和 __destruct 方法中做了简单的埋点, 伪代码如下:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Container {
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$running</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$traceId</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #0000ff;">string</span> <span style="color: #800080;">$traceId</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 9</span>         <span style="color: #800080;">$this</span>-&gt;traceId = <span style="color: #800080;">$traceId</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>         self::<span style="color: #800080;">$running</span>[<span style="color: #800080;">$traceId</span>] = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct()
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">16</span>         <span style="color: #0000ff;">unset</span>(self::<span style="color: #800080;">$running</span>[<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">traceId]);
+</span><span style="color: #008080;">17</span>     }</code></pre>
+
+<src>
+<src>
+<p>就可以通过静态属性查看运行中的 container 实例个数.</p>
+<p><a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/chatbot-studio" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">CommuneChatbot</a> 甚至在 Demo 中提供了一个 <code>#runningSpy -a</code> 的命令. 在公众号中随时输入它, 可以查看当前 worker 进程中几个关键对象的实例数量.</p>
+<p>如果实例数随请求线性上升, 那就一定是严重的内存泄露了. 如果只是很少概率的内存泄露, 问题还不大. Swoole 有参数 <a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//wiki.swoole.com/wiki/page/p-max_request.html" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">max_request</a> 定期重启 worker 进程.</p>
+<p>就我发现, 最容易导致内存泄露的两种情况:</p>
+<ul>
+<li>某个闭包在每次请求时生成一个闭包实例, 被每个容器持有</li>
+<li>容器生成的某个服务是匿名类, 导致相互持有</li>
+</ul>
+<p>简单来说, 就是定义闭包和匿名类时, 慎重考虑内存泄露的可能性就行.</p>
+<h3>双容器策略在 CommuneChatbot 项目中的效果</h3>
+<p><a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//github.com/thirdgerb/chatbot-studio" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">CommuneChatbot</a> 目前使用双容器, Demo 在微信公众号 CommuneChatbot 上运行.</p>
+<p>项目默认启动要 80 ms 以上, 而不用读写数据库完成单个请求平均在 3ms 左右.</p>
+
+<br />
+<src>
+<src>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>[2019-07-20 12:20:03] chatbot.INFO: <span style="color: #008080;">end</span> chat pipe {"gap":2791,"memory":10485760}</code></pre>
+
+<p>&nbsp;</p>
+
+<p>Swoole 除了免去了每次请求启动系统的开销之外, 还带来了额外的性能提升:</p>
+<p>由于大量使用 PHP 的反射特性来实现复杂的依赖注入, 所以反射本应该是性能开销的大头. 但 PHP 其实有个内部机制, 反射调用一次就会缓存起来, 下次调用的开销是之前的几十分之一.</p>
+<p>所以用swoole, 还可能提升了整体依赖注入的性能.</p>
+<p>微信公众号上的 CommuneChatbot Demo 目前运行了数千个请求, 查看日志还没有发生一例内存泄露.</p>
+<p>进程级容器 Laravel Application 也与 CommuneChatbot 自己的 ConversationContainer 结合得很好. 目前没发现任何问题.</p>
+<p>整体结果令人乐观, 对我而言这是目前最合适的解决策略.</p>
+
+<br /><br />
+
+
+
+
+
+
+<br />
+
+
+
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

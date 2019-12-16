@@ -1,0 +1,148 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Yii2 中常用的增删改查操作总结' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Yii2 中常用的增删改查操作总结</center></div><div class='banquan'>原文出处:本文由博客园博主幽篁晓筑提供。<br/>
+原文连接:https://www.cnblogs.com/woods1815/p/11145063.html</div><br>
+    <p>&nbsp;</p>
+<h3>一、新增</h3>
+<p>1、使用save()</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$model</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> User();
+</span><span style="color: #800080;">$model</span>-&gt;name = 'test'<span style="color: #000000;">;
+</span><span style="color: #800080;">$model</span>-&gt;phone = '13000000000'<span style="color: #000000;">;
+</span><span style="color: #800080;">$model</span>-&gt;email = '123456@qq.com'<span style="color: #000000;">;
+</span><span style="color: #800080;">$model</span>-&gt;save();</code></pre>
+
+<p>2、使用createCommand 原生sql</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$sql</span> = "insert into user (name, phone, email) values ('test', '13000000000', '123456@qq.com')"<span style="color: #000000;">;
+Yii</span>::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand(<span style="color: #800080;">$sql</span>)-&gt;execute();</code></pre>
+
+<p>3、使用createCommand insert</p>
+<src class="cnblogs_code">
+<pre><code>Yii::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand()-&gt;insert('user',<span style="color: #000000;"> [
+    </span>'name' =&gt; 'test',
+    'phone' =&gt; '13000000000',
+    'email' =&gt; '123456@qq.com'<span style="color: #000000;">
+])</span>-&gt;execute();</code></pre>
+
+<p>4、批量插入</p>
+<src class="cnblogs_code">
+<pre><code>Yii::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand()-&gt;batchInsert('user', ['name', 'phone', 'email'],<span style="color: #000000;"> [
+    [</span>'test1', '13000000000', '123456@qq.com'],<span style="color: #000000;">
+    [</span>'test2', '13000000001', '234567@qq.com'<span style="color: #000000;">]
+])</span>-&gt;execute();</code></pre>
+
+<p>&nbsp;5、使用save()并校验参数正确性</p>
+<src class="cnblogs_code">
+<pre><code>        <span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+            </span>'name' =&gt; 'test',
+            'phone' =&gt; '13000000000',
+            'email' =&gt; '123456@qq.com'<span style="color: #000000;">
+        ];
+        </span><span style="color: #800080;">$model</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> User();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 将数据填充到模型的属性中</span>
+        <span style="color: #800080;">$model</span>-&gt;load(<span style="color: #800080;">$data</span>, ''<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 等效于下面这样：
+        // $model-&gt;attributes = $data;
+        // 或者
+        // $model-&gt;setAttributes($data);</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$model</span>-&gt;<span style="color: #000000;">validate()) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 通过验证</span>
+            <span style="color: #800080;">$model</span>-&gt;<span style="color: #000000;">save();
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 验证失败: $errors 是一个包含错误信息的数组</span>
+            <span style="color: #800080;">$errors</span> = <span style="color: #800080;">$model</span>-&gt;<span style="color: #000000;">errors;
+        }</span></code></pre>
+
+<p>&nbsp;</p>
+<h3>二、删除</h3>
+<p>1、使用delete()</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$user</span> = User::find()-&gt;where(['name' =&gt; 'test'])-&gt;<span style="color: #000000;">one();
+</span><span style="color: #800080;">$user</span>-&gt;delete();</code></pre>
+
+<p>2、使用deleteAll()批量删除</p>
+<src class="cnblogs_code">
+<pre><code>User::deleteAll(['name' =&gt; 'test']);</code></pre>
+
+<p>3、使用createCommand delete()</p>
+<src class="cnblogs_code">
+<pre><code>Yii::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand()-&gt;delete('user', ['name' =&gt; 'test'])-&gt;execute();</code></pre>
+
+<p>4、使用createCommand 原生sql</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$sql</span> = "delete from user where name = 'test'"<span style="color: #000000;">;
+Yii</span>::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand(<span style="color: #800080;">$sql</span>)-&gt;execute();</code></pre>
+
+<p>&nbsp;</p>
+<h3>三、更新</h3>
+<p>1、使用update()</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$user</span> = User::find()-&gt;where(['name' =&gt; 'test'])-&gt;<span style="color: #000000;">one();
+</span><span style="color: #800080;">$user</span>-&gt;phone = '13100000000'<span style="color: #000000;">;
+</span><span style="color: #800080;">$user</span>-&gt;update();  <span style="color: #008000;">//</span><span style="color: #008000;"> 或者 $user-&gt;save();</span></code></pre>
+
+<p>2、使用updateAll()</p>
+<src class="cnblogs_code">
+<pre><code>User::updateAll(['phone' =&gt; '13100000000'], ['name' =&gt; 'test']);</code></pre>
+
+<p>3、使用createCommand update()</p>
+<src class="cnblogs_code">
+<pre><code>Yii::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand()-&gt;update('user', ['phone' =&gt; '13100000000'], ['name' =&gt; 'test'])-&gt;execute();</code></pre>
+
+<p>4、使用createCommand 原生sql</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$sql</span> = "update user set phone = '13100000000' where name = 'test'"<span style="color: #000000;">;
+Yii</span>::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand(<span style="color: #800080;">$sql</span>)-&gt;execute();</code></pre>
+
+<p>&nbsp;</p>
+<h3>四、查询</h3>
+<p>1、使用model</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> 查询一条记录</span>
+User::find()-&gt;select(['name', 'phone', 'email'])-&gt;where(['phone' =&gt; '13000000000'])-&gt;andWhere(['like', 'name', 'test'])-&gt;<span style="color: #000000;">one();
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 查询一条记录数组返回</span>
+User::find()-&gt;where(['name' =&gt; 'test'])-&gt;asArray()-&gt;<span style="color: #000000;">one();
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 查询所有记录</span>
+User::find()-&gt;where(['name' =&gt; 'test'])-&gt;<span style="color: #000000;">all();
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 查询所有记录数组返回</span>
+User::find()-&gt;where(['name' =&gt; 'test'])-&gt;asArray()-&gt;all();</code></pre>
+
+<p>2、使用createCommand</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> 查询一条记录</span>
+Yii::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand("select * from user where name = :name and phone = :phone")-&gt;bindValues([':name' =&gt; 'test', ':phone' =&gt; '13000000000'])-&gt;<span style="color: #000000;">queryOne();
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 查询所有记录</span>
+Yii::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand("select * from user where name = :name and phone = :phone")-&gt;bindValues([':name' =&gt; 'test', ':phone' =&gt; '13000000000'])-&gt;queryAll();</code></pre>
+
+<p>3、使用yii\db\Query()</p>
+<src class="cnblogs_code">
+<pre><code>(<span style="color: #0000ff;">new</span> \yii\db\Query())-&gt;from('user')-&gt;where(['name' =&gt; 'test'])-&gt;all();</code></pre>
+
+<p>4、子查询</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$subQuery</span> = (<span style="color: #0000ff;">new</span> \yii\db\Query())-&gt;select(['id'])-&gt;from('user')-&gt;where(['like', 'name', 'test'])-&gt;<span style="color: #000000;">all();
+(</span><span style="color: #0000ff;">new</span> \yii\db\Query())-&gt;from('user')-&gt;where(['in', 'id', <span style="color: #800080;">$subQuery</span>])-&gt;all();</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

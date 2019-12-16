@@ -1,0 +1,109 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修redis键空间通知(keyspace notification)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>redis键空间通知(keyspace notification)</center></div><div class='banquan'>原文出处:本文由博客园博主郑帅杰提供。<br/>
+原文连接:https://www.cnblogs.com/52lnamp/p/11213239.html</div><br>
+    <h3>一.需求</h3>
+<p>在redis中,设置好key和生存时间之后,希望key过期被删除时能够及时的发送一个通知告诉我key,以便我做后续的一些操作.</p>
+<h3>二.环境</h3>
+<p>系统:windows10　　php:7.1　　redis:3.2</p>
+<h3>三.redis</h3>
+<p>键空间通知:&nbsp;<a href="https://redis.io/topics/notifications" target="_blank">redis官方文档</a>&nbsp;、<a href="http://redisdoc.com/topic/notification.html" target="_blank">redis中文文档</a></p>
+<p>redis2.8.0版本之后推出了键空间通知,如何使用呢?当redis的key被删除时,redis会发送两种不同类型的事件,特定的事件会往特定的频道发送通知,我们只要订阅这个特定的频道等待通知即可.</p>
+<p>两种事件通知:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">PUBLISH __keyspace@0__:mykey del
+PUBLISH __keyevent@0__:del mykey</span></code></pre>
+
+<p>以<code class="docutils literal"><span class="pre">keyspace</span></code>为前缀的频道被称为键空间通知(key-space notification),订阅这个频道&nbsp;<code class="docutils literal"><span class="pre">__keyspace@0__:mykey</span></code>,可以接收<code class="docutils literal"><span class="pre">0</span></code>号数据库中所有修改键&nbsp;<code class="docutils literal"><span class="pre">mykey</span></code>&nbsp;的事件,订阅者将接收到被执行的事件的名字,就是&nbsp;<code class="docutils literal"><span class="pre">del;</span></code></p>
+<p>而以<code class="docutils literal"><span class="pre">keyevent</span></code>为前缀的频道则称为键事件通知(key-event notification),订阅这个频道&nbsp;<code class="docutils literal"><span class="pre">__keyevent@0__:del</span></code>,则可以接收<code class="docutils literal"><span class="pre">0</span></code>号数据库中所有执行&nbsp;<code class="docutils literal"><span class="pre">del</span></code>&nbsp;命令的键,订阅者将接收到被执行事件的键的名字,就是&nbsp;<code class="docutils literal"><span class="pre">mykey</span></code></p>
+<p><span class="pre">我需要获取key 的名字,所以需要订阅__keyevent@0__:频道.</span></p>
+<h3><span class="pre">四.实现步骤</span></h3>
+<p>(1) 打开redis配置文件redis.conf,找到notify-keyspace-events 将其设为Ex,E代表键事件通知,x代表过期事件,每当有过期键被删除时发送,然后重启redis使配置生效;</p>
+<p>(2) 创建demo.php文件:</p>
+<src class="cnblogs_code" onclick="cnblogs_code_show('86e33b85-e009-468b-a483-e5d57396a0ba')"><img id="code_img_closed_86e33b85-e009-468b-a483-e5d57396a0ba" class="code_img_closed" src="./images/redis键空间通知(keyspace notification)0.jpg" alt="" /><img id="code_img_opened_86e33b85-e009-468b-a483-e5d57396a0ba" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('86e33b85-e009-468b-a483-e5d57396a0ba',event)" src="./images/redis键空间通知(keyspace notification)1.jpg" alt="" />
+<src id="cnblogs_code_open_86e33b85-e009-468b-a483-e5d57396a0ba" class="cnblogs_code_hide">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php 
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> RedisInstance
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$redis</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$host</span> = '127.0.0.1', <span style="color: #800080;">$port</span> = 6379<span style="color: #000000;">)
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 9</span>         <span style="color: #800080;">$this</span>-&gt;redis = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;">10</span>         <span style="color: #800080;">$this</span>-&gt;redis-&gt;connect(<span style="color: #800080;">$host</span>, <span style="color: #800080;">$port</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> expire(<span style="color: #800080;">$key</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$time</span> = 0<span style="color: #000000;">)
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">15</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;redis-&gt;expire(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$time</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">17</span> 
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> psubscribe(<span style="color: #800080;">$patterns</span> = <span style="color: #0000ff;">array</span>(), <span style="color: #800080;">$callback</span><span style="color: #000000;">)
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">20</span>         <span style="color: #800080;">$this</span>-&gt;redis-&gt;psubscribe(<span style="color: #800080;">$patterns</span>, <span style="color: #800080;">$callback</span><span style="color: #000000;">);
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> setOption()
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">25</span>         <span style="color: #800080;">$this</span>-&gt;redis-&gt;setOption(\Redis::OPT_READ_TIMEOUT,-1<span style="color: #000000;">);
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">27</span> 
+<span style="color: #008080;">28</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">29</span> 
+<span style="color: #008080;">30</span>  <span style="color: #0000ff;">echo</span> "程序开始执行..\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">31</span> <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> RedisInstance();
+</span><span style="color: #008080;">32</span> <span style="color: #800080;">$redis</span>-&gt;<span style="color: #000000;">setOption();
+</span><span style="color: #008080;">33</span> <span style="color: #800080;">$redis</span>-&gt;psubscribe(<span style="color: #0000ff;">array</span>('__keyevent@0__:expired'), 'callback'<span style="color: #000000;">);
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">//</span><span style="color: #008000;">回调</span>
+<span style="color: #008080;">35</span> <span style="color: #0000ff;">function</span> <span style="color: #0000ff;">callback</span>(<span style="color: #800080;">$redis</span>, <span style="color: #800080;">$pattern</span>, <span style="color: #800080;">$chan</span>, <span style="color: #800080;">$msg</span><span style="color: #000000;">)
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">37</span>     <span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$pattern</span>\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">38</span>     <span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$chan</span>\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">39</span>     <span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$msg</span>\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">40</span>       <span style="color: #008000;">/*</span><span style="color: #008000;">业务逻辑</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">41</span> }</code></pre>
+
+<span class="cnblogs_code_collapse">View Code</span>
+<p>(3) 使用php运行demo.php文件,首先你的php是否设置环境变量,设置方法:找到我的电脑右键选择属性&mdash;高级系统设置&mdash;环境变量&mdash;找到path变量编辑/没有path变量的可以新建一个&mdash;将你的php.exe的绝对路径放进去保存即可,之后就可以直接使用php命令了,其次必须开启了redis拓展,查看是否装有redis拓展:</p>
+<src class="cnblogs_code">
+<pre><code>php -m</code></pre>
+
+<p>确认已安装拓展,直接运行文件:</p>
+<src class="cnblogs_code">
+<pre><code>php demo.php</code></pre>
+
+<p><img src="./images/redis键空间通知(keyspace notification)2.jpg" alt="" /></p>
+<p>(4) 打开一个redis客户端,即运行redis-cli.exe文件或者使用命令 redis-cli.exe -p 6379,创建一个key,并将过期时间设置在五秒,然后观察运行demo.php的窗口:</p>
+<p><img src="./images/redis键空间通知(keyspace notification)3.jpg" alt="" /></p>
+<p>五秒之后key过期被删除,php接收通知走进回调方法,这里就可以处理业务逻辑了.</p>
+<h3>五.测试通知时效性:</h3>
+<p>写一个脚本循环往redis中插入50条记录,且每条记录的过期时间在五秒和十秒随机产生,观察接收到的通知状态:</p>
+<p><img src="./images/redis键空间通知(keyspace notification)4.jpg" alt="" /></p>
+<p><span style="background-color: #ffffff; color: #ff0000; font-size: 15px;">注意</span>:redis 使用以下两种方式删除过期的键：</p>
+<ul class="simple">
+<li>当一个键被访问时，程序会对这个键进行检查，如果键已经过期，那么该键将被删除。</li>
+<li>底层系统会在后台渐进地查找并删除那些过期的键，从而处理那些已经过期但是不会被访问到的键。</li>
+</ul>
+<p>也就是说如果一个键过期了但是没有程序访问它,并且底层系统还没有排查到它的时候这个键是不会被删除的,也不会有通知产生,因此,redis 产生&nbsp;<code class="docutils literal"><span class="pre">expired</span></code>&nbsp;通知的时间为过期键被删除的时候, 而不是键的生存时间变为&nbsp;<code class="docutils literal"><span class="pre">0</span></code>&nbsp;的时候。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

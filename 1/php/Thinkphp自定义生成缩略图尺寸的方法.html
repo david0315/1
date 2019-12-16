@@ -1,0 +1,67 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Thinkphp自定义生成缩略图尺寸的方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Thinkphp自定义生成缩略图尺寸的方法</center></div><div class='banquan'>原文出处:本文由博客园博主我乐意啊提供。<br/>
+原文连接:https://www.cnblogs.com/woleyia/p/11301662.html</div><br>
+    <p>Thinkphp自定义生成缩略图尺寸的方法，本实例中生成两张不同尺寸的图片：第一张是大图350*350，第二张 50*50的缩略图</p>
+<p><img src="./images/Thinkphp自定义生成缩略图尺寸的方法0.jpg" alt="" width="601" height="556" /></p>
+<p>Image类是Thinkphp系统自带的，可以研究下，这个缩略图类很强大</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span> getLogo(<span style="color: #800080;">$logo</span>, <span style="color: #800080;">$width</span>, <span style="color: #800080;">$height</span>, <span style="color: #800080;">$name</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$fileArr</span> = <span style="color: #008080;">pathinfo</span>(<span style="color: #800080;">$logo</span><span style="color: #000000;">); 
+</span><span style="color: #008080;"> 3</span>     <span style="color: #800080;">$dirname</span> = <span style="color: #800080;">$fileArr</span>['dirname'<span style="color: #000000;">]; 
+</span><span style="color: #008080;"> 4</span>     <span style="color: #800080;">$filename</span> = <span style="color: #800080;">$fileArr</span>['filename'<span style="color: #000000;">]; 
+</span><span style="color: #008080;"> 5</span>     <span style="color: #800080;">$extension</span> = <span style="color: #800080;">$fileArr</span>['extension'<span style="color: #000000;">]; 
+</span><span style="color: #008080;"> 6</span>     <span style="color: #800080;">$logo_rs</span> = ""<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$width</span> &gt; 0 &amp;&amp; <span style="color: #800080;">$height</span> &gt; 0<span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 8</span>         <span style="color: #800080;">$name_thumb</span> = <span style="color: #800080;">$dirname</span> . "/" . <span style="color: #800080;">$filename</span> . "_" . <span style="color: #800080;">$width</span> . "_" . <span style="color: #800080;">$height</span> . "." . <span style="color: #800080;">$extension</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 9</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$name_thumb</span><span style="color: #000000;">)) { 
+</span><span style="color: #008080;">10</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$logo</span><span style="color: #000000;">)) { 
+</span><span style="color: #008080;">11</span>                 <span style="color: #800080;">$image</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> \Think\Image(); 
+</span><span style="color: #008080;">12</span>                 <span style="color: #800080;">$image</span>-&gt;open(<span style="color: #800080;">$logo</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">13</span>                 <span style="color: #800080;">$image</span>-&gt;thumb(<span style="color: #800080;">$width</span>, <span style="color: #800080;">$height</span>)-&gt;save(<span style="color: #800080;">$name_thumb</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">14</span>             } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">15</span>                 <span style="color: #800080;">$name_thumb</span> = ""<span style="color: #000000;">; 
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">18</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$name_thumb</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">19</span>             <span style="color: #800080;">$logo_rs</span> = <span style="color: #800080;">$name_thumb</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">21</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">22</span>         <span style="color: #800080;">$logo_rs</span> = <span style="color: #800080;">$logo</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">24</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$logo_rs</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">25</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$name</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">26</span>             <span style="color: #0000ff;">return</span> "&lt;img src='" . __APP__ . "/" . <span style="color: #800080;">$logo_rs</span> . "' alt='" . <span style="color: #800080;">$name</span> . "'/&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;">27</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">28</span>             <span style="color: #0000ff;">return</span> __APP__ . "/" . <span style="color: #800080;">$logo_rs</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">31</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>模版自定义缩略图高度和宽度：生成350*350的缩略图，其它尺寸同理</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;img  alt="350*350" src="{<span style="color: #800080;">$logo</span>|getLogo=###,350,350}" /&gt;</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/532.html" target="_blank">https://www.sucaihuo.com/php/532.html</a> 转载请注明出处！&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,66 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 管理树莓派' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 管理树莓派</center></div><div class='banquan'>原文出处:本文由博客园博主tosser提供。<br/>
+原文连接:https://www.cnblogs.com/tosser/p/11725683.html</div><br>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; 同学给过我一块树莓派，那会儿觉得挺新鲜的。但是每次使用都需要远程桌面或者 ssh 进行登录，比较麻烦。后来为了方便管理，在树莓派上安装部署了 LAMP 环境，然后写了一个简单的 PHP 页面，代码如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$cmd</span> = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_GET</span>['cmd']) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_GET</span>['cmd']) ? <span style="color: #800080;">$_GET</span>['cmd'] : ''<span style="color: #000000;">;
+</span><span style="color: #008080;"> 3</span> ?&gt;
+<span style="color: #008080;"> 4</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 5</span> &lt;html&gt;
+<span style="color: #008080;"> 6</span> &lt;head&gt;&lt;/head&gt;
+<span style="color: #008080;"> 7</span> &lt;body&gt;
+<span style="color: #008080;"> 8</span> &lt;div&gt;
+<span style="color: #008080;"> 9</span> &lt;form action="cmd.php" method="get"&gt;
+<span style="color: #008080;">10</span>     input cmd:&lt;input type="text" name="cmd"/&gt;
+<span style="color: #008080;">11</span> &lt;/form&gt;
+<span style="color: #008080;">12</span> &lt;/div&gt;
+<span style="color: #008080;">13</span> &lt;div&gt;
+<span style="color: #008080;">14</span> &lt;pre&gt;
+<span style="color: #008080;">15</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">16</span>     <span style="color: #0000ff;">if</span> ( <span style="color: #800080;">$cmd</span> != ''<span style="color: #000000;"> ) {
+</span><span style="color: #008080;">17</span>         <span style="color: #0000ff;">echo</span> <span style="color: #008080;">shell_exec</span>(<span style="color: #800080;">$cmd</span><span style="color: #000000;">);
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">19</span> ?&gt;
+<span style="color: #008080;">20</span> &lt;/pre&gt;
+<span style="color: #008080;">21</span> &lt;/div&gt;
+<span style="color: #008080;">22</span> &lt;/body&gt;
+<span style="color: #008080;">23</span> &lt;/html&gt;</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;代码不长，通过一个 GET 方法，可以执行一些简单的代码。它其实类似一句话木马，而且可以缩减到一句代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #008080;">shell_exec</span>(<span style="color: #800080;">$_GET</span>['cmd']); ?&gt;</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; 这样的话，直接通过浏览器的地址栏写入相应的命令即可，但是为了手机上也可以使用的方便，就增加了一个 input 框。</p>
+<p>&nbsp;</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;可以简单的执行一些命令进行测试：</p>
+<p>&nbsp;</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;比如 ls 命令，可以显示当前目录下的文件。但是在执行 cd / 命令，再执行 ls 命令时，无法看到根目录下的文件。因为每次执行命令相当于每次启动一个新的 shell。那么要查看根目录下的文件，需要通过命令 ls / 来进行查看，或者可以通过 cd / &amp;&amp; ls 命令来查看根目录下的文件。</p>
+<p>&nbsp;</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;该脚本可以在其他的 Linux 平台下运行，因为本身树莓派使用的就是 Linux 操作系统的内核。</p>
+<p><sub></sub></p>
+<hr />
+<p><strong>我的微信公众号：&ldquo;码农UP2U&rdquo;</strong></p>
+<p><img src="./images/PHP 管理树莓派0.jpg" alt="" /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,314 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP学习之文件上传类' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP学习之文件上传类</center></div><div class='banquan'>原文出处:本文由博客园博主随缘盛世提供。<br/>
+原文连接:https://www.cnblogs.com/shengChristine/p/10955127.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$up</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Upload();
+</span><span style="color: #800080;">$newPath</span> = <span style="color: #800080;">$up</span>-&gt;uploadFile('fm'<span style="color: #000000;">);
+</span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$newPath</span> === <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+    </span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$up</span>-&gt;<span style="color: #000000;">errorNumber);
+    </span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$up</span>-&gt;<span style="color: #000000;">errorInfo);
+} </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+    </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$newPath</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Upload
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">文件上传保存路径</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$path</span> = './upload/'<span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">允许文件上传的后缀</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$allowSuffix</span> = ['jpg', 'jpeg', 'gif', 'wbmp', 'png'<span style="color: #000000;">];
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">允许文件上传的Mime类型</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$allowMime</span> = ['image/jpeg', 'image/gif', 'image/wbmp', 'image/png'<span style="color: #000000;">];
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">允许文件上传的文件最大大小</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$maxSize</span> = 2000000<span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">是否启用随机名</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$isRandName</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">加上文件前缀</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$prefix</span> = 'up_'<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">自定义的错误号码和错误信息</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$errorNumber</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #800080;">$errorInfo</span><span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">文件的信息</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$oldName</span>; <span style="color: #008000;">//</span><span style="color: #008000;">文件名</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$suffix</span>; <span style="color: #008000;">//</span><span style="color: #008000;">文件后缀</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$size</span>; <span style="color: #008000;">//</span><span style="color: #008000;">文件大小</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$mime</span>; <span style="color: #008000;">//</span><span style="color: #008000;">文件mime</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$tmpName</span>; <span style="color: #008000;">//</span><span style="color: #008000;">文件临时路径</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$newName</span>; <span style="color: #008000;">//</span><span style="color: #008000;">文件新名字</span>
+
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [])
+    {
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;setOption(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __get(<span style="color: #800080;">$name</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$name</span> == 'errorNumber'<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">errorNumber;
+        } </span><span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$name</span> == 'errorInfo'<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getErrorInfo();
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 判断这个$key是不是我的成员属性，如果是，则设置
+     *
+     * @param [type] $key
+     * @param [type] $value
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> setOption(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到所有的成员属性</span>
+        <span style="color: #800080;">$keys</span> = <span style="color: #008080;">array_keys</span>(<span style="color: #008080;">get_class_vars</span>(<span style="color: #ff00ff;">__CLASS__</span><span style="color: #000000;">));
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$keys</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #800080;">$key</span> = <span style="color: #800080;">$value</span><span style="color: #000000;">;
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 文件上传函数
+     * $key 就是你input框中的name属性值
+     *
+     * @param [type] $key
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> uploadFile(<span style="color: #800080;">$key</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">判断有没有设置路径  path</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">path)) {
+            </span><span style="color: #800080;">$this</span>-&gt;setOption('errorNumber', -1<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">判断该路径是否存在，是否可写</span>
+        <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">check()) {
+            </span><span style="color: #800080;">$this</span>-&gt;setOption('errorNumber', -2<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">判断$_FILES里面的error信息是否为0，如果为0，说明文件信息在服务器端可以直接获取，提取信息保存到成员属性中</span>
+        <span style="color: #800080;">$error</span> = <span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$key</span>]['error'<span style="color: #000000;">];
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$error</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;setOption('errorNumber', <span style="color: #800080;">$error</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">提取文件相关信息并且保存到成员属性中</span>
+            <span style="color: #800080;">$this</span>-&gt;getFileInfo(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">判断文件的大小、mime、后缀是否符合</span>
+        <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$this</span>-&gt;checkSize() || !<span style="color: #800080;">$this</span>-&gt;checkMime() || !<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">checkSuffix()) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到新的文件名字</span>
+        <span style="color: #800080;">$this</span>-&gt;newName = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">createNewName();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">判断是否是上传文件，并且移动上传文件</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_uploaded_file</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">tmpName)) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$this</span>-&gt;tmpName, <span style="color: #800080;">$this</span>-&gt;path . <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">newName)) {
+                </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;path . <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">newName;
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$this</span>-&gt;setOption('errorNumber', -7<span style="color: #000000;">);
+                </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+            }
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$this</span>-&gt;setOption('errorNumber', -6<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 得到文件的新名字
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> createNewName()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">判断是否使用随机名</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">isRandName) {
+            </span><span style="color: #800080;">$name</span> = <span style="color: #800080;">$this</span>-&gt;prefix . <span style="color: #008080;">uniqid</span>() . '.' . <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">suffix;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$name</span> = <span style="color: #800080;">$this</span>-&gt;prefix . <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">oldName;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 判断该路径是否存在，是否可写
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> check()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">文件夹不存在或者不是目录。创建文件夹</span>
+        <span style="color: #0000ff;">if</span> (!<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$this</span>-&gt;path) || !<span style="color: #008080;">is_dir</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">path)) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">mkdir</span>(<span style="color: #800080;">$this</span>-&gt;path, 0777, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">判断文件是否可写</span>
+        <span style="color: #0000ff;">if</span> (!<span style="color: #008080;">is_writeable</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">path)) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">chmod</span>(<span style="color: #800080;">$this</span>-&gt;path, 0777<span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 提取文件相关信息并且保存到成员属性中
+     *
+     * @param [type] $key
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> getFileInfo(<span style="color: #800080;">$key</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 得到文件名字</span>
+        <span style="color: #800080;">$this</span>-&gt;oldName = <span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$key</span>]['name'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到文件的mime类型</span>
+        <span style="color: #800080;">$this</span>-&gt;mime = <span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$key</span>]['type'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到文件临时路径</span>
+        <span style="color: #800080;">$this</span>-&gt;tmpName = <span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$key</span>]['tmp_name'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到文件大小</span>
+        <span style="color: #800080;">$this</span>-&gt;size = <span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$key</span>]['size'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到文件后缀</span>
+        <span style="color: #800080;">$this</span>-&gt;suffix = <span style="color: #008080;">pathinfo</span>(<span style="color: #800080;">$this</span>-&gt;oldName)['extension'<span style="color: #000000;">];
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 判断文件大小
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> checkSize()
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;size &gt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">maxSize) {
+            </span><span style="color: #800080;">$this</span>-&gt;setOption('errorNumber', -3<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 判断文件的mime是否符合
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> checkMime()
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$this</span>-&gt;mime, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">allowMime)) {
+            </span><span style="color: #800080;">$this</span>-&gt;setOption('errorNumber', -4<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 判断文件的后缀是否符合
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> checkSuffix()
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$this</span>-&gt;suffix, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">allowSuffix)) {
+            </span><span style="color: #800080;">$this</span>-&gt;setOption('errorNumber', -5<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 返回错误信息
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getErrorInfo()
+    {
+        </span><span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">errorNumber) {
+            </span><span style="color: #0000ff;">case</span> -1:
+                <span style="color: #800080;">$str</span> = '文件路径没有设置'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> -2:
+                <span style="color: #800080;">$str</span> = '文件路径不是目录或者没有权限'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> -3:
+                <span style="color: #800080;">$str</span> = '文件大小超过指定范围'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> -4:
+                <span style="color: #800080;">$str</span> = '文件mime类型不符合'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> -5:
+                <span style="color: #800080;">$str</span> = '文件后缀不符合'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> -6:
+                <span style="color: #800080;">$str</span> = '不是上传文件'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> -7:
+                <span style="color: #800080;">$str</span> = '文件上传失败'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 1:
+                <span style="color: #800080;">$str</span> = '文件超出php.ini设置大小'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 2:
+                <span style="color: #800080;">$str</span> = '文件超出html设置大小'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 3:
+                <span style="color: #800080;">$str</span> = '文件部分上传'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 4:
+                <span style="color: #800080;">$str</span> = '没有文件上传'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 6:
+                <span style="color: #800080;">$str</span> = '找不到临时文件'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 7:
+                <span style="color: #800080;">$str</span> = '文件写入失败'<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$str</span><span style="color: #000000;">;
+    }
+}</span></code></pre>
+
+<p>测试代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">DOCTYPE html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html </span><span style="color: #ff0000;">lang</span><span style="color: #0000ff;">="en"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">="UTF-8"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">name</span><span style="color: #0000ff;">="viewport"</span><span style="color: #ff0000;"> content</span><span style="color: #0000ff;">="width=device-width, initial-scale=1.0"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">http-equiv</span><span style="color: #0000ff;">="X-UA-Compatible"</span><span style="color: #ff0000;"> content</span><span style="color: #0000ff;">="ie=edge"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>上传文件<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="Upload.php"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="post"</span><span style="color: #ff0000;"> enctype</span><span style="color: #0000ff;">="multipart/form-data"</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="fm"</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br </span><span style="color: #0000ff;">/&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="上传"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>运行结果：</p>
+<p><img src="https://img2018.cnblogs.com/blog/1318317/201905/1318317-20190531143533457-1029230096.png" alt="" /></p>
+<p><img src="https://img2018.cnblogs.com/blog/1318317/201905/1318317-20190531143550551-1871785346.png" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

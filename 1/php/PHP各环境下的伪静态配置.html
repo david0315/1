@@ -1,0 +1,81 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP各环境下的伪静态配置' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP各环境下的伪静态配置</center></div><div class='banquan'>原文出处:本文由博客园博主每①天都是↗开始提供。<br/>
+原文连接:https://www.cnblogs.com/huangxiaotao/p/10517946.html</div><br>
+    <p>一、Apache的伪静态配置</p>
+<p>1、网站根目录下需要有&nbsp;.htaccess 文件，没有则自己创建一个，内容为</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;IfModule mod_rewrite.c&gt;
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php/$1 [QSA,PT,L]
+&lt;/IfModule&gt;
+</code></pre>
+
+<p>如果你的apache是fastcgi模式下，则需要修改&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>RewriteRule ^(.*)$ index.php/$1 [QSA,PT,L] 
+替换成 
+RewriteRule ^(.*)$ index.php [L,E=PATH_INFO:$1]
+</code></pre>
+
+<p>2、在apache的配置文件httpd.conf中查找 : LoadModule rewrite_module modules/mod_rewrite.so&nbsp; 将前面的#去掉，假如没有这段内容，则需要手动加上</p>
+<p>3、在apache的配置文件httpd.conf中查找所有的 AllowOverride None，将 None 都替换成 All . 保存文件 并重启apache服务。</p>
+<p>&nbsp;</p>
+<p>二、Nginx的伪静态配置</p>
+<p>找到nginx的配置文件 nginx.conf, 在里面的 server{ } 里增加以下内容&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>location / {
+      if (!-e $request_filename) {
+             rewrite  ^(.*)$  /index.php?s=$1  last;  
+             break;
+      }
+}</code></pre>
+
+<p>重启nginx即可生效</p>
+<p>　　</p>
+<p>三、IIS的伪静态配置</p>
+<pre><code>如果你的服务器环境支持ISAPI_Rewrite的话，可以配置httpd.ini文件，添加下面的内容：</code></pre>
+<src class="cnblogs_Highlighter">
+<pre class="brush:csharp;gutter:true;">RewriteRule (.*)$ /index\.php\?s=$1 [I]</code></pre>
+
+<pre><code>在IIS的高版本下面可以配置web.Config，在中间添加rewrite节点：</code></pre>
+<src class="cnblogs_Highlighter">
+<pre class="brush:csharp;gutter:true;">&lt;rewrite&gt;
+&lt;rules&gt;
+&lt;rule name="OrgPage" stopProcessing="true"&gt;
+&lt;match url="^(.*)$" /&gt;
+&lt;conditions logicalGrouping="MatchAll"&gt;
+&lt;add input="{HTTP_HOST}" pattern="^(.*)$" /&gt;
+&lt;add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" /&gt;
+&lt;add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" /&gt;
+&lt;/conditions&gt;
+&lt;action type="Rewrite" url="index.php/{R:1}" /&gt;
+&lt;/rule&gt;
+&lt;/rules&gt;
+&lt;/rewrite&gt;
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

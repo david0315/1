@@ -1,0 +1,77 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 性能优化 - php.ini 配置' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 性能优化 - php.ini 配置</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11872038.html</div><br>
+    <h2>内存</h2>
+<p>默认设置</p>
+<pre><code><code class="  language-php">memory_limit <span class="token operator">= <span class="token number">128<span class="token constant">M</span></span></span></code></code></pre>
+<p>单个进程可使用的内存最大值，这个值的设定可以从以下几点考虑：</p>
+<ul>
+<li>应用的类型。如果是内存集中型应用，可增加该值；</li>
+<li>单个 PHP 进程平均消耗的内存，该值可通过多次运行同一个脚本来计算平均值；</li>
+<li>能负担多少个 php-fpm 进程；该值等于分配的总内存除以单个 PHP 进程平均消耗的内存；</li>
+</ul>
+<src data-unique="481e03">&nbsp;
+<h2>文件上传</h2>
+<p>默认设置</p>
+<pre><code><code class="  language-php">file_uploads <span class="token operator">= On
+max_file_uploads <span class="token operator">= <span class="token number">20
+upload_max_filesize <span class="token operator">= <span class="token number">2<span class="token constant">M
+max_execution_time <span class="token operator">= <span class="token number">30 值 为 <span class="token number">0 代表没有限制</span></span></span></span></span></span></span></span></span></code></code></pre>
+<ul>
+<li>设置&nbsp;<code>max_file_uploads</code>&nbsp;来决定同时允许多少个文件上传；</li>
+<li>设置&nbsp;<code>upload_max_filesize</code>&nbsp;来决定每个文件上传的最大值；</li>
+<li>如果是长时间任务，尽量使用队列来处理，因此，可适当缩短&nbsp;<code>max_execution_time</code>&nbsp;的值；</li>
+</ul>
+<blockquote>
+<p>注意， Web 服务器也可以设置文件上传大小及超时时间，不能仅仅以 php.ini 的设置为准；</p>
+</blockquote>
+<src data-unique="9a834e">&nbsp;
+<h2>会话</h2>
+<p>PHP 的会话默认是保存在硬盘中</p>
+<pre><code><code class="  language-php">session<span class="token punctuation">.save_handler <span class="token operator">= files</span></span></code></code></pre>
+<p>在实际应用中，应当将会话保存在内存中。可使用 Memcached 或者 Redis。这样做主要有两个好处：</p>
+<ul>
+<li>提高速度；</li>
+<li>有助于后期的扩展，如果会话数据存储在硬盘中，不便于增加额外的服务器，如果把会话数据存放在 Memcached 或 Redis 里，任何一台分布式 PHP-FPM 服务器都能访问会话数据。</li>
+</ul>
+<p>可通过 PECL 安装&nbsp;<a href="https://pecl.php.net/package/memcached">memcached</a>&nbsp;扩展并设置默认的&nbsp;<code>save_handler</code>&nbsp;为&nbsp;<code>memcached</code></p>
+<pre><code><code class="  language-php">session<span class="token punctuation">.save_handler <span class="token operator">= <span class="token single-quoted-string string">'memcached'
+session<span class="token punctuation">.save_path <span class="token operator">= <span class="token single-quoted-string string">'127.0.0.1:11211'</span></span></span></span></span></span></code></code></pre>
+<src data-unique="5a1d07">&nbsp;
+<h2>缓冲输出</h2>
+<p>默认值</p>
+<pre><code><code class="  language-php">output_buffering <span class="token operator">= <span class="token number">4096</span></span></code></code></pre>
+<p>在较少的片段中把内容传递给访问者的浏览器，能减少 HTTP 请求总数。 因此，我们要让 PHP 缓冲输出，默认情况下，PHP 已经启用了输出缓冲功能，PHP 缓冲 4096 字节的输出之后才会把内容发送给 Web 服务器。</p>
+<blockquote>
+<p>注：如果想要修改输出缓冲区的大小，确保使用的值是 4（32 位系统）或 8（64 位系统）的倍数。</p>
+</blockquote>
+<src data-unique="c2f9f2">&nbsp;
+<h2>真实路径缓存</h2>
+<p>默认值</p>
+<pre><code><code class="  language-php">realpath_cache_size <span class="token operator">= <span class="token number">4<span class="token constant">M
+realpath_cache_ttl <span class="token operator">= <span class="token number">120</span></span></span></span></span></code></code></pre>
+<p>PHP 会缓存应用使用的文件路径，这样每次包含或导入文件时就无需不断搜索包含路径了，这个缓存叫真实路径缓存（realpath cache），如果运行的是大型的 PHP 文件（如 Composer 组件），使用了大量文件，增加 PHP 真实路径缓存的大小能得到更好的性能。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,66 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 魔术方法__get __set __sleep __wakeup的实际使用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 魔术方法__get __set __sleep __wakeup的实际使用</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10532058.html</div><br>
+    <p>1.__get __set是在给不可访问属性赋值和读取时,调用</p>
+<p>2.__sleep 是在序列化对象的时候调用</p>
+<p>3.__wakeup是在反序列化对象的时候调用</p>
+<p>4.可以在序列化对象的时候 , 只序列化指定的属性 , 减少序列化后的大小, 要把这个对象字符串存储在比如memcache的时候 ,比较有用</p>
+<p>&nbsp;5.比如下面的例子 , 我只序列化了data属性 , 在__sleep函数里进行限制</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+class Test{
+	public $name;
+	protected $data=array();
+	public function __set($name,$value){
+		$this-&gt;data[$name]=$value;
+	}
+	public function __get($name){
+		if(!isset($this-&gt;data[$name])){
+			return "";
+		}
+		return $this-&gt;data[$name];
+	}
+	public function __sleep(){
+		echo "sleep...\r\n";
+		return array('data');
+	}
+	public function __wakeup(){
+		echo "wakeup...\r\n";
+	}
+}
+$test=new Test();
+$test-&gt;name="我不会被序列化进去";
+$test-&gt;bbbb="taoshihan";
+
+
+$testObjectStr=serialize($test);
+var_dump($testObjectStr);
+var_dump(unserialize($testObjectStr));
+</code></pre>
+
+<p>　　</p>
+<p>&nbsp;</p>
+<p><img src="./images/[PHP] 魔术方法__get __set __sleep __wakeup的实际使用0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,100 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【php设计模式】责任链模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【php设计模式】责任链模式</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/11059625.html</div><br>
+    <p><span style="background-color: #ff6600;">&nbsp;</span> 责任链模式为请求创建了一个接收者对象的链。这种模式给予请求的类型，对请求的发送者和接收者进行解耦。这种类型的设计模式属于行为型模式。</p>
+<p><span style="background-color: #ff6600;">&nbsp;</span> 在这种模式中，通常每个接收者都包含对另一个接收者的引用。如果一个对象不能处理该请求，那么它会把相同的请求传给下一个接收者，依此类推。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">define</span>("WARNING_LEVEL", 1<span style="color: #000000;">);
+</span><span style="color: #008080;">define</span>("DEBUG_LEVEL", 2<span style="color: #000000;">);
+</span><span style="color: #008080;">define</span>("ERROR_LEVEL", 3<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> AbstractLog{
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #800080;">$level</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #800080;">$nextlogger</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$level</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;level = <span style="color: #800080;">$level</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> setNextLogger(<span style="color: #800080;">$next_logger</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;nextlogger = <span style="color: #800080;">$next_logger</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> logMessage(<span style="color: #800080;">$level</span>,<span style="color: #800080;">$message</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;level == <span style="color: #800080;">$level</span><span style="color: #000000;">){
+            </span><span style="color: #800080;">$this</span>-&gt;write(<span style="color: #800080;">$message</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">nextlogger){
+            </span><span style="color: #800080;">$this</span>-&gt;nextlogger-&gt;logMessage(<span style="color: #800080;">$level</span>,<span style="color: #800080;">$message</span><span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">function</span> write(<span style="color: #800080;">$message</span><span style="color: #000000;">);
+}
+
+</span><span style="color: #0000ff;">class</span> DebuggLogger <span style="color: #0000ff;">extends</span><span style="color: #000000;"> AbstractLog{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> write(<span style="color: #800080;">$message</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "Debug info: {<span style="color: #800080;">$message</span>} \n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span> WarningLogger <span style="color: #0000ff;">extends</span><span style="color: #000000;"> AbstractLog{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> write(<span style="color: #800080;">$message</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "Warning info: {<span style="color: #800080;">$message</span>} \n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span> ErrorLogger <span style="color: #0000ff;">extends</span><span style="color: #000000;"> AbstractLog{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> write(<span style="color: #800080;">$message</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "Error info: {<span style="color: #800080;">$message</span>} \n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">function</span><span style="color: #000000;"> getChainOfLoggers(){
+    </span><span style="color: #800080;">$warning</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> WarningLogger(WARNING_LEVEL);
+    </span><span style="color: #800080;">$debugg</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> DebuggLogger(DEBUG_LEVEL);
+    </span><span style="color: #800080;">$error</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> ErrorLogger(ERROR_LEVEL);
+
+    </span><span style="color: #800080;">$warning</span>-&gt;setNextLogger(<span style="color: #800080;">$debugg</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$debugg</span>-&gt;setNextLogger(<span style="color: #800080;">$error</span><span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$warning</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #800080;">$chain</span> =<span style="color: #000000;"> getChainOfLoggers();
+
+</span><span style="color: #800080;">$chain</span>-&gt;logMessage(WARNING_LEVEL,"这是一条警告"<span style="color: #000000;">);
+</span><span style="color: #800080;">$chain</span>-&gt;logMessage(DEBUG_LEVEL,"这是一条Debug"<span style="color: #000000;">);
+</span><span style="color: #800080;">$chain</span>-&gt;logMessage(ERROR_LEVEL,"这是一条致命错误");</code></pre>
+
+<p>输出</p>
+<src class="cnblogs_code">
+<pre><code>Warning info:<span style="color: #000000;"> 这是一条警告
+Debug info</span>:<span style="color: #000000;"> 这是一条Debug
+Error info</span>: 这是一条致命错误</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

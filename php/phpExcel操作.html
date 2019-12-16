@@ -1,0 +1,149 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修phpExcel操作' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>phpExcel操作</center></div><div class='banquan'>原文出处:本文由博客园博主AnnanL提供。<br/>
+原文连接:https://www.cnblogs.com/annanl/p/10888458.html</div><br>
+    <h3>下载PHPExcel资源</h3>
+<p><a href="https://github.com/PHPOffice/PHPExcel">https://github.com/PHPOffice/PHPExcel</a></p>
+<p>&nbsp;</p>
+<h3>引入PHPExcel资源</h3>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">include</span> "/lib/PHPExcel/Classes/PHPExcel/IOFactory.php";<span style="color: #008000;">//</span><span style="color: #008000;">读取Excel所需文件</span>
+<span style="color: #0000ff;">include</span> "/lib/PHPExcel/Classes/PHPExcel.php"; <span style="color: #008000;">//</span><span style="color: #008000;">写入excel所需的类文件</span></code></pre>
+
+<p>&nbsp;</p>
+<h3>构造myExcelUtil类</h3>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">private</span> <span style="color: #800080;">$fileName</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$sheet</span> = 0<span style="color: #000000;">;
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * myExcelUtil构造函数，构造参数为文件路径
+ *
+ * @param String $fileName
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$fileName</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$this</span>-&gt;fileName = <span style="color: #800080;">$fileName</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<h3>读出一个sheet表</h3>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 读取一个sheet表，默认第一个
+ *
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> readSheet()
+{
+    </span><span style="color: #800080;">$this</span>-&gt;readSheetBySheet(0<span style="color: #000000;">);
+}
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 读取一个sheet表
+ * @param String|int $sheetIndex,表名或索引
+ * @return array,二维数组
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> readSheetBySheet(<span style="color: #800080;">$sheetIndex</span> = 0<span style="color: #000000;">)
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">$filename = 'xuehua04.xlsx';</span>
+    date_default_timezone_set('PRC'<span style="color: #000000;">);
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 读取excel文件</span>
+    <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$inputFileType</span> = PHPExcel_IOFactory::identify(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">fileName);
+        </span><span style="color: #800080;">$objReader</span> = PHPExcel_IOFactory::createReader(<span style="color: #800080;">$inputFileType</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$objPHPExcel</span> = <span style="color: #800080;">$objReader</span>-&gt;load(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">fileName);
+    } </span><span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">die</span>("加载文件发生错误：" . <span style="color: #008080;">pathinfo</span>(<span style="color: #800080;">$this</span>-&gt;fileName, PATHINFO_BASENAME) . ":" . <span style="color: #800080;">$e</span>-&gt;<span style="color: #000000;">getMessage());
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 确定要读取的sheet</span>
+    <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$sheet</span> = <span style="color: #800080;">$objPHPExcel</span>-&gt;getSheet(<span style="color: #800080;">$sheetIndex</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;setSheet(<span style="color: #800080;">$sheet</span>-&gt;<span style="color: #000000;">getTitle());
+    } </span><span style="color: #0000ff;">catch</span> (PHPExcel_Exception <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+    }
+    </span><span style="color: #800080;">$highestRow</span> = <span style="color: #800080;">$sheet</span>-&gt;<span style="color: #000000;">getHighestRow();
+    </span><span style="color: #800080;">$highestColumn</span> = <span style="color: #800080;">$sheet</span>-&gt;<span style="color: #000000;">getHighestColumn();
+
+    </span><span style="color: #800080;">$outputArray</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 获取一行的数据</span>
+    <span style="color: #0000ff;">for</span> (<span style="color: #800080;">$row</span> = 1; <span style="color: #800080;">$row</span> &lt;= <span style="color: #800080;">$highestRow</span>; <span style="color: #800080;">$row</span>++<span style="color: #000000;">) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> Read a row of data into an array</span>
+        <span style="color: #800080;">$rowData</span> = <span style="color: #800080;">$sheet</span>-&gt;rangeToArray("A" . <span style="color: #800080;">$row</span> . ":" . <span style="color: #800080;">$highestColumn</span> . <span style="color: #800080;">$row</span>, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">TRUE</span>, <span style="color: #0000ff;">FALSE</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">这里得到的rowData都是一行的数据，得到数据后自行处理，我们这里只打出来看看效果</span>
+        <span style="color: #800080;">$outputArray</span>[] = <span style="color: #800080;">$rowData</span>[0<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">print_r($rowData);</span>
+<span style="color: #000000;">    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$outputArray</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<h3>插入一条数据</h3>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 向指定表指定位置插入数据
+ * @param String|int $sheetIndex,表名或索引
+ * @param int $row,行
+ * @param int $col,列
+ * @param string $value,值
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> addCellValueByRC(<span style="color: #800080;">$sheetIndex</span> = 0, <span style="color: #800080;">$row</span> = 0, <span style="color: #800080;">$col</span> = 0, <span style="color: #800080;">$value</span> = ""<span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$inputArray</span> = <span style="color: #800080;">$this</span>-&gt;readSheetBySheet(0<span style="color: #000000;">);
+    </span><span style="color: #800080;">$inputArray</span>[<span style="color: #800080;">$row</span> - 1][<span style="color: #800080;">$col</span> - 1] = <span style="color: #800080;">$value</span><span style="color: #000000;">;
+
+    </span><span style="color: #800080;">$objPHPExcel</span> = <span style="color: #0000ff;">new</span> PHPExcel();                     <span style="color: #008000;">//</span><span style="color: #008000;">实例化一个PHPExcel()对象</span>
+    <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$objSheet</span> = <span style="color: #800080;">$objPHPExcel</span>-&gt;<span style="color: #000000;">getActiveSheet();
+    } </span><span style="color: #0000ff;">catch</span> (PHPExcel_Exception <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+    }        </span><span style="color: #008000;">//</span><span style="color: #008000;">选取当前的sheet对象</span>
+
+    <span style="color: #800080;">$objSheet</span>-&gt;setTitle(<span style="color: #800080;">$this</span>-&gt;getSheet());      <span style="color: #008000;">//</span><span style="color: #008000;">对当前sheet对象命名
+    //常规方式：利用setCellValue()填充数据
+    //$objSheet-&gt;setCellValue("A1", "张三")-&gt;setCellValue("B1", "李四");   //利用setCellValues()填充数据</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;">$arrayLength = count($inputArray);
+    $basic = 'A';
+    for($i = 0;$i&lt;$arrayLength;$i++){
+        foreach ($inputArray[$i] as $key =&gt; $d){
+            $objSheet-&gt;setCellValue($basic.($i+1), $d);
+            $basic++;
+        }
+        $basic = 'A';
+    }</span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">//</span><span style="color: #008000;">取巧模式：利用fromArray()填充数据</span>
+    <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$objSheet</span>-&gt;fromArray(<span style="color: #800080;">$inputArray</span><span style="color: #000000;">);
+    } </span><span style="color: #0000ff;">catch</span> (PHPExcel_Exception <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+    }  </span><span style="color: #008000;">//</span><span style="color: #008000;">利用fromArray()直接一次性填充数据*/</span>
+    <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$objWriter</span> = PHPExcel_IOFactory::createWriter(<span style="color: #800080;">$objPHPExcel</span>, 'Excel2007'<span style="color: #000000;">);
+    } </span><span style="color: #0000ff;">catch</span> (PHPExcel_Reader_Exception <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+    }   </span><span style="color: #008000;">//</span><span style="color: #008000;">设定写入excel的类型</span>
+    <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$objWriter</span>-&gt;save(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getFileName());
+    } </span><span style="color: #0000ff;">catch</span> (PHPExcel_Writer_Exception <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+    }       </span><span style="color: #008000;">//</span><span style="color: #008000;">保存文件</span>
+}</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,135 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP变量传值赋值和引用赋值，变量销毁' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP变量传值赋值和引用赋值，变量销毁</center></div><div class='banquan'>原文出处:本文由博客园博主html55提供。<br/>
+原文连接:https://www.cnblogs.com/html55/p/10577366.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>    <span style="color: #800080;">$a</span> = 100<span style="color: #000000;">;
+</span>    <span style="color: #800080;">$b</span> = 200<span style="color: #000000;">;
+</span><span style="color: #008080;"><br /></span></code></pre>
+
+<p>php中，上面代码中变量是怎么存放的呢？</p>
+<p><img src="./images/PHP变量传值赋值和引用赋值，变量销毁0.jpg" alt="" /></p>
+<p>此时若将b赋值给a，即</p>
+<pre><code> 传值赋值 $a = $b; 和 引用赋值$a = &amp;$b; 有什么区别呢?</code></pre>
+<p><img src="./images/PHP变量传值赋值和引用赋值，变量销毁1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;传值赋值就是复制过去，然后各玩各的，互不影响。</p>
+<p>引用赋值是两个变量指向一个盒子，一旦这样，一改俱改。</p>
+<p>这样赋予变量a的就不仅仅是变量b的值，而是变量b的地址，变量a和变量b共同指向一个地址。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$a</span> = 100<span style="color: #000000;">;
+</span><span style="color: #008080;"> 3</span>     <span style="color: #800080;">$b</span> = 200<span style="color: #000000;">;
+</span><span style="color: #008080;"> 4</span>     
+<span style="color: #008080;"> 5</span>     <span style="color: #800080;">$a</span> = &amp;<span style="color: #800080;">$b</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span>,<span style="color: #800080;">$b</span>); <span style="color: #008000;">//</span><span style="color: #008000;">int(200) int(200)</span>
+<span style="color: #008080;"> 7</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">变量b引用赋值给变量a后，ab指向同一个地址，将会一改俱改，如下：</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 8</span>     <span style="color: #800080;">$a</span> =500<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 9</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span>,<span style="color: #800080;">$b</span>);<span style="color: #008000;">//</span><span style="color: #008000;">int(500) int(500)    一改俱改之改a也改了b</span>
+<span style="color: #008080;">10</span>     <span style="color: #800080;">$b</span> = 700<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span>,<span style="color: #800080;">$b</span>);<span style="color: #008000;">//</span><span style="color: #008000;">int(700) int(700)    一改俱改之改b也改了a</span>
+<span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>     <span style="color: #800080;">$c</span> = 900<span style="color: #000000;">;
+</span><span style="color: #008080;">14</span>     <span style="color: #800080;">$a</span> = <span style="color: #800080;">$c</span><span style="color: #000000;">;
+</span><span style="color: #008080;">15</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span>,<span style="color: #800080;">$b</span>);<span style="color: #008000;">//</span><span style="color: #008000;">int(900) int(900)    一改俱改之其他变量值复制给a、b</span>
+<span style="color: #008080;">16</span> ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">理解下面的话</span><span style="color: #008000;">*/</span>
+
+<span style="color: #800080;">$a</span> = 100<span style="color: #000000;">; 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">变量a赋值int 100 ，100是基础数据类型，不是变量，新建一个盒子，里面存放int 100，让a指向它</span>
+
+<span style="color: #800080;">$a</span> = <span style="color: #800080;">$b</span><span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">变量b的值 赋值 给变量a，变量a，b各有各的指向，执行之后，各是各的。</span>
+
+<span style="color: #800080;">$a</span> = &amp;<span style="color: #800080;">$b</span><span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">变量b的值的地址 赋值给变量 a ,变量a,b共用一个地址哦！一改俱改！</span>
+
+
+?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p><strong>销毁变量用unset</strong></p>
+<p>在php中，变量占据了两个地方，1.花名册中占个名字&nbsp; &nbsp;2.存储其值的&ldquo;盒子&rdquo;（其实就是内存中一块地方）。</p>
+<p>unset($a) ;会发生什么？</p>
+<p>首先，会将$a这个变量扔出花名册，于是没有这个变量了。</p>
+<p>其次，检查有没有其他变量也指向这个&ldquo;盒子&rdquo;，如果没有其他变量指向这个&ldquo;盒子&rdquo;，再检查盒子所占空间超过255字节长没？超过了，盒子才会被销毁（释放内存）没超过255字节，则不释放内存（销毁盒子）。</p>
+<p>要想释放内存，可以用</p>
+<p>$a&nbsp; = null;的方式，这样盒子被销毁了，但是中花名册中还有该变量哦！</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">引用赋值一改俱改，但是unset不是改盒子里的值，所以unset变量a，变量b没变化</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">2</span>     <span style="color: #800080;">$a</span> = 200<span style="color: #000000;">;
+</span><span style="color: #008080;">3</span>     <span style="color: #800080;">$b</span> = &amp;<span style="color: #800080;">$a</span><span style="color: #000000;">;
+</span><span style="color: #008080;">4</span>     <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">);
+</span><span style="color: #008080;">5</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span>,<span style="color: #800080;">$b</span>); <span style="color: #008000;">//</span><span style="color: #008000;">NULL int(100)</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>上面的代码，执行到unset($a)时候，就是将变量a的指向断开，同时将变量a扔出花名册，从下图可以看出，对变量b是没有影响的。</p>
+<p><img src="./images/PHP变量传值赋值和引用赋值，变量销毁2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>但是，如果用$a = null;这种方式销毁变量时，将会有如下影响：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$a</span> = 100<span style="color: #000000;">;
+</span><span style="color: #008080;">3</span>     <span style="color: #800080;">$b</span> = &amp;<span style="color: #800080;">$a</span><span style="color: #000000;">;
+</span><span style="color: #008080;">4</span>     <span style="color: #800080;">$a</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">5</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span>,<span style="color: #800080;">$b</span>); <span style="color: #008000;">//</span><span style="color: #008000;">NULL NULL</span>
+<span style="color: #008080;">6</span> ?&gt;</code></pre>
+
+<p>&nbsp;这种方式，释放了内存，但是共用一个地址的另一个变量也受到了影响。</p>
+<p><img src="./images/PHP变量传值赋值和引用赋值，变量销毁3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;<img src="./images/PHP变量传值赋值和引用赋值，变量销毁4.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>看看这两种方式在数组上的应用：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$aaa</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;"> 3</span>         'a'=&gt;1,
+<span style="color: #008080;"> 4</span>         'b'=&gt;2
+<span style="color: #008080;"> 5</span> <span style="color: #000000;">    );
+</span><span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$aaa</span>['a'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 7</span>     <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$aaa</span>); <span style="color: #008000;">//</span><span style="color: #008000;">Array ( [b] =&gt; 2 ) ，用unset，扔出花名册，数组中这一项不存在了</span>
+<span style="color: #008080;"> 8</span>     
+<span style="color: #008080;"> 9</span>     
+<span style="color: #008080;">10</span>     
+<span style="color: #008080;">11</span>     <span style="color: #800080;">$bbb</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">12</span>         'a'=&gt;1,
+<span style="color: #008080;">13</span>         'b'=&gt;2
+<span style="color: #008080;">14</span> <span style="color: #000000;">    );
+</span><span style="color: #008080;">15</span>     <span style="color: #800080;">$bbb</span>['a'] = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">16</span>     <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$bbb</span>); <span style="color: #008000;">//</span><span style="color: #008000;">Array ( [a] =&gt; [b] =&gt; 2 ) ，用 = null,数组中这一项还存在，只是值为空了</span>
+<span style="color: #008080;">17</span> ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

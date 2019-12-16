@@ -1,0 +1,349 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP代码篇（五）--如何将图片文件上传到另外一台服务上' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP代码篇（五）--如何将图片文件上传到另外一台服务上</center></div><div class='banquan'>原文出处:本文由博客园博主在斑马线上散布提供。<br/>
+原文连接:https://www.cnblogs.com/camg/p/11410109.html</div><br>
+    <p>　　说，我有一个需求，就是一个临时功能。由于工作开发问题，我们有一个B项目，需要有一个商品添加的功能，涉及到添加商品内容，比如商品名字，商品描述，商品库存，商品图片等。后台商品添加的接口已经写完了，但是问题是目前没有后台页面，就是产品还没有出后台详细页面。前端已经完备了，上线了。后台还需要工作时间处理。所以目前的处理方法是在我们已经存在的A项目后台中，添加一个对B项目添加商品的功能。</p>
+<p><img style="border: 2px solid black;" src="./images/PHP代码篇（五）--如何将图片文件上传到另外一台服务上0.jpg" alt="" /></p>
+<p>　　</p>
+<p>　　一、当下问题</p>
+<p>　　1、在我们已有的A项目中，新增一个添加商品的功能，这个本来是没有什么问题的，因为目前A项目中本身就已经连接了B项目的数据库，所以商品属性的新增和修改都没什么问题。主要是商品图片的上传这里，有点问题。B项目已经对外提供了上传图片的接口，但是由于我确实对前端不是特别熟悉。所以在A项目中的后台JS中调取B项目的上传图片的接口时，一直提示"CORS",这里应该是存在一个跨域的问题，虽然我PHP接口端已经对跨域做了处理（入口文件处），但是貌似JS这边也需要相应的调整。</p>
+<p><img style="border: 2px solid black;" src="./images/PHP代码篇（五）--如何将图片文件上传到另外一台服务上1.jpg" alt="" /></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> [ 应用入口文件 ]
+//入口文件index.php  </span>
+<span style="color: #000000;">namespace think;
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 加载基础文件</span>
+<span style="color: #0000ff;">require</span> __DIR__ . '/thinkphp/base.php'<span style="color: #000000;">;
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 支持事先使用静态方法设置Request对象和Config对象</span>
+<span style="color: #008080;">header</span>("Access-Control-Allow-Origin: *"<span style="color: #000000;">);
+</span><span style="color: #008080;">header</span>("Access-Control-Allow-Headers: Content-Type,XFILENAME,XFILECATEGORY,XFILESIZE,authorization"<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 执行应用并响应</span>
+Container::get('app')-&gt;bind('api')-&gt;run()-&gt;send();</code></pre>
+
+<p>&nbsp;　　2、无奈小白JS功底不够扎实，所以我这边准备通过A项目中调取后台PHP接口，然后通过在PHP代码中接受web端参数，然后再转发，调取B项目中上传图片的接口，试图完成功能。于是先通过Postman接口工具测试了一下B项目上传图片的接口是否有效。如图3，发现确实没有什么问题，于是就准备如此处理。</p>
+<p>&nbsp;<img style="border: 2px solid black;" src="./images/PHP代码篇（五）--如何将图片文件上传到另外一台服务上2.jpg" alt="" width="868" height="346" /></p>
+<p>&nbsp;</p>
+<p>　　3、但是实际是，在调取时，我们常用的传参数方式是GET或者POST方式，但是我们知道文件上传是通过$_FILES接受，下面是B项目的上传图片的控制器代码（用的是TP5.1），接受是通过内置的file方式。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*上传图片
+     * @param Request $request
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> uploadImg(Request <span style="color: #800080;">$request</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$file</span> = <span style="color: #800080;">$request</span>-&gt;<span style="color: #008080;">file</span>('image'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$type</span> = <span style="color: #800080;">$request</span>-&gt;post('type', 0<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 移动到框架应用根目录/uploads/ 目录下</span>
+        <span style="color: #800080;">$upload_path</span> = config('common.upload_path'<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$type</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">case</span> 1:<span style="color: #008000;">//</span><span style="color: #008000;">门店</span>
+                <span style="color: #800080;">$path</span> = <span style="color: #800080;">$upload_path</span>['shop_img'<span style="color: #000000;">];
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 2:<span style="color: #008000;">//</span><span style="color: #008000;">投票活动</span>
+                <span style="color: #800080;">$path</span> = <span style="color: #800080;">$upload_path</span>['vote_img'<span style="color: #000000;">];
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 3:<span style="color: #008000;">//</span><span style="color: #008000;">投票活动参赛图片</span>
+                <span style="color: #800080;">$path</span> = <span style="color: #800080;">$upload_path</span>['vote_contestant_img'<span style="color: #000000;">];
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 4:<span style="color: #008000;">//</span><span style="color: #008000;">会员店铺logo图片</span>
+                <span style="color: #800080;">$path</span> = <span style="color: #800080;">$upload_path</span>['member_shop'<span style="color: #000000;">];
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 5:<span style="color: #008000;">//</span><span style="color: #008000;">自营商品图片</span>
+                <span style="color: #800080;">$path</span> = <span style="color: #800080;">$upload_path</span>['self_goods'<span style="color: #000000;">];
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">default</span>:
+                <span style="color: #800080;">$path</span> = <span style="color: #800080;">$upload_path</span>['common'<span style="color: #000000;">];
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #800080;">$save_path</span> = env('root_path').<span style="color: #800080;">$path</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$info</span> = <span style="color: #800080;">$file</span>-&gt;validate(['ext'=&gt;'jpg,jpeg,png,gif'])-&gt;move(<span style="color: #800080;">$save_path</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$info</span><span style="color: #000000;">){
+            </span><span style="color: #800080;">$return</span> =<span style="color: #000000;"> [
+                </span>'extension' =&gt; <span style="color: #800080;">$info</span>-&gt;getExtension(),
+                'image_path' =&gt; <span style="color: #800080;">$path</span>.<span style="color: #800080;">$info</span>-&gt;getSaveName(),
+                'image_name' =&gt; <span style="color: #800080;">$info</span>-&gt;getFilename(),<span style="color: #000000;">
+            ];
+            </span><span style="color: #800080;">$this</span>-&gt;apiResult(CustomError::OPERATION_SUCCSESS, <span style="color: #800080;">$return</span><span style="color: #000000;">);
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #800080;">$this</span>-&gt;apiResult(CustomError::OPERATION_FAILED, [],  <span style="color: #800080;">$file</span>-&gt;<span style="color: #000000;">getError());
+        }
+    }</span></code></pre>
+
+<p>&nbsp;　　4、所以在转发A项目web端传来的，文件内容，就有点不知所措了。该死，该死。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">文件上传接受参数</span>
+<span style="color: #0000ff;">array</span>(1<span style="color: #000000;">) {
+  [</span>"file_upload"] =&gt; <span style="color: #0000ff;">array</span>(5<span style="color: #000000;">) {
+    [</span>"name"] =&gt; <span style="color: #0000ff;">string</span>(8) "timg.jpg"<span style="color: #000000;">
+    [</span>"type"] =&gt; <span style="color: #0000ff;">string</span>(10) "image/jpeg"<span style="color: #000000;">
+    [</span>"tmp_name"] =&gt; <span style="color: #0000ff;">string</span>(22) "C:\Windows\php73CE.tmp"<span style="color: #000000;">
+    [</span>"error"] =&gt; int(0<span style="color: #000000;">)
+    [</span>"size"] =&gt; int(355565<span style="color: #000000;">)
+  }
+}</span></code></pre>
+
+<p>&nbsp;　　5、所以按刚才设想的，简单做下转发还是不行，这里面参数的传输方式应该还有另外一种，就是文件的类型。鉴于是通过Postman方式上传成功，这个工具确实很推荐多多学习，他不仅作为一个第三方中间为我们验证接口是否可用，更给我们提供了调取接口的各种代码Damo,如图3中标识的Code处，就是获取Damo的按钮。我们点击可以看见Postman给我提供了三种，调取接口的方式。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">1、HttpRequest 发送http请求</span>
+<span style="color: #800080;">$request</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> HttpRequest();
+</span><span style="color: #800080;">$request</span>-&gt;setUrl('http://jszapi.dev.jingjinglego.com/index.php/index/uploadImg'<span style="color: #000000;">);
+</span><span style="color: #800080;">$request</span>-&gt;<span style="color: #000000;">setMethod(HTTP_METH_POST);
+
+</span><span style="color: #800080;">$request</span>-&gt;setHeaders(<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+  </span>'cache-control' =&gt; 'no-cache',
+  'Connection' =&gt; 'keep-alive',
+  'Content-Length' =&gt; '39091',
+  'Content-Type' =&gt; 'multipart/form-data; boundary=--------------------------296608706222243058746908',
+  'Accept-Encoding' =&gt; 'gzip, deflate',
+  'Host' =&gt; 'jszapi.dev.jingjinglego.com',
+  'Postman-Token' =&gt; 'dc010150-b166-4dec-a33f-959a65c91c71,be7315cb-ae21-404f-89fa-dddf5973eb3a',
+  'Cache-Control' =&gt; 'no-cache',
+  'Accept' =&gt; '*/*',
+  'User-Agent' =&gt; 'PostmanRuntime/7.15.2',
+  'content-type' =&gt; 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW'<span style="color: #000000;">
+));
+
+</span><span style="color: #800080;">$request</span>-&gt;setBody('<span style="color: #000000;">------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="785da43beca5a474.jpg"
+Content-Type: image/jpeg
+
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW--</span>'<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+  </span><span style="color: #800080;">$response</span> = <span style="color: #800080;">$request</span>-&gt;<span style="color: #000000;">send();
+
+  </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$response</span>-&gt;<span style="color: #000000;">getBody();
+} </span><span style="color: #0000ff;">catch</span> (HttpException <span style="color: #800080;">$ex</span><span style="color: #000000;">) {
+  </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$ex</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">2、pecl_http  需要开启PECL HTTP 扩展</span>
+<span style="color: #800080;">$client</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> http\Client;
+</span><span style="color: #800080;">$request</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> http\Client\Request;
+
+</span><span style="color: #800080;">$body</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> http\Message\Body;
+</span><span style="color: #800080;">$body</span>-&gt;addForm(<span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+  </span><span style="color: #0000ff;">array</span><span style="color: #000000;">(
+    </span>'name' =&gt; 'image',
+    'type' =&gt; <span style="color: #0000ff;">null</span>,
+    'file' =&gt; '/E:/MyBooks/网站图标/网站素材/785da43beca5a474.jpg',
+    'data' =&gt; <span style="color: #0000ff;">null</span><span style="color: #000000;">
+  )
+));
+
+</span><span style="color: #800080;">$request</span>-&gt;setRequestUrl('http://jszapi.dev.jingjinglego.com/index.php/index/uploadImg'<span style="color: #000000;">);
+</span><span style="color: #800080;">$request</span>-&gt;setRequestMethod('POST'<span style="color: #000000;">);
+</span><span style="color: #800080;">$request</span>-&gt;setBody(<span style="color: #800080;">$body</span><span style="color: #000000;">);
+
+</span><span style="color: #800080;">$request</span>-&gt;setHeaders(<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+  </span>'cache-control' =&gt; 'no-cache',
+  'Connection' =&gt; 'keep-alive',
+  'Content-Length' =&gt; '39091',
+  'Content-Type' =&gt; 'multipart/form-data; boundary=--------------------------296608706222243058746908',
+  'Accept-Encoding' =&gt; 'gzip, deflate',
+  'Host' =&gt; 'jszapi.dev.jingjinglego.com',
+  'Postman-Token' =&gt; 'dc010150-b166-4dec-a33f-959a65c91c71,3216cc22-be61-4d4b-8d41-c5178848b54f',
+  'Cache-Control' =&gt; 'no-cache',
+  'Accept' =&gt; '*/*',
+  'User-Agent' =&gt; 'PostmanRuntime/7.15.2'<span style="color: #000000;">
+));
+
+</span><span style="color: #800080;">$client</span>-&gt;enqueue(<span style="color: #800080;">$request</span>)-&gt;<span style="color: #000000;">send();
+</span><span style="color: #800080;">$response</span> = <span style="color: #800080;">$client</span>-&gt;<span style="color: #000000;">getResponse();
+
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$response</span>-&gt;getBody();</code></pre>
+
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//3、</span><span style="color: #008000;">cURL  是一个非常强大的开源库，支持很多协议，包括HTTP、FTP、TELNET等，我们使用它来发送HTTP请求。<br />//它给我们带来的好处是可以通过灵活的选项设置不同的HTTP协议参数，并且支持HTTPS。CURL可以根据URL前缀是&ldquo;HTTP&rdquo; 还是&ldquo;HTTPS&rdquo;自动选择是否加密发送内容。</span>
+
+<span style="color: #800080;">$curl</span> =<span style="color: #000000;"> curl_init();
+
+curl_setopt_array(</span><span style="color: #800080;">$curl</span>, <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+  CURLOPT_URL </span>=&gt; "http://jszapi.dev.jingjinglego.com/index.php/index/uploadImg",<span style="color: #000000;">
+  CURLOPT_RETURNTRANSFER </span>=&gt; <span style="color: #0000ff;">true</span>,<span style="color: #000000;">
+  CURLOPT_ENCODING </span>=&gt; "",<span style="color: #000000;">
+  CURLOPT_MAXREDIRS </span>=&gt; 10,<span style="color: #000000;">
+  CURLOPT_TIMEOUT </span>=&gt; 30,<span style="color: #000000;">
+  CURLOPT_HTTP_VERSION </span>=&gt; CURL_HTTP_VERSION_1_1,<span style="color: #000000;">
+  CURLOPT_CUSTOMREQUEST </span>=&gt; "POST",<span style="color: #000000;">
+  CURLOPT_POSTFIELDS </span>=&gt; "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"image\"; filename=\"785da43beca5a474.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--",<span style="color: #000000;">
+  CURLOPT_HTTPHEADER </span>=&gt; <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+    </span>"Accept: */*",
+    "Accept-Encoding: gzip, deflate",
+    "Cache-Control: no-cache",
+    "Connection: keep-alive",
+    "Content-Length: 39091",
+    "Content-Type: multipart/form-data; boundary=--------------------------296608706222243058746908",
+    "Host: jszapi.dev.jingjinglego.com",
+    "Postman-Token: dc010150-b166-4dec-a33f-959a65c91c71,982e059e-bd8b-4db9-83c4-3fd52c8ed82f",
+    "User-Agent: PostmanRuntime/7.15.2",
+    "cache-control: no-cache",
+    "content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"<span style="color: #000000;">
+  )</span>,<span style="color: #000000;">
+));
+
+</span><span style="color: #800080;">$response</span> = curl_exec(<span style="color: #800080;">$curl</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$err</span> = curl_error(<span style="color: #800080;">$curl</span><span style="color: #000000;">);
+
+curl_close(</span><span style="color: #800080;">$curl</span><span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$err</span><span style="color: #000000;">) {
+  </span><span style="color: #0000ff;">echo</span> "cURL Error #:" . <span style="color: #800080;">$err</span><span style="color: #000000;">;
+} </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+  </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$response</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>　　6、如上面3个代码片段，但是后来验证后，发现1/3的参数，不知道是怎么传输的，2的参数很容易看懂，但是运用的话需要开启扩展，这个目前不太合适，所以┭┮﹏┭┮。</p>
+<p>&nbsp;</p>
+<p>二、写在心里</p>
+<p>　　1、这个上传的问题，确实卡住了，感觉有点难过。其实每次都会遇见一个自己的困难，经常遇见，周末下午的时候，我在家打开电脑，打来远程，准备登陆下ftp拉下代码，发现一直连不上，心里那个烦啊。但是还是通过远程工具（向日葵），将代码拉下来了。想这个图片上传到底怎么弄了，之前也看过，关于通过ftp的方式上传图片，但是后来查看了相关文章需要在php.ini中开启，所以也作罢。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">#</span><span style="color: #008000;">开启ftp扩展支持</span>
+extension=php_ftp.dll</code></pre>
+
+<p>　　2、经常遇见困难，经常觉得自己很LOW但是，已经工作了这么久，发现其实问题最后又都解决了，但是现在回想，却忘了到底是怎么解决的，所以写这个博文主要也是想记录下。一直到下午4点多，深圳的天气今年闷热居多，中午我已经昧着良心午休了1个小时，所以现在到现在心里还有些许内疚，唉。</p>
+<p>　　3、但是还是找不到解决的方法，头疼的厉害，好热。怎么办，我决定靠在椅子上休息下，于是我还是决定躺在沙发上睡会。刚躺下，想着这怎么办呢。</p>
+<p>　　-----------------------base64---------------------------华丽的分割线</p>
+<p>　　我突然想到了base64这个读起来，朗朗上口的函数，对如果现将图片转换成base64字符串，再通过POST方式传送给B项目，然后再B项目中对字符串进行解码，生成图片，保存到B项目，然后返回图片路径，不就可以了吗。于是我有推了一遍，发现没有疏忽。于是觉得应该是解决了。</p>
+<p><img style="border: 2px solid black;" src="./images/PHP代码篇（五）--如何将图片文件上传到另外一台服务上3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>三、解决图片上传问题</p>
+<p>　　1、A接受web传来图片临时文件，</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">#</span><span style="color: #008000;">上传图片京手指 1:图片保留到本地</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> uploadJszImg()
+    {</span><span style="color: #800080;">$path</span> = config('business.jsz_file_tem'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$file</span> = request()-&gt;<span style="color: #008080;">file</span>('file_upload'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$info</span> = <span style="color: #800080;">$file</span>-&gt;validate(['ext'=&gt;'jpg,jpeg,png,gif'])-&gt;move(<span style="color: #800080;">$path</span>);<span style="color: #008000;">//</span><span style="color: #008000;">图片保存到本地</span>
+        <span style="color: #800080;">$img_one</span> = <span style="color: #800080;">$path</span>.<span style="color: #800080;">$info</span>-&gt;getSaveName();<span style="color: #008000;">//</span><span style="color: #008000;">图片路径</span>
+        <span style="color: #800080;">$img_base</span> = imgToBase64(<span style="color: #800080;">$img_one</span>);<span style="color: #008000;">//</span><span style="color: #008000;">获取图片base64编码格式</span>
+        deleteFileWay(<span style="color: #800080;">$path</span>);<span style="color: #008000;">//</span><span style="color: #008000;">删除临时文件</span>
+        <span style="color: #800080;">$url</span> = config('business.jsz_api')['baseImg'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+            </span>'base_string'=&gt; <span style="color: #800080;">$img_base</span>,
+            'path' =&gt; 'upload/goods_img',<span style="color: #000000;">
+        ];
+        </span><span style="color: #800080;">$res</span> = http_api(<span style="color: #800080;">$url</span>,<span style="color: #800080;">$data</span>,1<span style="color: #000000;">);
+        </span><span style="color: #800080;">$res</span> = json_decode(<span style="color: #800080;">$res</span>,<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$res</span>['data'<span style="color: #000000;">]){
+            </span><span style="color: #800080;">$return</span> = ['code'=&gt;1,'message'=&gt;'成功','data'=&gt;'jszapi.dev.jingjinglego.com'.<span style="color: #800080;">$res</span>['data'<span style="color: #000000;">]];
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #800080;">$return</span> = ['code'=&gt;0,'message'=&gt;'失败'<span style="color: #000000;">];
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$return</span><span style="color: #000000;">;
+    }  </span></code></pre>
+
+<p>　　2、并转换成base64字符串，</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 获取图片的Base64编码(不支持url)
+ * @param $img_file 传入本地图片地址
+ * @return string
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> imgToBase64(<span style="color: #800080;">$img_file</span><span style="color: #000000;">) {
+    </span><span style="color: #800080;">$img_base64</span> = ''<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$img_file</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$app_img_file</span> = <span style="color: #800080;">$img_file</span>; <span style="color: #008000;">//</span><span style="color: #008000;"> 图片路径</span>
+        <span style="color: #800080;">$img_info</span> = <span style="color: #008080;">getimagesize</span>(<span style="color: #800080;">$app_img_file</span>); <span style="color: #008000;">//</span><span style="color: #008000;"> 取得图片的大小，类型等
+        //echo '&lt;pre&gt;' . print_r($img_info, true) . '&lt;/pre&gt;&lt;br&gt;';</span>
+        <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>(<span style="color: #800080;">$app_img_file</span>, "r"); <span style="color: #008000;">//</span><span style="color: #008000;"> 图片是否可读权限</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$fp</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$filesize</span> = <span style="color: #008080;">filesize</span>(<span style="color: #800080;">$app_img_file</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$content</span> = <span style="color: #008080;">fread</span>(<span style="color: #800080;">$fp</span>, <span style="color: #800080;">$filesize</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$file_content</span> = <span style="color: #008080;">chunk_split</span>(<span style="color: #008080;">base64_encode</span>(<span style="color: #800080;">$content</span>)); <span style="color: #008000;">//</span><span style="color: #008000;"> base64编码</span>
+            <span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$img_info</span>[2]) {           <span style="color: #008000;">//</span><span style="color: #008000;">判读图片类型</span>
+                <span style="color: #0000ff;">case</span> 1: <span style="color: #800080;">$img_type</span> = "gif"<span style="color: #000000;">;
+                    </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                </span><span style="color: #0000ff;">case</span> 2: <span style="color: #800080;">$img_type</span> = "jpg"<span style="color: #000000;">;
+                    </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                </span><span style="color: #0000ff;">case</span> 3: <span style="color: #800080;">$img_type</span> = "png"<span style="color: #000000;">;
+                    </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #800080;">$img_base64</span> = 'data:image/' . <span style="color: #800080;">$img_type</span> . ';base64,' . <span style="color: #800080;">$file_content</span>;<span style="color: #008000;">//</span><span style="color: #008000;">合成图片的base64编码</span>
+<span style="color: #000000;">        }
+        </span><span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$img_base64</span>; <span style="color: #008000;">//</span><span style="color: #008000;">返回图片的base64</span>
+}</code></pre>
+
+<p>　　3、B接受A项目传来参数</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 将base64字符串转换成图片并保存在本地
+     * @param Request $request
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> baseImg(Request <span style="color: #800080;">$request</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$base_string</span> = <span style="color: #800080;">$request</span>-&gt;post('base_string', ''<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$base_string</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;apiResult(CustomError::<span style="color: #000000;">MISSING_PARAMS);
+        }
+        </span><span style="color: #800080;">$path</span> = <span style="color: #800080;">$request</span>-&gt;post('path', ''<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$path</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;apiResult(CustomError::<span style="color: #000000;">MISSING_PARAMS);
+        }
+        </span><span style="color: #800080;">$request</span> = base64_image_content(<span style="color: #800080;">$base_string</span>, <span style="color: #800080;">$path</span>);<span style="color: #008000;">//</span><span style="color: #008000;">解码</span>
+        <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$request</span><span style="color: #000000;">){
+            </span><span style="color: #800080;">$this</span>-&gt;apiResult(CustomError::OPERATION_SUCCSESS, <span style="color: #800080;">$request</span><span style="color: #000000;">);
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #800080;">$this</span>-&gt;apiResult(CustomError::<span style="color: #000000;">OPERATION_FAILED);
+        }
+    }</span></code></pre>
+
+<p>　　4、对字符解析解码</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * [将Base64图片转换为本地图片并保存]
+ * @param  [Base64] $base64_image_content [要保存的Base64]
+ * @param  [目录] $path [要保存的路径]
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> base64_image_content(<span style="color: #800080;">$base64_image_content</span>,<span style="color: #800080;">$path</span><span style="color: #000000;">){
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">匹配出图片的格式</span>
+    <span style="color: #0000ff;">if</span> (<span style="color: #008080;">preg_match</span>('/^(data:\s*image\/(\w+);base64,)/', <span style="color: #800080;">$base64_image_content</span>, <span style="color: #800080;">$result</span><span style="color: #000000;">)){
+        </span><span style="color: #800080;">$type</span> = <span style="color: #800080;">$result</span>[2<span style="color: #000000;">];
+        </span><span style="color: #800080;">$new_file</span> = <span style="color: #800080;">$path</span>."/".<span style="color: #008080;">date</span>('Ymd',<span style="color: #008080;">time</span>())."/"<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span>(!<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$new_file</span><span style="color: #000000;">)){
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">检查是否有该文件夹，如果没有就创建，并给予最高权限</span>
+            <span style="color: #008080;">mkdir</span>(<span style="color: #800080;">$new_file</span>, 0700<span style="color: #000000;">);
+        }
+        </span><span style="color: #800080;">$new_file</span> = <span style="color: #800080;">$new_file</span>.<span style="color: #008080;">time</span>().".{<span style="color: #800080;">$type</span>}"<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">file_put_contents</span>(<span style="color: #800080;">$new_file</span>, <span style="color: #008080;">base64_decode</span>(<span style="color: #008080;">str_replace</span>(<span style="color: #800080;">$result</span>[1], '', <span style="color: #800080;">$base64_image_content</span><span style="color: #000000;">)))){
+            </span><span style="color: #0000ff;">return</span> '/'.<span style="color: #800080;">$new_file</span><span style="color: #000000;">;
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    }
+}</span></code></pre>
+
+<p>　　5、最后返回上传好的图片路径</p>
+<p>：结束</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,31 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[Linux] 解决nginx [emerg] directive &quot;rewrite&quot; is not terminated by &quot;;&quot;' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[Linux] 解决nginx [emerg] directive &quot;rewrite&quot; is not terminated by &quot;;&quot;</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11906926.html</div><br>
+    <p>解决nginx: [emerg] directive "rewrite" is not terminated by ";"<br />nginx的rewite规则有时候没注意会报这个错误,原因是规则中存在{}会被认为是规则结尾报错,使用""双引号把规则包起来可以避免这个错误<br />还有就是nginx中的规则中/斜杠不必要反斜杠转义\/,自动会认识的</p>
+<p>例如:<br />rewrite "^\/rny\/webface\/mailApps\/(.*)(\/\d{6,})(.*)$" /webface/mailapps/dev/$1$3 </p>
+<p>.*和.*?的区别:<br />.*?是非贪婪的,匹配到第一个/就停了<br />[root@localhost riadev]# echo "/rny/webface/mailApps/xxx/dfdffd/123456_abc.js"|grep -oP "^/rny/webface/mailApps/(.*?)/"<br />/rny/webface/mailApps/xxx/</p>
+<p>.*是贪婪的,匹配到了最后一个/<br />[root@localhost riadev]# echo "/rny/webface/mailApps/xxx/dfdffd/123456_abc.js"|grep -oP "^/rny/webface/mailApps/(.*)/" <br />/rny/webface/mailApps/xxx/dfdffd/</p>
+<p>\d{6,}这个的意思是最少6个数字,超过的也能匹配到,少的匹配不到<br />grep是不能捕获()中的内容,在nginx中后面的$就是可以捕获到<br />[root@localhost riadev]# echo "/rny/webface/mailApps/xxx/dfdffd/123456abc.js"|grep -oP "^/rny/webface/mailApps/(.*)/(\d{6,})(.*)"<br />/rny/webface/mailApps/xxx/dfdffd/123456abc.js<br />这个时候的$1和$3分别是xxx/dfdffd  和 abc.js</p>
+<p>rewrite "^\/rny\/webface\/mailApps\/(.*)(\/\d{6,})(.*)$" /webface/mailapps/dev/$1$3 <br />会把/rny/webface/mailApps/xxx/dfdffd/123456abc.js  匹配到 /webface/mailapps/dev/xxx/dfdffd/abc.js</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

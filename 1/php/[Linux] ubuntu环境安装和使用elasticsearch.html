@@ -1,0 +1,62 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[Linux] ubuntu环境安装和使用elasticsearch' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[Linux] ubuntu环境安装和使用elasticsearch</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11972884.html</div><br>
+    <p>wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -<br />apt-get install apt-transport-https<br />echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list<br />sudo apt-get update &amp;&amp; sudo apt-get install elasticsearch</p>
+<p>编辑配置文件:<br />/etc/elasticsearch/elasticsearch.yml <br />network.host: 127.0.0.1<br />network.bind_host: 127.0.0.1<br />transport.tcp.port: 9300<br />http.port: 9200<br />/usr/share/elasticsearch/bin/elasticsearch -d</p>
+<p><br />ES中使用restful api对数据进行增删查改</p>
+<p>1）GET：查询数据<br />2）POST：插入或更改数据 <br />3）PUT：创建库或表 <br />4）DELETE：删除库 </p>
+<p><br />Index:数据库<br />type:表<br />Document:行<br />Field:列,字段<br />Mapping:元信息</p>
+<p>创建数据库:http://localhost:9200/sinamail/  PUT<br />查看所有数据库:http://localhost:9200/_cat/indices/ GET<br />删除数据库:http://localhost:9200/sinamail/ DELETE</p>
+<p>旧版本创建表,并且定义字段:http://localhost:9200/sinamail/webmail/_mapping  PUT<br /><br />插入数据:<br />http://localhost:9200/sinamail/webmail/ POST<br />{<br />  "accessLog": "测试一下"<br />}<br />查询数据:<br />http://localhost:9200/sinamail/_search  POST<br />{"query":{"bool":{"must":[{"match":{"accessLog":"测试下"}}]}},"from":0,"size":10}</p>
+<p><strong>使用CURL命令操作数据:</strong><br />curl http://127.0.0.1:9200 查看状态<br />curl -XPUT http://127.0.0.1:9200/sinamail 创建数据库<br />curl  http://127.0.0.1:9200/_cat/indices/ 查看所有数据库<br />创建表,并且定义字段</p>
+<src class="cnblogs_code">
+<pre><code>curl -XPUT http:<span style="color: #008000;">//</span><span style="color: #008000;">127.0.0.1:9200/sinamail/webmail/_mapping -d '{</span>
+  <span style="color: #800000;">"</span><span style="color: #800000;">webmail</span><span style="color: #800000;">"</span><span style="color: #000000;">: {
+    </span><span style="color: #800000;">"</span><span style="color: #800000;">properties</span><span style="color: #800000;">"</span><span style="color: #000000;">: {
+      </span><span style="color: #800000;">"</span><span style="color: #800000;">accessLog</span><span style="color: #800000;">"</span><span style="color: #000000;">: {
+        </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">string</span><span style="color: #800000;">"</span><span style="color: #000000;">
+      }
+    }
+  }
+}</span><span style="color: #800000;">'</span>  </code></pre>
+
+<p>&nbsp;</p>
+<p><br />插入数据</p>
+<src class="cnblogs_code">
+<pre><code>curl -XPOST http:<span style="color: #008000;">//</span><span style="color: #008000;">127.0.0.1:9200/sinamail/webmail -d '{</span>
+    <span style="color: #800000;">"</span><span style="color: #800000;">accessLog</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">我是一个好人的测试</span><span style="color: #800000;">"</span><span style="color: #000000;">
+}</span><span style="color: #800000;">'</span>  </code></pre>
+
+<p>&nbsp;</p>
+<p><br />查询数据</p>
+<src class="cnblogs_code">
+<pre><code>curl -XPOST http:<span style="color: #008000;">//</span><span style="color: #008000;">127.0.0.1:9200/sinamail/_search -d '{</span>
+    <span style="color: #800000;">"</span><span style="color: #800000;">query</span><span style="color: #800000;">"</span><span style="color: #000000;">:{
+        </span><span style="color: #800000;">"</span><span style="color: #800000;">bool</span><span style="color: #800000;">"</span><span style="color: #000000;">:{
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">must</span><span style="color: #800000;">"</span>:[{<span style="color: #800000;">"</span><span style="color: #800000;">match</span><span style="color: #800000;">"</span>:{<span style="color: #800000;">"</span><span style="color: #800000;">accessLog</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">测我试下</span><span style="color: #800000;">"</span>}}]}},<span style="color: #800000;">"</span><span style="color: #800000;">from</span><span style="color: #800000;">"</span>:<span style="color: #800080;">0</span>,<span style="color: #800000;">"</span><span style="color: #800000;">size</span><span style="color: #800000;">"</span>:<span style="color: #800080;">10</span><span style="color: #000000;">
+}</span><span style="color: #800000;">'</span></code></pre>
+
+<p>&nbsp;<img src="./images/[Linux] ubuntu环境安装和使用elasticsearch0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

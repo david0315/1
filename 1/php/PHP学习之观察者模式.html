@@ -1,0 +1,93 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP学习之观察者模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP学习之观察者模式</center></div><div class='banquan'>原文出处:本文由博客园博主随缘盛世提供。<br/>
+原文连接:https://www.cnblogs.com/shengChristine/p/10969681.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">观察者模式涉及到两个类
+//男人类    和女朋友类
+//男人类对象小明，  女朋友类对象小花、小丽</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Man
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">用了存放观察者</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$observers</span>=<span style="color: #000000;">[];
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 添加观察者方法
+     *
+     * @param [type] $observers
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> addObserver(<span style="color: #800080;">$observers</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;observers[]=<span style="color: #800080;">$observers</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 花钱方法
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span><span style="color: #000000;"> buy()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">当被观察者做出这个行为的时候，让观察者得到通知，并且做出一定的反应</span>
+        <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$this</span>-&gt;observers <span style="color: #0000ff;">as</span> <span style="color: #800080;">$girl</span><span style="color: #000000;">){
+            </span><span style="color: #800080;">$girl</span>-&gt;<span style="color: #000000;">dongjie();
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 删除观察者方法
+     *
+     * @param [type] $observer
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> delObserver(<span style="color: #800080;">$observer</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$key</span>=<span style="color: #008080;">array_search</span>(<span style="color: #800080;">$observer</span>,<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">observers);
+        </span><span style="color: #008080;">array_splice</span>(<span style="color: #800080;">$this</span>-&gt;observers,<span style="color: #800080;">$key</span>,1<span style="color: #000000;">);
+    }
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> GirlFriend
+{
+    </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> dongjie()
+    {
+        </span><span style="color: #0000ff;">echo</span> '你的男朋友正在花钱，马上冻结他的银行卡！&lt;br/&gt;'<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">创建对象</span>
+<span style="color: #800080;">$xiaoming</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> Man();
+</span><span style="color: #800080;">$xiaohua</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> GirlFriend();
+</span><span style="color: #800080;">$xiaoli</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> GirlFriend();
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">添加观察者</span>
+<span style="color: #800080;">$xiaoming</span>-&gt;addObserver(<span style="color: #800080;">$xiaohua</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$xiaoming</span>-&gt;addObserver(<span style="color: #800080;">$xiaoli</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$xiaoming</span>-&gt;delObserver(<span style="color: #800080;">$xiaoli</span><span style="color: #000000;">);
+
+</span><span style="color: #800080;">$xiaoming</span>-&gt;buy();</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

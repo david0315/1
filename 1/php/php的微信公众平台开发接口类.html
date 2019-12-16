@@ -1,0 +1,345 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php的微信公众平台开发接口类' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php的微信公众平台开发接口类</center></div><div class='banquan'>原文出处:本文由博客园博主下页、再停留提供。<br/>
+原文连接:https://www.cnblogs.com/zxf100/p/11138892.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #008080;">define</span>("TOKEN", "weixin"<span style="color: #000000;">);
+</span><span style="color: #800080;">$wechatObj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> wechatCallbackapiTest();
+</span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_GET</span>['echostr'<span style="color: #000000;">])) {
+  </span><span style="color: #800080;">$wechatObj</span>-&gt;<span style="color: #000000;">responseMsg();
+}</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+  </span><span style="color: #800080;">$wechatObj</span>-&gt;<span style="color: #000000;">valid();
+}
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> wechatCallbackapiTest
+{
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">验证消息</span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> valid()
+  {
+    </span><span style="color: #800080;">$echoStr</span> = <span style="color: #800080;">$_GET</span>["echostr"<span style="color: #000000;">];
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">checkSignature()){
+      </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$echoStr</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+    }
+  }
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">检查签名</span>
+  <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> checkSignature()
+  {
+    </span><span style="color: #800080;">$signature</span> = <span style="color: #800080;">$_GET</span>["signature"<span style="color: #000000;">];
+    </span><span style="color: #800080;">$timestamp</span> = <span style="color: #800080;">$_GET</span>["timestamp"<span style="color: #000000;">];
+    </span><span style="color: #800080;">$nonce</span> = <span style="color: #800080;">$_GET</span>["nonce"<span style="color: #000000;">];
+    </span><span style="color: #800080;">$token</span> =<span style="color: #000000;"> TOKEN;
+    </span><span style="color: #800080;">$tmpArr</span> = <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$token</span>, <span style="color: #800080;">$timestamp</span>, <span style="color: #800080;">$nonce</span><span style="color: #000000;">);
+    </span><span style="color: #008080;">sort</span>(<span style="color: #800080;">$tmpArr</span>,<span style="color: #000000;"> SORT_STRING);
+    </span><span style="color: #800080;">$tmpStr</span> = <span style="color: #008080;">implode</span>(<span style="color: #800080;">$tmpArr</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$tmpStr</span> = <span style="color: #008080;">sha1</span>(<span style="color: #800080;">$tmpStr</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$tmpStr</span> == <span style="color: #800080;">$signature</span><span style="color: #000000;">){
+      </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+      </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    }
+  }
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">响应消息</span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> responseMsg()
+  {
+    </span><span style="color: #800080;">$postStr</span> = <span style="color: #800080;">$GLOBALS</span>["HTTP_RAW_POST_DATA"<span style="color: #000000;">];
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$postStr</span><span style="color: #000000;">)){
+      </span><span style="color: #800080;">$this</span>-&gt;logger("R ".<span style="color: #800080;">$postStr</span><span style="color: #000000;">);
+      </span><span style="color: #800080;">$postObj</span> = <span style="color: #008080;">simplexml_load_string</span>(<span style="color: #800080;">$postStr</span>, 'SimpleXMLElement',<span style="color: #000000;"> LIBXML_NOCDATA);
+      </span><span style="color: #800080;">$RX_TYPE</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$postObj</span>-&gt;<span style="color: #000000;">MsgType);
+      </span><span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$RX_TYPE</span><span style="color: #000000;">)
+      {
+        </span><span style="color: #0000ff;">case</span> "event":
+          <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;receiveEvent(<span style="color: #800080;">$postObj</span><span style="color: #000000;">);
+          </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">case</span> "text":
+          <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;receiveText(<span style="color: #800080;">$postObj</span><span style="color: #000000;">);
+          </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">case</span> "image":
+          <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;receiveImage(<span style="color: #800080;">$postObj</span><span style="color: #000000;">);
+          </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">case</span> "location":
+          <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;receiveLocation(<span style="color: #800080;">$postObj</span><span style="color: #000000;">);
+          </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">case</span> "voice":
+          <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;receiveVoice(<span style="color: #800080;">$postObj</span><span style="color: #000000;">);
+          </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">case</span> "video":
+          <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;receiveVideo(<span style="color: #800080;">$postObj</span><span style="color: #000000;">);
+          </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">case</span> "link":
+          <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;receiveLink(<span style="color: #800080;">$postObj</span><span style="color: #000000;">);
+          </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">default</span>:
+          <span style="color: #800080;">$result</span> = "unknow msg type: ".<span style="color: #800080;">$RX_TYPE</span><span style="color: #000000;">;
+          </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      }
+      </span><span style="color: #800080;">$this</span>-&gt;logger("T ".<span style="color: #800080;">$result</span><span style="color: #000000;">);
+      </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+      </span><span style="color: #0000ff;">echo</span> ""<span style="color: #000000;">;
+      </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+    }
+  }
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">接收事件消息</span>
+  <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> receiveEvent(<span style="color: #800080;">$object</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$content</span> = ""<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">Event)
+    {
+      </span><span style="color: #0000ff;">case</span> "subscribe":
+        <span style="color: #800080;">$content</span> = "欢迎关注方倍工作室 "<span style="color: #000000;">;
+        </span><span style="color: #800080;">$content</span> .= (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$object</span>-&gt;EventKey))?("\n来自二维码场景 ".<span style="color: #008080;">str_replace</span>("qrscene_","",<span style="color: #800080;">$object</span>-&gt;EventKey)):""<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">case</span> "unsubscribe":
+        <span style="color: #800080;">$content</span> = "取消关注"<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">case</span> "SCAN":
+        <span style="color: #800080;">$content</span> = "扫描场景 ".<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">EventKey;
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">case</span> "CLICK":
+        <span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">EventKey)
+        {
+          </span><span style="color: #0000ff;">case</span> "COMPANY":
+            <span style="color: #800080;">$content</span> = "方倍工作室提供互联网相关产品与服务。"<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+          </span><span style="color: #0000ff;">default</span>:
+            <span style="color: #800080;">$content</span> = "点击菜单：".<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">EventKey;
+            </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">case</span> "LOCATION":
+        <span style="color: #800080;">$content</span> = "上传位置：纬度 ".<span style="color: #800080;">$object</span>-&gt;Latitude.";经度 ".<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">Longitude;
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">case</span> "VIEW":
+        <span style="color: #800080;">$content</span> = "跳转链接 ".<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">EventKey;
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">default</span>:
+        <span style="color: #800080;">$content</span> = "receive a new event: ".<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">Event;
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitText(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">接收文本消息</span>
+  <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> receiveText(<span style="color: #800080;">$object</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">Content)
+    {
+      </span><span style="color: #0000ff;">case</span> "文本":
+        <span style="color: #800080;">$content</span> = "这是个文本消息"<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">case</span> "图文":
+      <span style="color: #0000ff;">case</span> "单图文":
+        <span style="color: #800080;">$content</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #800080;">$content</span>[] = <span style="color: #0000ff;">array</span>("Title"=&gt;"单图文标题",  "Description"=&gt;"单图文内容", "PicUrl"=&gt;"http://discuz.comli.com/weixin/weather/icon/cartoon.jpg", "Url" =&gt;"http://m.cnblogs.com/?u=txw1958"<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">case</span> "多图文":
+        <span style="color: #800080;">$content</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #800080;">$content</span>[] = <span style="color: #0000ff;">array</span>("Title"=&gt;"多图文1标题", "Description"=&gt;"", "PicUrl"=&gt;"http://discuz.comli.com/weixin/weather/icon/cartoon.jpg", "Url" =&gt;"http://m.cnblogs.com/?u=txw1958"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$content</span>[] = <span style="color: #0000ff;">array</span>("Title"=&gt;"多图文2标题", "Description"=&gt;"", "PicUrl"=&gt;"http://d.hiphotos.bdimg.com/wisegame/pic/item/f3529822720e0cf3ac9f1ada0846f21fbe09aaa3.jpg", "Url" =&gt;"http://m.cnblogs.com/?u=txw1958"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$content</span>[] = <span style="color: #0000ff;">array</span>("Title"=&gt;"多图文3标题", "Description"=&gt;"", "PicUrl"=&gt;"http://g.hiphotos.bdimg.com/wisegame/pic/item/18cb0a46f21fbe090d338acc6a600c338644adfd.jpg", "Url" =&gt;"http://m.cnblogs.com/?u=txw1958"<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">case</span> "音乐":
+        <span style="color: #800080;">$content</span> = <span style="color: #0000ff;">array</span>("Title"=&gt;"最炫民族风", "Description"=&gt;"歌手：凤凰传奇", "MusicUrl"=&gt;"http://121.199.4.61/music/zxmzf.mp3", "HQMusicUrl"=&gt;"http://121.199.4.61/music/zxmzf.mp3"<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+      </span><span style="color: #0000ff;">default</span>:
+        <span style="color: #800080;">$content</span> = <span style="color: #008080;">date</span>("Y-m-d H:i:s",<span style="color: #008080;">time</span><span style="color: #000000;">());
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$content</span><span style="color: #000000;">)){
+      </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$content</span>[0]['PicUrl'<span style="color: #000000;">])){
+        </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitNews(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+      }</span><span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$content</span>['MusicUrl'<span style="color: #000000;">])){
+        </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitMusic(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+      }
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+      </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitText(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> receiveImage(<span style="color: #800080;">$object</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$content</span> = <span style="color: #0000ff;">array</span>("MediaId"=&gt;<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">MediaId);
+    </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitImage(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> receiveLocation(<span style="color: #800080;">$object</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$content</span> = "你发送的是位置，纬度为：".<span style="color: #800080;">$object</span>-&gt;Location_X."；经度为：".<span style="color: #800080;">$object</span>-&gt;Location_Y."；缩放级别为：".<span style="color: #800080;">$object</span>-&gt;Scale."；位置为：".<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">Label;
+    </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitText(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> receiveVoice(<span style="color: #800080;">$object</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$object</span>-&gt;Recognition) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">Recognition)){
+      </span><span style="color: #800080;">$content</span> = "你刚才说的是：".<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">Recognition;
+      </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitText(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+      </span><span style="color: #800080;">$content</span> = <span style="color: #0000ff;">array</span>("MediaId"=&gt;<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">MediaId);
+      </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitVoice(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> receiveVideo(<span style="color: #800080;">$object</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$content</span> = <span style="color: #0000ff;">array</span>("MediaId"=&gt;<span style="color: #800080;">$object</span>-&gt;MediaId, "ThumbMediaId"=&gt;<span style="color: #800080;">$object</span>-&gt;ThumbMediaId, "Title"=&gt;"", "Description"=&gt;""<span style="color: #000000;">);
+    </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitVideo(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> receiveLink(<span style="color: #800080;">$object</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$content</span> = "你发送的是链接，标题为：".<span style="color: #800080;">$object</span>-&gt;Title."；内容为：".<span style="color: #800080;">$object</span>-&gt;Description."；链接地址为：".<span style="color: #800080;">$object</span>-&gt;<span style="color: #000000;">Url;
+    </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;transmitText(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> transmitText(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$textTpl</span> = "<span style="color: #000000;">&lt;xml&gt;
+&lt;ToUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/ToUserName&gt;
+&lt;FromUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/FromUserName&gt;
+&lt;CreateTime&gt;%s&lt;/CreateTime&gt;
+&lt;MsgType&gt;&lt;![CDATA[text]]&gt;&lt;/MsgType&gt;
+&lt;Content&gt;&lt;![CDATA[%s]]&gt;&lt;/Content&gt;
+&lt;/xml&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$result</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$textTpl</span>, <span style="color: #800080;">$object</span>-&gt;FromUserName, <span style="color: #800080;">$object</span>-&gt;ToUserName, <span style="color: #008080;">time</span>(), <span style="color: #800080;">$content</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> transmitImage(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$imageArray</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$itemTpl</span> = "<span style="color: #000000;">&lt;Image&gt;
+    &lt;MediaId&gt;&lt;![CDATA[%s]]&gt;&lt;/MediaId&gt;
+&lt;/Image&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$item_str</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$itemTpl</span>, <span style="color: #800080;">$imageArray</span>['MediaId'<span style="color: #000000;">]);
+    </span><span style="color: #800080;">$textTpl</span> = "<span style="color: #000000;">&lt;xml&gt;
+&lt;ToUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/ToUserName&gt;
+&lt;FromUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/FromUserName&gt;
+&lt;CreateTime&gt;%s&lt;/CreateTime&gt;
+&lt;MsgType&gt;&lt;![CDATA[image]]&gt;&lt;/MsgType&gt;
+</span><span style="color: #800080;">$item_str</span><span style="color: #000000;">
+&lt;/xml&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$result</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$textTpl</span>, <span style="color: #800080;">$object</span>-&gt;FromUserName, <span style="color: #800080;">$object</span>-&gt;ToUserName, <span style="color: #008080;">time</span><span style="color: #000000;">());
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> transmitVoice(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$voiceArray</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$itemTpl</span> = "<span style="color: #000000;">&lt;Voice&gt;
+    &lt;MediaId&gt;&lt;![CDATA[%s]]&gt;&lt;/MediaId&gt;
+&lt;/Voice&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$item_str</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$itemTpl</span>, <span style="color: #800080;">$voiceArray</span>['MediaId'<span style="color: #000000;">]);
+    </span><span style="color: #800080;">$textTpl</span> = "<span style="color: #000000;">&lt;xml&gt;
+&lt;ToUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/ToUserName&gt;
+&lt;FromUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/FromUserName&gt;
+&lt;CreateTime&gt;%s&lt;/CreateTime&gt;
+&lt;MsgType&gt;&lt;![CDATA[voice]]&gt;&lt;/MsgType&gt;
+</span><span style="color: #800080;">$item_str</span><span style="color: #000000;">
+&lt;/xml&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$result</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$textTpl</span>, <span style="color: #800080;">$object</span>-&gt;FromUserName, <span style="color: #800080;">$object</span>-&gt;ToUserName, <span style="color: #008080;">time</span><span style="color: #000000;">());
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> transmitVideo(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$videoArray</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$itemTpl</span> = "<span style="color: #000000;">&lt;Video&gt;
+    &lt;MediaId&gt;&lt;![CDATA[%s]]&gt;&lt;/MediaId&gt;
+    &lt;ThumbMediaId&gt;&lt;![CDATA[%s]]&gt;&lt;/ThumbMediaId&gt;
+    &lt;Title&gt;&lt;![CDATA[%s]]&gt;&lt;/Title&gt;
+    &lt;Description&gt;&lt;![CDATA[%s]]&gt;&lt;/Description&gt;
+&lt;/Video&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$item_str</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$itemTpl</span>, <span style="color: #800080;">$videoArray</span>['MediaId'], <span style="color: #800080;">$videoArray</span>['ThumbMediaId'], <span style="color: #800080;">$videoArray</span>['Title'], <span style="color: #800080;">$videoArray</span>['Description'<span style="color: #000000;">]);
+    </span><span style="color: #800080;">$textTpl</span> = "<span style="color: #000000;">&lt;xml&gt;
+&lt;ToUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/ToUserName&gt;
+&lt;FromUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/FromUserName&gt;
+&lt;CreateTime&gt;%s&lt;/CreateTime&gt;
+&lt;MsgType&gt;&lt;![CDATA[video]]&gt;&lt;/MsgType&gt;
+</span><span style="color: #800080;">$item_str</span><span style="color: #000000;">
+&lt;/xml&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$result</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$textTpl</span>, <span style="color: #800080;">$object</span>-&gt;FromUserName, <span style="color: #800080;">$object</span>-&gt;ToUserName, <span style="color: #008080;">time</span><span style="color: #000000;">());
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> transmitNews(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$newsArray</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$newsArray</span><span style="color: #000000;">)){
+      </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$itemTpl</span> = "<span style="color: #000000;">    &lt;item&gt;
+        &lt;Title&gt;&lt;![CDATA[%s]]&gt;&lt;/Title&gt;
+        &lt;Description&gt;&lt;![CDATA[%s]]&gt;&lt;/Description&gt;
+        &lt;PicUrl&gt;&lt;![CDATA[%s]]&gt;&lt;/PicUrl&gt;
+        &lt;Url&gt;&lt;![CDATA[%s]]&gt;&lt;/Url&gt;
+    &lt;/item&gt;
+</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$item_str</span> = ""<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$newsArray</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$item</span><span style="color: #000000;">){
+      </span><span style="color: #800080;">$item_str</span> .= <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$itemTpl</span>, <span style="color: #800080;">$item</span>['Title'], <span style="color: #800080;">$item</span>['Description'], <span style="color: #800080;">$item</span>['PicUrl'], <span style="color: #800080;">$item</span>['Url'<span style="color: #000000;">]);
+    }
+    </span><span style="color: #800080;">$newsTpl</span> = "<span style="color: #000000;">&lt;xml&gt;
+&lt;ToUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/ToUserName&gt;
+&lt;FromUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/FromUserName&gt;
+&lt;CreateTime&gt;%s&lt;/CreateTime&gt;
+&lt;MsgType&gt;&lt;![CDATA[news]]&gt;&lt;/MsgType&gt;
+&lt;Content&gt;&lt;![CDATA[]]&gt;&lt;/Content&gt;
+&lt;ArticleCount&gt;%s&lt;/ArticleCount&gt;
+&lt;Articles&gt;
+</span><span style="color: #800080;">$item_str</span><span style="color: #000000;">&lt;/Articles&gt;
+&lt;/xml&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$result</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$newsTpl</span>, <span style="color: #800080;">$object</span>-&gt;FromUserName, <span style="color: #800080;">$object</span>-&gt;ToUserName, <span style="color: #008080;">time</span>(), <span style="color: #008080;">count</span>(<span style="color: #800080;">$newsArray</span><span style="color: #000000;">));
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> transmitMusic(<span style="color: #800080;">$object</span>, <span style="color: #800080;">$musicArray</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #800080;">$itemTpl</span> = "<span style="color: #000000;">&lt;Music&gt;
+    &lt;Title&gt;&lt;![CDATA[%s]]&gt;&lt;/Title&gt;
+    &lt;Description&gt;&lt;![CDATA[%s]]&gt;&lt;/Description&gt;
+    &lt;MusicUrl&gt;&lt;![CDATA[%s]]&gt;&lt;/MusicUrl&gt;
+    &lt;HQMusicUrl&gt;&lt;![CDATA[%s]]&gt;&lt;/HQMusicUrl&gt;
+&lt;/Music&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$item_str</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$itemTpl</span>, <span style="color: #800080;">$musicArray</span>['Title'], <span style="color: #800080;">$musicArray</span>['Description'], <span style="color: #800080;">$musicArray</span>['MusicUrl'], <span style="color: #800080;">$musicArray</span>['HQMusicUrl'<span style="color: #000000;">]);
+    </span><span style="color: #800080;">$textTpl</span> = "<span style="color: #000000;">&lt;xml&gt;
+&lt;ToUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/ToUserName&gt;
+&lt;FromUserName&gt;&lt;![CDATA[%s]]&gt;&lt;/FromUserName&gt;
+&lt;CreateTime&gt;%s&lt;/CreateTime&gt;
+&lt;MsgType&gt;&lt;![CDATA[music]]&gt;&lt;/MsgType&gt;
+</span><span style="color: #800080;">$item_str</span><span style="color: #000000;">
+&lt;/xml&gt;</span>"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$result</span> = <span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$textTpl</span>, <span style="color: #800080;">$object</span>-&gt;FromUserName, <span style="color: #800080;">$object</span>-&gt;ToUserName, <span style="color: #008080;">time</span><span style="color: #000000;">());
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+  }
+  </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> logger(<span style="color: #800080;">$log_content</span><span style="color: #000000;">)
+  {
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_SERVER</span>['HTTP_APPNAME'])){   <span style="color: #008000;">//</span><span style="color: #008000;">SAE</span>
+      sae_set_display_errors(<span style="color: #0000ff;">false</span><span style="color: #000000;">);
+      sae_debug(</span><span style="color: #800080;">$log_content</span><span style="color: #000000;">);
+      sae_set_display_errors(</span><span style="color: #0000ff;">true</span><span style="color: #000000;">);
+    }</span><span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$_SERVER</span>['REMOTE_ADDR'] != "127.0.0.1"){ <span style="color: #008000;">//</span><span style="color: #008000;">LOCAL</span>
+      <span style="color: #800080;">$max_size</span> = 10000<span style="color: #000000;">;
+      </span><span style="color: #800080;">$log_filename</span> = "log.xml"<span style="color: #000000;">;
+      </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$log_filename</span>) and (<span style="color: #008080;">abs</span>(<span style="color: #008080;">filesize</span>(<span style="color: #800080;">$log_filename</span>)) &gt; <span style="color: #800080;">$max_size</span>)){<span style="color: #008080;">unlink</span>(<span style="color: #800080;">$log_filename</span><span style="color: #000000;">);}
+      </span><span style="color: #008080;">file_put_contents</span>(<span style="color: #800080;">$log_filename</span>, <span style="color: #008080;">date</span>('H:i:s')." ".<span style="color: #800080;">$log_content</span>."\r\n",<span style="color: #000000;"> FILE_APPEND);
+    }
+  }
+}
+</span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,1126 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP全栈学习笔记7' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP全栈学习笔记7</center></div><div class='banquan'>原文出处:本文由博客园博主达达前端小酒馆提供。<br/>
+原文连接:https://www.cnblogs.com/dashucoding/p/10759929.html</div><br>
+    <p><img src="./images/PHP全栈学习笔记70.jpg" alt="PHP全栈学习笔记7" /></p>
+<p>图形图像处理技术，gd库的强大支持，PHP的图像可以是PHP的强项，PHP图形化类库，jpgraph是一款非常好用的强大的图形处理工具。</p>
+<p>在PHP中加载GD库</p>
+<p>gd官方网址下载：</p>
+<pre><code><code>http://www.boutell.com/gd</code></code></pre>
+<p>激活gd库，修改php.in文件</p>
+<pre><code><code>将该文件中的“;extension=php_gd2.dll”选项前的分号“;”删除</code></code></pre>
+<p>验证GD库是否安装成功<br />
+输入“127.0.0.1/phpinfo.php”并按Enter键，检索到的安装信息，即说明GD库安装成功。</p>
+<p>Jpgraph的安装与配置</p>
+<pre><code><code>官方网站http://www.aditus.nu/jpgraph/下载</code></code></pre>
+<p>解压到文件夹，编辑php.ini文件，修改include_path参数，如include_path = &quot;.;F:\AppServ\www\jpgraph&quot;，重新启动Apache。</p>
+<p>配置Jpgraph类库的文件jpg-config.inc.php，<br />
+支持中文的配置</p>
+<pre><code><code>DEFINE(&#39;CHINESE_TTF_FONT&#39;,&#39;bkai00mp.ttf&#39;);</code></code></pre>
+<p>默认图片格式的配置</p>
+<pre><code><code>DEFINE(&quot;DEFAULT_GFORMAT&quot;,&quot;auto&quot;);</code></code></pre>
+<p>创建画布，可以通过imagecreate()函数实现</p>
+<pre><code><code>&lt;?php
+$im = imagecreate(200,100);
+$white = imagecolorallocate($im, 255,65,150);
+imagegif($im);
+?&gt;</code></code></pre>
+<p>gd库支持中文，但只能是utf-8，使用imageString()会显示乱码，只能接收utf-8编码格式，默认使用英文字体。</p>
+<p>header()函数定义输出图像类型<br />
+imagecreatefromjpeg()函数载入图片<br />
+imagecolorallocate()函数设置输出字体颜色<br />
+iconv()函数对输出的中文字符串的编码格式进行转换<br />
+imageTTFText()函数向照片中添加文字</p>
+<pre><code><code>&lt;?php
+header(&quot;content-type:image/jpeg&quot;);
+$im = imagecreateformjpeg(&quot;images/photo.jpg&quot;);
+$textcolor = imagecolorallocate($im, 35,35,23);
+
+//定义字体
+$fnt=&quot;c:/windows/fonts/simhei.ttf&quot;;
+//定义输出字体串
+$motto = iconv(&quot;gb2312&quot;,&quot;utf-8&quot;,&quot;长白山&quot;);
+// 写文字
+imageTTFText($im, 220,0,200,233, $textcolor, $fnt, $motto); // 写TTF文字到图中
+// 简历里jpeg图形
+imageipeg($im);
+imagedestory($im);
+?&gt;</code></code></pre>
+<p>使用图像处理技术生成的验证码</p>
+<pre><code><code>&lt;?php
+session_start();
+header(&quot;content-type:image/png&quot;);     //设置创建图像的格式
+$image_width=70;                      //设置图像宽度
+$image_height=18;                     //设置图像高度
+srand(microtime()*100000);            //设置随机数的种子
+for($i=0;$i&lt;4;$i++){                  //循环输出一个4位的随机数
+   $new_number.=dechex(rand(0,15));
+}
+$_SESSION[check_checks]=$new_number;    //将获取的随机数验证码写入到SESSION变量中     
+
+$num_image=imagecreate($image_width,$image_height);  //创建一个画布
+imagecolorallocate($num_image,255,255,255);          //设置画布的颜色
+for($i=0;$i&lt;strlen($_SESSION[check_checks]);$i++){  //循环读取SESSION变量中的验证码
+   $font=mt_rand(3,5);                              //设置随机的字体
+   $x=mt_rand(1,8)+$image_width*$i/4;               //设置随机字符所在位置的X坐标
+   $y=mt_rand(1,$image_height/4);                   //设置随机字符所在位置的Y坐标
+   $color=imagecolorallocate($num_image,mt_rand(0,100),mt_rand(0,150),mt_rand(0,200));       //设置字符的颜色
+   imagestring($num_image,$font,$x,$y,$_SESSION[check_checks][$i],$color);                   //水平输出字符
+}
+imagepng($num_image);               //生成PNG格式的图像
+imagedestroy($num_image);           //释放图像资源
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+session_start();
+if($_POST[&quot;Submit&quot;]!=&quot;&quot;){
+$checks=$_POST[&quot;checks&quot;];
+if($checks==&quot;&quot;){
+echo &quot;&lt;script&gt; alert(&#39;验证码不能为空&#39;);window.location.href=&#39;index.php&#39;;&lt;/script&gt;&quot;;
+}
+if($checks==$_SESSION[check_checks]){
+    echo &quot;&lt;script&gt; alert(&#39;用户登录成功!&#39;);window.location.href=&#39;index.php&#39;;&lt;/script&gt;&quot;;
+}else{
+    echo &quot;&lt;script&gt; alert(&#39;您输入的验证码不正确!&#39;);window.location.href=&#39;index.php&#39;;&lt;/script&gt;&quot;;
+}
+}
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;
+&lt;title&gt;验证码应用&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+.STYLE1 {
+    font-size: 12px;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+.style2 {font-weight: bold; font-size: 12px;}
+--&gt;
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;form name=&quot;form&quot; method=&quot;post&quot; action=&quot;&quot;&gt;
+  &lt;table width=&quot;1003&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot;&gt;
+    &lt;tr&gt;
+      &lt;td width=&quot;168&quot; height=&quot;169&quot; background=&quot;images/index_01.gif&quot;&gt;&amp;nbsp;&lt;/td&gt;
+      &lt;td width=&quot;685&quot; background=&quot;images/index_02.gif&quot;&gt;&amp;nbsp;&lt;/td&gt;
+      &lt;td width=&quot;150&quot; background=&quot;images/index_03.gif&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td width=&quot;168&quot; height=&quot;311&quot; background=&quot;images/index_04.gif&quot;&gt;&amp;nbsp;&lt;/td&gt;
+      &lt;td background=&quot;images/index_05.gif&quot;&gt;&lt;table width=&quot;675&quot; height=&quot;169&quot;  border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;
+        &lt;tr&gt;
+          &lt;td height=&quot;43&quot; align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+          &lt;td align=&quot;center&quot; valign=&quot;middle&quot;&gt;&amp;nbsp;&lt;/td&gt;
+          &lt;td align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td width=&quot;382&quot; height=&quot;24&quot; align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+          &lt;td width=&quot;207&quot; height=&quot;24&quot; valign=&quot;middle&quot;&gt;&lt;span class=&quot;style2&quot;&gt;用户名&lt;/span&gt;&lt;span class=&quot;STYLE1&quot;&gt;
+            &lt;input  name=&quot;txt_user&quot; id=&quot;txt_user&quot; style=&quot;height:20px &quot; size=&quot;10&quot;&gt;
+              &lt;/span&gt;&lt;/td&gt;
+          &lt;td width=&quot;86&quot; height=&quot;24&quot; align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td height=&quot;24&quot; align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+          &lt;td height=&quot;24&quot; valign=&quot;middle&quot;&gt;&lt;span class=&quot;style2&quot;&gt;密码&lt;/span&gt;&lt;span class=&quot;STYLE1&quot;&gt;
+          &lt;input  name=&quot;txt_pwd&quot; type=&quot;password&quot; id=&quot;txt_pwd&quot; style=&quot;FONT-SIZE: 9pt; height:20px&quot; size=&quot;10&quot;&gt;
+          &lt;/span&gt;&lt;/td&gt;
+          &lt;td height=&quot;24&quot; align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td height=&quot;24&quot; align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+          &lt;td height=&quot;24&quot; valign=&quot;middle&quot;&gt;&lt;span class=&quot;style2&quot;&gt;验证码&lt;/span&gt;&lt;span class=&quot;STYLE1&quot;&gt;
+          &lt;input name=&quot;checks&quot; size=&quot;6&quot; style=&quot;height:20px &quot;&gt;
+          &lt;img src=&quot;checks.php&quot; width=&quot;70&quot; height=&quot;18&quot; border=&quot;0&quot; align=&quot;bottom&quot;&gt;&lt;/span&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;
+          &lt;td height=&quot;24&quot; align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td height=&quot;40&quot; align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+          &lt;td align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;input type=&quot;submit&quot; name=&quot;Submit&quot; value=&quot;登录&quot;&gt;&lt;/td&gt;
+          &lt;td align=&quot;center&quot; valign=&quot;baseline&quot;&gt;&amp;nbsp;&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/table&gt;&lt;/td&gt;
+      &lt;td background=&quot;images/index_06.gif&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td height=&quot;100&quot;&gt;&amp;nbsp;&lt;/td&gt;
+      &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+      &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p>使用柱形图</p>
+<pre><code><code>&lt;?php
+include (&quot;jpgraph/jpgraph.php&quot;);
+include (&quot;jpgraph/jpgraph_bar.php&quot;);
+
+$datay=array(160,180,203,289,405,488,489,408,299,166,187,105);
+
+//创建画布
+$graph = new Graph(600,300,&quot;auto&quot;); 
+$graph-&gt;SetScale(&quot;textlin&quot;);
+$graph-&gt;yaxis-&gt;scale-&gt;SetGrace(20);
+
+//创建画布阴影
+$graph-&gt;SetShadow();
+
+//设置显示区左、右、上、下距边线的距离，单位为像素
+$graph-&gt;img-&gt;SetMargin(40,30,30,40);
+
+//创建一个矩形的对象
+$bplot = new BarPlot($datay);
+
+//设置柱形图的颜色
+$bplot-&gt;SetFillColor(&#39;orange&#39;); 
+//设置显示数字    
+$bplot-&gt;value-&gt;Show();
+//在柱形图中显示格式化的图书销量
+$bplot-&gt;value-&gt;SetFormat(&#39;%d&#39;);
+//将柱形图添加到图像中
+$graph-&gt;Add($bplot);
+
+//设置画布背景色为淡蓝色
+$graph-&gt;SetMarginColor(&quot;lightblue&quot;);
+
+//创建标题
+$graph-&gt;title-&gt;Set(&quot;《PHP》&quot;);
+
+//设置X坐标轴文字
+$a=array(&quot;1月&quot;,&quot;2月&quot;,&quot;3月&quot;,&quot;4月&quot;,&quot;5月&quot;,&quot;6月&quot;,&quot;7月&quot;,&quot;8月&quot;,&quot;9月&quot;,&quot;10月&quot;,&quot;11月&quot;,&quot;12月&quot;);
+$graph-&gt;xaxis-&gt;SetTickLabels($a); 
+
+//设置字体
+$graph-&gt;title-&gt;SetFont(FF_SIMSUN);
+$graph-&gt;xaxis-&gt;SetFont(FF_SIMSUN); 
+
+//输出矩形图表
+$graph-&gt;Stroke();
+?&gt;</code></code></pre>
+<p>使用折线图统计</p>
+<pre><code><code>&lt;?php
+        include (&quot;jpgraph/jpgraph.php&quot;);
+        include (&quot;jpgraph/jpgraph_line.php&quot;);                                                       //引用折线图LinePlot类文件
+        $datay = array(8320,9360,14956,17028,13060,15376,25428,16216,28548,18632,22724,28460);      //填充的数据   
+        $graph = new Graph(600,300,&quot;auto&quot;);                             //创建画布
+        $graph-&gt;img-&gt;SetMargin(50,40,30,40);                            //设置统计图所在画布的位置，左边距50、右边距40、上边距30、下边距40，单位为像素
+        $graph-&gt;img-&gt;SetAntiAliasing();                                 //设置折线的平滑状态
+        $graph-&gt;SetScale(&quot;textlin&quot;);                                    //设置刻度样式
+        $graph-&gt;SetShadow();                                            //创建画布阴影
+        $graph-&gt;title-&gt;Set(&quot;2000年PHP图书月销售额折线图&quot;);    //设置标题
+        $graph-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);                      //设置标题字体
+        $graph-&gt;SetMarginColor(&quot;lightblue&quot;);                            //设置画布的背景颜色为淡蓝色
+        $graph-&gt;yaxis-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);               //设置Y轴标题的字体
+        $graph-&gt;xaxis-&gt;SetPos(&quot;min&quot;);
+        $graph-&gt;yaxis-&gt;HideZeroLabel();
+        $graph-&gt;ygrid-&gt;SetFill(true,&#39;#EFEFEF@0.5&#39;,&#39;#BBCCFF@0.5&#39;);
+        $a=array(&quot;1月&quot;,&quot;2月&quot;,&quot;3月&quot;,&quot;4月&quot;,&quot;5月&quot;,&quot;6月&quot;,&quot;7月&quot;,&quot;8月&quot;,&quot;9月&quot;,&quot;10月&quot;,&quot;11月&quot;,&quot;12月&quot;);           //X轴
+        $graph-&gt;xaxis-&gt;SetTickLabels($a);                               //设置X轴
+        $graph-&gt;xaxis-&gt;SetFont(FF_SIMSUN);                              //设置X坐标轴的字体
+        $graph-&gt;yscale-&gt;SetGrace(20); 
+   
+        $p1 = new LinePlot($datay);                                     //创建折线图对象
+        $p1-&gt;mark-&gt;SetType(MARK_FILLEDCIRCLE);                          //设置数据坐标点为圆形标记
+        $p1-&gt;mark-&gt;SetFillColor(&quot;red&quot;);                                 //设置填充的颜色
+        $p1-&gt;mark-&gt;SetWidth(4);                                         //设置圆形标记的直径为4像素
+        $p1-&gt;SetColor(&quot;blue&quot;);                                          //设置折形颜色为蓝色
+        $p1-&gt;SetCenter();                                               //在X轴的各坐标点中心位置绘制折线
+        $graph-&gt;Add($p1);                                               //在统计图上绘制折线
+        $graph-&gt;Stroke();                                               //输出图像
+?&gt;</code></code></pre>
+<p>应用3D饼形图</p>
+<pre><code><code>&lt;?php
+include_once (&quot;jpgraph/jpgraph.php&quot;);
+include_once (&quot;jpgraph/jpgraph_pie.php&quot;);
+include_once (&quot;jpgraph/jpgraph_pie3d.php&quot;);         //引用3D饼图PiePlot3D对象所在的类文件
+
+$data = array(266036,295621,335851,254256,254254,685425);           //定义数组
+$graph = new PieGraph(540,260,&#39;auto&#39;);              //创建画布
+$graph-&gt;SetShadow();                                //设置画布阴影
+
+$graph-&gt;title-&gt;Set(&quot;应用3D饼形图统计2000年商品的年销售额比率&quot;);          //创建标题
+$graph-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);          //设置标题字体
+$graph-&gt;legend-&gt;SetFont(FF_SIMSUN,FS_NORMAL);           //设置图例字体
+
+$p1 = new PiePlot3D($data);                         //创建3D饼形图对象
+$p1-&gt;SetLegends(array(&quot;IT数码&quot;,&quot;家电通讯&quot;,&quot;家居日用&quot;,&quot;服装鞋帽&quot;,&quot;健康美容&quot;,&quot;食品烟酒&quot;));
+$targ=array(&quot;pie3d_csimex1.php?v=1&quot;,&quot;pie3d_csimex1.php?v=2&quot;,&quot;pie3d_csimex1.php?v=3&quot;,
+            &quot;pie3d_csimex1.php?v=4&quot;,&quot;pie3d_csimex1.php?v=5&quot;,&quot;pie3d_csimex1.php?v=6&quot;);
+$alts=array(&quot;val=%d&quot;,&quot;val=%d&quot;,&quot;val=%d&quot;,&quot;val=%d&quot;,&quot;val=%d&quot;,&quot;val=%d&quot;);
+$p1-&gt;SetCSIMTargets($targ,$alts);
+
+$p1-&gt;SetCenter(0.4,0.5);                    //设置饼形图所在画布的位置
+$graph-&gt;Add($p1);                           //将3D饼图形添加到图像中
+$graph-&gt;StrokeCSIM();                       //输出图像到浏览器
+
+?&gt;</code></code></pre>
+<p>应用柱形图依次统计2000年月销量</p>
+<pre><code><code>&lt;?php
+include (&quot;jpgraph/jpgraph.php&quot;);
+include (&quot;jpgraph/jpgraph_bar.php&quot;);
+
+$datay1=array(58,85,65,39,120,91,152,49,97,130,67);
+$datay2=array(18,35,101,69,138,131,112,149,88,60,77);
+
+$graph = new Graph(620,300,&#39;auto&#39;); 
+$graph-&gt;SetScale(&quot;textlin&quot;);
+$graph-&gt;SetShadow();
+$graph-&gt;SetMarginColor(&quot;yellow&quot;);                           //设置画布背景色为淡蓝色
+$graph-&gt;img-&gt;SetMargin(40,30,40,40);
+$graph-&gt;xaxis-&gt;SetTickLabels($gDateLocale-&gt;GetShortMonth());
+
+$graph-&gt;xaxis-&gt;title-&gt;Set(&#39;&#39;);
+$graph-&gt;xaxis-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);
+
+$graph-&gt;title-&gt;Set(&#39;应用柱形图依次统计2000年月销量&#39;);
+$graph-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);
+
+$bplot1 = new BarPlot($datay1);
+$bplot2 = new BarPlot($datay2);
+
+$bplot1-&gt;SetFillColor(&quot;orange&quot;);
+$bplot2-&gt;SetFillColor(&quot;lightblue&quot;);
+
+$bplot1-&gt;SetShadow();
+$bplot2-&gt;SetShadow();
+
+$bplot1-&gt;SetShadow();
+$bplot2-&gt;SetShadow();
+
+$gbarplot = new GroupBarPlot(array($bplot1,$bplot2));
+$gbarplot-&gt;SetWidth(0.6);
+$graph-&gt;Add($gbarplot);
+
+$graph-&gt;Stroke();
+?&gt;</code></code></pre>
+<p>轿车的月销量统计</p>
+<pre><code><code>&lt;?php
+include (&quot;jpgraph/jpgraph.php&quot;);
+include (&quot;jpgraph/jpgraph_line.php&quot;);
+include (&quot;jpgraph/jpgraph_scatter.php&quot;);
+
+$datay1 = array(83,57,93,112,142,112,89,125,69,105,118,75);             //定义数组
+
+//创建画布
+$graph = new Graph(620,260);
+$graph-&gt;SetMarginColor(&#39;red&#39;);
+$graph-&gt;SetScale(&quot;textlin&quot;);
+$graph-&gt;SetFrame(false);
+$graph-&gt;SetMargin(30,5,25,20);
+
+//创建标签标题、颜色、文字大小等属性
+$graph-&gt;tabtitle-&gt;Set(&#39; 2000年轿车的月销量统计  &#39; );
+$graph-&gt;tabtitle-&gt;SetFont(FF_SIMSUN,FS_NORMAL,10);
+$graph-&gt;tabtitle-&gt;SetColor(&#39;darkred&#39;,&#39;yellow&#39;);
+// 设置X轴网格
+$graph-&gt;xgrid-&gt;Show();
+
+//应用月份做为X轴的坐标
+$graph-&gt;xaxis-&gt;SetTickLabels($gDateLocale-&gt;GetShortMonth());
+
+//创建折线对象
+$p1 = new LinePlot($datay1);
+$p1-&gt;SetColor(&quot;navy&quot;);
+
+$p1-&gt;mark-&gt;SetType(MARK_IMG,&#39;car.gif&#39;,0.8);             //载入汽车模型标记，并限制其输出大小
+
+//输出汽车模型标记的位置
+$p1-&gt;value-&gt;SetFormat(&#39;%d&#39;);
+$p1-&gt;value-&gt;Show();
+$p1-&gt;value-&gt;SetColor(&#39;darkred&#39;);
+$p1-&gt;value-&gt;SetFont(FF_ARIAL,FS_BOLD,10);
+$p1-&gt;value-&gt;SetMargin(14);                  //设置汽车销量距汽车模型标记的距离
+
+$p1-&gt;SetCenter();           //设置汽车销量及模型在X轴各坐标点居中显示
+$graph-&gt;Add($p1);           //添加折线图到图像中
+$graph-&gt;Stroke();           //输出图像到浏览器
+
+?&gt;</code></code></pre>
+<p>统计2006年、2007年、2008年、2009年农产品的产量比率</p>
+<pre><code><code>&lt;?php
+include (&quot;jpgraph/jpgraph.php&quot;);
+include (&quot;jpgraph/jpgraph_pie.php&quot;);
+
+//定义数组
+$data1 = array(40,21,17,14,23);
+$data2 = array(60,54,107,24,83);
+$data3 = array(52,151,99,110,223);
+$data4 = array(70,181,117,114,33);
+
+//创建画布
+$graph = new PieGraph(600,350,&quot;auto&quot;);
+$graph-&gt;SetShadow();
+
+//设置标题名称
+$graph-&gt;title-&gt;Set(&quot;统计2006年、2007年、2008年、2009年农产品的产量比率&quot;);
+$graph-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);
+$graph-&gt;legend-&gt;SetFont(FF_SIMSUN,FS_NORMAL);
+
+//创建饼形图对象
+$size=0.13;
+$p1 = new PiePlot($data1);
+$p1-&gt;SetLegends(array(&quot;大豆&quot;,&quot;玉米&quot;,&quot;水稻&quot;,&quot;小麦&quot;,&quot;高梁&quot;));
+$p1-&gt;SetSize($size);
+$p1-&gt;SetCenter(0.25,0.32);
+$p1-&gt;value-&gt;SetFont(FF_FONT0);
+$p1-&gt;title-&gt;Set(&quot;2006年&quot;);
+$p1-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);
+
+$p2 = new PiePlot($data2);
+$p2-&gt;SetSize($size);
+$p2-&gt;SetCenter(0.65,0.32);
+$p2-&gt;value-&gt;SetFont(FF_FONT0);
+$p2-&gt;title-&gt;Set(&quot;2007年&quot;);
+$p2-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);
+
+$p3 = new PiePlot($data3);
+$p3-&gt;SetSize($size);
+$p3-&gt;SetCenter(0.25,0.75);
+$p3-&gt;value-&gt;SetFont(FF_FONT0);
+$p3-&gt;title-&gt;Set(&quot;2008年&quot;);
+$p3-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);
+
+$p4 = new PiePlot($data4);
+$p4-&gt;SetSize($size);
+$p4-&gt;SetCenter(0.65,0.75);
+$p4-&gt;value-&gt;SetFont(FF_FONT0);
+$p4-&gt;title-&gt;Set(&quot;2009年&quot;);
+$p4-&gt;title-&gt;SetFont(FF_SIMSUN,FS_BOLD);
+
+$graph-&gt;Add($p1);
+$graph-&gt;Add($p2);
+$graph-&gt;Add($p3);
+$graph-&gt;Add($p4);
+
+$graph-&gt;Stroke();
+
+?&gt;</code></code></pre>
+<blockquote>
+<p>文件系统</p>
+</blockquote>
+<p>文件是用来存储数据的方式之一。<br />
+打开文件，关闭文件，读写文件，操作文件。</p>
+<p>打开文件</p>
+<pre><code><code>resource fopen ( string filename, string mode [, bool use_include_path]);</code></code></pre>
+<p>关闭文件</p>
+<pre><code><code>bool fclose ( resource handle ) ;
+
+&lt;?php
+    $f_open =fopen(&quot;../file.txt.&quot;,&quot;rb&quot;);       //打开文件
+    …    //对文件进行操作
+    fclose($f_open)  //操作完成后关闭文件                
+?&gt;</code></code></pre>
+<p>读取数据<br />
+可以读取一个字符,一行字串,整个文件<br />
+读取文件：readfile()、file()和file_get_contents()</p>
+<p>readfile()函数<br />
+读入一个文件并将其写入到输出缓冲</p>
+<pre><code><code>int readfile(string filename)</code></code></pre>
+<p>file()函数读取整个文件的内容<br />
+file()函数将文件内容按行存放到数组中</p>
+<pre><code><code>array file(string filename)</code></code></pre>
+<p>file_get_contents()函数<br />
+将文件内容（filename）读入一个字符串</p>
+<pre><code><code>string file_get_contents(string filename[,int offset[,int maxlen]])</code></code></pre>
+<p>案例：</p>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;读取整个文件&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;table border=&quot;1&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot;&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;250&quot; height=&quot;25&quot; align=&quot;right&quot; valign=&quot;middle&quot; scope=&quot;col&quot;&gt;使用readfile()函数读取文件内容：&lt;/td&gt;
+    &lt;td height=&quot;25&quot; align=&quot;center&quot; valign=&quot;middle&quot; scope=&quot;col&quot;&gt;
+    &lt;?php readfile(&#39;tm.txt&#39;); ?&gt;    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;25&quot; align=&quot;right&quot; valign=&quot;middle&quot;&gt;使用file()函数读取文件内容：&lt;/td&gt;
+    &lt;td height=&quot;25&quot; align=&quot;center&quot; valign=&quot;middle&quot;&gt;
+    &lt;?php
+        $f_arr = file(&#39;tm.txt&#39;);
+        foreach($f_arr as $cont){
+            echo $cont.&quot;&lt;br&gt;&quot;;
+        }
+    ?&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;250&quot; height=&quot;25&quot; align=&quot;right&quot; valign=&quot;middle&quot; scope=&quot;col&quot;&gt;使用file_get_contents()函数读取文件内容：&lt;/td&gt;
+    &lt;td height=&quot;25&quot; align=&quot;center&quot; valign=&quot;middle&quot; scope=&quot;col&quot;&gt;
+    &lt;?php
+    
+        $f_chr = file_get_contents(&#39;tm.txt&#39;);
+        echo $f_chr;
+    
+    ?&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p>读取一行数据：fgets()和fgetss()</p>
+<p>fgets()函数用于一次读取一行数据</p>
+<pre><code><code>string fgets( int handle [, int length] )</code></code></pre>
+<p>fgetss()函数是fgets()函数的变体，用于读取一行数据</p>
+<pre><code><code>string fgetss ( resource handle [, int length [, string 
+allowable_tags]] )</code></code></pre>
+<blockquote>
+<p>fgets和fgetss的区别</p>
+</blockquote>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;fgets和fgetss的区别&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;table border=&quot;1&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot;&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;30&quot; align=&quot;right&quot; valign=&quot;middle&quot; scope=&quot;col&quot;&gt;使用fgets函数：&lt;/td&gt;
+    &lt;td height=&quot;30&quot; align=&quot;center&quot; valign=&quot;middle&quot; scope=&quot;col&quot;&gt;
+&lt;?php
+    $fopen = fopen(&#39;fun.php&#39;,&#39;rb&#39;);
+    while(!feof($fopen)){
+        echo fgets($fopen);
+    }
+    fclose($fopen);
+?&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;30&quot; align=&quot;right&quot; valign=&quot;middle&quot;&gt;使用fgetss函数：&lt;/td&gt;
+    &lt;td height=&quot;30&quot; align=&quot;center&quot; valign=&quot;middle&quot;&gt;
+    &lt;?php
+    $fopen = fopen(&#39;fun.php&#39;,&#39;rb&#39;);
+    while(!feof($fopen)){
+        echo fgetss($fopen);
+    }
+    fclose($fopen);
+?&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p>读取一个字符：fgetc() 读取任意长度的字串：fread()</p>
+<pre><code><code>string fgetc ( resource handle )
+
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;使用fgetc函数读取字符&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;pre&gt;
+&lt;?php
+    $fopen = fopen(&#39;03.txt&#39;,&#39;rb&#39;);
+    while(false !== ($chr = fgetc($fopen))){
+        echo $chr;
+    }
+    fclose($fopen);
+?&gt;
+&lt;/pre&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+string fread ( int handle, int length )
+
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;使用fread函数读取文件&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+    $filename = &quot;04.txt&quot;;
+    $fp = fopen($filename,&quot;rb&quot;);
+    echo fread($fp,32);
+    echo &quot;&lt;p&gt;&quot;;
+    echo fread($fp,filesize($filename));
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<blockquote>
+<p>写入文件</p>
+</blockquote>
+<p>使用fwrite()和file_put_contents()函数向文件中写入数据</p>
+<p>fwrite()函数</p>
+<pre><code><code>int fwrite ( resource handle, string string [, int length] )</code></code></pre>
+<p>file_put_contents()函数</p>
+<pre><code><code>int file_put_contents ( string filename, string data [, int 
+flags])</code></code></pre>
+<p>使用fwrite和file_put_contents函数写入数据</p>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;使用fwrite和file_put_contents函数写入数据&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+    $filepath = &quot;05.txt&quot;;
+    $str = &quot;此情可待成追忆 只是当时已惘然&lt;br&gt;&quot;;
+    echo &quot;用fwrite写入文件：&quot;;
+    $fopen = fopen($filepath,&#39;wb&#39;) or die(&#39;文件不存在&#39;);
+    fwrite($fopen,$str);
+    fclose($fopen);
+    readfile($filepath);
+    echo &quot;&lt;p&gt;用file_put_contents写入文件：&quot;;
+    file_put_contents($filepath,$str);
+    readfile($filepath);
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<blockquote>
+<p>操作文件</p>
+</blockquote>
+<pre><code><code>bool copy();
+bool rename();
+bool unlink();
+int fileatime();
+int filemtime();
+int filesize();
+array pathinfo();
+string realpath();</code></code></pre>
+<blockquote>
+<p>目 录 处 理</p>
+</blockquote>
+<p>打开/关闭目录<br />
+浏览目录<br />
+操作目录</p>
+<p>opendir()函数</p>
+<pre><code><code>resource opendir ( string path)</code></code></pre>
+<p>closedir()函数</p>
+<pre><code><code>void closedir ( resource handle )</code></code></pre>
+<p>案例：</p>
+<pre><code><code>&lt;?php  
+$path = &quot;D:\\55555\\www\\55\\55\\12&quot; ;
+if (is_dir($path)){                     //检测是否是一个目录
+    if ($dire = opendir($path))             //判断打开目录是否成功
+        echo $dire;                 //输出目录指针
+}else{
+    echo &#39;路径错误&#39;;
+    exit();
+}
+…                                   //其他操作
+closedir($dire);                            //关闭目录
+?&gt;</code></code></pre>
+<p>浏览目录，scandir()函数</p>
+<pre><code><code>array scandir ( string directory [, int sorting_order ])</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;浏览目录&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;?php  
+    $path = &#39;E:\AppServ\www\mr\sl\13&#39;;
+    if(is_dir($path)){
+        $dir = scandir($path);
+        foreach($dir as $value){
+            echo $value.&quot;&lt;br&gt;&quot;;
+        }
+    }else{
+        echo &quot;目录路径错误！&quot;;
+    }
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p>操作目录</p>
+<pre><code><code>bool mkdir
+bool rmdir
+string getcwd
+bool chdir
+float disk_free_space
+string readdir
+void rewinddir</code></code></pre>
+<p>高级应用<br />
+远程文件访问<br />
+文件指针<br />
+锁定文件</p>
+<p>php.ini中配置,找到allow_url_fopen,设为ON</p>
+<pre><code><code>fopen(&#39;http://127.0.0.1/index.php&#39;,&#39;rb&#39;); </code></code></pre>
+<blockquote>
+<p>文件指针</p>
+</blockquote>
+<p>1．rewind()函数</p>
+<pre><code><code>bool rewind ( resource handle )</code></code></pre>
+<p>2．fseek()函数</p>
+<pre><code><code>int fseek ( resource handle, int offset [, int whence] )</code></code></pre>
+<p>handle参数为要打开的文件<br />
+offset为指针位置或相对whence参数的偏移量，可以是负值<br />
+whence的值包括3种：<br />
+SEEK_SET，位置等于offset字节<br />
+SEEK_CUR，位置等于当前位置加上offset字节<br />
+SEEK_END，位置等于文件尾加上offset字节<br />
+如果忽略whence参数，系统默认为SEEK_SET</p>
+<p>3．feof()函数</p>
+<pre><code><code>bool feof ( resource handle )</code></code></pre>
+<p>4．ftell()函数</p>
+<pre><code><code>int ftell ( resource handle )</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;文件指针函数&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+$filename = &quot;07.txt&quot;;
+$total = filesize($filename);
+if(is_file($filename)){
+    echo &quot;文件总字节数：&quot;.$total.&quot;&lt;br&gt;&quot;;
+    $fopen = fopen($filename,&#39;rb&#39;);
+    echo &quot;初始指针位置是：&quot;.ftell($fopen).&quot;&lt;br&gt;&quot;;
+    fseek($fopen,33);
+    echo &quot;使用fseek()函数后指针位置：&quot;.ftell($fopen).&quot;&lt;br&gt;&quot;;
+    echo &quot;输出当前指针后面的内容：&quot;.fgets($fopen).&quot;&lt;br&gt;&quot;;
+    if(feof($fopen))
+        echo &quot;当前指针指向文件末尾：&quot;.ftell($fopen).&quot;&lt;br&gt;&quot;;
+    rewind($fopen);
+    echo &quot;使用rewind()函数后指针的位置：&quot;.ftell($fopen).&quot;&lt;br&gt;&quot;;
+    echo &quot;输出前33字节的内容：&quot;.fgets($fopen,33);
+    fclose($fopen);
+}else{
+    echo &quot;文件不存在&quot;;
+}
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<blockquote>
+<p>锁定文件</p>
+</blockquote>
+<pre><code><code>bool flock ( int handle, int operation)
+
+LOCK_SH取得共享锁定（读取程序）
+LOCK_EX取得独占锁定（写入程序）
+LOCK_UN释放锁定
+LOCK_NB防止flock()在锁定时堵塞
+operation的参数</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;使用flock函数&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+    $filename = &#39;08.txt&#39;;                       //声明要打开的文件的名称
+    $fd = fopen($filename,&#39;w&#39;);                 //以w形式打开文件
+    flock($fd, LOCK_EX);                        //锁定文件（毒针共享
+    fwrite($fd, &quot;hightman1&quot;);                   //向文件中写入数据
+    flock($fd, LOCK_UN);                        //解除锁定
+    fclose($fd);                                //关闭文件指针
+    readfile($filename);                        //输出文件内容
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<h2 id="文件上传">文件上传</h2>
+<p>文件上传是要通过http协议来实现的，要在php.ini文件中进行对上传文件的设置，要了解$_FILES变量和函数move_uploaded_file()函数实现上传。</p>
+<p>要配置php.ini文件，在文件中找到file_uploads，如果值为on，说明服务器支持文件上传，如果为off，则表示不支持，upload_tmp_dir为上传文件临时位置，系统默认，也可以自己定。</p>
+<p>upload_max_filesize为服务器允许上传的文件的最大值，默认2mb。max_execution_timePHP中一个指令所能执行的最大时间，memory_limitPHP中一个指令所分配的内存空间。</p>
+<pre><code><code>$_FILES[filename][name]
+上传文件的文件名
+
+$_FILES[filename][size]
+文件大小
+
+$_FILES[filename][tmp_name]
+为临时文件名
+
+$_FILES[filename][type]
+文件的类型
+
+$_FILES[filename][error]
+上传文件的结果。如果返回0，说明文件上传成功</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;$_FIELS变量&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;table width=&quot;500&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot;&gt;
+&lt;form action=&quot;&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;150&quot; height=&quot;30&quot; align=&quot;right&quot; valign=&quot;middle&quot;&gt;请选择上传文件：&lt;/td&gt;
+    &lt;td width=&quot;250&quot;&gt;&lt;input type=&quot;file&quot; name=&quot;upfile&quot;/&gt;&lt;/td&gt;
+    &lt;td width=&quot;100&quot;&gt;&lt;input type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;上传&quot; /&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/form&gt;
+&lt;/table&gt;
+&lt;?php
+    if(!empty($_FILES)){
+        foreach($_FILES[&#39;upfile&#39;] as $name =&gt; $value)
+            echo $name.&#39; = &#39;.$value.&#39;&lt;br&gt;&#39;;
+    }
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p>文件上传函数</p>
+<p>move_uploaded_file()函数上传文件</p>
+<pre><code><code>bool move_uploaded_file ( string filename, string destination )</code></code></pre>
+<p>将上传文件存储到指定的位置</p>
+<blockquote>
+<p>单文件上传</p>
+</blockquote>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;单文件上传&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt; 
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+    if(!empty($_FILES[up_file][name])){
+    $fileinfo = $_FILES[up_file];
+        if($fileinfo[&#39;size&#39;] &lt; 1000000 &amp;&amp; $fileinfo[&#39;size&#39;] &gt; 0){
+            move_uploaded_file($fileinfo[&#39;tmp_name&#39;],$fileinfo[&#39;name&#39;]);
+            echo &#39;上传成功&#39;;
+        }else{
+            echo &#39;文件太大或未知&#39;;
+        }
+    }
+?&gt;
+&lt;table width=&quot;385&quot; height=&quot;185&quot; border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; background=&quot;images/bg.JPG&quot;&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;142&quot; height=&quot;80&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td width=&quot;174&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td width=&quot;69&quot;&gt;&amp;nbsp;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;form action=&quot;&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot; name=&quot;form&quot;&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;30&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td align=&quot;left&quot; valign=&quot;middle&quot;&gt;&lt;input name=&quot;up_file&quot; type=&quot;file&quot; size=&quot;12&quot; /&gt;&lt;/td&gt;
+    &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;27&quot; align=&quot;right&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td align=&quot;center&quot; valign=&quot;top&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;input type=&quot;image&quot; name=&quot;imageField&quot; src=&quot;images/fg.bmp&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;/form&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;48&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<h2 id="多文件上传">多文件上传</h2>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;多文件上传&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body,td,th {
+    font-size: 12px;
+}
+body {
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+--&gt;
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+请选择要上传的文件
+&lt;form action=&quot;&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;
+  &lt;table border=&quot;1&quot; cellpadding=&quot;1&quot; cellspacing=&quot;1&quot; bordercolor=&quot;#FFFFFF&quot; bgcolor=&quot;#CCCCCC&quot; id=&quot;up_table&quot; &gt;
+    &lt;tbody id=&quot;auto&quot;&gt;
+      &lt;tr id=&quot;show&quot; &gt;
+        &lt;td bgcolor=&quot;#FFFFFF&quot;&gt;上传文件 &lt;/td&gt;
+        &lt;td bgcolor=&quot;#FFFFFF&quot;&gt;&lt;input name=&quot;u_file[]&quot; type=&quot;file&quot;&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td bgcolor=&quot;#FFFFFF&quot;&gt;上传文件 &lt;/td&gt;
+        &lt;td bgcolor=&quot;#FFFFFF&quot;&gt;&lt;input name=&quot;u_file[]&quot; type=&quot;file&quot;&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td bgcolor=&quot;#FFFFFF&quot;&gt;上传文件 &lt;/td&gt;
+        &lt;td bgcolor=&quot;#FFFFFF&quot;&gt;&lt;input name=&quot;u_file[]&quot; type=&quot;file&quot;&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td bgcolor=&quot;#FFFFFF&quot;&gt;上传文件 &lt;/td&gt;
+        &lt;td bgcolor=&quot;#FFFFFF&quot;&gt;&lt;input name=&quot;u_file[]&quot; type=&quot;file&quot;&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+    &lt;tr&gt;
+      &lt;td colspan=&quot;4&quot; bgcolor=&quot;#FFFFFF&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;上传&quot; /&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/form&gt;
+&lt;?php
+if(!empty($_FILES[u_file][name])){
+    $file_name = $_FILES[u_file][name];
+    $file_tmp_name = $_FILES[u_file][tmp_name];
+    for($i = 0; $i &lt; count($file_name); $i++){
+        if($file_name[$i] != &#39;&#39;){
+            move_uploaded_file($file_tmp_name[$i],$i.$file_name[$i]);
+            echo &#39;文件&#39;.$file_name[$i].&#39;上传成功。更名为&#39;.$i.$file_name[$i].&#39;&lt;br&gt;&#39;;
+        }
+    }
+}
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p>访问量：</p>
+<pre><code><code>&lt;?php session_start();  
+if($_SESSION[temp]==&quot;&quot;){ //判断$_SESSION[temp]==&quot;&quot;的值是否为空,其中的temp为自定义的变量
+    if(($fp=fopen(&quot;counter.txt&quot;,&quot;r&quot;))==false){ 
+        echo &quot;打开文件失败!&quot;;
+    }else{ 
+        $counter=fgets($fp,1024);       //读取文件中数据
+        fclose($fp);                    //关闭文本文件
+        $counter++;                     //计数器增加1
+        $fp=fopen(&quot;counter.txt&quot;,&quot;w&quot;);   //以写的方式打开文本文件&lt;!----&gt;
+        fputs($fp,$counter);            //将新的统计数据增加1
+        fclose($fp);    
+    }                                   //关闭文   
+    $_SESSION[temp]=1;                  //登录以后,$_SESSION[temp]的值不为空,给$_SESSION[temp]赋一个值1
+}
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;
+&lt;title&gt;通过文本文件统计页面访问量&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;img src=&quot;gd1.php&quot; /&gt;
+&lt;/BODY&gt;
+&lt;/HTML&gt;
+
+&lt;?php 
+//以图形的形式输出数据库中的记录数
+
+if(($fp=fopen(&quot;counter.txt&quot;,&quot;r&quot;))==false){
+    echo &quot;打开文件失败!&quot;;
+}else{
+    $counter=fgets($fp,1024);
+    fclose($fp);
+    //通过GD2函数创建画布
+    $im=imagecreate(240,24);
+    $gray=imagecolorallocate($im,255,255,255);
+    $color =imagecolorallocate($im,rand(0,255),rand(0,255),rand(0,255));    //定义字体颜色
+    //输出中文字符
+    $text=iconv(&quot;gb2312&quot;,&quot;utf-8&quot;,&quot;网站的访问量:&quot;);                        //对指定的中文字符串进行转换
+    $font = &quot;Fonts/FZHCJW.TTF&quot;;  
+    imagettftext($im,14,0,20,18,$color,$font,$text);                        //输出中文
+    //输出网站的访问次数
+    imagestring($im,5,160,5,$counter,$color);
+    imagepng($im);
+    imagedestroy($im);
+}   
+
+?&gt;</code></code></pre>
+<blockquote>
+<p>限制大小的文件上传</p>
+</blockquote>
+<pre><code><code>&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;
+&lt;title&gt;限制大小的文件上传&lt;/title&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+&lt;!--
+body {
+    margin-left: 00px;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+}
+--&gt;
+&lt;/style&gt;&lt;/head&gt;
+
+&lt;body&gt;
+&lt;table width=&quot;385&quot; height=&quot;185&quot; border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; background=&quot;images/bg.JPG&quot;&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;142&quot; height=&quot;80&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td width=&quot;174&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td width=&quot;69&quot;&gt;&amp;nbsp;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;form name=&quot;form1&quot; method=&quot;post&quot; action=&quot;index_ok.php&quot; enctype=&quot;multipart/form-data&quot;&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;30&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td align=&quot;left&quot; valign=&quot;middle&quot;&gt;&lt;input name=&quot;files&quot; type=&quot;file&quot; id=&quot;files&quot; size=&quot;13&quot; maxlength=&quot;150&quot;&gt;   &lt;/td&gt;
+    &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;27&quot; align=&quot;right&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td align=&quot;center&quot; valign=&quot;top&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;input type=&quot;image&quot; name=&quot;imageField&quot; src=&quot;images/fg.bmp&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;/form&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;48&quot;&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+    &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+&lt;?php 
+    if($_FILES[&#39;files&#39;][&#39;name&#39;]==true){
+        $filesize=$_FILES[&#39;files&#39;][&#39;size&#39;];
+        if($filesize&gt;1000000){
+            echo &quot;对不起,您上传的文件超过规定的大小!!&quot;;
+            echo &quot;&lt;meta http-equiv=\&quot;Refresh\&quot; content=\&quot;3;url=index.php\&quot;&gt;将在3秒钟后返回前页...&quot;;
+        }else{
+            $path = &#39;./upfiles/&#39;. $_FILES[&#39;files&#39;][&#39;name&#39;];
+            if (move_uploaded_file($_FILES[&#39;files&#39;][&#39;tmp_name&#39;],$path)) { 
+                echo &quot;上传成功!!&quot;;
+                echo &quot;&lt;meta http-equiv=\&quot;Refresh\&quot; content=\&quot;3;url=index.php\&quot;&gt;&quot;; 
+            }else{
+                echo &quot;文件上传失败!!&quot;;
+                echo &quot;&lt;meta http-equiv=\&quot;Refresh\&quot; content=\&quot;3;url=index.php\&quot;&gt;&quot;;
+            }
+        }
+    }
+?&gt;</code></code></pre>
+<h2 id="结言">结言</h2>
+<p>好了，欢迎在留言区留言，与大家分享你的经验和心得。</p>
+<p>感谢你学习今天的内容，如果你觉得这篇文章对你有帮助的话，也欢迎把它分享给更多的朋友，感谢。</p>
+<p>感谢！承蒙关照！您真诚的赞赏是我前进的最大动力！</p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-da750878d19e7fa1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-826395d4148483a1?imageMogr2/auto-orient/strip" alt="image" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

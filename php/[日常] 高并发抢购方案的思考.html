@@ -1,0 +1,44 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[日常] 高并发抢购方案的思考' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[日常] 高并发抢购方案的思考</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11754633.html</div><br>
+    <p>经常在面试中被问到如何设计一个高并发环境下的抢购方案,虽然网上的资料已经很多了,但是都是很简单的说了一些用队列之类的套话,没有更详细的细节考虑.被问的实在是太多了,不得已我也仔细想想这些该怎么设计.抛开运维阶段的多层负载均衡,直接只说PHP的业务层面的逻辑.</p>
+<p>整个流程如下:<br />web界面<br />点击抢购==&gt;弹出答题弹窗==&gt;答对判定当前队列长度==&gt;队列未满就进入队列,显示排队中(状态),使用wbsocker实时关注用户状态<br />                       　　　　　　　　　　　　==&gt;答错再答基本就没戏了返回失败<br />                                              　　　　　　　　　　　　　　　　　　　　　　　　　　　==&gt;队列满了,返回失败</p>
+<p><br />后端进程                                                      <br />从队列随机取部分用户==&gt;修改他的状态为待支付状态===&gt;用户点击支付进行判定库存量===&gt;支付完成减库存</p>
+<p>在整个过程中,用户点击支付的时候也要判定库存,如果没库存就显示失败;用户点击完支付,库存充足,如果隔了很长时间才输入密码支付,这个过程中如果库存没了,要给用户退款;</p>
+<p>也就是要么冗余部分商品,要么给用户退款两种方案</p>
+<p>&nbsp;</p>
+<p>商品的详细信息<br />$redis-&gt;hGet('product', 'num','name');<br />商品数量设置的是10，其余字段留着存其他信息</p>
+<p>用户的状态<br />1：答题状态 <br />2：排队状态 <br />3：支付状态 <br />4：抢购成功！<br />5：抢购失败 </p>
+<p>抢购接口：panic_buy.php<br />1.判定当前用户哈希是否存在，如果不存在就设置一下<br />$redis-&gt;hSetNx('taoshihan', 'status', 1);<br />2.查看当前商品的库存，如果为0直接返回失败，更改用户状态为：5<br />$redis-&gt;hGet('product', 'num');<br />3.查看以下队列长度，如果超过1000，直接更改用户状态为：5<br />$redis-&gt;lLen('panic_buying');<br />3.用户进入队列排队，更改用户状态为：2<br />$redis-&gt;rPush('panic_buying', 'taoshihan');</p>
+<p>查询状态：status.php<br />对于进入队列成功的用户才会调用到这个接口<br />1.判定当前用户状态<br />$redis-&gt;hGet('taoshihan', 'status');</p>
+<p><br />支付接口：pay.php<br />1.判定当前用户状态<br />$redis-&gt;hGet('taoshihan', 'status');<br />2.判定当前商品数量,如果已经小于10个更改用户状态为：5<br />$redis-&gt;hGet('product', 'num');<br />3.支付完成修改当前商品数量<br />$redis-&gt;hIncrBy('product', 'num',-1);</p>
+<p><br />后端进程：<br />获取下商品数量，如果等于0，就把所有除去进入支付集合的队列成员更改用户状态为：5<br />$redis-&gt;hGet('product', 'num');<br />$redis-&gt;sIsMember('pay', 'taoshihan');//是否存在于集合中</p>
+<p>获取前100个用户，更改状态为：3，把该用户同时进入另一支付集合<br />$redis-&gt;lRange('panic_buying', 0, 99);//获取前100个<br />$redis-&gt;sAdd('pay' , 'taoshihan');//插入支付集合</p>
+<p><br />PHP-Redis扩展的哈希结构函数</p>
+<p>hDel-删除一个或多个哈希字段<br />hExists-确定哈希字段是否存在<br />hGet-获取哈希字段的值<br />hGetAll-获取哈希中的所有字段和值<br />hIncrBy-将哈希字段的整数值增加给定数字<br />hIncrByFloat-将哈希字段的浮点值增加给定数量<br />hKeys-获取哈希中的所有字段<br />hLen-获取哈希中的字段数<br />hMGet-获取所有给定哈希字段的值<br />hMSet-将多个哈希字段设置为多个值<br />hSet-设置哈希字段的字符串值<br />hSetNx-设置哈希字段的值，仅当该字段不存在时<br />hVals-获取哈希中的所有值<br />hScan-扫描成员的哈希键<br />hStrLen-获取与哈希中的字段关联的值的字符串长度</p>
+<p>PHP REDIS扩展的列表的函数</p>
+<p>blPop，brPop-删除并获取列表中的第一个/最后一个元素<br />bRPopLPush-从列表中弹出一个值，将其推到另一个列表中并返回<br />lIndex，lGet-通过列表从其索引中获取元素<br />lInsert-在列表中的另一个元素之前或之后插入一个元素<br />lLen，lSize-获取列表的长度/大小<br />lPop-删除并获取列表中的第一个元素<br />lPush-在列表前添加一个或多个值<br />lPushx-仅在列表存在时才在列表前添加值<br />lRange，lGetRange-从列表中获取一系列元素<br />lRem，lRemove-从列表中删除元素<br />lSet-通过其索引设置列表中元素的值<br />lTrim，listTrim-将列表修剪到指定范围<br />rPop-删除并获取列表中的最后一个元素<br />rPopLPush-删除列表中的最后一个元素，将其附加到另一个列表中并返回（redis&gt; = 1.1）<br />rPush-将一个或多个值添加到列表<br />rPushX-仅在列表存在时将值附加到列表</p>
+<p>PHP-Redis扩展集合的操作方法</p>
+<p>sADD 添加一个或多个成员到集合里面<br />sCard, sSize 获取一下集合中成员的个数<br />sDiff 在N个集合中比较出差集<br />sDiffStore 和sDiff差不多，但是把差集结果存储在第一个key里面<br />sInter 返回多个集合的交集<br />sInterStore 和sInter类似，把结果存储在第一个key里面<br />sIsMember, sContains检查参数中的成员是否是集合中的一员<br />sMembers, sGetMembers 获得集合中的所有成员<br />sMove 把集合中的成员从一个集合移动到另一个集合<br />sPop 在集合中随机删除一个并获取到这个成员<br />sRandMember 在集合中随机获取一个成员，并不删除它<br />sRem, sRemove 在集合中删除指定成员<br />sUnion 返回多个集合的并集<br />sUnionStore 把多个集合的并集存储在第一个参数key里面</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

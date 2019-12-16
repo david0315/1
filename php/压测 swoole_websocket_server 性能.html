@@ -1,0 +1,147 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修压测 swoole_websocket_server 性能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>压测 swoole_websocket_server 性能</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11808776.html</div><br>
+    <p>概述<br /><br />收到读者提问 &ldquo;使用 Swoole 开发的群聊功能，想知道并发情况，也就是想压测下 QPS，一直未找到方法 ...&rdquo;<br /><br />对 swoole_http_server 压测，咱们可以使用 Apache 的 ab 命令。<br /><br />对 swoole_websocket_server 压测，使用 ab 命令是不能压测的，我从网上一直也没找到合适的方法，看官方提供的代码 benchmark/async.php 中，使用的异步模块 swoole\http\client 方法进行压测的，但在 Swoole 4.3 版本就移除了异步模块，让使用 Coroutine 协程模块。<br /><br />在本地我用 Coroutine 协程实现了一下， 测的差不多的时候，一直不确定是否正确，就在 segmentfault 发了个提问，没想到韩老师回答了，'如果的如果'老师也回答了，非常感谢两位老师的答案，然后整理出文章分享给大家。<br />测试机<br /><br />Mac 上安装的 Parallels Desktop 虚拟机<br /><br />系统：Ubuntu 16.04.3 LTS<br /><br />内存：<br /><br /><img src="./images/压测 swoole_websocket_server 性能0.jpg" alt="" width="666" height="69" /><br /><br />&nbsp;&nbsp;&nbsp; 数量：1<br /><br />&nbsp;&nbsp;&nbsp; 核数：2<br /><br />CPU：<br /><img src="./images/压测 swoole_websocket_server 性能1.jpg" alt="" width="898" height="190" /><br />&nbsp;&nbsp;&nbsp; 数量：1<br /><br />&nbsp;&nbsp;&nbsp; 大小：2G<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>Server 代码
+
+    &lt;?php    
+    class Server    
+    {    
+        private $serv;    
+        public function __construct() {    
+            $this-&gt;serv = new Swoole\WebSocket\Server("0.0.0.0", 9501);    
+            $this-&gt;serv-&gt;set([    
+                'task_worker_num'       =&gt; 10,    
+                'enable_coroutine'      =&gt; true,    
+                'task_enable_coroutine' =&gt; true    
+            ]);    
+            $this-&gt;serv-&gt;on('open', function ($serv, $request) {});    
+            $this-&gt;serv-&gt;on('message', function ($serv, $frame) {    
+                $serv-&gt;task($frame-&gt;data);    
+            });    
+            $this-&gt;serv-&gt;on('task', function ($serv, $task) {    
+                foreach ($serv-&gt;connections as $fd) {    
+                    $connectionInfo = $serv-&gt;connection_info($fd);    
+                    if (isset($connectionInfo['websocket_status']) &amp;&amp; intval($connectionInfo['websocket_status']) == 3) {    
+                        $serv-&gt;push($fd, $task-&gt;data);    
+                    }    
+                }    
+            });    
+            $this-&gt;serv-&gt;on('finish', function ($serv, $task_id, $data) {});    
+            $this-&gt;serv-&gt;on('close', function ($serv, $fd) {});    
+            $this-&gt;serv-&gt;start();    
+        }    
+    }    
+    $server = new Server();
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />压测脚本<br /><br />&nbsp;&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>class Test    
+    {    
+        protected $concurrency; //并发量    
+        protected $request;     //请求量    
+        protected $requested = 0;    
+        protected $start_time;    
+        function __construct()    
+        {    
+            $this-&gt;concurrency = 100;    
+            $this-&gt;request     = 10000;    
+        }    
+        protected function webSocket()    
+        {    
+            go(function () {    
+                for ($c = 1; $c &lt;= $this-&gt;concurrency; $c++ ) {    
+                    $cli = new \Swoole\Coroutine\Http\Client('127.0.0.1', 9501);    
+                    $cli-&gt;set(['websocket_mask' =&gt; false]);    
+                    $ret = $cli-&gt;upgrade('/');    
+                    if ($ret) {    
+                        $i = $this-&gt;request / $this-&gt;concurrency;    
+                        while ($i &gt;= 1) {    
+                            $this-&gt;push($cli);    
+                            $cli-&gt;recv();    
+                            $i--;    
+                        }    
+                    }    
+                }    
+                $this-&gt;finish();    
+            });    
+        }    
+        protected function push($cli)    
+        {    
+            $ret = $cli-&gt;push('Hello World');    
+            if ($ret === true) {    
+                $this-&gt;requested ++ ;    
+            }    
+        }    
+        protected function finish()    
+        {    
+            $cost_time = round(microtime(true) - $this-&gt;start_time, 4);    
+            echo "Concurrency:".$this-&gt;concurrency.PHP_EOL;    
+            echo "Request num:".$this-&gt;request.PHP_EOL;    
+            echo "Success num:".$this-&gt;requested.PHP_EOL;    
+            echo "Total time:".$cost_time.PHP_EOL;    
+            echo "Request per second:" . intval($this-&gt;request / $cost_time).PHP_EOL;    
+        }    
+        public function run()    
+        {    
+            $this-&gt;start_time = microtime(true);    
+            $this-&gt;webSocket();    
+        }    
+    }    
+    $test = new Test();    
+    $test-&gt;run();
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />压测结果<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> 第 1 次：    
+    Concurrency:100    
+    Request num:10000    
+    Success num:10000    
+    Total time:0.846    
+    Request per second:11820    
+    第 2 次：    
+    Concurrency:100    
+    Request num:10000    
+    Success num:10000    
+    Total time:0.9097    
+    Request per second:10992    
+    第 3 次：    
+    Concurrency:100    
+    Request num:10000    
+    Success num:10000    
+    Total time:0.903    
+    Request per second:11074
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />以上是压测结果，供参考，这里我还准备了一分学习图和资料，如下：</p>
+<p><img src="./images/压测 swoole_websocket_server 性能2.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><br />小结<br /><br />通过这个压测结果，表明 Swoole 的执行效率是杠杠的！<br /><br />当然还有一些参数是可以调优的，比如：worker_num、max_request、task_worker_num 等。<br /><br />在真实的业务场景中，肯定会有逻辑处理，也会使用到 MySQL、Redis。<br /><br />那么问题来了，前两篇文章已经分享了，<a href="https://www.cnblogs.com/it-3327/p/11809147.html" target="_blank">Swoole Redis 连接池</a>、<a href="https://www.cnblogs.com/it-3327/p/11811917.html" target="_blank">Swoole MySQL 连接池</a>，感兴趣的朋友，可以使用上两种连接池，然后再进行压测。<br /><br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

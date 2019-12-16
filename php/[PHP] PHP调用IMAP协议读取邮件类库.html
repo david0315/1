@@ -1,0 +1,831 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] PHP调用IMAP协议读取邮件类库' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] PHP调用IMAP协议读取邮件类库</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11508391.html</div><br>
+    <p>socket.php 为连接socket的类库</p>
+<p>imap.php 基于socket的imap协议封装</p>
+<p>test.php 进行测试</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">require_once</span> 'socket.php'<span style="color: #000000;">;
+</span><span style="color: #0000ff;">require_once</span> 'imap.php'<span style="color: #000000;">;
+</span><span style="color: #800080;">$imap</span>=<span style="color: #0000ff;">new</span> Sina_Mail_Net_Imap("imap.sina.net:143",30,30<span style="color: #000000;">);
+</span><span style="color: #800080;">$imap</span>-&gt;<span style="color: #000000;">capability();
+</span><span style="color: #800080;">$imap</span>-&gt;id(<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+    </span>'name'          =&gt; 'SinaMail OtherMail Client',
+    'version'       =&gt; '1',
+    'os'            =&gt; 'SinaMail OtherMail',
+    'os-version'    =&gt; '1.0',<span style="color: #000000;">
+));
+</span><span style="color: #800080;">$imap</span>-&gt;login("xxxx@xxxxx","xxxx"<span style="color: #000000;">);
+</span><span style="color: #800080;">$folders</span>=<span style="color: #800080;">$imap</span>-&gt;getList('', '*'<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$folders</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$status</span> = <span style="color: #800080;">$imap</span>-&gt;select('SENT'<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$status</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$ls</span> = <span style="color: #800080;">$imap</span>-&gt;fetch(<span style="color: #0000ff;">array</span>(), <span style="color: #0000ff;">array</span>('uid', 'internaldate', 'rfc822.size'<span style="color: #000000;">));
+
+
+
+
+</span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$ls</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$i</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$info</span>=<span style="color: #800080;">$imap</span>-&gt;fetch(<span style="color: #0000ff;">array</span>(<span style="color: #800080;">$k</span>), <span style="color: #0000ff;">array</span>('rfc822'<span style="color: #000000;">));
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>imap.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Sina_Mail_Net_Imap {
+    </span><span style="color: #0000ff;">const</span> MAX_READ_SIZE = 100000000<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PATTERN_REQUEST_STRING_SEQUENCE   = '/{\d+}/'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PATTERN_RESPONSE_STRING_SEQUENCE  = '/{(\d+)}$/'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> SEQUENCE_PARAM_NAME   = '[]'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARTIAL_PARAM_NAME    = '&lt;&gt;'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_NO          = 1<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_SINGLE      = 2<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_PAIR        = 4<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_LIST        = 8<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_STRING      = 16<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_NUMBER      = 32<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_DATE        = 64<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_FLAG        = 128<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_SEQUENCE    = 256<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_SEARCH      = 512<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_BODY        = 1024<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_PARTIAL     = 2048<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> PARAM_EXCLUSIVE   = 4096<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$statusKeywords</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+        </span>'MESSAGES'      =&gt; self::PARAM_NO,
+        'RECENT'        =&gt; self::PARAM_NO,
+        'UIDNEXT'       =&gt; self::PARAM_NO,
+        'UIDVALIDITY'   =&gt; self::PARAM_NO,
+        'UNSEEN'        =&gt; self::PARAM_NO,<span style="color: #000000;">
+    );
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$searchKeywords</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+        </span>'ALL'           =&gt; self::PARAM_NO,
+        'ANSWERED'      =&gt; self::PARAM_NO,
+        'BCC'           =&gt; 18, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_STRING,</span>
+        'BEFORE'        =&gt; 66, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_DATE,</span>
+        'BODY'          =&gt; 18, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_STRING,</span>
+        'CC'            =&gt; 18, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_STRING,</span>
+        'DELETED'       =&gt; self::PARAM_NO,
+        'DRAFT'         =&gt; self::PARAM_NO,
+        'FLAGGED'       =&gt; self::PARAM_NO,
+        'FROM'          =&gt; 18, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_STRING,</span>
+        'HEADER'        =&gt; 20, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_PAIR | self::PARAM_STRING,</span>
+        'KEYWORD'       =&gt; 130, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_FLAG,</span>
+        'LARGER'        =&gt; 34, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_NUMBER,</span>
+        'NEW'           =&gt; self::PARAM_NO,
+        'NOT'           =&gt; 514, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_SEARCH,</span>
+        'OLD'           =&gt; self::PARAM_NO,
+        'ON'            =&gt; 66, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_DATE,</span>
+        'OR'            =&gt; 516, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_PAIR | self::PARAM_SEARCH,</span>
+        'RECENT'        =&gt; self::PARAM_NO,
+        'SEEN'          =&gt; self::PARAM_NO,
+        'SENTBEFORE'    =&gt; 66, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_DATE,</span>
+        'SENTON'        =&gt; 66, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_DATE,</span>
+        'SENTSINCE'     =&gt; 66, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_DATE,</span>
+        'SINCE'         =&gt; 66, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_DATE,</span>
+        'SMALLER'       =&gt; 34, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_NUMBER,</span>
+        'SUBJECT'       =&gt; 18, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_STRING,</span>
+        'TEXT'          =&gt; 18, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_STRING,</span>
+        'TO'            =&gt; 18, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_STRING,</span>
+        'UID'           =&gt; 258, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_SEQUENCE,</span>
+        'UNANSWERED'    =&gt; self::PARAM_NO,
+        'UNDELETED'     =&gt; self::PARAM_NO,
+        'UNDRAFT'       =&gt; self::PARAM_NO,
+        'UNFLAGGED'     =&gt; self::PARAM_NO,
+        'UNKEYWORD'     =&gt; 130, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_FLAG,</span>
+        'UNSEEN'        =&gt; self::PARAM_NO,<span style="color: #000000;">
+    );
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$fetchKeywords</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+        </span>'ALL'           =&gt; 4097, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_NO | self::PARAM_EXCLUSIVE,</span>
+        'FAST'          =&gt; 4097, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_NO | self::PARAM_EXCLUSIVE,</span>
+        'FULL'          =&gt; 4097, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_NO | self::PARAM_EXCLUSIVE,</span>
+        'BODY'          =&gt; 3075, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_NO | self::PARAM_SINGLE | self::PARAM_BODY | self::PARAM_PARTIAL,</span>
+        'BODY.PEEK'     =&gt; 3074, <span style="color: #008000;">//</span><span style="color: #008000;"> self::PARAM_SINGLE | self::PARAM_BODY | self::PARAM_PARTIAL,</span>
+        'BODYSTRUCTURE' =&gt; self::PARAM_NO,
+        'ENVELOPE'      =&gt; self::PARAM_NO,
+        'FLAGS'         =&gt; self::PARAM_NO,
+        'INTERNALDATE'  =&gt; self::PARAM_NO,
+        'RFC822'        =&gt; self::PARAM_NO,
+        'RFC822.HEADER' =&gt; self::PARAM_NO,
+        'RFC822.SIZE'   =&gt; self::PARAM_NO,
+        'RFC822.TEXT'   =&gt; self::PARAM_NO,
+        'UID'           =&gt; self::PARAM_NO,<span style="color: #000000;">
+    );
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$sock</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$timeout</span> = 120<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$ts</span> = 0<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$tagName</span> = 'A'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$tagId</span> = 0<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$capabilities</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$folders</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$currentFolder</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$currentCommand</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$lastSend</span> = ''<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$lastRecv</span> = ''<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$uri</span>, <span style="color: #800080;">$timeout</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$connTimeout</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$this</span>-&gt;sock = <span style="color: #0000ff;">new</span> Socket(<span style="color: #800080;">$uri</span>, <span style="color: #800080;">$timeout</span><span style="color: #000000;">);        
+</span><span style="color: #008000;">//</span><span style="color: #008000;">        $t = intval($timeout);
+//        if ($t &gt; 0) {
+//            $this-&gt;timeout = $t;
+//        }</span>
+        <span style="color: #800080;">$this</span>-&gt;connect(<span style="color: #800080;">$connTimeout</span><span style="color: #000000;">);        
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct() {
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> connect(<span style="color: #800080;">$timeout</span><span style="color: #000000;">) {        
+        </span><span style="color: #800080;">$this</span>-&gt;sock-&gt;connect(<span style="color: #800080;">$timeout</span><span style="color: #000000;">);        
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getResponse();
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> capability() {
+        </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;request('capability'<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$res</span>[0][0]) &amp;&amp; <span style="color: #800080;">$res</span>[0][0] == '*' &amp;&amp;
+            <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$res</span>[0][1]) &amp;&amp; <span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$res</span>[0][1], 'capability') == 0<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 2, <span style="color: #800080;">$n</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$res</span>[0]); <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$n</span>; ++<span style="color: #800080;">$i</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;capabilities[<span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$res</span>[0][<span style="color: #800080;">$i</span>])] = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+            }
+        }        
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> id(<span style="color: #800080;">$data</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;capabilities['ID'<span style="color: #000000;">])) {            
+            </span><span style="color: #800080;">$this</span>-&gt;request('id', <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">));            
+        }        
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> login(<span style="color: #800080;">$username</span>, <span style="color: #800080;">$password</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$this</span>-&gt;request('login', <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$username</span>, <span style="color: #800080;">$password</span><span style="color: #000000;">));
+        } </span><span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$ex</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>(<span style="color: #800080;">$ex</span>-&gt;getMessage(), <span style="color: #800080;">$ex</span>-&gt;<span style="color: #000000;">getCode());
+        }
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> logout() {
+        </span><span style="color: #800080;">$this</span>-&gt;request('logout'<span style="color: #000000;">);        
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getList(<span style="color: #800080;">$reference</span> = '', <span style="color: #800080;">$wildcard</span> = ''<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;request('list', <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$reference</span>, <span style="color: #800080;">$wildcard</span><span style="color: #000000;">));
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$res</span> <span style="color: #0000ff;">as</span> &amp;<span style="color: #800080;">$r</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[0]) &amp;&amp; <span style="color: #800080;">$r</span>[0] == '*' &amp;&amp; 
+                <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[1]) &amp;&amp; <span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$r</span>[1], 'list') == 0 &amp;&amp; 
+                <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[4<span style="color: #000000;">])) {
+                </span><span style="color: #800080;">$this</span>-&gt;folders[<span style="color: #800080;">$r</span>[4]] = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+                    </span>'id'    =&gt; <span style="color: #800080;">$r</span>[4],
+                    'name'  =&gt; mb_convert_encoding(<span style="color: #800080;">$r</span>[4], 'UTF-8', 'UTF7-IMAP'),
+                    'path'  =&gt; <span style="color: #800080;">$r</span>[3],
+                    'attr'  =&gt; <span style="color: #800080;">$r</span>[2],<span style="color: #000000;">
+                );
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">folders;
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> status(<span style="color: #800080;">$folder</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$args</span> = <span style="color: #800080;">$this</span>-&gt;formatArgsForCommand(<span style="color: #800080;">$data</span>, self::<span style="color: #800080;">$statusKeywords</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;request('status', <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$folder</span>, <span style="color: #800080;">$args</span><span style="color: #000000;">));
+        </span><span style="color: #800080;">$status</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">)) {            
+            </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$res</span> <span style="color: #0000ff;">as</span> &amp;<span style="color: #800080;">$r</span><span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[0]) &amp;&amp; <span style="color: #800080;">$r</span>[0] == '*' &amp;&amp; 
+                    <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[1]) &amp;&amp; <span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$r</span>[1], 'status') == 0 &amp;&amp; 
+                    <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[3]) &amp;&amp; <span style="color: #008080;">is_array</span>(<span style="color: #800080;">$r</span>[3<span style="color: #000000;">])) {
+                    </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0, <span style="color: #800080;">$n</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$r</span>[3]); <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$n</span>; <span style="color: #800080;">$i</span> += 2<span style="color: #000000;">) {
+                        </span><span style="color: #800080;">$status</span>[<span style="color: #800080;">$r</span>[3][<span style="color: #800080;">$i</span>]] = <span style="color: #800080;">$r</span>[3][<span style="color: #800080;">$i</span> + 1<span style="color: #000000;">];
+                    }
+                }
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$status</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> select(<span style="color: #800080;">$folder</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;request('select', <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$folder</span><span style="color: #000000;">));
+        </span><span style="color: #800080;">$status</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$res</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$r</span><span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[0]) &amp;&amp; <span style="color: #800080;">$r</span>[0] == '*'<span style="color: #000000;">) {
+                    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[1]) &amp;&amp; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[2<span style="color: #000000;">])) {
+                        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$r</span>[1], 'ok') == 0 &amp;&amp; <span style="color: #008080;">is_array</span>(<span style="color: #800080;">$r</span>[2<span style="color: #000000;">])) {
+                            </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0, <span style="color: #800080;">$n</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$i</span>); <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$n</span>; <span style="color: #800080;">$i</span> += 2<span style="color: #000000;">) {
+                                </span><span style="color: #800080;">$status</span>[<span style="color: #800080;">$r</span>[2][<span style="color: #800080;">$i</span>]] = <span style="color: #800080;">$r</span>[2][<span style="color: #800080;">$i</span> + 1<span style="color: #000000;">];
+                            }
+                        } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">ctype_digit</span>(<span style="color: #800080;">$r</span>[1<span style="color: #000000;">])) {
+                            </span><span style="color: #800080;">$status</span>[<span style="color: #800080;">$r</span>[2]] = <span style="color: #800080;">$r</span>[1<span style="color: #000000;">];
+                        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                            </span><span style="color: #800080;">$status</span>[<span style="color: #800080;">$r</span>[1]] = <span style="color: #800080;">$r</span>[2<span style="color: #000000;">];
+                        }    
+                    }
+                }
+            }
+        }
+        </span><span style="color: #800080;">$this</span>-&gt;currentFolder = <span style="color: #800080;">$folder</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$status</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> search(<span style="color: #800080;">$data</span><span style="color: #000000;">) {     
+        </span><span style="color: #800080;">$args</span> = <span style="color: #800080;">$this</span>-&gt;formatArgsForCommand(<span style="color: #800080;">$data</span>, self::<span style="color: #800080;">$searchKeywords</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);                
+        </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;request('search', <span style="color: #800080;">$args</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$ls</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$res</span> <span style="color: #0000ff;">as</span> &amp;<span style="color: #800080;">$r</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[0]) &amp;&amp; <span style="color: #800080;">$r</span>[0] == '*' &amp;&amp; 
+                <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[1]) &amp;&amp; <span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$r</span>[1], 'search') == 0<span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 2, <span style="color: #800080;">$n</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$r</span>); <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$n</span>; ++<span style="color: #800080;">$i</span><span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$ls</span>[] = <span style="color: #800080;">$r</span>[<span style="color: #800080;">$i</span><span style="color: #000000;">];
+                }
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$ls</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> fetch(<span style="color: #800080;">$seq</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {                        
+        </span><span style="color: #800080;">$seqStr</span> = <span style="color: #800080;">$this</span>-&gt;formatSequence(<span style="color: #800080;">$seq</span><span style="color: #000000;">);        
+        </span><span style="color: #800080;">$args</span> = <span style="color: #800080;">$this</span>-&gt;formatArgsForCommand(<span style="color: #800080;">$data</span>, self::<span style="color: #800080;">$fetchKeywords</span><span style="color: #000000;">);                                
+        </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;request('fetch', <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$seqStr</span>, <span style="color: #800080;">$args</span><span style="color: #000000;">));
+</span><span style="color: #008000;">//</span><span style="color: #008000;">        var_dump($res);</span>
+        <span style="color: #800080;">$ls</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$res</span> <span style="color: #0000ff;">as</span> &amp;<span style="color: #800080;">$r</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[0]) &amp;&amp; <span style="color: #800080;">$r</span>[0] == '*' &amp;&amp;
+                <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[1]) &amp;&amp; <span style="color: #008080;">is_numeric</span>(<span style="color: #800080;">$r</span>[1]) &amp;&amp; 
+                <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[2]) &amp;&amp; <span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$r</span>[2], 'fetch') == 0 &amp;&amp;
+                <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$r</span>[3]) &amp;&amp; <span style="color: #008080;">is_array</span>(<span style="color: #800080;">$r</span>[3<span style="color: #000000;">])) {
+                </span><span style="color: #800080;">$a</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+                </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0, <span style="color: #800080;">$n</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$r</span>[3]); <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$n</span>; <span style="color: #800080;">$i</span> += 2<span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$key</span> = <span style="color: #800080;">$r</span>[3][<span style="color: #800080;">$i</span><span style="color: #000000;">];
+                    </span><span style="color: #0000ff;">if</span> (((<span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$key</span>, 'BODY') == 0 &amp;&amp; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$args</span>['BODY']) &amp;&amp; <span style="color: #008080;">is_array</span>(<span style="color: #800080;">$args</span>['BODY'])) ||<span style="color: #000000;"> 
+                         (</span><span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$key</span>, 'BODY.PEEK') == 0 &amp;&amp; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$args</span>['BODY.PEEK']) &amp;&amp; <span style="color: #008080;">is_array</span>(<span style="color: #800080;">$args</span>['BODY.PEEK']))) &amp;&amp; 
+                        <span style="color: #008080;">is_array</span>(<span style="color: #800080;">$r</span>[3][<span style="color: #800080;">$i</span> + 1<span style="color: #000000;">])) {
+                        </span><span style="color: #800080;">$key</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$this</span>-&gt;formatRequestArray(<span style="color: #0000ff;">array</span>(<span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$r</span>[3][<span style="color: #800080;">$i</span> + 1]), <span style="color: #800080;">$placeHolder</span>, 0), '()'<span style="color: #000000;">);
+                        </span><span style="color: #800080;">$i</span>++<span style="color: #000000;">;
+                    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                        </span><span style="color: #800080;">$key</span> = <span style="color: #800080;">$r</span>[3][<span style="color: #800080;">$i</span><span style="color: #000000;">];
+                    }
+                    </span><span style="color: #800080;">$a</span>[<span style="color: #800080;">$key</span>] = <span style="color: #800080;">$r</span>[3][<span style="color: #800080;">$i</span> + 1<span style="color: #000000;">];
+                }
+                </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">)) {
+                    </span><span style="color: #800080;">$ls</span>[<span style="color: #800080;">$r</span>[1]] = <span style="color: #800080;">$a</span><span style="color: #000000;">;
+                }
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$ls</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> nextTag() {
+        </span><span style="color: #800080;">$this</span>-&gt;tagId++<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">sprintf</span>('%s%d', <span style="color: #800080;">$this</span>-&gt;tagName, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">tagId);
+    }
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> request(<span style="color: #800080;">$cmd</span>, <span style="color: #800080;">$args</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">()) {                
+        </span><span style="color: #800080;">$this</span>-&gt;currentCommand = <span style="color: #008080;">strtoupper</span>(<span style="color: #008080;">trim</span>(<span style="color: #800080;">$cmd</span><span style="color: #000000;">));
+        </span><span style="color: #800080;">$tag</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">nextTag();
+        </span><span style="color: #800080;">$req</span> = <span style="color: #800080;">$tag</span> . ' ' . <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">currentCommand;
+        
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 格式化参数列表</span>
+        <span style="color: #800080;">$strSeqList</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$args</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$argStr</span> = <span style="color: #800080;">$this</span>-&gt;formatRequestArray(<span style="color: #800080;">$args</span>, <span style="color: #800080;">$strSeqList</span><span style="color: #000000;">);                
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {                
+            </span><span style="color: #800080;">$argStr</span> = <span style="color: #800080;">$this</span>-&gt;formatRequestString(<span style="color: #800080;">$args</span>, <span style="color: #800080;">$strSeqList</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">$argStr = $this-&gt;makeRequest($args, $strSeqList);</span>
+        <span style="color: #800080;">$subReqs</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$argStr</span>[0<span style="color: #000000;">])) {
+            </span><span style="color: #800080;">$req</span> .= ' ' . <span style="color: #800080;">$argStr</span><span style="color: #000000;">;
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 如果参数中包括需要序列化的数据，根据序列化标识{length}将命令拆分成多条</span>
+            <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$strSeqList</span>) &amp;&amp; <span style="color: #008080;">preg_match_all</span>(self::PATTERN_REQUEST_STRING_SEQUENCE, <span style="color: #800080;">$req</span>, <span style="color: #800080;">$matches</span>,<span style="color: #000000;"> PREG_OFFSET_CAPTURE)) {
+                </span><span style="color: #800080;">$p</span> = 0<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$matches</span>[0] <span style="color: #0000ff;">as</span> <span style="color: #800080;">$m</span><span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$e</span> = <span style="color: #800080;">$m</span>[1] + <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$m</span>[0<span style="color: #000000;">]);
+                    </span><span style="color: #800080;">$subReqs</span>[] = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$req</span>, <span style="color: #800080;">$p</span>, <span style="color: #800080;">$e</span> - <span style="color: #800080;">$p</span><span style="color: #000000;">);                    
+                    </span><span style="color: #800080;">$p</span> = <span style="color: #800080;">$e</span><span style="color: #000000;">;
+                }
+                </span><span style="color: #800080;">$subReqs</span>[] = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$req</span>, <span style="color: #800080;">$p</span><span style="color: #000000;">);
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 校验序列化标识与需要序列化的参数列表数量是否一致</span>
+                <span style="color: #0000ff;">if</span> (<span style="color: #008080;">count</span>(<span style="color: #800080;">$subReqs</span>) != <span style="color: #008080;">count</span>(<span style="color: #800080;">$strSeqList</span>) + 1<span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$subReqs</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+                }
+            }
+        }
+                
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$subReqs</span><span style="color: #000000;">)) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 处理单条命令</span>
+            <span style="color: #800080;">$this</span>-&gt;sock-&gt;writeLine(<span style="color: #800080;">$req</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$this</span>-&gt;lastSend = <span style="color: #800080;">$req</span><span style="color: #000000;">;        
+            </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;getResponse(<span style="color: #800080;">$tag</span><span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {            
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 处理多条命令</span>
+            <span style="color: #800080;">$this</span>-&gt;lastSend = ''<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$subReqs</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$id</span> =&gt; <span style="color: #800080;">$req</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;sock-&gt;writeLine(<span style="color: #800080;">$req</span><span style="color: #000000;">);                          
+                </span><span style="color: #800080;">$this</span>-&gt;lastSend .= <span style="color: #800080;">$req</span><span style="color: #000000;">;
+                </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;getResponse(<span style="color: #800080;">$tag</span><span style="color: #000000;">);                
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$res</span>[0][0]) &amp;&amp; <span style="color: #800080;">$res</span>[0][0] == '+'<span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$this</span>-&gt;sock-&gt;write(<span style="color: #800080;">$strSeqList</span>[<span style="color: #800080;">$id</span><span style="color: #000000;">]);                
+                    </span><span style="color: #800080;">$this</span>-&gt;lastSend .= "\r\n" . <span style="color: #800080;">$strSeqList</span>[<span style="color: #800080;">$id</span><span style="color: #000000;">];
+                } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 如果服务器端返回其他相应，则定制后续执行</span>
+                    <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                }
+            }                
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$res</span><span style="color: #000000;">;
+    }
+        
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> formatRequestString(<span style="color: #800080;">$s</span>, &amp;<span style="color: #800080;">$strSeqList</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$s</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$s</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$needQuote</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$s</span>[0<span style="color: #000000;">])) {
+            </span><span style="color: #800080;">$needQuote</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$this</span>-&gt;currentCommand == 'ID'<span style="color: #000000;">) {    
+            </span><span style="color: #800080;">$needQuote</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 参数包含多行时，需要进行序列化</span>
+            <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strpos</span>(<span style="color: #800080;">$s</span>, "\r") !== <span style="color: #0000ff;">false</span> || <span style="color: #008080;">strpos</span>(<span style="color: #800080;">$s</span>, "\n") !== <span style="color: #0000ff;">false</span><span style="color: #000000;">) {                
+                </span><span style="color: #800080;">$strSeqList</span>[] = <span style="color: #800080;">$s</span><span style="color: #000000;">;
+                </span><span style="color: #800080;">$s</span> = <span style="color: #008080;">sprintf</span>('{%d}', <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$s</span><span style="color: #000000;">));
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 参数包含双引号或空格时，需要将使用双引号括起来</span>
+                <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strpos</span>(<span style="color: #800080;">$s</span>, '"') !== <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$s</span> = <span style="color: #008080;">addcslashes</span>(<span style="color: #800080;">$s</span>, '"'<span style="color: #000000;">);
+                    </span><span style="color: #800080;">$needQuote</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+                }
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">strpos</span>(<span style="color: #800080;">$s</span>, ' ') !== <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$needQuote</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+                }
+            }
+        }
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$needQuote</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">sprintf</span>('"%s"', <span style="color: #800080;">$s</span><span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$s</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> formatRequestArray(<span style="color: #800080;">$arr</span>, &amp;<span style="color: #800080;">$strSeqList</span>, <span style="color: #800080;">$level</span> = -1<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$a</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$isBody</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$supportPartial</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$partialStr</span> = ''<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;currentCommand == 'FETCH'<span style="color: #000000;">) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 识别是否body命令，是否可以包含&lt;partial&gt;</span>
+                <span style="color: #800080;">$kw</span> = <span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$k</span><span style="color: #000000;">);            
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(self::<span style="color: #800080;">$fetchKeywords</span>[<span style="color: #800080;">$kw</span>]) &amp;&amp; (self::<span style="color: #800080;">$fetchKeywords</span>[<span style="color: #800080;">$kw</span>] &amp; self::PARAM_BODY) &gt; 0<span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$isBody</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+                }
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(self::<span style="color: #800080;">$fetchKeywords</span>[<span style="color: #800080;">$kw</span>]) &amp;&amp; (self::<span style="color: #800080;">$fetchKeywords</span>[<span style="color: #800080;">$kw</span>] &amp; self::PARAM_PARTIAL) &gt; 0<span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$supportPartial</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+                }
+            }                        
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$v</span><span style="color: #000000;">)) {                        
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$supportPartial</span> &amp;&amp; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$v</span>[self::PARTIAL_PARAM_NAME]) &amp;&amp; <span style="color: #008080;">is_array</span>(<span style="color: #800080;">$v</span>[self::<span style="color: #000000;">PARTIAL_PARAM_NAME])) {                    
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 处理包含&lt;partial&gt;的命令</span>
+                    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$v</span>[self::PARTIAL_PARAM_NAME] <span style="color: #0000ff;">as</span> <span style="color: #800080;">$spos</span> =&gt; <span style="color: #800080;">$mlen</span><span style="color: #000000;">) {
+                        </span><span style="color: #800080;">$partialStr</span> =  <span style="color: #008080;">sprintf</span>('&lt;%d.%d&gt;', <span style="color: #800080;">$spos</span>, <span style="color: #800080;">$mlen</span><span style="color: #000000;">);
+                    }                    
+                    </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$v</span>[self::<span style="color: #000000;">PARTIAL_PARAM_NAME]);
+                }
+                </span><span style="color: #800080;">$s</span> = <span style="color: #800080;">$this</span>-&gt;formatRequestArray(<span style="color: #800080;">$v</span>, <span style="color: #800080;">$strSeqList</span>, <span style="color: #800080;">$level</span> + 1<span style="color: #000000;">);
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$s</span> = <span style="color: #800080;">$this</span>-&gt;formatRequestString(<span style="color: #800080;">$v</span>, <span style="color: #800080;">$strSeqList</span><span style="color: #000000;">);
+            }            
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #008080;">is_numeric</span>(<span style="color: #800080;">$k</span><span style="color: #000000;">)) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 字典方式需要包含键名</span>
+                <span style="color: #800080;">$k</span> = <span style="color: #800080;">$this</span>-&gt;formatRequestString(<span style="color: #800080;">$k</span>, <span style="color: #800080;">$strSeqList</span><span style="color: #000000;">);
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$isBody</span><span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$s</span> = <span style="color: #800080;">$k</span> . <span style="color: #800080;">$s</span><span style="color: #000000;">;                    
+                } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                    </span><span style="color: #800080;">$s</span> = <span style="color: #800080;">$k</span> . ' ' . <span style="color: #800080;">$s</span><span style="color: #000000;">;
+                }
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 包含&lt;partial&gt;</span>
+                <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$supportPartial</span><span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$s</span> .= <span style="color: #800080;">$partialStr</span><span style="color: #000000;">;
+                }
+            }
+            </span><span style="color: #800080;">$a</span>[] = <span style="color: #800080;">$s</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$level</span> &lt; 0<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">implode</span>(' ', <span style="color: #800080;">$a</span><span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">elseif</span> ((<span style="color: #800080;">$level</span> % 2) == 0<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">sprintf</span>('(%s)', <span style="color: #008080;">implode</span>(' ', <span style="color: #800080;">$a</span><span style="color: #000000;">));
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">sprintf</span>('[%s]', <span style="color: #008080;">implode</span>(' ', <span style="color: #800080;">$a</span><span style="color: #000000;">));
+        }
+    }
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> formatSequence(<span style="color: #800080;">$seq</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$n</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$seq</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$n</span> == 0<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> '1:*'<span style="color: #000000;">;            
+        } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$n</span> == 1<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$seq</span>[0<span style="color: #000000;">])) {
+                </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">strval</span>(<span style="color: #800080;">$seq</span>[0<span style="color: #000000;">]);
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$seq</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+                    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$k</span> . ':' . <span style="color: #800080;">$v</span><span style="color: #000000;">;
+                }
+            }
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">implode</span>(',', <span style="color: #800080;">$seq</span><span style="color: #000000;">);
+        }
+    }
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> formatArgsForCommand(&amp;<span style="color: #800080;">$data</span>, &amp;<span style="color: #800080;">$fields</span>, <span style="color: #800080;">$asList</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$args</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {            
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_numeric</span>(<span style="color: #800080;">$k</span><span style="color: #000000;">)) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 无值参数</span>
+                <span style="color: #800080;">$name</span> = <span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$v</span><span style="color: #000000;">);
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$fields</span>[<span style="color: #800080;">$name</span><span style="color: #000000;">])) {
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 对于排他性属性，直接返回</span>
+                    <span style="color: #0000ff;">if</span> ((<span style="color: #800080;">$fields</span>[<span style="color: #800080;">$name</span>] &amp; self::PARAM_EXCLUSIVE) &gt; 0<span style="color: #000000;">) {
+                        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+                    } </span><span style="color: #0000ff;">elseif</span> ((<span style="color: #800080;">$fields</span>[<span style="color: #800080;">$name</span>] &amp; self::PARAM_NO) &gt; 0<span style="color: #000000;">) {                
+                        </span><span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+                    }
+                }
+            } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$k</span> == self::<span style="color: #000000;">SEQUENCE_PARAM_NAME) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 序列</span>
+                <span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$this</span>-&gt;formatSequence(<span style="color: #800080;">$v</span><span style="color: #000000;">);                
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$name</span> = <span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$k</span><span style="color: #000000;">);
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$fields</span>[<span style="color: #800080;">$name</span><span style="color: #000000;">])) {
+                    </span><span style="color: #800080;">$paramType</span> = <span style="color: #800080;">$fields</span>[<span style="color: #800080;">$name</span><span style="color: #000000;">];                    
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 格式化参数类型</span>
+                    <span style="color: #0000ff;">if</span> ((<span style="color: #800080;">$paramType</span> &amp; self::PARAM_DATE) &gt; 0<span style="color: #000000;">) {
+                        </span><span style="color: #800080;">$v</span> = <span style="color: #008080;">date</span>('j-M-Y', <span style="color: #800080;">$v</span><span style="color: #000000;">);
+                    } </span><span style="color: #0000ff;">elseif</span> ((<span style="color: #800080;">$paramType</span> &amp; self::PARAM_SEQUENCE) &gt; 0<span style="color: #000000;">) {
+                        </span><span style="color: #800080;">$v</span> = <span style="color: #800080;">$this</span>-&gt;formatSequence(<span style="color: #800080;">$v</span><span style="color: #000000;">);
+                    }                        
+
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 根据参数定义拼组参数列表</span>
+                    <span style="color: #0000ff;">if</span> ((<span style="color: #800080;">$paramType</span> &amp; self::PARAM_SINGLE) &gt; 0<span style="color: #000000;">) {
+                        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 单值参数</span>
+                        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$asList</span><span style="color: #000000;">) {
+                            </span><span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+                            </span><span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+                        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                            </span><span style="color: #800080;">$args</span>[<span style="color: #800080;">$name</span>] = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+                        }
+                    } </span><span style="color: #0000ff;">elseif</span> ((<span style="color: #800080;">$paramType</span> &amp; self::PARAM_PAIR) &gt; 0<span style="color: #000000;">) {
+                        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 键值对参数</span>
+                        <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$v</span><span style="color: #000000;">)) {
+                            </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$v</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$x</span> =&gt; <span style="color: #800080;">$y</span><span style="color: #000000;">) {
+                                </span><span style="color: #800080;">$pk</span> = <span style="color: #800080;">$x</span><span style="color: #000000;">;
+                                </span><span style="color: #800080;">$pv</span> = <span style="color: #800080;">$y</span><span style="color: #000000;">;
+                                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                            }
+                        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                            </span><span style="color: #800080;">$pk</span> = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+                            </span><span style="color: #800080;">$pv</span> = ''<span style="color: #000000;">;
+                        }
+                        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$asList</span><span style="color: #000000;">) {
+                            </span><span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+                            </span><span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$pk</span><span style="color: #000000;">;
+                            </span><span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$pv</span><span style="color: #000000;">;
+                        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                            </span><span style="color: #800080;">$args</span>[<span style="color: #800080;">$name</span>] = <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$pk</span> =&gt; <span style="color: #800080;">$pv</span><span style="color: #000000;">);
+                        }
+                    } </span><span style="color: #0000ff;">elseif</span> ((<span style="color: #800080;">$paramType</span> &amp; self::PARAM_LIST) &gt; 0<span style="color: #000000;">) {
+                        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 列表参数</span>
+                        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$asList</span><span style="color: #000000;">) {
+                            </span><span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+                            </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$v</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$i</span><span style="color: #000000;">) {
+                                </span><span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$i</span><span style="color: #000000;">;
+                            }
+                        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                            </span><span style="color: #800080;">$args</span>[<span style="color: #800080;">$name</span>] = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+                        }
+                    } </span><span style="color: #0000ff;">elseif</span> ((<span style="color: #800080;">$paramType</span> &amp; self::PARAM_NO) &gt; 0<span style="color: #000000;">) {
+                        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 无值参数</span>
+                        <span style="color: #800080;">$args</span>[] = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+                    }
+                }
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$args</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> getResponse(<span style="color: #800080;">$tag</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$r</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #800080;">$readMore</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;  
+        </span><span style="color: #0000ff;">while</span> (<span style="color: #800080;">$readMore</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$ln</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$this</span>-&gt;sock-&gt;<span style="color: #000000;">readLine());            
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$ln</span>[0<span style="color: #000000;">])) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> connection closed or read empty string, throw exception to avoid dead loop and reconnect</span>
+                <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('read response failed'<span style="color: #000000;">);
+            }
+            
+            </span><span style="color: #800080;">$matches</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$strSeqKey</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$strSeq</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">preg_match</span>(self::PATTERN_RESPONSE_STRING_SEQUENCE, <span style="color: #800080;">$ln</span>, <span style="color: #800080;">$matches</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$strSeqKey</span> = <span style="color: #800080;">$matches</span>[0<span style="color: #000000;">];
+                </span><span style="color: #800080;">$this</span>-&gt;readSequence(<span style="color: #800080;">$ln</span>, <span style="color: #800080;">$strSeq</span>, <span style="color: #800080;">$matches</span>[1<span style="color: #000000;">]);
+            }
+            </span><span style="color: #800080;">$this</span>-&gt;lastRecv = <span style="color: #800080;">$ln</span><span style="color: #000000;">;
+            
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 区分处理不同种响应</span>
+            <span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$ln</span>[0<span style="color: #000000;">]) {
+                </span><span style="color: #0000ff;">case</span> '*':
+                    <span style="color: #800080;">$r</span>[] = <span style="color: #800080;">$this</span>-&gt;parseLine(<span style="color: #800080;">$ln</span>, <span style="color: #800080;">$strSeqKey</span>, <span style="color: #800080;">$strSeq</span><span style="color: #000000;">);                                        
+                    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$tag</span><span style="color: #000000;">) {
+                        </span><span style="color: #800080;">$readMore</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+                    }
+                    </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                </span><span style="color: #0000ff;">case</span> <span style="color: #800080;">$this</span>-&gt;tagName:
+                    <span style="color: #800080;">$r</span>[] = <span style="color: #800080;">$this</span>-&gt;parseLine(<span style="color: #800080;">$ln</span><span style="color: #000000;">);
+                    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$tag</span><span style="color: #000000;">) {
+                        </span><span style="color: #800080;">$readMore</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+                    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                        
+                    }
+                    </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                </span><span style="color: #0000ff;">case</span> '+':
+                    <span style="color: #800080;">$r</span>[] = <span style="color: #800080;">$this</span>-&gt;parseLine(<span style="color: #800080;">$ln</span><span style="color: #000000;">);
+                    </span><span style="color: #800080;">$readMore</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+                    </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                </span><span style="color: #0000ff;">default</span>:
+                    <span style="color: #800080;">$r</span>[] = <span style="color: #800080;">$ln</span><span style="color: #000000;">;
+                    </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            }                        
+        }        
+        
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">var_dump($this-&gt;lastSend, $this-&gt;lastRecv);
+        
+        // 无响应数据</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$r</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('no response'<span style="color: #000000;">);
+        }
+                                                
+        </span><span style="color: #800080;">$last</span> = <span style="color: #800080;">$r</span>[<span style="color: #008080;">count</span>(<span style="color: #800080;">$r</span>) - 1<span style="color: #000000;">];
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$last</span>[0]) &amp;&amp; <span style="color: #800080;">$last</span>[0] == '+'<span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 继续发送请求数据</span>
+        } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$tag</span><span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$last</span>[0]) || <span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$last</span>[0], <span style="color: #800080;">$tag</span>) != 0<span style="color: #000000;">) {                    
+                    </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('tag no match'<span style="color: #000000;">);
+                }           
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$last</span>[0]) || <span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$last</span>[0], '*') != 0<span style="color: #000000;">) {                    
+                    </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('untag no match'<span style="color: #000000;">);
+                }
+            }
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$last</span>[1<span style="color: #000000;">])) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 处理响应出错的情况</span>
+                <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$last</span>[1], 'bad') == 0<span style="color: #000000;">) {        
+                    </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>(<span style="color: #008080;">implode</span>(' ', <span style="color: #800080;">$last</span><span style="color: #000000;">));
+                } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">strcasecmp</span>(<span style="color: #800080;">$last</span>[1], 'no') == 0<span style="color: #000000;">) {
+                    </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>(<span style="color: #008080;">implode</span>(' ', <span style="color: #800080;">$last</span><span style="color: #000000;">));
+                }
+            }
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">$this-&gt;currentCommand = null;</span>
+<span style="color: #000000;">        }
+        
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$r</span><span style="color: #000000;">;
+    }
+    
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> readSequence(&amp;<span style="color: #800080;">$ln</span>, &amp;<span style="color: #800080;">$strSeq</span>, <span style="color: #800080;">$seqLength</span><span style="color: #000000;">) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 对于字符串序列，读取完整内容后再拼接响应        </span>
+        <span style="color: #800080;">$readLen</span> = 0<span style="color: #000000;">;
+        </span><span style="color: #800080;">$st</span> = <span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 网络请求多次读取字符串序列内容，直到读好为止</span>
+        <span style="color: #0000ff;">while</span> (<span style="color: #800080;">$readLen</span> &lt; <span style="color: #800080;">$seqLength</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$sb</span> = <span style="color: #800080;">$this</span>-&gt;sock-&gt;read(<span style="color: #800080;">$seqLength</span> - <span style="color: #800080;">$readLen</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$sb</span>[0<span style="color: #000000;">])) {
+                </span><span style="color: #800080;">$strSeq</span> .= <span style="color: #800080;">$sb</span><span style="color: #000000;">;
+                </span><span style="color: #800080;">$readLen</span> = <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$strSeq</span><span style="color: #000000;">);
+            }                    
+            </span><span style="color: #0000ff;">if</span> ((<span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span>) - <span style="color: #800080;">$st</span>) &gt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">timeout) {
+                </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('read sequence timeout'<span style="color: #000000;">);
+            }
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 读取字符串序列后的剩余命令</span>
+        <span style="color: #800080;">$leftLn</span> = <span style="color: #008080;">rtrim</span>(<span style="color: #800080;">$this</span>-&gt;sock-&gt;<span style="color: #000000;">readLine());
+        </span><span style="color: #800080;">$ln</span> = <span style="color: #800080;">$ln</span> . <span style="color: #800080;">$leftLn</span><span style="color: #000000;">;
+    }
+    
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> parseLine(<span style="color: #800080;">$ln</span>, <span style="color: #800080;">$strSeqKey</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$strSeq</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$r</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #800080;">$p</span> =&amp; <span style="color: #800080;">$r</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$stack</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #800080;">$token</span> = ''<span style="color: #000000;">;
+        </span><span style="color: #800080;">$escape</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$inQuote</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0, <span style="color: #800080;">$n</span> = <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$ln</span>); <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$n</span>; ++<span style="color: #800080;">$i</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$ch</span> = <span style="color: #800080;">$ln</span>[<span style="color: #800080;">$i</span><span style="color: #000000;">];
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$ch</span> == '"'<span style="color: #000000;">) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 处理双引号括起的字符串</span>
+                <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$inQuote</span><span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$inQuote</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+                } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                    </span><span style="color: #800080;">$inQuote</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+                }
+            } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$inQuote</span><span style="color: #000000;">) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 对于括起的字符串，处理双引号转义</span>
+                <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$ch</span> == '\\'<span style="color: #000000;">) {
+                    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$escape</span> &amp;&amp; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$ln</span>[<span style="color: #800080;">$i</span> + 1]) &amp;&amp; <span style="color: #800080;">$ln</span>[<span style="color: #800080;">$i</span> + 1] == '"'<span style="color: #000000;">) {               
+                        </span><span style="color: #800080;">$token</span> .= '"'<span style="color: #000000;">;
+                        </span><span style="color: #800080;">$i</span>++<span style="color: #000000;">;
+                    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                        </span><span style="color: #800080;">$token</span> .= <span style="color: #800080;">$ch</span><span style="color: #000000;">;
+                        </span><span style="color: #800080;">$escape</span> = !<span style="color: #800080;">$escape</span><span style="color: #000000;">;
+                    }                    
+                } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                    </span><span style="color: #800080;">$token</span> .= <span style="color: #800080;">$ch</span><span style="color: #000000;">;
+                }
+            } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$ch</span> == ' ' || 
+                <span style="color: #800080;">$ch</span> == '(' || <span style="color: #800080;">$ch</span> == ')' || 
+                <span style="color: #800080;">$ch</span> == '[' || <span style="color: #800080;">$ch</span> == ']'<span style="color: #000000;">) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 处理子列表</span>
+                <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$token</span>[0<span style="color: #000000;">])) {
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 将字符串序列标识：{length}，替换为真实字符串</span>
+                    <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$strSeqKey</span> &amp;&amp; <span style="color: #800080;">$token</span> == <span style="color: #800080;">$strSeqKey</span><span style="color: #000000;">) {
+                        </span><span style="color: #800080;">$p</span>[] = <span style="color: #800080;">$strSeq</span><span style="color: #000000;">;
+                    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                        </span><span style="color: #800080;">$p</span>[] = <span style="color: #800080;">$token</span><span style="color: #000000;">;
+                    }
+                    </span><span style="color: #800080;">$token</span> = ''<span style="color: #000000;">;
+                }                
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$ch</span> == '(' || <span style="color: #800080;">$ch</span> == '['<span style="color: #000000;">) {                    
+                    </span><span style="color: #800080;">$p</span>[] = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+                    </span><span style="color: #800080;">$stack</span>[] =&amp; <span style="color: #800080;">$p</span><span style="color: #000000;">;
+                    </span><span style="color: #800080;">$p</span> =&amp; <span style="color: #800080;">$p</span>[<span style="color: #008080;">count</span>(<span style="color: #800080;">$p</span>) - 1<span style="color: #000000;">];                                        
+                } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$ch</span> == ')' || <span style="color: #800080;">$ch</span> == ']'<span style="color: #000000;">) {        
+                    </span><span style="color: #800080;">$p</span> =&amp; <span style="color: #800080;">$stack</span>[<span style="color: #008080;">count</span>(<span style="color: #800080;">$stack</span>) - 1<span style="color: #000000;">];
+                    </span><span style="color: #008080;">array_pop</span>(<span style="color: #800080;">$stack</span><span style="color: #000000;">);
+                }
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {                
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 处理字符串字面量</span>
+                <span style="color: #800080;">$token</span> .= <span style="color: #800080;">$ch</span><span style="color: #000000;">;
+            }            
+        }
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$token</span>[0<span style="color: #000000;">])) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 将字符串序列标识：{length}，替换为真实字符串</span>
+            <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$strSeqKey</span> &amp;&amp; <span style="color: #800080;">$token</span> == <span style="color: #800080;">$strSeqKey</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$p</span>[] = <span style="color: #800080;">$strSeq</span><span style="color: #000000;">;
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$p</span>[] = <span style="color: #800080;">$token</span><span style="color: #000000;">;
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$r</span><span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> end of php</span></code></pre>
+
+<p>&nbsp;</p>
+<p>socket.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Socket{
+    </span><span style="color: #0000ff;">const</span> DEFAULT_READ_SIZE = 8192<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">const</span> CRTL = "\r\n"<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$uri</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$timeout</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$sock</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$connected</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$uri</span>, <span style="color: #800080;">$timeout</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;uri = <span style="color: #800080;">$uri</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;timeout = <span style="color: #800080;">$this</span>-&gt;formatTimeout(<span style="color: #800080;">$timeout</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> connect(<span style="color: #800080;">$timeout</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$retryTimes</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">connected) {
+            </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">close();
+        }
+
+        </span><span style="color: #800080;">$connTimeout</span> = <span style="color: #800080;">$this</span>-&gt;formatTimeout(<span style="color: #800080;">$timeout</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">timeout);
+        </span><span style="color: #800080;">$retryTimes</span> = <span style="color: #008080;">intval</span>(<span style="color: #800080;">$retryTimes</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$retryTimes</span> &lt; 1<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$retryTimes</span> = 1<span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$retryTimes</span>; ++<span style="color: #800080;">$i</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;sock = <span style="color: #008080;">stream_socket_client</span><span style="color: #000000;">(
+                </span><span style="color: #800080;">$this</span>-&gt;uri, <span style="color: #800080;">$errno</span>, <span style="color: #800080;">$error</span>, <span style="color: #800080;">$connTimeout</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">sock) {
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            }
+        }
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">sock) {
+
+        }
+        </span><span style="color: #008080;">stream_set_timeout</span>(<span style="color: #800080;">$this</span>-&gt;sock, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">timeout);
+        </span><span style="color: #800080;">$this</span>-&gt;connected = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> read(<span style="color: #800080;">$size</span><span style="color: #000000;">){
+        </span><span style="color: #008080;">assert</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">connected);
+
+        </span><span style="color: #800080;">$buf</span> = <span style="color: #008080;">fread</span>(<span style="color: #800080;">$this</span>-&gt;sock, <span style="color: #800080;">$size</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$buf</span> === <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">handleReadError();
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$buf</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> readLine(){
+        </span><span style="color: #008080;">assert</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">connected);
+        </span><span style="color: #800080;">$buf</span> = ''<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">while</span> (<span style="color: #0000ff;">true</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$s</span> = <span style="color: #008080;">fgets</span>(<span style="color: #800080;">$this</span>-&gt;sock, self::<span style="color: #000000;">DEFAULT_READ_SIZE);
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$s</span> === <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">checkReadTimeout();
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #800080;">$n</span> = <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$s</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$n</span><span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #800080;">$buf</span> .= <span style="color: #800080;">$s</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$s</span>[<span style="color: #800080;">$n</span> - 1] == "\n"<span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            }
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$buf</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> readAll(){
+        </span><span style="color: #008080;">assert</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">connected);
+        </span><span style="color: #800080;">$buf</span> = ''<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">while</span> (<span style="color: #0000ff;">true</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$s</span> = <span style="color: #008080;">fread</span>(<span style="color: #800080;">$this</span>-&gt;sock, self::<span style="color: #000000;">DEFAULT_READ_SIZE);
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$s</span> === <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">handleReadError();
+            }
+
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$s</span>[0<span style="color: #000000;">])) {
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            }
+
+            </span><span style="color: #800080;">$buf</span> .= <span style="color: #800080;">$s</span><span style="color: #000000;">;
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$buf</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> write(<span style="color: #800080;">$s</span><span style="color: #000000;">){
+        </span><span style="color: #008080;">assert</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">connected);
+        </span><span style="color: #800080;">$n</span> = <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$s</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$w</span> = 0<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">while</span> (<span style="color: #800080;">$w</span> &lt; <span style="color: #800080;">$n</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$buf</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$s</span>, <span style="color: #800080;">$w</span>, self::<span style="color: #000000;">DEFAULT_READ_SIZE);
+            </span><span style="color: #800080;">$r</span> = <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$this</span>-&gt;sock, <span style="color: #800080;">$buf</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$r</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">close();
+            }
+            </span><span style="color: #800080;">$w</span> += <span style="color: #800080;">$r</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> writeLine(<span style="color: #800080;">$s</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;write(<span style="color: #800080;">$s</span> . self::<span style="color: #000000;">CRTL);
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> close() {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">connected) {
+            </span><span style="color: #008080;">fclose</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">sock);
+            </span><span style="color: #800080;">$this</span>-&gt;connected = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> formatTimeout(<span style="color: #800080;">$timeout</span>, <span style="color: #800080;">$default</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$t</span> = <span style="color: #008080;">intval</span>(<span style="color: #800080;">$timeout</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$t</span> &lt;= 0<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$default</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$t</span> = <span style="color: #008080;">ini_get</span>('default_socket_timeout'<span style="color: #000000;">);
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$t</span> = <span style="color: #800080;">$default</span><span style="color: #000000;">;
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$t</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> checkReadTimeout(){
+        </span><span style="color: #800080;">$meta</span> = <span style="color: #008080;">stream_get_meta_data</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">sock);
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$meta</span>['timed_out'<span style="color: #000000;">])) {
+            </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">close();
+        }
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> handleReadError(){
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">checkReadTimeout();
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">close();
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

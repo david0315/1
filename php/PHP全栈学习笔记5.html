@@ -1,0 +1,606 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP全栈学习笔记5' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP全栈学习笔记5</center></div><div class='banquan'>原文出处:本文由博客园博主达达前端小酒馆提供。<br/>
+原文连接:https://www.cnblogs.com/dashucoding/p/10733931.html</div><br>
+    <p><img src="./images/PHP全栈学习笔记50.jpg" alt="PHP全栈学习笔记5" /></p>
+<p>php与mysql数据库，PHP支持很多数据库，与mysql为牛逼组合，mysql数据库的基础知识的掌握是由必要的，要了解如何操作mysql数据库，数据表的方法。</p>
+<p>什么是数据库，数据库能做什么，数据库有什么好处，数据库的基础必备技术，备份和恢复的方法。</p>
+<p><img src="./images/PHP全栈学习笔记51.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记52.jpg" alt="image.png" /></p>
+<p>mysql的好处，功能强大，支持跨平台，运行速度快，支持面向对象，成本低，支持各种开发语言，数据库存储容量大，支持强大的内置函数。</p>
+<p>启动MySQL服务器</p>
+<pre><code><code>net start mysql</code></code></pre>
+<p>连接数据库：</p>
+<pre><code><code>mysql  –u root   –h127.0.0.1   –p password</code></code></pre>
+<p>断开MySQL服务器:</p>
+<pre><code><code>quit;</code></code></pre>
+<p>停止MySQL服务器:</p>
+<pre><code><code> net stop mysql;
+
+mysqladmin –uroot shutdown –proot</code></code></pre>
+<p>数据库的操作：</p>
+<p><img src="./images/PHP全栈学习笔记53.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记54.jpg" alt="image.png" /></p>
+<pre><code><code>CREATE [TEMPORARY] TABLE [IF NOT EXISTS] 数据表名
+[(create_definition,…)][table_options] [select_statement]</code></code></pre>
+<pre><code><code>temporary 表示创建一个临时表
+if not exists 表示表是否已经存在
+create_definition 表的一些特性
+select_statement 快速创建表</code></code></pre>
+<pre><code><code>col_name  type [NOT NULL | NULL] [DEFAULT default_value] [AUTO_INCREMENT]
+           [PRIMARY KEY ] [reference_definition]
+
+create table table_name (列名1 属性,列名2 属性…);</code></code></pre>
+<pre><code><code>col_name 字段名
+type 字段类型
+not null | null 指出该列是否允许控制
+default 表示默认值
+auto_increment 表示是否自动编号
+primary key 表示是否为主键
+一个表只能有一个主键，如果表中没有主键，mysql会返回第一个没有任何null列的unique键，作为主键。
+reference_definition 为字段添加注解</code></code></pre>
+<pre><code><code>create table tb_admin (
+id int auto_increment primary key,
+user varchar(30) not null,
+password varchar(30) not null,
+createtime datetime
+);</code></code></pre>
+<p>查看表结构：</p>
+<pre><code><code>SHOW  [FULL] COLUMNS  FROM 数据表名 [FROM 数据库名];
+
+DESCRIBE 数据表名;</code></code></pre>
+<p>修改表结构:</p>
+<pre><code><code>ALTER[IGNORE] TABLE 数据表名 alter_spec[,alter_spec]… </code></code></pre>
+<p><img src="./images/PHP全栈学习笔记55.jpg" alt="image.png" /></p>
+<p>重命名表:</p>
+<pre><code><code>RENAME TABLE 数据表名1 To 数据表名2 </code></code></pre>
+<p>删除表:</p>
+<pre><code><code>DROP TABLE 数据表名;</code></code></pre>
+<pre><code><code>drop table if exists 数据表名;</code></code></pre>
+<p>数据库的操作：插入已解决insert，查询select，修改update，删除记录delete。</p>
+<p>插入记录insert</p>
+<pre><code><code>insert  into 数据表名(column_name,column_name2, … ) values (value1, value2, … )</code></code></pre>
+<p>查询数据库：</p>
+<pre><code><code>select selection_llist from 数据表名 where primary_constraint group by grouping_columns order by sorting_columns having secondary_constraint limit count</code></code></pre>
+<pre><code><code>表1.字段=表2.字段 and 其他查询条件
+
+select 字段名 from 表1,表2…… where 表1.字段=表2.字段 and 其他查询条件
+
+update 数据表名set column_name = new_value1,column_name2 = new_value2, …where condition
+
+delete from 数据表名 where condition</code></code></pre>
+<p>数据库备份和恢复:</p>
+<p>使用MYSQLDUMP命令，进行数据的备份。</p>
+<pre><code><code>mysql -uroot –proot db_database &lt;F:\db_database.txt”</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记56.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记57.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记58.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记59.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记510.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记511.jpg" alt="image.png" /></p>
+<p>php操作数据库</p>
+<pre><code><code>mysql_connect()函数连接mysql服务器
+
+mysql_select_db()函数选择数据库
+
+mysql_query()函数执行sql语句
+
+mysql_fetch_array()函数从数组结果集中获取信息
+
+mysql_fetch_row()函数逐行获取结果集中的每条记录
+
+mysql_num_rows()函数获取查询结果集中的记录数
+
+insert动态添加
+
+select语句查询
+
+update动态修改
+
+delete动态删除</code></code></pre>
+<p>MySQL是一款广受欢迎的数据库<br />
+开源的半商业软件<br />
+市场占有率高<br />
+PHP具有强大的数据库支持能力</p>
+<p><img src="./images/PHP全栈学习笔记512.jpg" alt="image.png" /></p>
+<p>查询，显示，插入，更新，删除</p>
+<p>关闭MySQL服务器<br />
+每使用一次mysql_connect()或mysql_query()函数，都会消耗系统资源。<br />
+使用mysql_close()函数关闭与MySQL服务器的连接，以节省系统资源。</p>
+<pre><code><code>mysql_close($Link); </code></code></pre>
+<p><img src="./images/PHP全栈学习笔记513.jpg" alt="image.png" /></p>
+<pre><code><code>&lt;?php
+$link = mysql_connect(&quot;localhost&quot;, &quot;root&quot;, &quot;root&quot;) or die(&quot;用户名密码有误！&quot;.mysql_error());   //连接Mysql服务器
+if($link){ 
+echo &quot;数据源连接成功!&quot;;
+}
+?&gt;
+
+// mysql_connect(&#39;hostname&#39;,&#39;username&#39;,&#39;password&#39;);</code></code></pre>
+<pre><code><code>&lt;?php
+$link = mysql_connect(&quot;localhost&quot;, &quot;root&quot;, &quot;root&quot;) or die(&quot;用户名密码有误！&quot;.mysql_error());   //连接Mysql服务器
+$db_selected=mysql_select_db(&quot;db_database1&quot;,$link);
+//$db_selected=mysql_query(&quot;use db_database1&quot;,$link);
+if($db_selected){
+echo &quot;数据库选择成功!&quot;;
+}
+?&gt;
+
+// mysql_select_db ( string数据库名[,resource link_identifier] ) 
+
+// mysql_query(&quot;use数据库名&quot;[,resource link_identifier]);</code></code></pre>
+<pre><code><code>&lt;?php
+$db = array (
+        &#39;server&#39; =&gt; &#39;localhost&#39;,
+        &#39;port&#39; =&gt; &#39;3306&#39;,
+        &#39;username&#39; =&gt; &#39;root&#39;,
+        &#39;password&#39; =&gt; &#39;root&#39;,
+        &#39;database&#39; =&gt; &#39;dashu&#39; 
+);
+$conn = @mysql_connect($db[&#39;server&#39;].&#39;:&#39;.$db[&#39;port&#39;],$db[&#39;username&#39;],$db[&#39;password&#39;]);
+if (! $conn) {
+    echo &quot;服务器不能连！&quot; . mysql_error();
+} else {
+    // 声明字符集
+    mysql_set_charset(&#39;utf8&#39;, $conn);
+    // 选择数据库
+    mysql_select_db($db[&#39;database&#39;], $conn);
+}</code></code></pre>
+<pre><code><code>&lt;?php
+$link = mysql_connect(&quot;localhost&quot;, &quot;root&quot;, &quot;root&quot;) or die(&quot;数据库连接失败&quot;.mysql_error());
+mysql_select_db(&quot;db_database&quot;,$link);
+mysql_query(&quot;set names gb2312&quot;);
+$sql=mysql_query(&quot;select * from tb_book&quot;);
+$info= mysql_fetch_array($sql);
+
+if($_POST[Submit] == &quot;查询&quot;){
+ $tet_book = $POST[txt_book];
+ $sql = mysql_query(&quot;select * from tb_book where bookname like &#39;%&quot;.trim($txt_book).&quot;%&#39; &quot;);
+ $info=mysql_fetch_array($sql);
+}</code></code></pre>
+<p>mysql_fetch_array()函数从数组结果集中获取信息:</p>
+<pre><code><code>array mysql_fetch_array ( resource result [, int result_type] )</code></code></pre>
+<p>mysql_fetch_object()函数从结果集中获取一行作为对象</p>
+<pre><code><code>object  mysql_fetch_object ( resource result )</code></code></pre>
+<pre><code><code>对象
+&lt;?php echo $info -&gt; id; ?&gt;&lt;/td&gt;
+&lt;?php echo $info -&gt; issuDate; ?&gt;&lt;/td&gt;
+&lt;?php echo $info -&gt; first_name; ?&gt;&lt;/td&gt;
+
+数组
+&lt;?php echo $info[id]; ?&gt;&lt;/td&gt;
+
+do{
+
+}while($info=mysql_fetch_array($sql));</code></code></pre>
+<p>mysql_fetch_row()函数逐行获取结果集中的每条记录</p>
+<pre><code><code>array mysql_fetch_row ( resource result )</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记514.jpg" alt="image.png" /></p>
+<p>mysql_num_rows()函数获取查询结果集中的记录数</p>
+<pre><code><code>int mysql_num_rows ( resource result )</code></code></pre>
+<pre><code><code>&lt;?php $nums = mysql_num_rows($sql); echo $nums; ?&gt;</code></code></pre>
+<p>PHP操作MySQL数据库</p>
+<pre><code><code>&lt;?php
+ function chinesesubstr($str,$start,$len) { 
+    $strlen=$start+$len; 
+    for($i=0;$i&lt;$strlen;$i++) { 
+        if(ord(substr($str,$i,1))&gt;0xa0) { 
+            $tmpstr.=substr($str,$i,2); 
+            $i++; 
+         } 
+        else 
+            $tmpstr.=substr($str,$i,1); 
+    } 
+    return $tmpstr; 
+}
+?&gt;</code></code></pre>
+<p>实例：</p>
+<pre><code><code>onClick=&quot;return check(form1);&quot;
+
+&lt;script language=&quot;javascript&quot;&gt;
+function check(form){
+    if(form.txt_title.value==&quot;&quot;){
+        alert(&quot;请输入公告标题!&quot;);form.txt_title.focus();return false;
+    }
+    if(form.txt_content.value==&quot;&quot;){
+        alert(&quot;请输入公告内容!&quot;);form.txt_content.focus();return false;
+    }
+form.submit();
+}
+&lt;/script&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+    $conn=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;) or die(&quot;数据库服务器连接错误&quot;.mysql_error());
+    mysql_select_db(&quot;db_database18&quot;,$conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+    mysql_query(&quot;set names gb2312&quot;);
+    $title=$_POST[txt_title];
+    $content=$_POST[txt_content];
+    $createtime=date(&quot;Y-m-d H:i:s&quot;);
+    $sql=mysql_query(&quot;insert into tb_affiche(title,content,createtime)values(&#39;$title&#39;,&#39;$content&#39;,&#39;$createtime&#39;)&quot;);
+    echo &quot;&lt;script&gt;alert(&#39;公告信息添加成功!&#39;);window.location.href=&#39;add_affiche.php&#39;;&lt;/script&gt;&quot;;
+    mysql_free_result($sql);
+    mysql_close($conn);
+?&gt;</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记515.jpg" alt="image.png" /></p>
+<pre><code><code>&lt;script language=&quot;javascript&quot;&gt;
+function check(form){
+    if(form.txt_keyword.value==&quot;&quot;){
+        alert(&quot;请输入查询关键字!&quot;);form.txt_keyword.focus();return false;
+    }
+form.submit();
+}
+&lt;/script&gt;</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记516.jpg" alt="image.png" /></p>
+<pre><code><code>&lt;?php
+ function chinesesubstr($str,$start,$len) { 
+    $strlen=$start+$len; 
+    for($i=0;$i&lt;$strlen;$i++) { 
+        if(ord(substr($str,$i,1))&gt;0xa0) { 
+            $tmpstr.=substr($str,$i,2); 
+            $i++; 
+         } 
+        else 
+            $tmpstr.=substr($str,$i,1); 
+    } 
+    return $tmpstr; 
+}
+?&gt;</code></code></pre>
+<p>update语句动态</p>
+<pre><code><code>&lt;script language=&quot;javascript&quot;&gt;
+function check(form){
+    if(form.txt_title.value==&quot;&quot;){
+        alert(&quot;公告标题不能为空!&quot;);form.txt_title.focus();return false;
+    }
+    if(form.txt_content.value==&quot;&quot;){
+        alert(&quot;公告内容不能为空!&quot;);form.txt_content.focus();return false;
+    }
+form.submit();
+}
+&lt;/script&gt;
+
+&lt;?php 
+$conn=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;) or die(&quot;数据库服务器连接错误&quot;.mysql_error());
+mysql_select_db(&quot;db_database18&quot;,$conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+mysql_query(&quot;set names gb2312&quot;);
+$id=$_GET[id];
+$sql=mysql_query(&quot;select * from tb_affiche where id=$id&quot;);
+$row=mysql_fetch_object($sql);
+?&gt;
+
+&lt;form name=&quot;form1&quot; method=&quot;post&quot; action=&quot;check_modify_ok.php&quot;&gt;
+                              &lt;table width=&quot;520&quot; height=&quot;212&quot;  border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; bgcolor=&quot;#FFFFFF&quot;&gt;
+                                &lt;tr&gt;
+                                  &lt;td width=&quot;87&quot; align=&quot;center&quot;&gt;公告主题：&lt;/td&gt;
+                                  &lt;td width=&quot;433&quot; height=&quot;31&quot;&gt;&lt;input name=&quot;txt_title&quot; type=&quot;text&quot; id=&quot;txt_title&quot; size=&quot;40&quot; value=&quot;&lt;?php echo $row-&gt;title;?&gt;&quot;&gt;
+                                  &lt;input name=&quot;id&quot; type=&quot;hidden&quot; value=&quot;&lt;?php echo $row-&gt;id;?&gt;&quot;&gt;&lt;/td&gt;
+                                &lt;/tr&gt;
+                                &lt;tr&gt;
+                                  &lt;td height=&quot;124&quot; align=&quot;center&quot;&gt;公告内容：&lt;/td&gt;
+                                  &lt;td&gt;&lt;textarea name=&quot;txt_content&quot; cols=&quot;50&quot; rows=&quot;8&quot; id=&quot;txt_content&quot;&gt;&lt;?php echo $row-&gt;content;?&gt;&lt;/textarea&gt;&lt;/td&gt;
+                                &lt;/tr&gt;
+                                &lt;tr&gt;
+                                  &lt;td height=&quot;40&quot; colspan=&quot;2&quot; align=&quot;center&quot;&gt;&lt;input name=&quot;Submit&quot; type=&quot;submit&quot; class=&quot;btn_grey&quot; value=&quot;修改&quot; onClick=&quot;return check(form1);&quot;&gt;                                    &amp;nbsp;                                    &lt;input type=&quot;reset&quot; name=&quot;Submit2&quot; value=&quot;重置&quot;&gt;&lt;/td&gt;&lt;/tr&gt;
+                              &lt;/table&gt;
+                          &lt;/form&gt;
+
+&lt;?php
+$conn=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;) or die(&quot;数据库服务器连接错误&quot;.mysql_error());
+mysql_select_db(&quot;db_database18&quot;,$conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+mysql_query(&quot;set names gb2312&quot;);
+$title=$_POST[txt_title];
+$content=$_POST[txt_content];
+$id=$_POST[id];
+$sql=mysql_query(&quot;update tb_affiche set title=&#39;$title&#39;,content=&#39;$content&#39; where id=$id&quot;);
+if($sql){
+    echo &quot;&lt;script&gt;alert(&#39;公告信息编辑成功！&#39;);history.back();window.location.href=&#39;modify.php?id=$id&#39;;&lt;/script&gt;&quot;;
+}else{
+    echo &quot;&lt;script&gt;alert(&#39;公告信息编辑失败！&#39;);history.back();window.location.href=&#39;modify.php?id=$id&#39;;&lt;/script&gt;&quot;;
+}
+?&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记517.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记518.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记519.jpg" alt="image.png" /></p>
+<pre><code><code>&lt;!--  翻页条 --&gt;
+                            &lt;td width=&quot;37%&quot;&gt;&amp;nbsp;&amp;nbsp;页次：&lt;?php echo $_GET[page];?&gt;/&lt;?php echo $page_count;?&gt;页&amp;nbsp;记录：&lt;?php echo $message_count;?&gt; 条&amp;nbsp; &lt;/td&gt;
+                            &lt;td width=&quot;63%&quot; align=&quot;right&quot;&gt;
+                            &lt;?php
+                            /*  如果当前页不是首页  */
+                            if($_GET[page]!=1){
+                            /*  显示“首页”超链接  */
+                            echo  &quot;&lt;a href=page_affiche.php?page=1&gt;首页&lt;/a&gt;&amp;nbsp;&quot;;
+                            /*  显示“上一页”超链接  */
+                            echo &quot;&lt;a href=page_affiche.php?page=&quot;.($_GET[page]-1).&quot;&gt;上一页&lt;/a&gt;&amp;nbsp;&quot;;
+                            }
+                            /*  如果当前页不是尾页  */
+                            if($_GET[page]&lt;$page_count){
+                            /*  显示“下一页”超链接  */
+                            echo &quot;&lt;a href=page_affiche.php?page=&quot;.($_GET[page]+1).&quot;&gt;下一页&lt;/a&gt;&amp;nbsp;&quot;;
+                            /*  显示“尾页”超链接  */
+                            echo  &quot;&lt;a href=page_affiche.php?page=&quot;.$page_count.&quot;&gt;尾页&lt;/a&gt;&quot;;
+                            }
+                            mysql_free_result($sql);
+                            mysql_close($conn);
+                            ?&gt;</code></code></pre>
+<p>编辑：</p>
+<pre><code><code>&lt;?php
+$conn=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;) or die(&quot;数据库服务器连接错误&quot;.mysql_error());
+mysql_select_db(&quot;db_database18&quot;,$conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+mysql_query(&quot;set names gb2312&quot;);
+$title=$_POST[txt_title];
+$content=$_POST[txt_content];
+$id=$_POST[id];
+$sql=mysql_query(&quot;update tb_affiche set title=&#39;$title&#39;,content=&#39;$content&#39; where id=$id&quot;);
+if($sql){
+    echo &quot;&lt;script&gt;alert(&#39;公告信息编辑成功！&#39;);history.back();window.location.href=&#39;modify.php?id=$id&#39;;&lt;/script&gt;&quot;;
+}else{
+    echo &quot;&lt;script&gt;alert(&#39;公告信息编辑失败！&#39;);history.back();window.location.href=&#39;modify.php?id=$id&#39;;&lt;/script&gt;&quot;;
+}
+?&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+$conn=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;) or die(&quot;数据库服务器连接错误&quot;.mysql_error());
+mysql_select_db(&quot;db_database18&quot;,$conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+mysql_query(&quot;set names gb2312&quot;);
+$title=$_POST[txt_title];
+$content=$_POST[txt_content];
+$id=$_POST[id];
+$sql=mysql_query(&quot;update tb_affiche set title=&#39;$title&#39;,content=&#39;$content&#39; where id=$id&quot;);
+if($sql){
+    echo &quot;&lt;script&gt;alert(&#39;公告信息编辑成功！&#39;);history.back();window.location.href=&#39;modify.php?id=$id&#39;;&lt;/script&gt;&quot;;
+}else{
+    echo &quot;&lt;script&gt;alert(&#39;公告信息编辑失败！&#39;);history.back();window.location.href=&#39;modify.php?id=$id&#39;;&lt;/script&gt;&quot;;
+}
+?&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;</code></code></pre>
+<p>练习：</p>
+<pre><code><code>&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;新闻&lt;/title&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;
+&lt;link href=&quot;css/style.css&quot; rel=&quot;stylesheet&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+ function chinesesubstr($str,$start,$len) { 
+    $strlen=$start+$len; 
+    for($i=0;$i&lt;$strlen;$i++) { 
+        if(ord(substr($str,$i,1))&gt;0xa0) { 
+            $tmpstr.=substr($str,$i,2); 
+            $i++; 
+         } 
+        else 
+            $tmpstr.=substr($str,$i,1); 
+    } 
+    return $tmpstr; 
+}
+?&gt;
+&lt;table width=&quot;600&quot; height=&quot;100&quot; border=&quot;0&quot; align=&quot;center&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; bgcolor=&quot;#FFFFCC&quot;&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;600&quot; height=&quot;257&quot; align=&quot;center&quot; valign=&quot;top&quot; background=&quot;images/image_08.gif&quot;&gt;&lt;table width=&quot;579&quot; height=&quot;271&quot;  border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;
+        &lt;tr&gt;
+          &lt;td width=&quot;579&quot; height=&quot;50&quot; align=&quot;center&quot; class=&quot;word_orange&quot;&gt;&lt;span class=&quot;style1&quot;&gt;热焦新闻&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td height=&quot;249&quot; align=&quot;center&quot; valign=&quot;top&quot;&gt;              &lt;table width=&quot;460&quot;  border=&quot;1&quot; align=&quot;center&quot; cellpadding=&quot;1&quot; cellspacing=&quot;1&quot; bordercolor=&quot;#FFFFCC&quot; bgcolor=&quot;#DFDFDF&quot;&gt;
+                &lt;?php
+                    $conn=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;) or die(&quot;数据库服务器连接错误&quot;.mysql_error());
+                    mysql_select_db(&quot;db_database18&quot;,$conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+                    mysql_query(&quot;set names gb2312&quot;);
+                    $sql=mysql_query(&quot;select * from tb_affiche order by createtime desc limit 0,10&quot;);
+                    $info=mysql_fetch_array($sql);
+                    if($info==false){
+                      echo &quot;本站暂无公告信息!&quot;;
+                     }
+                    else{
+                    $i=0;
+                      do{ 
+                  ?&gt;
+                &lt;tr bgcolor=&quot;#E3E3E3&quot;&gt;
+                  &lt;td height=&quot;24&quot; align=&quot;left&quot; bgcolor=&quot;#FFFFFF&quot;&gt;&amp;nbsp;&amp;nbsp;
+                      &lt;?php 
+                                $i=$i+1;    
+                                echo $i.&quot;、&quot;.chinesesubstr($info[title],0,40);
+                                  if(strlen($info[title])&gt;40){
+                                    echo &quot;...&quot;;
+
+                                  } 
+                               ?&gt;
+                      &lt;em&gt;&amp;nbsp;[&lt;?php echo $info[createtime];?&gt;]&lt;/em&gt; &lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;?php
+                      }while($info=mysql_fetch_array($sql));
+                   }
+                    mysql_free_result($sql);                                //关闭记录集
+                    mysql_close($conn);                                 //关闭MySQL数据库服务器
+                  ?&gt;
+            &lt;/table&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<blockquote>
+<p>封装类数据库连接，操作，分页，字符串截取</p>
+</blockquote>
+<pre><code><code>&lt;?php
+//数据库连接类
+class ConnDB{
+    var $dbtype;
+    var $host;
+    var $user;
+    var $pwd;
+    var $dbname;
+    var $conn;    
+    function ConnDB($dbtype,$host,$user,$pwd,$dbname){      //构造方法，为成员变量赋值
+        $this-&gt;dbtype=$dbtype;
+        $this-&gt;host=$host;
+        $this-&gt;user=$user;
+        $this-&gt;pwd=$pwd;
+        $this-&gt;dbname=$dbname;
+    }
+    function GetConnId(){                                   //实现与数据库的连接并返回连接对象
+        $this-&gt;conn=mysql_connect($this-&gt;host,$this-&gt;user,$this-&gt;pwd) or die(&quot;数据库服务器连接错误&quot;.mysql_error());
+        mysql_select_db($this-&gt;dbname,$this-&gt;conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+        mysql_query(&quot;set names gb2312&quot;);                    //设置数据库的编码格式
+        return $this-&gt;conn;                                 //返回连接对象
+    }
+    function CloseConnId(){                                 //定义关闭数据库的方法
+            $this-&gt;conn-&gt;Disconnect();                  //执行关闭的操作
+    }
+}   
+
+//数据库管理类
+class AdminDB{
+    function ExecSQL($sqlstr,$conn){                    //定义方法，参数为SQl语句和连接数据库返回的对象
+        $sqltype=strtolower(substr(trim($sqlstr),0,6)); //截取SQL中的前6个字符串，并转换成小写
+        $rs=mysql_query($sqlstr);                   //执行SQL语句
+        if($sqltype==&quot;select&quot;){                     //判断如果SQL语句的类型为SELECT
+            $array=mysql_fetch_array($rs);              //执行该语句，获取查询结果
+            if(count($array)==0 || $rs==false)          //判断语句是否执行成功
+                return false;                   //如果查询结果为0，或者执行失败，则返回false
+            else
+                return $array;                  //否则返回查询结果的数组
+        }elseif ($sqltype==&quot;update&quot; || $sqltype==&quot;insert&quot; || $sqltype==&quot;delete&quot;){
+            //判断如果SQL语句类型不为select、则执行如下操作
+            if($rs)
+                return true;                        //执行成功返回true
+            else 
+                return false;                       //是否返回false
+        }
+    }
+}
+
+
+//分页类
+class SepPage{
+    var $rs;
+    var $pagesize;                  //定义每页显示的记录数
+    var $nowpage;                   //当前页码
+    var $array;
+    var $conn;
+    var $sqlstr;                    //执行的SQL语句
+    var $total;
+    var $pagecount;                 //总的记录数
+    function ShowDate($sqlstr,$conn,$pagesize,$nowpage){    //定义方法
+        $arrays=array();
+        $array_title=array();
+        $array_content=array();
+        if(!isset($nowpage) || $nowpage==&quot;&quot; || $nowpage==0)         //判断当前页变量值是否为空
+            $this-&gt;nowpage=1;                       //定义当前页的值
+        else
+            $this-&gt;nowpage=$nowpage;                //获取当前页的值
+        
+        $this-&gt;pagesize=$pagesize;                  //定义每页输出的记录数
+        $this-&gt;conn=$conn;                          //连接数据库返回的标识
+        $this-&gt;sqlstr=$sqlstr;                      //执行的查询语句
+        $this-&gt;pagecount=$pagecount;                //总的记录数
+        $this-&gt;total=$total;                        //总的记录数
+        
+        $this-&gt;rs=mysql_query($this-&gt;sqlstr.&quot;limit &quot;.$this-&gt;pagesize*($this-&gt;nowpage-1).&quot;,$this-&gt;pagesize&quot;,$this-&gt;conn);
+        $this-&gt;total=mysql_num_rows($this-&gt;rs);         //获取记录数
+        if($this-&gt;total==0){                                    //判断如果查询结果为0，则输出如下内容
+            return false;     
+       }else{                               //否则
+            if(($this-&gt;total % $this-&gt;pagesize)==0){            //判断如果总的记录数除以每页显示的记录数等于0
+                $this-&gt;pagecount=intval($this-&gt;total/$this-&gt;pagesize);  //则为变量pagecount赋值
+            }else if($this-&gt;total&lt;=$this-&gt;pagesize){
+                $this-&gt;pagecount=1;//如果查询结果小于等于每页记录数，那么为变量赋值为1  
+            }else{
+                $this-&gt;pagecount=ceil($this-&gt;total/$this-&gt;pagesize);    //否则输出变量值
+            }
+            while($this-&gt;array=mysql_fetch_array($this-&gt;rs)){
+                array_push($array_title,$this-&gt;array[title]);
+                array_push($array_content,$this-&gt;array[content]);
+            }           
+            array_push($arrays,$array_title,$array_content);
+            return $arrays;
+        }
+    }
+    function ShowPage($contentname,$utits,$anothersearchstr,$class){
+        $allrs=mysql_query($this-&gt;sqlstr,$this-&gt;conn);      //执行查询语句
+        $record=mysql_num_rows($allrs);
+        $pagecount=ceil($record/$this-&gt;pagesize);       //计算共有几页
+        $str.=&quot;共有&quot;.$contentname.&quot;&amp;nbsp;&quot;.$record.&quot;&amp;nbsp;&quot;.$utits.&quot;&amp;nbsp;每页显示&amp;nbsp;&quot;.$this-&gt;pagesize.&quot;&amp;nbsp;&quot;.$utits.&quot;&amp;nbsp;第&amp;nbsp;&quot;.$this-&gt;nowpage.&quot;&amp;nbsp;页/共&amp;nbsp;&quot;.$pagecount.&quot;&amp;nbsp;页&quot;;
+        $str.=&quot;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&quot;;
+        $str.=&quot;&lt;a href=&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;?page=1&quot;.$anothersearchstr.&quot; class=&quot;.$class.&quot;&gt;首页&lt;/a&gt;&quot;;
+        $str.=&quot;&amp;nbsp;&quot;;
+        if(($this-&gt;nowpage-1)&lt;=0){ 
+            $str.=&quot;&lt;a href=&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;?page=1&quot;.$anothersearchstr.&quot; class=&quot;.$class.&quot;&gt;上一页&lt;/a&gt;&quot;;
+        }else{
+            $str.=&quot;&lt;a href=&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;?page=&quot;.($this-&gt;nowpage-1).$anothersearchstr.&quot; class=&quot;.$class.&quot;&gt;上一页&lt;/a&gt;&quot;;
+        }
+        $str.=&quot;&amp;nbsp;&quot;; 
+        if(($this-&gt;nowpage+1)&gt;=$pagecount){
+            $str.=&quot;&lt;a href=&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;?page=&quot;.$pagecount.$anothersearchstr.&quot; class=&quot;.$class.&quot;&gt;下一页&lt;/a&gt;&quot;;
+        }else{
+            $str.=&quot;&lt;a href=&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;?page=&quot;.($this-&gt;nowpage+1).$anothersearchstr.&quot; class=&quot;.$class.&quot;&gt;下一页&lt;/a&gt;&quot;;
+        }
+        $str.=&quot;&amp;nbsp;&quot;;
+            $str.=&quot;&lt;a href=&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;?page=&quot;.$pagecount.$anothersearchstr.&quot; class=&quot;.$class.&quot;&gt;尾页&lt;/a&gt;&quot;;
+        if(count($this-&gt;array)==0 || $this-&gt;rs==false)          
+            return &quot;&quot;;
+        else
+            return $str;    
+    }
+}
+//系统常用方法
+class UseFun{
+    
+    function chinesesubstr($str,$start,$len) { 
+    $strlen=$start+$len; 
+    for($i=0;$i&lt;$strlen;$i++) { 
+        if(ord(substr($str,$i,1))&gt;0xa0) { 
+            $tmpstr.=substr($str,$i,2); 
+            $i++; 
+         } 
+        else 
+            $tmpstr.=substr($str,$i,1); 
+    } 
+    return $tmpstr; 
+}
+    
+}
+
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+require(&quot;system..php&quot;);
+//数据库连接类实例化
+$connobj=new ConnDB(&quot;mysql&quot;,&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;,&quot;db_database&quot;);
+$conn=$connobj-&gt;GetConnId();
+//数据库操作类实例化
+$admindb=new AdminDB();
+//分页类实例化
+$seppage=new SepPage();
+//字符串截取类
+$unhtml=new UseFun();
+
+?&gt;</code></code></pre>
+<h2 id="结言">结言</h2>
+<p>好了，欢迎在留言区留言，与大家分享你的经验和心得。</p>
+<p>感谢你学习今天的内容，如果你觉得这篇文章对你有帮助的话，也欢迎把它分享给更多的朋友，感谢。</p>
+<p>感谢！承蒙关照！您真诚的赞赏是我前进的最大动力！</p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-da750878d19e7fa1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-826395d4148483a1?imageMogr2/auto-orient/strip" alt="image" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

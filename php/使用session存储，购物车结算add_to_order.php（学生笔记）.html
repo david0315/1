@@ -1,0 +1,214 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修使用session存储，购物车结算add_to_order.php（学生笔记）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>使用session存储，购物车结算add_to_order.php（学生笔记）</center></div><div class='banquan'>原文出处:本文由博客园博主维京人~提供。<br/>
+原文连接:https://www.cnblogs.com/mzzone/p/11027422.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">session_start</span><span style="color: #000000;">();
+</span><span style="color: #0000ff;">include_once</span>("DB.class.php"<span style="color: #000000;">); 
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">接受并解析前端传过来的json，转换成数组。</span>
+    <span style="color: #800080;">$goods_list</span> =<span style="color: #800080;">$_POST</span>['order'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$goods_list</span>= json_decode(<span style="color: #800080;">$goods_list</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">1.获取session信息</span>
+        <span style="color: #800080;">$arr</span> = <span style="color: #800080;">$_SESSION</span>['gwc'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">获得订单数组</span>
+        <span style="color: #800080;">$item_list</span> = <span style="color: #800080;">$goods_list</span>['order'<span style="color: #000000;">];
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">一维实现，每次先清空订单。</span>
+        <span style="color: #800080;">$order</span> = ''<span style="color: #000000;">;
+        
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">把商品信息存到订单，并且把他们从购物车中删除</span>
+        <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$item_list</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt; <span style="color: #800080;">$item</span><span style="color: #000000;">){
+            
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">把商品信息存到订单</span>
+                <span style="color: #800080;">$order</span>[<span style="color: #800080;">$k</span>] = <span style="color: #800080;">$arr</span>[<span style="color: #800080;">$k</span><span style="color: #000000;">];
+
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">把商品信息从购物车中删除</span>
+                <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$arr</span>[<span style="color: #800080;">$k</span><span style="color: #000000;">]);
+
+                
+        }
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">更新购车的商品信息</span>
+        <span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">)){
+            </span><span style="color: #800080;">$_SESSION</span>['gwc'] = <span style="color: #800080;">$arr</span><span style="color: #000000;">;
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #800080;">$_SESSION</span>['gwc'] = ''<span style="color: #000000;">;
+        }
+        
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">最后将订单信息存到session</span>
+            <span style="color: #800080;">$_SESSION</span>['order'] = <span style="color: #800080;">$order</span><span style="color: #000000;">;
+        
+        
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($_SESSION);
+        // die();    </span>
+        <span style="color: #0000ff;">echo</span> "OK"<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+
+</span>?&gt;</code></pre>
+
+<p><strong><span style="text-decoration: underline;"><em><span style="font-size: 18px; color: #ff0000; text-decoration: underline;">注：例子中是使用的工具类代码DB.class.php要在https://www.cnblogs.com/mzzone/p/10911891.html</span></em></span></strong></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong>业务逻辑</strong></span></p>
+<ul>
+<li>从购物车中点击结算，即是把商品信息从购物车中转移到订单中。</li>
+<li>技术点：接受的方式是json。要先在前台以json的形式传过来，这里再把它解析为数组，再运用。</li>
+</ul>
+<p><span style="color: #ff0000;"><strong>购物车页面的结算按钮注册点击事件(<span style="color: #000000;">需要引入jquery文件</span>)</strong></span></p>
+<src class="cnblogs_code">
+<pre><code>$('#jiesuan').click( <span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">间接设置订单金额</span>
+        <span style="color: #0000ff;">var</span> j = $('.total_text').<span style="color: #000000;">text();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 去除￥符号</span>
+        <span style="color: #0000ff;">var</span> order_toal = j.substring(1<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">将标签的值赋给input传过去</span>
+        $("#order_total").<span style="color: #000000;">val(order_toal);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">用插件将表单生成json，在ajax发送过去后台</span>
+            <span style="color: #ff0000;"><strong>var serializeObj=$('#form1').serializeJSON();
+var serializeStr=JSON.stringify(serializeObj);
+console.log</strong></span><span style="color: #000000;"><span style="color: #ff0000;"><strong>(serializeStr);</strong></span>
+$</span>.<span style="color: #000000;">ajax({
+      cache</span>: <span style="color: #0000ff;">false</span>,<span style="color: #000000;">
+      type</span>: "POST",<span style="color: #000000;">
+      url </span>: "add_to_order.php",<span style="color: #000000;">
+      traditional</span>:<span style="color: #0000ff;">true</span>,<span style="color: #ff0000;">  
+      data: {order : serializeStr},</span> <span style="color: #008000;">//</span><span style="color: #008000;">注意这里的写法,键为order</span>
+      success: <span style="color: #0000ff;">function</span><span style="color: #000000;">(msg){
+        </span><span style="color: #0000ff;">if</span>(msg=="OK"<span style="color: #000000;">){
+　　　　　　　　
+            alert(</span>"下单成功"<span style="color: #000000;">);
+           </span><span style="color: #008000;">//</span><span style="color: #008000;"> location.reload();</span>
+           //window.location.href='order.php';<span style="color: #000000;">
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            alert(msg);
+            alert(</span>"下单失败"<span style="color: #000000;">);
+        }
+      }
+    });</span></code></pre>
+
+<h3>&nbsp;表单中的一部分代码，展示如何把选中的商品传过去。关键在于checbox键值设置：在foreache循环中，所以键值得有变量混合进去。</h3>
+<src class="cnblogs_code">
+<pre><code>&lt;!-- 1.遍历店铺，查看有多少商品并遍历。--&gt;
+            &lt;div <span style="color: #0000ff;">class</span>="shop_info"&gt;
+                &lt;div <span style="color: #0000ff;">class</span>="all_check"&gt;
+                    &lt;!--店铺全选--&gt;
+                    &lt;input type='checkbox' id='shop_a' <span style="color: #0000ff;">class</span>='shopChoice'&gt;
+                        
+                        &lt;label <span style="color: #0000ff;">for</span>='shop_a' <span style="color: #0000ff;">class</span>='shop'&gt;&lt;/label&gt;
+                    
+                &lt;/div&gt;
+                &lt;div <span style="color: #0000ff;">class</span>="shop_name"&gt;<span style="color: #000000;">
+                    店铺：</span>&lt;a href="javascript:;"&gt;蜜食专家&lt;/a&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;?<span style="color: #000000;">php
+            </span><span style="color: #008080;">session_start</span><span style="color: #000000;">();
+            </span><span style="color: #0000ff;">include_once</span>("DB.class.php"<span style="color: #000000;">);
+
+            
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_SESSION</span>['gwc'])&amp;&amp;!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_SESSION</span>['gwc'<span style="color: #000000;">])){
+            </span><span style="color: #800080;">$arr2</span> = <span style="color: #800080;">$_SESSION</span>['gwc'<span style="color: #000000;">];
+            </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr2</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k1</span>=&gt; <span style="color: #800080;">$arr</span><span style="color: #000000;">){
+
+                </span><span style="color: #800080;">$goods_id</span> = <span style="color: #800080;">$arr</span>['goods_id'<span style="color: #000000;">];
+                </span><span style="color: #800080;">$sql</span>="select * from tb_goods where id=<span style="color: #800080;">$goods_id</span>"<span style="color: #000000;">;
+                </span><span style="color: #800080;">$goods</span> = <span style="color: #800080;">$dao</span>-&gt;getRow(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+
+                </span><span style="color: #800080;">$goods_num</span> = <span style="color: #800080;">$arr</span>['num'<span style="color: #000000;">];
+            
+                </span><span style="color: #800080;">$sum</span> = <span style="color: #800080;">$goods</span>['price']*<span style="color: #800080;">$goods_num</span><span style="color: #000000;">;
+                
+
+            </span>?&gt;
+            &lt;div <span style="color: #0000ff;">class</span>="order_content"&gt;
+            &lt;!-- 最低应该在这里开始遍历,有分割线 --&gt;
+
+             
+            
+                &lt;!-- 利用上面的php变量，遍历一个商品或sku --&gt;
+                &lt;ul <span style="color: #0000ff;">class</span>="order_lists"&gt;
+
+                    &lt;li <span style="color: #0000ff;">class</span>="list_chk"&gt;
+                    &lt;!-- 每个复选框的值存她的商品id或sku_id --&gt;
+                    &lt;?php echo "&lt;input type='checkbox' id='checkbox_$goods_id' <span style="color: #ff0000; font-size: 16px;">name='order[$goods_id]'</span> value='$goods_id' class='son_check'&gt;"; ?&gt;
+
+                        &lt;!-- 打勾对应文本框的id --&gt;
+                        &lt;?php <span style="color: #0000ff;">echo</span> "&lt;label for='checkbox_<span style="color: #800080;">$goods_id</span>'&gt;&lt;/label&gt;"; ?&gt;
+                    &lt;/li&gt;
+                    &lt;li <span style="color: #0000ff;">class</span>="list_con"&gt;
+                        &lt;div <span style="color: #0000ff;">class</span>="list_img"&gt;&lt;a href="javascript:;"&gt;
+                        &lt;?php <span style="color: #0000ff;">echo</span> "&lt;img src='./images/<span style="color: #800080;">$goods</span>[img]' alt=''&gt;";?&gt;
+                        &lt;/a&gt;&lt;/div&gt;
+                        &lt;div <span style="color: #0000ff;">class</span>="list_text"&gt;&lt;a href="javascript:;"&gt;&lt;?php <span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$goods</span>[goodsname]"; ?&gt;&lt;/a&gt;&lt;/div&gt;
+                    &lt;/li&gt;
+                    &lt;li <span style="color: #0000ff;">class</span>="list_info"&gt;
+                        &lt;p&gt;规格：默认&lt;/p&gt;
+                        
+                    &lt;/li&gt;
+                    &lt;li <span style="color: #0000ff;">class</span>="list_price"&gt;
+                        &lt;p <span style="color: #0000ff;">class</span>="price"&gt;&lt;?php <span style="color: #0000ff;">echo</span> '￥'."<span style="color: #800080;">$goods</span>[price]"; ?&gt;&lt;/p&gt;
+                        
+                        &lt;?php <span style="color: #0000ff;">echo</span> "&lt;input type='hidden'  value='<span style="color: #800080;">$goods</span>[price]'&gt;"; ?&gt;
+                    &lt;/li&gt;
+                    &lt;li <span style="color: #0000ff;">class</span>="list_amount"&gt;
+                        &lt;div <span style="color: #0000ff;">class</span>="amount_box"&gt;
+                        &lt;!-- 对商品的数量进行加减 --&gt;
+                        &lt;?php <span style="color: #0000ff;">echo</span> "&lt;a href='change_number.php?goods_id=<span style="color: #800080;">$goods_id</span>&amp;choice=jian' class='reduce reSty'&gt;-&lt;/a&gt; "; ?&gt;
+                            &lt;!-- 数量，要从session或数据库中查出来 --&gt;
+                            &lt;?php <span style="color: #0000ff;">echo</span> "&lt;input type='text' value='<span style="color: #800080;">$goods_num</span>' class='sum'&gt;"; ?&gt;
+                            
+                            &lt;?php <span style="color: #0000ff;">echo</span> "&lt;a href='change_number.php?goods_id=<span style="color: #800080;">$goods_id</span>&amp;choice=jia' class='plus'&gt;+&lt;/a&gt; "; ?&gt;
+                            &lt;?php <span style="color: #0000ff;">echo</span> "&lt;input type='hidden'  value='<span style="color: #800080;">$goods</span>[number]'&gt;"; ?&gt;
+                            
+                        &lt;/div&gt;
+                    &lt;/li&gt;
+                    &lt;li <span style="color: #0000ff;">class</span>="list_sum"&gt;
+                        &lt;p <span style="color: #0000ff;">class</span>="sum_price"&gt;&lt;?php <span style="color: #0000ff;">echo</span> '￥'."<span style="color: #800080;">$sum</span>"; ?&gt;&lt;/p&gt;
+                    &lt;/li&gt;
+                    &lt;li <span style="color: #0000ff;">class</span>="list_op"&gt;
+                        &lt;p <span style="color: #0000ff;">class</span>="del"&gt;
+                        &lt;?php <span style="color: #0000ff;">echo</span> "&lt;a href='delete_goods.php?goods_id=<span style="color: #800080;">$goods_id</span>' class='delBtn'&gt;删除宝贝&lt;/a&gt; "; ?&gt;&lt;/p&gt;
+                    &lt;/li&gt;
+                &lt;/ul&gt;
+                
+        
+            &lt;/div&gt;
+            &lt;?<span style="color: #000000;">php }}
+
+                    </span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                        </span><span style="color: #0000ff;">echo</span> "<span style="color: #000000;">&lt;h1 style='margin-top:150px;text-align:center;font-size: 39px;color:#c18e2cdb;'&gt;兄
+                        dei，你的购物车只剩下尊严了！！！&lt;/h1&gt;</span>"<span style="color: #000000;">;
+                    }
+                 </span>?&gt;<br /><br /></code></pre>
+<img src="https://img2018.cnblogs.com/blog/1249074/201906/1249074-20190615141645128-701018305.png" alt="" />
+<p>&nbsp;</p>
+<pre><code></code></pre>
+
+<p>&nbsp;注意事项</p>
+<p>可以给商品的checkbox类型添加name属性是因为他有selected属性，而其他像hidden类型的不能给它name属性，否则也会提交到后台。要保持提交过去的数据不能有冗余，需要遍历。</p>
+<p>而且添加到订单也只需商品id就行，订单的商品数量可以在根据key在gwc中获得。具体看add_to_order.php.</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,108 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Linux 下编写一个 PHP 扩展' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Linux 下编写一个 PHP 扩展</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11908667.html</div><br>
+    <p><strong>&nbsp;&nbsp;&nbsp; 假设需求</strong><br /><br />开发一个叫做 helloWord 的扩展。<br /><br />扩展里有一个函数，helloWord()。<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  echo helloWord('Tom');
+    //返回：Hello World: Tom
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />&nbsp;&nbsp;&nbsp;<strong> 本地环境</strong><br /><br />PHP版本：5.6.9<br /><br />系统：Linux CentOS release 6.5 (Final)<br /><br /><strong>&nbsp;&nbsp;&nbsp; 最终效果</strong><br /><br /><img src="./images/Linux 下编写一个 PHP 扩展0.jpg" alt="" /><br /><br />&nbsp;<strong>&nbsp;&nbsp; 实现流程</strong><br /><br />第一步：<br /><br />&nbsp;&nbsp;&nbsp; 进入到本地的php目录执行：<br />&nbsp;&nbsp;&nbsp; &nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>    cd /root/soft/src/php-5.6.9
+    cd ext
+    ./ext_skel --extname=helloWord
+    cd helloWord
+    vi config.m4
+     
+    搜索：dnl Otherwise use enable 将下面修改成：
+     
+    PHP_ARG_ENABLE(helloWorld, whether to enable helloWorld support,
+    [  --enable-helloWorld           Enable helloWorld support])
+     
+    if test "$PHP_HELLOWORLD" != "no"; then
+     
+    ...
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />如图：<br /><br /><img src="./images/Linux 下编写一个 PHP 扩展1.jpg" alt="" /><br /><br /><br />第二步：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  vi php_helloWorld.h
+     
+    搜索：extern zend_module_entry 新增一行：
+     
+    PHP_FUNCTION(helloWorld);
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />如图：<br /><br /><img src="./images/Linux 下编写一个 PHP 扩展2.jpg" alt="" /><br /><br />第三步：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   vi helloWorld.c
+     
+    搜索：const zend_function_entry helloWorld_functions[] 新增一行：
+     
+    PHP_FE(helloWorld, NULL)
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />如图：<br /><br /><img src="./images/Linux 下编写一个 PHP 扩展3.jpg" alt="" /><br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   在 helloWorld.c 底部新增一个方法
+     
+    PHP_FUNCTION(helloWorld)
+    {
+        char *arg = NULL;
+        int arg_len, len;
+        char *strg;
+        if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &amp;arg, &amp;arg_len) == FAILURE) {
+            return;
+        }
+        len = spprintf(&amp;strg, 0, "Hello World: %s", arg);
+        RETURN_STRINGL(strg, len, 0);
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />如图：<br /><br /><img src="./images/Linux 下编写一个 PHP 扩展4.jpg" alt="" /><br /><br />第四步：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  //编译安装
+    cd /root/soft/src/php-5.6.9/ext
+    /usr/local/php/bin/phpize #用phpize生成configure配置文件
+    ./configure --with-php-config=/usr/local/php/bin/php-config   #配置
+    make  #编译
+    make install  #安装
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />第五步：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   //修改php.ini
+    extension="helloWorld.so"   #名称为安装扩展的名称
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />第六步：<br /><br />重启环境。<br /><br />完成上面的步骤，简单的 helloWorld 扩展就OK了。<br /><br />大家可以根据自己的需求，开发满足自己的扩展。<br /><br />比如，可以开发一些扩展类，扩展方法，等等。<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

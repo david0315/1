@@ -1,0 +1,207 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修自学PHP的第22天---ThinkPHP中的路由、ThinkPHP目录结构' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>自学PHP的第22天---ThinkPHP中的路由、ThinkPHP目录结构</center></div><div class='banquan'>原文出处:本文由博客园博主MingGyGy提供。<br/>
+原文连接:https://www.cnblogs.com/MingGyGy-Castle/p/11974221.html</div><br>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这一切的一切都得从&ldquo;Hello world&rdquo;说起！！！</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 有很多东西在thinkPHP的官方开发文档上其实都有讲到，我在这里只是想记录自己每天坚持学习PHP的情况，今天接触ThinkPHP的路由，路由这一块可以更好的隐藏我们网站的结构，让我们的网站更安全，这是路由带给我们的一些好处。下面来记录ThinkPHP中的路由这一块主要内容。</p>
+<h2>一、配置路由</h2>
+<p>在ThinkPHP框架中找到路由目录下的php文件，系统默认会给我们一个route.php的这个文件，当然我们也能在这个目录下创建自己的一个路由文件，系统会自动加载这个目录下的所有文件</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这个就是路由的文件</p>
+<p><img src="./images/自学PHP的第22天---ThinkPHP中的路由、ThinkPHP目录结构0.jpg" alt="" /></p>
+<h3>ThinkPHP的目录结构</h3>
+<p><img src="./images/自学PHP的第22天---ThinkPHP中的路由、ThinkPHP目录结构1.jpg" alt="" /></p>
+<h2>二、配置一个简单路由规则</h2>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ *配置一个简单的路由规则  第一个参数自定义   第二个参数依次是模块/控制器/方法
+ * -------&gt;路由执行是从方法开始找，接着找控制器，再是模块  <span style="color: #629755; font-style: italic;">若不填写：系统默认使用配置文件中所配置的默认</span>
+ * 可以在配置文件app.php中配置默认的模块、控制器和方法
+ </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+Route:</span>:rule('good','index/index/index');</code></pre>
+
+<p>这时在浏览器中只需要输入&ldquo;http://域名/good&rdquo; 就能找到指定的模块下的控制器中的方法，也可在后方加.html，需要在配置文件app.php中设置URL伪静态的后缀，默认为html</p>
+<h2>三、路由表达式</h2>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">动态路由
+//id为动态获取的，也就是在good/后面随意输入都可以路由到index/index/index</span>
+Route::rule('good/:id','index/index/index'<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">当然id里面的值也是可以获取的
+//在控制器中使用门面下的Request中的param('id')可以获取id的值</span>
+Route::rule('good/[:id]','index/index/index');<br /><span style="color: #008000;">//<span style="color: #008000;">路由地址 <span style="color: #629755; font-style: italic;">直接路由到操作方法<br /><span style="color: #008000;">//</span></span></span></span><span style="color: #629755; font-style: italic;">看起来似乎和前面的没什么不同，本质的区别是直接执行某个控制器的方法，不需要去解析模块<span style="color: #629755; font-style: italic; font-family: 'Consolas';">/<span style="color: #629755; font-style: italic;">控制器<span style="color: #629755; font-style: italic; font-family: 'Consolas';">/<span style="color: #629755; font-style: italic;">操作方法这些，同时不会去初始化模块</span></span></span></span></span><span style="color: #008000;"><span style="color: #008000;"><span style="color: #629755; font-style: italic;"><span style="color: #008000;"><br /></span></span></span></span>Route::rule('good','@index/index/index');</code></pre>
+
+<h2>四、路由重定向</h2>
+<p>比如说重定向到百度：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">重定向到百度</span>
+Route::rule('baidu','https://www.baidu.com');</code></pre>
+
+<h2>五、路由请求类型</h2>
+<p>请求类型通常有:post、get、delete、put、等请求，路由请求类型可以指定某些请求来请求某个模块下的某个控制器中的某个方法</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">post请求默认模块/默认控制器/默认方法</span>
+Route::rule('good','','post'<span style="color: #000000;">);
+Route</span>::post('good',''<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">get、delete等请求都与上类似
+//设置多个请求类型</span>
+Route::rule('good','','post|get|delete|put');</code></pre>
+
+<h2>六、路由参数</h2>
+<p>下表从官方文档拿下来的一个参数、说明和对应的方法名</p>
+<table>
+<thead>
+<tr><th>参数</th><th>说明</th><th>方法名</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>method</td>
+<td>请求类型检测，支持多个请求类型</td>
+<td>method</td>
+</tr>
+<tr>
+<td>ext</td>
+<td>URL后缀检测，支持匹配多个后缀</td>
+<td>ext</td>
+</tr>
+<tr>
+<td>deny_ext</td>
+<td>URL禁止后缀检测，支持匹配多个后缀</td>
+<td>denyExt</td>
+</tr>
+<tr>
+<td>https</td>
+<td>检测是否https请求</td>
+<td>https</td>
+</tr>
+<tr>
+<td>domain</td>
+<td>域名检测</td>
+<td>domain</td>
+</tr>
+<tr>
+<td>before</td>
+<td>前置行为（检测）</td>
+<td>before</td>
+</tr>
+<tr>
+<td>after</td>
+<td>后置行为（执行）</td>
+<td>after</td>
+</tr>
+<tr>
+<td>merge_extra_vars</td>
+<td>合并额外参数</td>
+<td>mergeExtraVars</td>
+</tr>
+<tr>
+<td>complete_match</td>
+<td>是否完整匹配路由</td>
+<td>completeMatch</td>
+</tr>
+<tr>
+<td>model</td>
+<td>绑定模型</td>
+<td>model</td>
+</tr>
+<tr>
+<td>cache</td>
+<td>请求缓存</td>
+<td>cache</td>
+</tr>
+<tr>
+<td>param_depr</td>
+<td>路由参数分隔符</td>
+<td>depr</td>
+</tr>
+<tr>
+<td>ajax</td>
+<td>Ajax检测</td>
+<td>ajax</td>
+</tr>
+<tr>
+<td>pjax</td>
+<td>Pjax检测</td>
+<td>pjax</td>
+</tr>
+<tr>
+<td>response</td>
+<td>绑定response_send行为</td>
+<td>response</td>
+</tr>
+<tr>
+<td>validate</td>
+<td>绑定验证器类进行数据验证</td>
+<td>validate</td>
+</tr>
+<tr>
+<td>header</td>
+<td>设置Response的header信息</td>
+<td>header</td>
+</tr>
+<tr>
+<td>append</td>
+<td>追加额外的参数（<code>5.1.5+</code>）</td>
+<td>append</td>
+</tr>
+<tr>
+<td>middleware</td>
+<td>注册路由中间件（<code>5.1.6+</code>）</td>
+<td>middleware</td>
+</tr>
+<tr>
+<td>merge_rule_regex</td>
+<td>合并路由规则（<code>V5.1.6+</code>）</td>
+<td>mergeRuleRegex</td>
+</tr>
+<tr>
+<td>filter</td>
+<td>请求变量过滤（<code>V5.1.16+</code>）</td>
+<td>filter</td>
+</tr>
+</tbody>
+</table>
+<p>这里举个路由参数的例子：</p>
+<src class="cnblogs_code">
+<pre><code>Route::rule('good',''<span style="color: #000000;">)
+    </span>-&gt;ext('html'<span style="color: #000000;">)
+    </span>-&gt;https(<span style="color: #0000ff;">false</span><span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">ext()设置伪静态后缀
+//https()是否验证https请求</span></code></pre>
+
+<h2>七、闭包支持</h2>
+<p>举个hello world的栗子，这一切的一切都得从&ldquo;Hello world&rdquo;说起</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">闭包支持</span>
+Route::rule('good',<span style="color: #0000ff;">function</span><span style="color: #000000;"> (){
+   </span><span style="color: #0000ff;">return</span> "Hello world"<span style="color: #000000;">;
+});</span></code></pre>
+
+<h2>八、URL生成</h2>
+<p>配置好路由之后给这个路由一个名字，然后在其它的地方调用助手函数url()或者使用门面下的build方法可获取对应的url地址</p>
+<src class="cnblogs_code">
+<pre><code>Route::rule('good','')-&gt;name('new_good'<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">通过助手函数的方式获取url 
+//url('new_good');
+//通过门面下的Url中的build方法
+//Url::build('new_good');</span></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,210 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP使用递归按层级查找数据' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP使用递归按层级查找数据</center></div><div class='banquan'>原文出处:本文由博客园博主幽篁晓筑提供。<br/>
+原文连接:https://www.cnblogs.com/woods1815/p/11829453.html</div><br>
+    <p>&nbsp;</p>
+<p>今天主要介绍一下使用递归来按层级查找数据。<br />原理挺简单的，主要是通过父级id一级一级的循环查找子级，使用PHP循环代码也很容易实现，不过如果层级越多，PHP重复代码也越多，这时可以使用递归来实现这功能。</p>
+<p>1、首先查出要使用的数据组成一个数组（避免递归里查询数据库，之后根据这个数组组成自己需要的数据就可以了）<br />比如得到如下数据：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+    [</span>'id' =&gt; '1', 'pid' =&gt; '0', 'dsp' =&gt; '1'],<span style="color: #000000;">
+    [</span>'id' =&gt; '2', 'pid' =&gt; '0', 'dsp' =&gt; '2'],<span style="color: #000000;">
+    [</span>'id' =&gt; '3', 'pid' =&gt; '0', 'dsp' =&gt; '3'],<span style="color: #000000;">
+    [</span>'id' =&gt; '4', 'pid' =&gt; '1', 'dsp' =&gt; '1-4'],<span style="color: #000000;">
+    [</span>'id' =&gt; '5', 'pid' =&gt; '4', 'dsp' =&gt; '1-4-5'],<span style="color: #000000;">
+    [</span>'id' =&gt; '6', 'pid' =&gt; '5', 'dsp' =&gt; '1-4-5-6'],<span style="color: #000000;">
+    [</span>'id' =&gt; '7', 'pid' =&gt; '3', 'dsp' =&gt; '3-7'],<span style="color: #000000;">
+    [</span>'id' =&gt; '8', 'pid' =&gt; '2', 'dsp' =&gt; '2-8'],<span style="color: #000000;">
+    [</span>'id' =&gt; '9', 'pid' =&gt; '1', 'dsp' =&gt; '1-9'],<span style="color: #000000;">
+    [</span>'id' =&gt; '10', 'pid' =&gt; '4', 'dsp' =&gt; '1-4-10'],<span style="color: #000000;">
+];</span></code></pre>
+
+<p>2、接下来使用递归重组数据，使数据按层级显示。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 根据父级id查找子级数据
+ * @param $data     要查询的数据
+ * @param int $pid 父级id
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> recursion(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$pid</span> = 0<span style="color: #000000;">)
+{
+    </span><span style="color: #0000ff;">static</span> <span style="color: #800080;">$child</span> = [];   <span style="color: #008000;">//</span><span style="color: #008000;"> 定义存储子级数据数组</span>
+    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$value</span>['pid'] == <span style="color: #800080;">$pid</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$child</span>[] = <span style="color: #800080;">$value</span>;   <span style="color: #008000;">//</span><span style="color: #008000;"> 满足条件的数据添加进child数组</span>
+            <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$data</span>[<span style="color: #800080;">$key</span>]);  <span style="color: #008000;">//</span><span style="color: #008000;"> 使用过后可以销毁</span>
+            <span style="color: #800080;">$this</span>-&gt;recursion(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$value</span>['id']);   <span style="color: #008000;">//</span><span style="color: #008000;"> 递归调用，查找当前数据的子级</span>
+<span style="color: #000000;">        }
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$child</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>得到结果：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">[
+  {
+    </span>"id": "1",
+    "pid": "0",
+    "dsp": "1"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "4",
+    "pid": "1",
+    "dsp": "1-4"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "5",
+    "pid": "4",
+    "dsp": "1-4-5"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "6",
+    "pid": "5",
+    "dsp": "1-4-5-6"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "10",
+    "pid": "4",
+    "dsp": "1-4-10"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "9",
+    "pid": "1",
+    "dsp": "1-9"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "2",
+    "pid": "0",
+    "dsp": "2"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "8",
+    "pid": "2",
+    "dsp": "2-8"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "3",
+    "pid": "0",
+    "dsp": "3"<span style="color: #000000;">
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "7",
+    "pid": "3",
+    "dsp": "3-7"<span style="color: #000000;">
+  }
+]</span></code></pre>
+
+<p>&nbsp;3、还可以使用下面的方法，显示更有层次感。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 根据父级id查找子级数据
+ * @param $data     要查询的数据
+ * @param int $pid 父级id
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> recursion(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$pid</span> = 0<span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$child</span> = [];   <span style="color: #008000;">//</span><span style="color: #008000;"> 定义存储子级数据数组</span>
+    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$value</span>['pid'] == <span style="color: #800080;">$pid</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$data</span>[<span style="color: #800080;">$key</span>]);  <span style="color: #008000;">//</span><span style="color: #008000;"> 使用过后可以销毁</span>
+            <span style="color: #800080;">$value</span>['child'] = <span style="color: #800080;">$this</span>-&gt;recursion(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$value</span>['id']);   <span style="color: #008000;">//</span><span style="color: #008000;"> 递归调用，查找当前数据的子级</span>
+            <span style="color: #800080;">$child</span>[] = <span style="color: #800080;">$value</span>;   <span style="color: #008000;">//</span><span style="color: #008000;"> 把子级数据添加进数组</span>
+<span style="color: #000000;">        }
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$child</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>得到结果：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">[
+  {
+    </span>"id": "1",
+    "pid": "0",
+    "dsp": "1",
+    "child":<span style="color: #000000;"> [
+      {
+        </span>"id": "4",
+        "pid": "1",
+        "dsp": "1-4",
+        "child":<span style="color: #000000;"> [
+          {
+            </span>"id": "5",
+            "pid": "4",
+            "dsp": "1-4-5",
+            "child":<span style="color: #000000;"> [
+              {
+                </span>"id": "6",
+                "pid": "5",
+                "dsp": "1-4-5-6",
+                "child":<span style="color: #000000;"> []
+              }
+            ]
+          }</span>,<span style="color: #000000;">
+          {
+            </span>"id": "10",
+            "pid": "4",
+            "dsp": "1-4-10",
+            "child":<span style="color: #000000;"> []
+          }
+        ]
+      }</span>,<span style="color: #000000;">
+      {
+        </span>"id": "9",
+        "pid": "1",
+        "dsp": "1-9",
+        "child":<span style="color: #000000;"> []
+      }
+    ]
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "2",
+    "pid": "0",
+    "dsp": "2",
+    "child":<span style="color: #000000;"> [
+      {
+        </span>"id": "8",
+        "pid": "2",
+        "dsp": "2-8",
+        "child":<span style="color: #000000;"> []
+      }
+    ]
+  }</span>,<span style="color: #000000;">
+  {
+    </span>"id": "3",
+    "pid": "0",
+    "dsp": "3",
+    "child":<span style="color: #000000;"> [
+      {
+        </span>"id": "7",
+        "pid": "3",
+        "dsp": "3-7",
+        "child":<span style="color: #000000;"> []
+      }
+    ]
+  }
+]</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

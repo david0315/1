@@ -1,0 +1,480 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole 多协议 多端口 的应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole 多协议 多端口 的应用</center></div><div class='banquan'>原文出处:本文由博客园博主新亮笔记提供。<br/>
+原文连接:https://www.cnblogs.com/xinliangcoder/p/10827560.html</div><br>
+    <src class="toc">
+    <p class="toc-title">目录</p>
+    <src class="toc-list">
+        <ul>
+        <li><a href="#概述">概述</a></li>
+        <li><a href="#网络通信协议设计">网络通信协议设计</a></li>
+        <li><a href="#多端口监听的使用">多端口监听的使用</a></li>
+        <li><a href="#小结">小结</a></li>
+        </ul>
+    
+
+<h2 id="概述">概述</h2>
+<p>这是关于 Swoole 学习的第五篇文章：Swoole 多协议 多端口 的应用。</p>
+<ul>
+<li><a href="https://www.cnblogs.com/xinliangcoder/p/10804400.html">第四篇：Swoole HTTP 的应用</a></li>
+<li><a href="https://www.cnblogs.com/xinliangcoder/p/10800910.html">第三篇：Swoole WebSocket 的应用</a></li>
+<li><a href="https://www.cnblogs.com/xinliangcoder/p/10792388.html">第二篇：Swoole Task 的应用</a></li>
+<li><a href="https://www.cnblogs.com/xinliangcoder/p/10792370.html">第一篇：Swoole Timer 的应用</a></li>
+</ul>
+<p>主要参考官方的这两篇文章，进行实现的 Demo。</p>
+<ul>
+<li>网络通信协议设计：<a href="https://wiki.swoole.com/wiki/page/484.html" class="uri">https://wiki.swoole.com/wiki/page/484.html</a></li>
+<li>多端口监听的使用：<a href="https://wiki.swoole.com/wiki/page/161.html" class="uri">https://wiki.swoole.com/wiki/page/161.html</a></li>
+</ul>
+<p>希望通过我提供的 Demo，能够对文档有更加深刻的理解。</p>
+<h2 id="网络通信协议设计">网络通信协议设计</h2>
+<p><strong>为什么需要通信协议？</strong></p>
+<blockquote>
+<p>官方：TCP协议在底层机制上解决了UDP协议的顺序和丢包重传问题。但相比UDP又带来了新的问题，TCP协议是流式的，数据包没有边界。应用程序使用TCP通信就会面临这些难题。因为TCP通信是流式的，在接收1个大数据包时，可能会被拆分成多个数据包发送。多次Send底层也可能会合并成一次进行发送。这里就需要2个操作来解决：分包 和 合包，所以TCP网络通信时需要设定通信协议。</p>
+</blockquote>
+<p>Swoole 支持了2种类型的自定义网络通信协议 ：EOF结束符协议、固定包头+包体协议。</p>
+<h4 id="eof结束符协议">EOF结束符协议</h4>
+<p><img src="./images/Swoole 多协议 多端口 的应用0.jpg" /></p>
+<p>先看下，未设置协议的效果：</p>
+<p><img src="./images/Swoole 多协议 多端口 的应用1.jpg" /></p>
+<p>发送的每条数据长度都是 23，但在 onReceive 接收数据的时候每次接收的长度不一样，并没有按照想象的方式进行分包。</p>
+<p>再看下，设置了EOF结束符协议的效果：</p>
+<p><img src="./images/Swoole 多协议 多端口 的应用2.jpg" /></p>
+<p>发送的每条数据长度都是 23，在 onReceive 接收数据的时候每次接收的也是 23 ，完美。</p>
+<p>主要设置项如下：</p>
+<pre><code><code>&#39;package_max_length&#39; =&gt; &#39;8192&#39;,
+&#39;open_eof_split&#39;     =&gt; true,
+&#39;package_eof&#39;        =&gt; &quot;\r\n&quot;</code></code></pre>
+<p>不做解释，官方文档已经写的很清楚。</p>
+<p><strong>示例代码如下：</strong></p>
+<p>server.php</p>
+<pre><code><code>&lt;?php
+
+class Server
+{
+    private $serv;
+
+    public function __construct() {
+        $this-&gt;serv = new swoole_server(&#39;0.0.0.0&#39;, 9501);
+        $this-&gt;serv-&gt;set([
+            &#39;worker_num&#39;      =&gt; 2, //开启2个worker进程
+            &#39;max_request&#39;     =&gt; 4, //每个worker进程 max_request设置为4次
+            &#39;dispatch_mode&#39;   =&gt; 2, //数据包分发策略 - 固定模式
+
+            //EOF结束符协议
+            &#39;package_max_length&#39; =&gt; &#39;8192&#39;,
+            &#39;open_eof_split&#39;     =&gt; true,
+            &#39;package_eof&#39;        =&gt; &quot;\r\n&quot;
+        ]);
+
+        $this-&gt;serv-&gt;on(&#39;Start&#39;, [$this, &#39;onStart&#39;]);
+        $this-&gt;serv-&gt;on(&#39;Connect&#39;, [$this, &#39;onConnect&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Receive&quot;, [$this, &#39;onReceive&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Close&quot;, [$this, &#39;onClose&#39;]);
+
+        $this-&gt;serv-&gt;start();
+    }
+
+    public function onStart($serv) {
+        echo &quot;#### onStart ####&quot;.PHP_EOL;
+        echo &quot;SWOOLE &quot;.SWOOLE_VERSION . &quot; 服务已启动&quot;.PHP_EOL;
+        echo &quot;swoole_cpu_num:&quot;.swoole_cpu_num().PHP_EOL;
+        echo &quot;master_pid: {$serv-&gt;master_pid}&quot;.PHP_EOL;
+        echo &quot;manager_pid: {$serv-&gt;manager_pid}&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onConnect($serv, $fd) {
+        echo &quot;#### onConnect ####&quot;.PHP_EOL;
+        echo &quot;客户端:&quot;.$fd.&quot; 已连接&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onReceive($serv, $fd, $from_id, $data) {
+        echo &quot;#### onReceive ####&quot;.PHP_EOL;
+        var_dump($data);
+    }
+
+    public function onClose($serv, $fd) {
+        echo &quot;Client Close.&quot;.PHP_EOL;
+    }
+}
+
+$server = new Server();</code></code></pre>
+<p>client.php</p>
+<pre><code><code>&lt;?php
+
+class Client
+{
+    private $client;
+
+    public function __construct() {
+        $this-&gt;client = new swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_ASYNC);
+
+        $this-&gt;client-&gt;on(&#39;Connect&#39;, [$this, &#39;onConnect&#39;]);
+        $this-&gt;client-&gt;on(&#39;Close&#39;, [$this, &#39;onClose&#39;]);
+        $this-&gt;client-&gt;on(&#39;Error&#39;, [$this, &#39;onError&#39;]);
+    }
+
+    public function connect() {
+        if(!$fp = $this-&gt;client-&gt;connect(&quot;127.0.0.1&quot;, 9501)) {
+            echo &quot;Error: {$fp-&gt;errMsg}[{$fp-&gt;errCode}]&quot;.PHP_EOL;
+            return;
+        }
+    }
+
+    public function onConnect() {
+
+        fwrite(STDOUT, &quot;发送测试数据(Y or N):&quot;);
+        swoole_event_add(STDIN, function() {
+            $msg = trim(fgets(STDIN));
+            if ($msg == &#39;y&#39;) {
+                $this-&gt;send();
+            }
+            fwrite(STDOUT, &quot;发送测试数据(Y or N):&quot;);
+        });
+    }
+
+    public function send() {
+        $msg_info =  &quot;客户端发信息...\r\n&quot;;
+
+        $i = 0;
+        while ($i &lt; 50) {
+            var_dump($msg_info);
+            $this-&gt;client-&gt;send($msg_info);
+            $i++;
+        }
+    }
+
+    public function onClose() {
+        echo &quot;Client close connection&quot;.PHP_EOL;
+    }
+
+    public function onError() {
+
+    }
+}
+
+$client = new Client();
+$client-&gt;connect();</code></code></pre>
+<h4 id="固定包头包体协议">固定包头+包体协议</h4>
+<p><img src="./images/Swoole 多协议 多端口 的应用3.jpg" /></p>
+<p>先看下，未设置协议的效果：</p>
+<p><img src="./images/Swoole 多协议 多端口 的应用4.jpg" /></p>
+<p>很明显，在 onReceive 接收到的数据，是少的。</p>
+<p>再看下，设置协议的效果：</p>
+<p><img src="./images/Swoole 多协议 多端口 的应用5.jpg" /></p>
+<p>主要设置项如下：</p>
+<pre><code><code>&#39;open_length_check&#39;     =&gt; true,
+&#39;package_max_length&#39;    =&gt; &#39;8192&#39;,
+&#39;package_length_type&#39;   =&gt; &#39;N&#39;,
+&#39;package_length_offset&#39; =&gt; &#39;0&#39;,
+&#39;package_body_offset&#39;   =&gt; &#39;4&#39;,</code></code></pre>
+<p>不做解释，官方文档已经写的很清楚。</p>
+<p><strong>示例代码如下：</strong></p>
+<p>server.php</p>
+<pre><code><code>&lt;?php
+
+class Server
+{
+    private $serv;
+
+    public function __construct() {
+        $this-&gt;serv = new swoole_server(&#39;0.0.0.0&#39;, 9501);
+        $this-&gt;serv-&gt;set([
+            &#39;worker_num&#39;      =&gt; 2, //开启2个worker进程
+            &#39;max_request&#39;     =&gt; 4, //每个worker进程 max_request设置为4次
+            &#39;dispatch_mode&#39;   =&gt; 2, //数据包分发策略 - 固定模式
+
+            //固定包头+包体协议
+            &#39;open_length_check&#39;     =&gt; true,
+            &#39;package_max_length&#39;    =&gt; &#39;8192&#39;,
+            &#39;package_length_type&#39;   =&gt; &#39;N&#39;,
+            &#39;package_length_offset&#39; =&gt; &#39;0&#39;,
+            &#39;package_body_offset&#39;   =&gt; &#39;4&#39;,
+        ]);
+
+        $this-&gt;serv-&gt;on(&#39;Start&#39;, [$this, &#39;onStart&#39;]);
+        $this-&gt;serv-&gt;on(&#39;Connect&#39;, [$this, &#39;onConnect&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Receive&quot;, [$this, &#39;onReceive&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Close&quot;, [$this, &#39;onClose&#39;]);
+
+        $this-&gt;serv-&gt;start();
+    }
+
+    public function onStart($serv) {
+        echo &quot;#### onStart ####&quot;.PHP_EOL;
+        echo &quot;swoole_cpu_num:&quot;.swoole_cpu_num().PHP_EOL;
+        echo &quot;SWOOLE &quot;.SWOOLE_VERSION . &quot; 服务已启动&quot;.PHP_EOL;
+        echo &quot;master_pid: {$serv-&gt;master_pid}&quot;.PHP_EOL;
+        echo &quot;manager_pid: {$serv-&gt;manager_pid}&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onConnect($serv, $fd) {
+        echo &quot;#### onConnect ####&quot;.PHP_EOL;
+        echo &quot;客户端:&quot;.$fd.&quot; 已连接&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onReceive($serv, $fd, $from_id, $data) {
+        echo &quot;#### onReceive ####&quot;.PHP_EOL;
+        $length = unpack(&#39;N&#39;, $data)[1];
+        echo &quot;Length:&quot;.$length.PHP_EOL;
+        $msg = substr($data, -$length);
+        echo &quot;Msg:&quot;.$msg.PHP_EOL;
+    }
+
+    public function onClose($serv, $fd) {
+        echo &quot;Client Close.&quot;.PHP_EOL;
+    }
+}
+
+$server = new Server();</code></code></pre>
+<p>client.php</p>
+<pre><code><code>&lt;?php
+
+class Client
+{
+    private $client;
+
+    public function __construct() {
+        $this-&gt;client = new swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_ASYNC);
+
+        $this-&gt;client-&gt;on(&#39;Connect&#39;, [$this, &#39;onConnect&#39;]);
+        $this-&gt;client-&gt;on(&#39;Close&#39;, [$this, &#39;onClose&#39;]);
+        $this-&gt;client-&gt;on(&#39;Error&#39;, [$this, &#39;onError&#39;]);
+    }
+
+    public function connect() {
+        if(!$fp = $this-&gt;client-&gt;connect(&quot;127.0.0.1&quot;, 9501, 1)) {
+            echo &quot;Error: {$fp-&gt;errMsg}[{$fp-&gt;errCode}]&quot;.PHP_EOL;
+            return;
+        }
+    }
+
+    public function onConnect() {
+
+        fwrite(STDOUT, &quot;发送测试数据(Y or N):&quot;);
+        swoole_event_add(STDIN, function() {
+            $msg = trim(fgets(STDIN));
+            if ($msg == &#39;y&#39;) {
+                $this-&gt;send();
+            }
+            fwrite(STDOUT, &quot;发送测试数据(Y or N):&quot;);
+        });
+    }
+
+    public function send() {
+        $msg = &#39;客户端发的信息...&#39;;
+        $msg_info = pack(&#39;N&#39;, strlen($msg)).$msg;
+
+        $i = 0;
+        while ($i &lt; 50) {
+            var_dump($msg_info);
+            $this-&gt;client-&gt;send($msg_info);
+            $i++;
+        }
+    }
+
+    public function onClose() {
+        echo &quot;Client close connection&quot;.PHP_EOL;
+    }
+
+    public function onError() {
+
+    }
+}
+
+$client = new Client();
+$client-&gt;connect();</code></code></pre>
+<h2 id="多端口监听的使用">多端口监听的使用</h2>
+<p><img src="./images/Swoole 多协议 多端口 的应用6.jpg" /></p>
+<p>上图，是示例代码中的端口监听：</p>
+<ul>
+<li>9501 onMessage 处理 WebSocket。</li>
+<li>9501 onRequest 处理 HTTP。</li>
+<li>9502 onReceive 处理 TCP。</li>
+<li>9503 onPacket 处理 UDP。</li>
+</ul>
+<p>不多说，看下效果图：</p>
+<p><img src="./images/Swoole 多协议 多端口 的应用7.jpg" /></p>
+<p><strong>示例代码如下：</strong></p>
+<p>server.php</p>
+<pre><code><code>&lt;?php
+
+class Server
+{
+    private $serv;
+
+    public function __construct() {
+        $this-&gt;serv = new swoole_websocket_server(&quot;0.0.0.0&quot;, 9501);
+        $this-&gt;serv-&gt;set([
+            &#39;worker_num&#39;      =&gt; 2, //开启2个worker进程
+            &#39;max_request&#39;     =&gt; 4, //每个worker进程 max_request设置为4次
+            &#39;task_worker_num&#39; =&gt; 4, //开启4个task进程
+            &#39;dispatch_mode&#39;   =&gt; 4, //数据包分发策略 - IP分配
+            &#39;daemonize&#39;       =&gt; false, //守护进程(true/false)
+        ]);
+
+        $this-&gt;serv-&gt;on(&#39;Start&#39;, [$this, &#39;onStart&#39;]);
+        $this-&gt;serv-&gt;on(&#39;Open&#39;, [$this, &#39;onOpen&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Message&quot;, [$this, &#39;onMessage&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Request&quot;, [$this, &#39;onRequest&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Close&quot;, [$this, &#39;onClose&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Task&quot;, [$this, &#39;onTask&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Finish&quot;, [$this, &#39;onFinish&#39;]);
+
+        //监听 9502 端口
+        $tcp = $this-&gt;serv-&gt;listen(&quot;0.0.0.0&quot;, 9502, SWOOLE_SOCK_TCP);
+        $tcp-&gt;set([
+            &#39;worker_num&#39;      =&gt; 2, //开启2个worker进程
+            &#39;max_request&#39;     =&gt; 4, //每个worker进程 max_request设置为4次
+            &#39;dispatch_mode&#39;   =&gt; 2, //数据包分发策略 - 固定模式
+
+            //固定包头+包体协议
+            &#39;open_length_check&#39;     =&gt; true,
+            &#39;package_max_length&#39;    =&gt; &#39;8192&#39;,
+            &#39;package_length_type&#39;   =&gt; &#39;N&#39;,
+            &#39;package_length_offset&#39; =&gt; &#39;0&#39;,
+            &#39;package_body_offset&#39;   =&gt; &#39;4&#39;,
+        ]);
+        $tcp-&gt;on(&quot;Receive&quot;, [$this, &#39;onReceive&#39;]);
+
+        //监听 9503 端口
+        $udp = $this-&gt;serv-&gt;listen(&quot;0.0.0.0&quot;, 9503, SWOOLE_SOCK_UDP);
+        $udp-&gt;set([
+            &#39;worker_num&#39;      =&gt; 2, //开启2个worker进程
+            &#39;max_request&#39;     =&gt; 4, //每个worker进程 max_request设置为4次
+            &#39;dispatch_mode&#39;   =&gt; 2, //数据包分发策略 - 固定模式
+        ]);
+        $udp-&gt;on(&quot;Packet&quot;, [$this, &#39;onPacket&#39;]);
+
+        $this-&gt;serv-&gt;start();
+    }
+
+    public function onStart($serv) {
+        echo &quot;#### onStart ####&quot;.PHP_EOL;
+        echo &quot;SWOOLE &quot;.SWOOLE_VERSION . &quot; 服务已启动&quot;.PHP_EOL;
+        echo &quot;master_pid: {$serv-&gt;master_pid}&quot;.PHP_EOL;
+        echo &quot;manager_pid: {$serv-&gt;manager_pid}&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onOpen($serv, $request) {
+        echo &quot;#### onOpen ####&quot;.PHP_EOL;
+        echo &quot;server: handshake success with fd{$request-&gt;fd}&quot;.PHP_EOL;
+        $serv-&gt;task([
+            &#39;type&#39; =&gt; &#39;login&#39;
+        ]);
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onTask($serv, $task_id, $from_id, $data) {
+        echo &quot;#### onTask ####&quot;.PHP_EOL;
+        echo &quot;#{$serv-&gt;worker_id} onTask: [PID={$serv-&gt;worker_pid}]: task_id={$task_id}&quot;.PHP_EOL;
+        $msg = &#39;&#39;;
+        switch ($data[&#39;type&#39;]) {
+            case &#39;login&#39;:
+                $msg = &#39;我来了...&#39;;
+                break;
+            case &#39;speak&#39;:
+                $msg = $data[&#39;msg&#39;];
+                break;
+        }
+        foreach ($serv-&gt;connections as $fd) {
+            $connectionInfo = $serv-&gt;connection_info($fd);
+            if (isset($connectionInfo[&#39;websocket_status&#39;]) &amp;&amp; $connectionInfo[&#39;websocket_status&#39;] == 3) {
+                $serv-&gt;push($fd, $msg); //长度最大不得超过2M
+            }
+        }
+        $serv-&gt;finish($data);
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onFinish($serv,$task_id, $data) {
+        echo &quot;#### onFinish ####&quot;.PHP_EOL;
+        echo &quot;Task {$task_id} 已完成&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onClose($serv, $fd) {
+        echo &quot;#### onClose ####&quot;.PHP_EOL;
+        echo &quot;client {$fd} closed&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onMessage($serv, $frame) {
+        echo &quot;#### onMessage ####&quot;.PHP_EOL;
+        echo &quot;receive from fd{$frame-&gt;fd}:{$frame-&gt;data},opcode:{$frame-&gt;opcode},fin:{$frame-&gt;finish}&quot;.PHP_EOL;
+        $serv-&gt;task([&#39;type&#39; =&gt; &#39;speak&#39;, &#39;msg&#39; =&gt; $frame-&gt;data]);
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onRequest($request, $response) {
+        echo &quot;#### onRequest ####&quot;.PHP_EOL;
+        $response-&gt;header(&quot;Content-Type&quot;, &quot;text/html; charset=utf-8&quot;);
+        $server = $request-&gt;server;
+        $path_info    = $server[&#39;path_info&#39;];
+        $request_uri  = $server[&#39;request_uri&#39;];
+
+        echo &quot;PATH_INFO:&quot;.$path_info.PHP_EOL;
+
+        if ($path_info == &#39;/favicon.ico&#39; || $request_uri == &#39;/favicon.ico&#39;) {
+            return $response-&gt;end();
+        }
+
+        $html = &quot;&lt;h1&gt;你好 Swoole.&lt;/h1&gt;&quot;;
+        $response-&gt;end($html);
+    }
+
+    public function onReceive($serv, $fd, $from_id, $data) {
+        echo &quot;#### onReceive ####&quot;.PHP_EOL;
+
+        $length = unpack(&#39;N&#39;, $data)[1];
+        echo &quot;Length:&quot;.$length.PHP_EOL;
+        $msg = substr($data, -$length);
+        echo &quot;Msg:&quot;.$msg.PHP_EOL;
+    }
+
+    public function onPacket($serv, $data, $clientInfo) {
+        echo &quot;#### onPacket ####&quot;.PHP_EOL;
+        $serv-&gt;sendto($clientInfo[&#39;address&#39;], $clientInfo[&#39;port&#39;], &quot;Server &quot;.$data);
+        var_dump($clientInfo);
+    }
+}
+
+$server = new Server();</code></code></pre>
+<p>4 个客户端连接的代码分别是：</p>
+<p>1、9501 onMessage 处理 WebSocket。可以参考原来文章 <a href="https://www.cnblogs.com/xinliangcoder/p/10800910.html">Swoole WebSocket 的应用</a> 中的代码即可。</p>
+<p>2、9501 onRequest 处理 HTTP。可以参考原来文章 <a href="https://www.cnblogs.com/xinliangcoder/p/10804400.html">Swoole HTTP 的应用</a> 中的代码即可。</p>
+<p>3、9502 onReceive 处理 TCP。可以参考原来文章 <a href="https://www.cnblogs.com/xinliangcoder/p/10792388.html">Swoole Task 的应用</a> 中的代码即可。</p>
+<p>4、9503 onPacket 处理 UDP。</p>
+<p>示例代码：</p>
+<pre><code><code>netcat -u 10.211.55.4 9503</code></code></pre>
+<h2 id="小结">小结</h2>
+<p><strong>一、多端口的应用场景是什么？</strong></p>
+<p>比如，开发一个直播网站，直播用一个端口，IM聊天用一个端口。</p>
+<p>比如，开发一个RPC服务，数据通讯用一个端口，统计界面用一个端口。</p>
+<p>本文欢迎转发，转发请注明作者和出处，谢谢！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

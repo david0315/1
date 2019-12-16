@@ -1,0 +1,67 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[视频教程] redis中的bit运用统计用户在线天数' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[视频教程] redis中的bit运用统计用户在线天数</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11657747.html</div><br>
+    <p>位运算在redis中非常的方便使用，并且理由利用这个可以实现很多特殊的功能。这也迫使我去研究更多的redis提供的函数，只有研究的多，思路才能够更加开放。今天我就对strings下面的几个函数进行了测试，也收获颇丰。</p>
+<p>使用setBit和bitCount可以实现用户活跃天数的统计，大体的思路如下：<br />我们网站今天第一天上线，某用户taoshihan,今天有访问那么我就记一下，网站第一天，taoshihan访问1；<br />网站第二天，taoshihan访问1；网站第80天，taoshihan访问1；其余时间没有访问过，那么我们统计得出taoshihan活跃天数为3。</p>
+<p>使用代码体现为如下，具体解释可以查看视频：<br /><a href="https://www.bilibili.com/video/av70912075/" target="_blank">https://www.bilibili.com/video/av70912075/</a></p>
+<p>//使用setBit和bitCount实现用户在线天数的统计<br />$redis-&gt;set("taoshihan",'@');//@符号的二进制形式为 01000000<br />$redis-&gt;setBit("taoshihan",1,1);<br />$redis-&gt;setBit("taoshihan",2,1);<br />$redis-&gt;setBit("taoshihan",80,1);<br />$v=$redis-&gt;bitCount("taoshihan");<br />var_dump($v);//输出3</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$redis</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">append-将值附加到键</span>
+<span style="color: #800080;">$redis</span>-&gt;set('name','taoshihan'<span style="color: #000000;">);
+</span><span style="color: #800080;">$redis</span>-&gt;append('name',' very good'<span style="color: #000000;">);
+</span><span style="color: #800080;">$v</span>=<span style="color: #800080;">$redis</span>-&gt;get('name'<span style="color: #000000;">); 
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$v</span>);<span style="color: #008000;">//</span><span style="color: #008000;">string(19) "taoshihan very good"
+
+//对字符串二进制位为1的个数进行统计</span>
+<span style="color: #800080;">$redis</span>-&gt;set('name','a'<span style="color: #000000;">);
+</span><span style="color: #800080;">$v</span>=<span style="color: #800080;">$redis</span>-&gt;bitCount('name'<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$v</span>);<span style="color: #008000;">//</span><span style="color: #008000;">int(3)
+
+//对多个字符串进行位运算</span>
+<span style="color: #800080;">$redis</span>-&gt;set("test1",'a'<span style="color: #000000;">);
+</span><span style="color: #800080;">$redis</span>-&gt;set("test2",'b'<span style="color: #000000;">);
+</span><span style="color: #800080;">$redis</span>-&gt;bitop("OR",'restkey','test1','test2'<span style="color: #000000;">);
+</span><span style="color: #800080;">$v</span>=<span style="color: #800080;">$redis</span>-&gt;get('restkey'<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$v</span>);<span style="color: #008000;">//</span><span style="color: #008000;">string(1) "c"
+
+//更改字符串的指定位</span>
+<span style="color: #800080;">$redis</span>-&gt;set("name",'a');<span style="color: #008000;">//</span><span style="color: #008000;">a的二进制形式 01100001</span>
+<span style="color: #800080;">$redis</span>-&gt;setBit("name",3,1);<span style="color: #008000;">//</span><span style="color: #008000;">从左到右数，从0开始</span>
+<span style="color: #800080;">$v</span>=<span style="color: #800080;">$redis</span>-&gt;get("name"<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$v</span>);<span style="color: #008000;">//</span><span style="color: #008000;">输出q，二进制为01110001
+
+//使用setBit和bitCount实现用户在线天数的统计</span>
+<span style="color: #800080;">$redis</span>-&gt;set("taoshihan",'@');<span style="color: #008000;">//</span><span style="color: #008000;">@符号的二进制形式为 01000000</span>
+<span style="color: #800080;">$redis</span>-&gt;setBit("taoshihan",1,1<span style="color: #000000;">);
+</span><span style="color: #800080;">$redis</span>-&gt;setBit("taoshihan",100,1<span style="color: #000000;">);
+</span><span style="color: #800080;">$redis</span>-&gt;setBit("taoshihan",150,1<span style="color: #000000;">);
+</span><span style="color: #800080;">$v</span>=<span style="color: #800080;">$redis</span>-&gt;bitCount("taoshihan"<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$v</span>);<span style="color: #008000;">//</span><span style="color: #008000;">输出3</span></code></pre>
+
+<p><img src="./images/[视频教程] redis中的bit运用统计用户在线天数0.jpg" alt="" /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

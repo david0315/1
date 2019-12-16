@@ -1,0 +1,418 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Gin框架 - 自定义错误处理' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Gin框架 - 自定义错误处理</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11862859.html</div><br>
+    <p>概述<br /><br />很多读者在后台向我要 Gin 框架实战系列的 Demo 源码，在这里再说明一下，源码我都更新到 GitHub 上，地址：https://github.com/xinliangnote/Go<br /><br />开始今天的文章，为什么要自定义错误处理？默认的错误处理方式是什么？<br /><br />那好，咱们就先说下默认的错误处理。<br /><br />默认的错误处理是 errors.New("错误信息")，这个信息通过 error 类型的返回值进行返回。<br /><br />举个简单的例子：<br /><br />&nbsp;&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>func hello(name string) (str string, err error) {    
+        if name == "" {    
+            err = errors.New("name 不能为空")    
+            return    
+        }    
+        str = fmt.Sprintf("hello: %s", name)    
+        return    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />当调用这个方法时：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  var name = ""    
+    str, err :=  hello(name)    
+    if err != nil {    
+        fmt.Println(err.Error())    
+        return    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />这就是默认的错误处理，下面还会用这个例子进行说。<br /><br />这个默认的错误处理，只是得到了一个错误信息的字符串。<br /><br />然而...<br /><br />我还想得到发生错误时的 时间、 文件名、 方法名、 行号 等信息。<br /><br />我还想得到错误时进行告警，比如 短信告警、 邮件告警、 微信告警 等。<br /><br />我还想调用的时候，不那么复杂，就和默认错误处理类似，比如：<br /><br />&nbsp;&nbsp;&nbsp; alarm.WeChat("错误信息")&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; return<br /><br />这样，我们就得到了我们想要的信息（ 时间、 文件名、 方法名、 行号），并通过 微信 的方式进行告警通知我们。<br /><br />同理， alarm.Email("错误信息")、 alarm.Sms("错误信息") 我们得到的信息是一样的，只是告警方式不同而已。<br /><br />还要保证，我们业务逻辑中，获取错误的时候，只获取错误信息即可。<br /><br />上面这些想出来的，就是今天要实现的，自定义错误处理，我们就实现之前，先说下 Go 的错误处理。<br /><br />错误处理<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  package main    
+    import (    
+        "errors"    
+        "fmt"    
+    )    
+    func hello(name string) (str string, err error) {    
+        if name == "" {    
+            err = errors.New("name 不能为空")    
+            return    
+        }    
+        str = fmt.Sprintf("hello: %s", name)    
+        return    
+    }    
+    func main() {    
+        var name = ""    
+        fmt.Println("param:", name)    
+        str, err := hello(name)    
+        if err != nil {    
+            fmt.Println(err.Error())    
+            return    
+        }    
+        fmt.Println(str)    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />输出：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    param: Tom    
+    hello: Tom
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />当 name = "" 时，输出：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  param:    
+    name 不能为空
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />建议每个函数都要有错误处理，error 应该为最后一个返回值。<br /><br />咱们一起看下官方 errors.go<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  // Copyright 2011 The Go Authors. All rights reserved.    
+    // Use of this source code is governed by a BSD-style    
+    // license that can be found in the LICENSE file.    
+    // Package errors implements functions to manipulate errors.    
+    package errors    
+    // New returns an error that formats as the given text.    
+    func New(text string) error {    
+        return &amp;errorString{text}    
+    }    
+    // errorString is a trivial implementation of error.    
+    type errorString struct {    
+        s string    
+    }    
+    func (e *errorString) Error() string {    
+        return e.s    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />上面的代码，并不复杂，参照上面的，咱们进行写一个自定义错误处理。<br /><br />自定义错误处理<br /><br />咱们定义一个 alarm.go，用于处理告警。<br /><br />废话不多说，直接看代码。<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> package alarm    
+    import (    
+        "encoding/json"    
+        "fmt"    
+        "ginDemo/common/function"    
+        "path/filepath"    
+        "runtime"    
+        "strings"    
+    )    
+    type errorString struct {    
+        s string    
+    }    
+    type errorInfo struct {    
+        Time     string `json:"time"`    
+        Alarm    string `json:"alarm"`    
+        Message  string `json:"message"`    
+        Filename string `json:"filename"`    
+        Line     int    `json:"line"`    
+        Funcname string `json:"funcname"`    
+    }    
+    func (e *errorString) Error() string {    
+        return e.s    
+    }    
+    func New (text string) error {    
+        alarm("INFO", text)    
+        return &amp;errorString{text}    
+    }    
+    // 发邮件    
+    func Email (text string) error {    
+        alarm("EMAIL", text)    
+        return &amp;errorString{text}    
+    }    
+    // 发短信    
+    func Sms (text string) error {    
+        alarm("SMS", text)    
+        return &amp;errorString{text}    
+    }    
+    // 发微信    
+    func WeChat (text string) error {    
+        alarm("WX", text)    
+        return &amp;errorString{text}    
+    }    
+    // 告警方法    
+    func  alarm(level string, str string) {    
+        // 当前时间    
+        currentTime := function.GetTimeStr()    
+        // 定义 文件名、行号、方法名    
+        fileName, line, functionName := "?", 0 , "?"    
+        pc, fileName, line, ok := runtime.Caller(2)    
+        if ok {    
+            functionName = runtime.FuncForPC(pc).Name()    
+            functionName = filepath.Ext(functionName)    
+            functionName = strings.TrimPrefix(functionName, ".")    
+        }    
+        var msg = errorInfo {    
+            Time     : currentTime,    
+            Alarm    : level,    
+            Message  : str,    
+            Filename : fileName,    
+            Line     : line,    
+            Funcname : functionName,    
+        }    
+        jsons, errs := json.Marshal(msg)    
+        if errs != nil {    
+            fmt.Println("json marshal error:", errs)    
+        }    
+        errorJsonInfo := string(jsons)    
+        fmt.Println(errorJsonInfo)    
+        if level == "EMAIL" {    
+            // 执行发邮件    
+        } else if level == "SMS" {    
+            // 执行发短信    
+        } else if level == "WX" {    
+            // 执行发微信    
+        } else if level == "INFO" {    
+            // 执行记日志    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />看下如何调用：<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> package v1    
+    import (    
+        "fmt"    
+        "ginDemo/common/alarm"    
+        "ginDemo/entity"    
+        "github.com/gin-gonic/gin"    
+        "net/http"    
+    )    
+    func AddProduct(c *gin.Context)  {    
+        // 获取 Get 参数    
+        name := c.Query("name")    
+        var res = entity.Result{}    
+        str, err := hello(name)    
+        if err != nil {    
+            res.SetCode(entity.CODE_ERROR)    
+            res.SetMessage(err.Error())    
+            c.JSON(http.StatusOK, res)    
+            c.Abort()    
+            return    
+        }    
+        res.SetCode(entity.CODE_SUCCESS)    
+        res.SetMessage(str)    
+        c.JSON(http.StatusOK, res)    
+    }    
+    func hello(name string) (str string, err error) {    
+        if name == "" {    
+            err = alarm.WeChat("name 不能为空")    
+            return    
+        }    
+        str = fmt.Sprintf("hello: %s", name)    
+        return    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>访问：http://localhost:8080/v1/product/add?name=a
+
+    {    
+        "code": 1,    
+        "msg": "hello: a",    
+        "data": null    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />未抛出错误，不会输出信息。<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>访问：http://localhost:8080/v1/product/add
+
+    {    
+        "code": -1,    
+        "msg": "name 不能为空",    
+        "data": null    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />抛出了错误，输出信息如下：<br /><br />{"time":"2019-07-23 22:19:17","alarm":"WX","message":"name 不能为空","filename":"绝对路径/ginDemo/router/v1/product.go","line":33,"funcname":"hello"}<br /><br />可能这会有同学说：&ldquo;用上一篇分享的数据绑定和验证，将传入的参数进行 binding:"required" 也可以实现呀&rdquo;。<br /><br />我只能说：&ldquo;同学呀，你不理解我的良苦用心，这只是个例子，大家可以在一些复杂的业务逻辑判断场景中使用自定义错误处理&rdquo;。<br /><br />到这里，报错时我们收到了 时间、 错误信息、 文件名、 行号、 方法名 了。<br /><br />调用起来，也比较简单。<br /><br />虽然标记了告警方式，还是没有进行告警通知呀。<br /><br />我想说，在这里存储数据到队列中，再执行异步任务具体去消耗，这块就不实现了，大家可以去完善。<br /><br />读取 文件名、 方法名、 行号 使用的是 runtime.Caller()。<br /><br />我们还知道，Go 有 panic 和 recover，它们是干什么的呢，接下来咱们就说说。<br /><br />panic 和 recover<br /><br />当程序不能继续运行的时候，才应该使用 panic 抛出错误。<br /><br />当程序发生 panic 后，在 defer(延迟函数) 内部可以调用 recover 进行控制，不过有个前提条件，只有在相同的 Go 协程中才可以。<br /><br />panic 分两个，一种是有意抛出的，一种是无意的写程序马虎造成的，咱们一个个说。<br /><br />有意抛出的 panic：<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> package main    
+    import (    
+        "fmt"    
+    )    
+    func main() {    
+        fmt.Println("-- 1 --")    
+        defer func() {    
+            if r := recover(); r != nil {    
+                fmt.Printf("panic: %s\n", r)    
+            }    
+            fmt.Println("-- 2 --")    
+        }()    
+        panic("i am panic")    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />输出：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   -- 1 --    
+    panic: i am panic    
+    -- 2 --
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />无意抛出的 panic：<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> package main    
+    import (    
+        "fmt"    
+    )    
+    func main() {    
+        fmt.Println("-- 1 --")    
+        defer func() {    
+            if r := recover(); r != nil {    
+                fmt.Printf("panic: %s\n", r)    
+            }    
+            fmt.Println("-- 2 --")    
+        }()    
+        var slice = [] int {1, 2, 3, 4, 5}    
+        slice[6] = 6    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />输出：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  -- 1 --    
+    panic: runtime error: index out of range    
+    -- 2 --
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />上面的两个我们都通过 recover 捕获到了，那我们如何在 Gin 框架中使用呢？如果收到 panic 时，也想进行告警怎么实现呢？<br /><br />既然想实现告警，先在 ararm.go 中定义一个 Panic() 方法，当项目发生 panic 异常时，调用这个方法，这样就实现告警了。<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   // Panic 异常    
+    func Panic (text string) error {    
+        alarm("PANIC", text)    
+        return &amp;errorString{text}    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />那我们怎么捕获到呢？<br /><br />使用中间件进行捕获，写一个 recover 中间件。<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    package recover    
+    import (    
+        "fmt"    
+        "ginDemo/common/alarm"    
+        "github.com/gin-gonic/gin"    
+    )    
+    func Recover()  gin.HandlerFunc {    
+        return func(c *gin.Context) {    
+            defer func() {    
+                if r := recover(); r != nil {    
+                    alarm.Panic(fmt.Sprintf("%s", r))    
+                }    
+            }()    
+            c.Next()    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />路由调用中间件：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    r.Use(logger.LoggerToFile(), recover.Recover())    
+    //Use 可以传递多个中间件。
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />验证下吧，咱们先抛出两个异常，看看能否捕获到？<br /><br />还是修改 product.go 这个文件吧。<br /><br />有意抛出 panic：<br /><br />&nbsp;&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>package v1    
+    import (    
+        "fmt"    
+        "ginDemo/entity"    
+        "github.com/gin-gonic/gin"    
+        "net/http"    
+    )    
+    func AddProduct(c *gin.Context)  {    
+        // 获取 Get 参数    
+        name := c.Query("name")    
+        var res = entity.Result{}    
+        str, err := hello(name)    
+        if err != nil {    
+            res.SetCode(entity.CODE_ERROR)    
+            res.SetMessage(err.Error())    
+            c.JSON(http.StatusOK, res)    
+            c.Abort()    
+            return    
+        }    
+        res.SetCode(entity.CODE_SUCCESS)    
+        res.SetMessage(str)    
+        c.JSON(http.StatusOK, res)    
+    }    
+    func hello(name string) (str string, err error) {    
+        if name == "" {    
+            // 有意抛出 panic    
+            panic("i am panic")    
+            return    
+        }    
+        str = fmt.Sprintf("hello: %s", name)    
+        return    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />访问：http://localhost:8080/v1/product/add<br /><br />界面是空白的。<br /><br />抛出了异常，输出信息如下：<br /><br />{"time":"2019-07-23 22:42:37","alarm":"PANIC","message":"i am panic","filename":"绝对路径/ginDemo/middleware/recover/recover.go","line":13,"funcname":"1"}<br /><br />很显然，定位的文件名、方法名、行号不是我们想要的。<br /><br />需要调整 runtime.Caller(2)，这个代码在 alarm.go的alarm 方法中。<br /><br />将 2 调整成 4 ，看下输出信息：<br /><br />{"time":"2019-07-23 22:45:24","alarm":"PANIC","message":"i am panic","filename":"绝对路径/ginDemo/router/v1/product.go","line":33,"funcname":"hello"}<br /><br />这就对了。<br /><br />无意抛出 panic：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   // 上面代码不变    
+    func hello(name string) (str string, err error) {    
+        if name == "" {    
+            // 无意抛出 panic    
+            var slice = [] int {1, 2, 3, 4, 5}    
+            slice[6] = 6    
+            return    
+        }    
+        str = fmt.Sprintf("hello: %s", name)    
+        return    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />访问：http://localhost:8080/v1/product/add<br /><br />界面是空白的。<br /><br />抛出了异常，输出信息如下：<br /><br />{"time":"2019-07-23 22:50:06","alarm":"PANIC","message":"runtime error: index out of range","filename":"绝对路径/runtime/panic.go","line":44,"funcname":"panicindex"}<br /><br />很显然，定位的文件名、方法名、行号也不是我们想要的。<br /><br />将 4 调整成 5 ，看下输出信息：<br /><br />{"time":"2019-07-23 22:55:27","alarm":"PANIC","message":"runtime error: index out of range","filename":"绝对路径/ginDemo/router/v1/product.go","line":34,"funcname":"hello"}<br /><br />这就对了。<br /><br />奇怪了，这是为什么？<br /><br />在这里，有必要说下 runtime.Caller(skip) 了。<br /><br />skip 指的调用的深度。<br /><br />为 0 时，打印当前调用文件及行数。<br /><br />为 1 时，打印上级调用的文件及行数。<br /><br />依次类推...<br /><br />在这块，调用的时候需要注意下，我现在还没有好的解决方案。<br /><br />我是将 skip（调用深度），当一个参数传递进去。<br /><br />比如：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>    // 发微信    
+    func WeChat (text string) error {    
+        alarm("WX", text, 2)    
+        return &amp;errorString{text}    
+    }    
+    // Panic 异常    
+    func Panic (text string) error {    
+        alarm("PANIC", text, 5)    
+        return &amp;errorString{text}    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />具体的代码就不贴了。<br /><br />但是，有意抛出 Panic 和 无意抛出 Panic 的调用深度又不同，怎么办？<br /><br />1、尽量将有意抛出的 Panic 改成抛出错误的方式。<br /><br />2、想其他办法搞定它。<br /><br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

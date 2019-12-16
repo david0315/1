@@ -1,0 +1,29 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修我眼中的 RPC' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>我眼中的 RPC</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11819824.html</div><br>
+    <p>什么是 RPC ？<br /><br />RPC 是一种框架或者说一种架构，主要目标就是让远程服务调用更简单、透明，调用远程就像调用本地一样。<br /><br />百度百科解释：<br /><br />&nbsp;&nbsp;&nbsp; RPC（Remote Procedure Call） - 远程过程调用，它是一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议。RPC协议假定某些传输协议的存在，如TCP或UDP，为通信程序之间携带信息数据。在OSI网络通信模型中，RPC跨越了传输层和应用层。RPC使得开发包括网络分布式多程序在内的应用程序更加容易。<br /><br />什么情况下使用 RPC ？<br /><br />如果我们开发简单的应用，业务流程简单、流量不大，根本用不着 RPC。<br /><br />当我们的应用访问量增加和业务增加时，发现单机已无法承受，此时可以根据不同的业务（划分清楚业务逻辑）拆分成几个互不关联的应用，分别部署在不同的机器上，此时可能也不需要用到 RPC 。<br /><br />随着我们的业务越来越多，应用也越来越多，应用与应用相互关联调用，发现有些功能已经不能简单划分开，此时可能就需要用到 RPC。<br /><br />比如，我们开发电商系统，需要拆分出用户服务、商品服务、优惠券服务、支付服务、订单服务、物流服务、售后服务等等，这些服务之间都相互调用，这时内部调用最好使用 RPC ，同时每个服务都可以独立部署，独立上线。<br /><br />也就说当我们的项目太大，需要解耦服务，扩展性强、部署灵活，这时就要用到 RPC ，主要解决了分布式系统中，服务与服务之间的调用问题。<br />RPC 框架原理<br /><img src="./images/我眼中的 RPC0.jpg" alt="" width="653" height="329" /><br /><br />RPC 架构主要包括三部分：<br /><br />&nbsp;&nbsp;&nbsp; 服务注册中心（Registry），负责将本地服务发布成远程服务，管理远程服务，提供给服务消费者使用。<br /><br />&nbsp;&nbsp;&nbsp; 服务提供者（Server），提供服务接口定义与服务实现类。<br /><br />&nbsp;&nbsp;&nbsp; 服务消费者（Client），通过远程代理对象调用远程服务。<br /><br />服务提供者启动后主动向服务注册中心（Registry）注册机器IP、端口以及提供的服务列表；<br /><br />服务消费者启动时向服务注册中心（Registry）获取服务提供方地址列表。<br /><br />服务注册中心（Registry）可实现负载均衡和故障切换。<br />RPC 调用过程<br /><br /><img src="./images/我眼中的 RPC1.jpg" alt="" width="500" height="314" /><br /><br />(1) 客户端（client）以本地调用方式调用服务；<br /><br />(2) 客户端存根（client stub）接收到调用后，负责将方法、参数等组装成能够进行网络传输的消息体（将消息体对象序列化为二进制）；<br /><br />(3) 客户端通过 sockets 将消息发送到服务端；<br /><br />(4) 服务端存根（server stub）收到消息后进行解码（将消息对象反序列化）；<br /><br />(5) 服务端存根（server stub）根据解码结果调用本地的服务；<br /><br />(6) 本地服务执行并将结果返回给服务端存根（server stub）；<br /><br />(7) 服务端存根（server stub）将返回结果打包成消息（将结果消息对象序列化）；<br /><br />(8) 服务端（server）通过 sockets 将消息发送到客户端；<br /><br />(9) 客户端存根（client stub）接收到结果消息，并进行解码（将结果消息发序列化）；<br /><br />(10) 客户端（client）得到最终结果。<br /><br />RPC 就是要把 2、3、4、7、8、9 这些步骤都封装起来。<br />RPC 优点<br /><br />&nbsp;&nbsp;&nbsp; 跨语言（C++、PHP、Java、Python ...）<br /><br />&nbsp;&nbsp;&nbsp; 协议私密，安全性较高<br /><br />&nbsp;&nbsp;&nbsp; 数据传输效率高<br /><br />&nbsp;&nbsp;&nbsp; 支持动态扩展<br /><br />RPC 缺点<br /><br />一个完善的 RPC框架 开发难度大，需要的专业人员比较多，对初学者难度比较大。<br />PHP RPC 有哪些？<br /><br />&nbsp;&nbsp;&nbsp; Thrift：<br /><br />http://thrift.apache.org/<br /><br />gRPC：<br /><br />http://doc.oschina.net/grpc<br /><br />Yar：<br /><br />https://www.php.net/manual/zh/book.yar.php<br /><br />Swoole-RPC：<br /><br />https://wiki.swoole.com/wiki/page/683.html<br /><br />Hprose：<br /><br />https://hprose.com/<br />小结<br /><br />这篇文章分享了，我认为的 RPC 是什么样的。<br /><br />主要包括在什么场景下使用 RPC，RPC 的原理及调用过程，还有 RPC 的优缺点和 PHP 常用的 RPC 框架。<br /><br />等我研究了具体某一种 RPC，再分享给大家，这里我还准备了一分学习图和资料，如下：</p>
+<p><img src="./images/我眼中的 RPC2.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

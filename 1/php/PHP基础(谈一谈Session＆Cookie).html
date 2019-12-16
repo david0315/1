@@ -1,0 +1,121 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP基础(谈一谈Session＆Cookie)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP基础(谈一谈Session＆Cookie)</center></div><div class='banquan'>原文出处:本文由博客园博主心常平提供。<br/>
+原文连接:https://www.cnblogs.com/whel0923/p/10991755.html</div><br>
+    <p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;"><strong>cookie和sessiond的主要区别</strong></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">(1)<span style="font-family: 宋体;">、保存位置稍有区别</span></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">cookie数据存放在客户的浏览器上，服务器端不用保存。session数据放在服务器上，本地内存也有一份。</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">(2)<strong><span style="font-family: 宋体;">、安全性不同</span></strong></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">cookie安全性不如session。因为普通cookie保存在本地硬盘上，黑客可以伪造url等方式发起xss攻击，获取本地硬盘保存状态的cookie，进而窃取用户的敏感信息。</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">session则不同，只有在用户登录此网站时发起xss攻击才能获取session信息，关闭浏览器之后，session即被销毁，安全性较cookie要好</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">(3).跨域支持上的不同</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">Cookie支持跨域名访问，例如将domain属性设置为&ldquo;.biaodianfu.com&rdquo;，则以&ldquo;.biaodianfu.com&rdquo;为后缀的一切域名均能够访问该Cookie。跨域名Cookie如今被普遍用在网络中，例如Google、Baidu、Sina等。而Session则不会支持跨域名访问。Session仅在他所在的域名内有效。</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">(4).<strong><span style="font-family: 宋体;">服务器压力的不同</span></strong></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">Session是保管在服务器端的，每个用户都会产生一个Session。假如并发访问的用户十分多，会产生十分多的Session，耗费大量的内存。因而像Google、Baidu、Sina这样并发访问量极高的网站，是不太可能运用Session来追踪客户会话的。考虑到减轻服务器性能方面，应当使用COOKIE。</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">(5). <strong><span style="font-family: 宋体;">存取方式的不同</span></strong></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">Cookie中只能保管ASCII字符串，假如需求存取Unicode字符或者二进制数据，需求先进行编码。Cookie中也不能直接存取Java对象。若要存储略微复杂的信息，运用Cookie是比拟艰难的。</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;"><span style="font-family: 宋体;">而</span>Session中能够存取任何类型的数据，包括而不限于String、Integer、List、Map等。Session中也能够直接保管Java Bean乃至任何Java类，对象等，运用起来十分便当。能够把Session看做是一个Java容器类。</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;">(6).&nbsp; &nbsp;cookie的保存内容大小有限制,<span style="font-family: 宋体;">单个</span>cookie保存的数据不能超过4K，很多浏览器都限制一个站点最多保存20个cookie。</span></p>
+<p style="text-align: left;"><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">(7)：session的运行依赖session id ，而session id是存在cookie中的，也就是说如果浏览器禁用了cookie，同时session也会失效，（但是可以通过其他方式实现session ，比如在url中传递session id）</span></p>
+<p style="text-align: left;"><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">(8)：session 可以放在文件，数据库，或者是内存中，默认是存储在文件中，都可以</span></p>
+<p style="text-align: left;"><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">(9)：用户验证一般都会用session</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　</span>$_COOKIE<span style="font-family: 宋体;">　　</span><span style="font-family: Verdana;">&nbsp; </span><span style="font-family: 宋体;">浏览器</span><span style="font-family: Verdana;">cookie</span><span style="font-family: 宋体;">的操作</span></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　　　　　　　　　设置</span>cookie:setcookie(name, value, expire, path, domain);</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　　　　　　　　　获取</span>cookie<span style="font-family: 宋体;">：</span><span style="font-family: Verdana;">$_COOKIE["user"];</span></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　　　　　　　　　删除</span>cookie<span style="font-family: 宋体;">：</span><span style="font-family: Verdana;">setcookie("user", "", time()-3600);//</span><span style="font-family: 宋体;">设置过期时间</span></span></p>
+<p class="p"><span style="font-size: 16px;">&nbsp;</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　</span>$_SESSION<span style="font-family: 宋体;">　　服务端</span><span style="font-family: Verdana;">session</span><span style="font-family: 宋体;">的操作</span></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　　　　　　　　　使用</span>session<span style="font-family: 宋体;">前一定要</span><span style="font-family: Verdana;">session_start()</span><span style="font-family: 宋体;">启动</span><span style="font-family: Verdana;">session</span></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　　　　　　　　　储存</span>session<span style="font-family: 宋体;">：</span><span style="font-family: Verdana;">$_SESSION["name"]="King";//</span><span style="font-family: 宋体;">数组操作</span></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　　　　　　　　　销毁</span>session<span style="font-family: 宋体;">：</span><span style="font-family: Verdana;">unset($_SESSION["name"]);//</span><span style="font-family: 宋体;">销毁一个</span></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><span style="font-family: 宋体;">　　　　　　　　　　</span>session_destroy()<span style="font-family: 宋体;">和</span><span style="font-family: Verdana;">unset($_SESSION);//</span><span style="font-family: 宋体;">销毁所有的</span><span style="font-family: Verdana;">session</span></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><strong>Cookie概念</strong></span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong><span style="font-family: 宋体;">在浏览某些</span> <span style="font-family: 宋体;">网站</span> <span style="font-family: 宋体;">时</span>,<span style="font-family: 宋体;">这些网站会把</span> <span style="font-family: 宋体;">一些数据存在</span> <span style="font-family: 宋体;">客户端</span> , <span style="font-family: 宋体;">用于使用网站</span> <span style="font-family: 宋体;">等跟踪用户</span>,<span style="font-family: 宋体;">实现用户自定义</span> <span style="font-family: 宋体;">功能</span>.</span></p>
+<p class="p"><span style="font-size: 16px;">&nbsp;</span></p>
+<h2><span style="font-size: 16px;"><strong>cookie<span style="font-family: 宋体;">伪造</span></strong></span></h2>
+<p><span style="font-size: 16px;"><span style="font-family: 宋体;">你的第三方应用端的</span>cookie<span style="font-family: 宋体;">被恶意的用户截取到</span><span style="font-family: Calibri;">,</span><span style="font-family: 宋体;">然后向服务器端发送</span><span style="font-family: Calibri;">,</span><span style="font-family: 宋体;">并且通过验证</span><span style="font-family: Calibri;">,</span><span style="font-family: 宋体;">他们就会冒充用户进行登录</span><span style="font-family: Calibri;">,</span><span style="font-family: 宋体;">这就是</span><span style="font-family: Calibri;">cookie</span><span style="font-family: 宋体;">伪造</span></span></p>
+<p><span style="font-size: 16px;"><span style="font-family: 宋体;">防</span>cookie<span style="font-family: 宋体;">伪造：</span></span></p>
+<p><span style="font-size: 16px;">现在更通用的做法是使用<a title="session" href="http://zh.wikipedia.org/wiki/%E4%BC%9A%E8%AF%9D">session</a><span style="font-family: 宋体;">来标识用户，也就是说我们为每个第三方应用端生成一个唯一的</span>id<span style="font-family: 宋体;">，然后在服务端存储这个</span><span style="font-family: Calibri;">id</span><span style="font-family: 宋体;">所对应的状态。</span></span></p>
+<p><span style="font-size: 16px;"><span style="font-family: 宋体;">这样</span>cookie<span style="font-family: 宋体;">里面仅仅保存了这个</span><span style="font-family: Calibri;">id</span><span style="font-family: 宋体;">，而没有任何其他的东西。而且这个</span><span style="font-family: Calibri;">id</span><span style="font-family: 宋体;">往往还有个特性，它是随机生成，且每次登陆都会产生一个新的。这样就更降低了信息泄漏的风险。</span></span></p>
+<p class="p"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="p"><span style="font-size: 16px;"><strong>Session的概念</strong></span></p>
+<p class="p"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;Session <span style="font-family: 宋体;">是存放在服务器端的类似于</span>HashTable结构来存放用户数据;</span></p>
+<p class="p"><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;<span style="font-family: 宋体;">作用：实现网页之间数据传递，是一个存储在服务器端的对象集合。</span></span><br /><br /><span style="font-size: 16px;">&nbsp;&nbsp;&nbsp;原理：<span style="font-family: 宋体;">当用户请求一个</span>Asp.net页面时，系统将自动创建一个Session;退出应用程序或关闭服务器时，该Session撤销。系统在创建Session时将为其分配一个长长的字符串标识，以实现对Session进行管理与跟踪。</span></p>
+<p class="p"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;"><strong>客户端禁掉&nbsp;cookie后session还能用吗</strong></span></p>
+<p><span style="font-size: 16px;">Cookie<span style="font-family: 宋体;">和</span><span style="font-family: Calibri;">session</span><span style="font-family: 宋体;">都是用来实现会话机制的，由于</span><span style="font-family: Calibri;">http</span><span style="font-family: 宋体;">协议是无状态的，所以要想跟踪一个用户在同一个网站之间不同页面的状态，需要有这么一个机制</span><span style="font-family: Calibri;">----</span><span style="font-family: 宋体;">会话机制。</span></span></p>
+<p><span style="font-size: 16px;">Cookie<span style="font-family: 宋体;">：将会话信息的保存到浏览器端。</span><span style="font-family: Calibri;">Session</span><span style="font-family: 宋体;">：将会话信息保存到服务器端。</span></span></p>
+<p><span style="font-size: 16px;">session<span style="font-family: 宋体;">默认情况下是基于</span><span style="font-family: Calibri;">cookie</span><span style="font-family: 宋体;">的，对于</span><span style="font-family: Calibri;">session</span><span style="font-family: 宋体;">来说，每生成一个</span><span style="font-family: Calibri;">sessionid</span><span style="font-family: 宋体;">，都会将其发送到浏览器端，让后将其保存到</span><span style="font-family: Calibri;">cookie</span><span style="font-family: 宋体;">当中。</span></span></p>
+<p class="15"><span style="font-size: 16px;"><span style="font-family: 等线;">一般</span>Session<span style="font-family: 等线;">是用</span><span style="font-family: Arial;">Session ID</span><span style="font-family: 等线;">来确定当前对话所对应的服务器</span><span style="font-family: Arial;">Session</span><span style="font-family: 等线;">，而</span><span style="font-family: Arial;">Session ID</span><span style="font-family: 等线;">是通过</span><span style="font-family: Arial;">Cookie</span><span style="font-family: 等线;">来传递的，禁用</span><span style="font-family: Arial;">Cookie</span><span style="font-family: 等线;">相当于失去了</span><span style="font-family: Arial;">Session ID</span><span style="font-family: 等线;">，也就得不到</span><span style="font-family: Arial;">Session</span><span style="font-family: 等线;">了。</span></span></p>
+<p class="15"><span style="font-size: 16px;"><span style="font-family: 等线;">但是可以通过其他方式来存储</span>sessionID,eg:redis<span style="font-family: 等线;">或文件里。</span></span></p>
+<p><span style="font-size: 16px;"><span style="font-family: 宋体;">在存储</span>session的文件中，生成sessionID，通过get传参的方式将sessionID传到要实现session共享的页面，读取sessionID,从而从session中获取数据。</span></p>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<p><span style="font-size: 16px;"><strong>session默认的生存时间</strong></span></p>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="15"><span style="font-size: 16px;"><strong>php中session过期时间设置&nbsp;&nbsp;&nbsp;</strong></span></p>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="15"><span style="font-size: 16px;">1、<span style="font-family: 宋体;">修改</span>php配置文件中的session.gc_maxlifetime</span></p>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="15"><span style="font-size: 16px;">2、<span style="font-family: 宋体;">＜</span>?php</span><br /><span style="font-size: 16px;">　　　　session_start(); </span><br /><span style="font-size: 16px;">　　　　// 保存一天 </span><br /><span style="font-size: 16px;">　　　　$lifeTime = 24 * 3600; </span><br /><span style="font-size: 16px;">　　　　setcookie(session_name(), session_id(), time() + $lifeTime, "/"); </span><br /><span style="font-size: 16px;">?＞</span></p>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="15"><span style="font-size: 16px;">3、<span style="font-family: 宋体;">其实</span> Session 还提供了一个函数 session_set_cookie_params(); 来设置 Session 的生存期的，该函数必须在 session_start() 函数调用之前调用：</span><br /><span style="font-size: 16px;"><span style="font-family: 宋体;">＜</span>?php </span><br /><span style="font-size: 16px;">　　　　// 保存一天 </span><br /><span style="font-size: 16px;">　　　　$lifeTime = 24 * 3600; </span><br /><span style="font-size: 16px;">　　　　session_set_cookie_params($lifeTime); </span><br /><span style="font-size: 16px;">　　　　session_start();</span><br /><span style="font-size: 16px;">　　　　$_SESSION["admin"] = true; </span><br /><span style="font-size: 16px;">?＞</span></p>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<p class="15"><span style="font-size: 16px;"><strong>session_id 和 服务器的session文件的关系</strong></span></p>
+<p class="15"><span style="font-size: 16px;">Session_id 和session同时生成,并且session文件是以session_id所命名</span></p>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<h2><span style="font-size: 16px;"><strong>php<span style="font-family: 宋体;">在储存</span><span style="font-family: Cambria;">session</span><span style="font-family: 宋体;">以什么形式存在</span></strong></span></h2>
+<p><span style="font-size: 16px;">PHP为session的存储提供了三种方式: 文件/ 内存/ 自定义存储,默认是使用文件存储.在访问量大的网站上采用这种方式就不大合适,因为这样会导致大量的输入输出的冗余.我们可以在php.ini更改配置文件或者php脚本中通过相应的函数来设置session文件的存储类型来改变session文件的存储形式</span></p>
+<p><span style="font-size: 16px;">&nbsp;</span></p>
+<h3 class="LC20lb"><span style="text-decoration: underline; font-size: 16px;"><em>　　　　　　　　　　　　　　　比你优秀的人不可怕，可怕的是比你优秀的人比你更努力</em></span></h3>
+<p class="15"><span style="font-size: 16px;">&nbsp;</span></p>
+<p style="text-align: left;"><span style="font-size: 16px;">&nbsp;</span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

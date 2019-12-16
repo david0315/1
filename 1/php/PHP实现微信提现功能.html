@@ -1,0 +1,412 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现微信提现功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现微信提现功能</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11900830.html</div><br>
+    <p>提现必须得用双向证书、所以大家一定要在微信的商户平台找到相应的地方去设置、因为做这个提现已经有一段时间了、所以设置微信商户平台的那几个地方没有图的情况、也说不清楚、下次再做提现的时候、给大家分享如何设置商户平台那几个地方、不是很难、下面贴代码</p>
+<p>注意事项：商户打款时是从商户可用余额中减钱，所以确保商户可用余额充足，同时注意官方文档中的付款规则；</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>封装提现的方法</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span> tixian(<span style="color: #800080;">$money</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$appid</span> = "################";<span style="color: #008000;">//</span><span style="color: #008000;">商户账号appid</span>
+<span style="color: #008080;"> 3</span>     <span style="color: #800080;">$secret</span> = "##########";<span style="color: #008000;">//</span><span style="color: #008000;">api密码</span>
+<span style="color: #008080;"> 4</span>     <span style="color: #800080;">$mch_id</span> = "#######";<span style="color: #008000;">//</span><span style="color: #008000;">商户号</span>
+<span style="color: #008080;"> 5</span>     <span style="color: #800080;">$mch_no</span> = "#######"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span>     <span style="color: #800080;">$openid</span>="123456789";<span style="color: #008000;">//</span><span style="color: #008000;">授权用户openid</span>
+<span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>     <span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 9</span>     <span style="color: #800080;">$arr</span>['mch_appid'] = <span style="color: #800080;">$appid</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>     <span style="color: #800080;">$arr</span>['mchid'] = <span style="color: #800080;">$mch_id</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>     <span style="color: #800080;">$arr</span>['nonce_str'] = ugv::randomid(20);<span style="color: #008000;">//</span><span style="color: #008000;">随机字符串，不长于32位</span>
+<span style="color: #008080;">12</span>     <span style="color: #800080;">$arr</span>['partner_trade_no'] = '1298016501' . <span style="color: #008080;">date</span>("Ymd") . <span style="color: #008080;">rand</span>(10000, 90000) . <span style="color: #008080;">rand</span>(10000, 90000);<span style="color: #008000;">//</span><span style="color: #008000;">商户订单号</span>
+<span style="color: #008080;">13</span>     <span style="color: #800080;">$arr</span>['openid'] = <span style="color: #800080;">$openid</span><span style="color: #000000;">;
+</span><span style="color: #008080;">14</span>     <span style="color: #800080;">$arr</span>['check_name'] = 'NO_CHECK';<span style="color: #008000;">//</span><span style="color: #008000;">是否验证用户真实姓名，这里不验证</span>
+<span style="color: #008080;">15</span>     <span style="color: #800080;">$arr</span>['amount'] = <span style="color: #800080;">$money</span>;<span style="color: #008000;">//</span><span style="color: #008000;">付款金额，单位为分</span>
+<span style="color: #008080;">16</span>     <span style="color: #800080;">$desc</span> = "###提现"<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span>     <span style="color: #800080;">$arr</span>['desc'] = <span style="color: #800080;">$desc</span>;<span style="color: #008000;">//</span><span style="color: #008000;">描述信息</span>
+<span style="color: #008080;">18</span>     <span style="color: #800080;">$arr</span>['spbill_create_ip'] = '192.168.0.1';<span style="color: #008000;">//</span><span style="color: #008000;">获取服务器的ip
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">    //封装的关于签名的算法</span>
+<span style="color: #008080;">20</span>     <span style="color: #800080;">$notify</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Notify_pub();
+</span><span style="color: #008080;">21</span>     <span style="color: #800080;">$notify</span>-&gt;weixin_app_config = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">22</span>     <span style="color: #800080;">$notify</span>-&gt;weixin_app_config['KEY'] = <span style="color: #800080;">$mch_no</span><span style="color: #000000;">;
+</span><span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span>     <span style="color: #800080;">$arr</span>['sign'] = <span style="color: #800080;">$notify</span>-&gt;getSign(<span style="color: #800080;">$arr</span>);<span style="color: #008000;">//</span><span style="color: #008000;">签名</span>
+<span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span>     <span style="color: #800080;">$var</span> = <span style="color: #800080;">$notify</span>-&gt;arrayToXml(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">27</span>     <span style="color: #800080;">$xml</span> = <span style="color: #800080;">$this</span>-&gt;curl_post_ssl('https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers', <span style="color: #800080;">$var</span>, 30, <span style="color: #0000ff;">array</span>(), 1<span style="color: #000000;">);
+</span><span style="color: #008080;">28</span>     <span style="color: #800080;">$rdata</span> = <span style="color: #008080;">simplexml_load_string</span>(<span style="color: #800080;">$xml</span>, 'SimpleXMLElement',<span style="color: #000000;"> LIBXML_NOCDATA);
+</span><span style="color: #008080;">29</span>     <span style="color: #800080;">$return_code</span> = (<span style="color: #0000ff;">string</span>)<span style="color: #800080;">$rdata</span>-&gt;<span style="color: #000000;">return_code;
+</span><span style="color: #008080;">30</span>     <span style="color: #800080;">$result_code</span> = (<span style="color: #0000ff;">string</span>)<span style="color: #800080;">$rdata</span>-&gt;<span style="color: #000000;">result_code;
+</span><span style="color: #008080;">31</span>     <span style="color: #800080;">$return_code</span> = <span style="color: #008080;">trim</span>(<span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$return_code</span><span style="color: #000000;">));
+</span><span style="color: #008080;">32</span>     <span style="color: #800080;">$result_code</span> = <span style="color: #008080;">trim</span>(<span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$result_code</span><span style="color: #000000;">));
+</span><span style="color: #008080;">33</span> 
+<span style="color: #008080;">34</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$return_code</span> == 'SUCCESS' &amp;&amp; <span style="color: #800080;">$result_code</span> == 'SUCCESS'<span style="color: #000000;">) {
+</span><span style="color: #008080;">35</span>       <span style="color: #800080;">$isrr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">36</span>         'con'=&gt;'ok',
+<span style="color: #008080;">37</span>         'error' =&gt; 0,
+<span style="color: #008080;">38</span> <span style="color: #000000;">      );
+</span><span style="color: #008080;">39</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">40</span>       <span style="color: #800080;">$returnmsg</span> = (<span style="color: #0000ff;">string</span>)<span style="color: #800080;">$rdata</span>-&gt;<span style="color: #000000;">return_msg;
+</span><span style="color: #008080;">41</span>       <span style="color: #800080;">$isrr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">42</span>         'error' =&gt; 1,
+<span style="color: #008080;">43</span>         'errmsg' =&gt; <span style="color: #800080;">$returnmsg</span>,
+<span style="color: #008080;">44</span> <span style="color: #000000;">      );
+</span><span style="color: #008080;">45</span> 
+<span style="color: #008080;">46</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">47</span>     <span style="color: #0000ff;">return</span> json_encode(<span style="color: #800080;">$isrr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">48</span> } </code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>用到的curl_post_ssl()</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span> curl_post_ssl(<span style="color: #800080;">$url</span>, <span style="color: #800080;">$vars</span>, <span style="color: #800080;">$second</span> = 30, <span style="color: #800080;">$aHeader</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">  {
+</span><span style="color: #008080;"> 3</span>     <span style="color: #800080;">$isdir</span> = "/cert/";<span style="color: #008000;">//</span><span style="color: #008000;">证书位置</span>
+<span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span>     <span style="color: #800080;">$ch</span> = curl_init();<span style="color: #008000;">//</span><span style="color: #008000;">初始化curl</span>
+<span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_TIMEOUT, <span style="color: #800080;">$second</span>);<span style="color: #008000;">//</span><span style="color: #008000;">设置执行最长秒数</span>
+<span style="color: #008080;"> 8</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_RETURNTRANSFER, 1);<span style="color: #008000;">//</span><span style="color: #008000;">要求结果为字符串且输出到屏幕上</span>
+<span style="color: #008080;"> 9</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_URL, <span style="color: #800080;">$url</span>);<span style="color: #008000;">//</span><span style="color: #008000;">抓取指定网页</span>
+<span style="color: #008080;">10</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">false</span>);<span style="color: #008000;">//</span><span style="color: #008000;"> 终止从服务端进行验证</span>
+<span style="color: #008080;">11</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span style="color: #0000ff;">false</span>);<span style="color: #008000;">//
+</span><span style="color: #008080;">12</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSLCERTTYPE, 'PEM');<span style="color: #008000;">//</span><span style="color: #008000;">证书类型</span>
+<span style="color: #008080;">13</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSLCERT, <span style="color: #800080;">$isdir</span> . 'apiclient_cert.pem');<span style="color: #008000;">//</span><span style="color: #008000;">证书位置</span>
+<span style="color: #008080;">14</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSLKEYTYPE, 'PEM');<span style="color: #008000;">//</span><span style="color: #008000;">CURLOPT_SSLKEY中规定的私钥的加密类型</span>
+<span style="color: #008080;">15</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSLKEY, <span style="color: #800080;">$isdir</span> . 'apiclient_key.pem');<span style="color: #008000;">//</span><span style="color: #008000;">证书位置</span>
+<span style="color: #008080;">16</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_CAINFO, 'PEM'<span style="color: #000000;">);
+</span><span style="color: #008080;">17</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_CAINFO, <span style="color: #800080;">$isdir</span> . 'rootca.pem'<span style="color: #000000;">);
+</span><span style="color: #008080;">18</span>     <span style="color: #0000ff;">if</span> (<span style="color: #008080;">count</span>(<span style="color: #800080;">$aHeader</span>) &gt;= 1<span style="color: #000000;">) {
+</span><span style="color: #008080;">19</span>       curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_HTTPHEADER, <span style="color: #800080;">$aHeader</span>);<span style="color: #008000;">//</span><span style="color: #008000;">设置头部</span>
+<span style="color: #008080;">20</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">21</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_POST, 1);<span style="color: #008000;">//</span><span style="color: #008000;">post提交方式</span>
+<span style="color: #008080;">22</span>     curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_POSTFIELDS, <span style="color: #800080;">$vars</span>);<span style="color: #008000;">//</span><span style="color: #008000;">全部数据使用HTTP协议中的"POST"操作来发送</span>
+<span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span>     <span style="color: #800080;">$data</span> = curl_exec(<span style="color: #800080;">$ch</span>);<span style="color: #008000;">//</span><span style="color: #008000;">执行回话</span>
+<span style="color: #008080;">25</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$data</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">26</span>       curl_close(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">27</span>       <span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">28</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">29</span>       <span style="color: #800080;">$error</span> = curl_errno(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">30</span>       <span style="color: #0000ff;">echo</span> "call faild, errorCode:<span style="color: #800080;">$error</span>\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">31</span>       curl_close(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">32</span>       <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">34</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>关于具体签名算法，可参考微信官方文档；</p>
+<p>简单示范签名算法：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">将要发送的数据整理为$data</span>
+<span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #008080;">ksort</span>(<span style="color: #800080;">$data</span>);<span style="color: #008000;">//</span><span style="color: #008000;">排序
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">//使用URL键值对的格式（即key1=value1&amp;key2=value2&hellip;）拼接成字符串</span>
+<span style="color: #008080;"> 5</span> <span style="color: #800080;">$str</span>=''<span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 7</span>   <span style="color: #800080;">$str</span>.=<span style="color: #800080;">$k</span>.'='.<span style="color: #800080;">$v</span>.'&amp;'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">//</span><span style="color: #008000;">拼接API密钥</span>
+<span style="color: #008080;">10</span> <span style="color: #800080;">$str</span>.='key='.<span style="color: #800080;">$secrect</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #800080;">$data</span>['sign']=<span style="color: #008080;">md5</span>(<span style="color: #800080;">$str</span>);<span style="color: #008000;">//</span><span style="color: #008000;">加密</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>将数组转换成xml格式（简单方法）：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;">遍历数组方法</span>
+<span style="color: #008080;">2</span> <span style="color: #0000ff;">function</span> arraytoxml(<span style="color: #800080;">$data</span><span style="color: #000000;">){
+</span><span style="color: #008080;">3</span>   <span style="color: #800080;">$str</span>='&lt;xml&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span>   <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">5</span>     <span style="color: #800080;">$str</span>.='&lt;'.<span style="color: #800080;">$k</span>.'&gt;'.<span style="color: #800080;">$v</span>.'&lt;/'.<span style="color: #800080;">$k</span>.'&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">6</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">7</span>   <span style="color: #800080;">$str</span>.='&lt;/xml&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">8</span>   <span style="color: #0000ff;">return</span> <span style="color: #800080;">$str</span><span style="color: #000000;">;
+</span><span style="color: #008080;">9</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>将xml格式转换为数组：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">function</span> xmltoarray(<span style="color: #800080;">$xml</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">2</span>    <span style="color: #008000;">//</span><span style="color: #008000;">禁止引用外部xml实体 </span>
+<span style="color: #008080;">3</span>   libxml_disable_entity_loader(<span style="color: #0000ff;">true</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">4</span>   <span style="color: #800080;">$xmlstring</span> = <span style="color: #008080;">simplexml_load_string</span>(<span style="color: #800080;">$xml</span>, 'SimpleXMLElement',<span style="color: #000000;"> LIBXML_NOCDATA); 
+</span><span style="color: #008080;">5</span>   <span style="color: #800080;">$val</span> = json_decode(json_encode(<span style="color: #800080;">$xmlstring</span>),<span style="color: #0000ff;">true</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">6</span>   <span style="color: #0000ff;">return</span> <span style="color: #800080;">$val</span><span style="color: #000000;">;
+</span><span style="color: #008080;">7</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">8</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>下面来看看ThinkPHP5封装的提现类。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span> <span style="color: #000000;">namespace Home\Controller;
+</span><span style="color: #008080;">  3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Think\Controller;
+</span><span style="color: #008080;">  4</span> <span style="color: #0000ff;">class</span> TixianController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller{
+</span><span style="color: #008080;">  5</span> 
+<span style="color: #008080;">  6</span>   <span style="color: #008000;">//</span><span style="color: #008000;">高级功能-》开发者模式-》获取</span>
+<span style="color: #008080;">  7</span>   <span style="color: #0000ff;">private</span> <span style="color: #800080;">$app_id1</span> = '';   <span style="color: #008000;">//</span><span style="color: #008000;">appid</span>
+<span style="color: #008080;">  8</span>   <span style="color: #0000ff;">private</span> <span style="color: #800080;">$app_secret1</span> = ''; <span style="color: #008000;">//</span><span style="color: #008000;">secreat</span>
+<span style="color: #008080;">  9</span>   <span style="color: #0000ff;">private</span> <span style="color: #800080;">$apikey1</span> = ''; <span style="color: #008000;">//</span><span style="color: #008000;">支付秘钥</span>
+<span style="color: #008080;"> 10</span>   <span style="color: #0000ff;">private</span> <span style="color: #800080;">$mchid1</span> = 's';    <span style="color: #008000;">//</span><span style="color: #008000;">商户号</span>
+<span style="color: #008080;"> 11</span> 
+<span style="color: #008080;"> 12</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$app_id</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 13</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$app_secret</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 14</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$apikey</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 15</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$mchid</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 16</span> 
+<span style="color: #008080;"> 17</span> 
+<span style="color: #008080;"> 18</span>   <span style="color: #0000ff;">public</span> <span style="color: #800080;">$error</span>=0<span style="color: #000000;">;
+</span><span style="color: #008080;"> 19</span>   <span style="color: #0000ff;">public</span> <span style="color: #800080;">$state</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;"> 20</span>   <span style="color: #008000;">//</span><span style="color: #008000;">金额,需在实例化时传入</span>
+<span style="color: #008080;"> 21</span>   <span style="color: #0000ff;">public</span> <span style="color: #800080;">$amount</span> = '0'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 22</span>   <span style="color: #008000;">//</span><span style="color: #008000;">用户订单号,需在实例化时传入</span>
+<span style="color: #008080;"> 23</span>   <span style="color: #0000ff;">public</span> <span style="color: #800080;">$order_sn</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;"> 24</span>   <span style="color: #008000;">//</span><span style="color: #008000;">用户openid,需在实例化时传入</span>
+<span style="color: #008080;"> 25</span>   <span style="color: #0000ff;">public</span> <span style="color: #800080;">$openid</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;"> 26</span> 
+<span style="color: #008080;"> 27</span> 
+<span style="color: #008080;"> 28</span> 
+<span style="color: #008080;"> 29</span>   <span style="color: #008000;">//</span><span style="color: #008000;">微信提现操作接口-------》</span>
+<span style="color: #008080;"> 30</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> actionAct_tixian()
+</span><span style="color: #008080;"> 31</span> <span style="color: #000000;">  {
+</span><span style="color: #008080;"> 32</span> 
+<span style="color: #008080;"> 33</span>    <span style="color: #800080;">$this</span>-&gt;state=<span style="color: #008080;">md5</span>(<span style="color: #008080;">uniqid</span>(<span style="color: #008080;">rand</span>(), <span style="color: #0000ff;">TRUE</span><span style="color: #000000;">));
+</span><span style="color: #008080;"> 34</span>    <span style="color: #800080;">$this</span>-&gt;amount=I('amount');<span style="color: #008000;">//</span><span style="color: #008000;">设置POST过来钱数</span>
+<span style="color: #008080;"> 35</span>    <span style="color: #800080;">$this</span>-&gt;order_sn=<span style="color: #008080;">rand</span>(100,999).<span style="color: #008080;">date</span>('YmdHis'); <span style="color: #008000;">//</span><span style="color: #008000;">随机数可以作为单号</span>
+<span style="color: #008080;"> 36</span>    <span style="color: #800080;">$this</span>-&gt;openid= I('openid'); <span style="color: #008000;">//</span><span style="color: #008000;">设置获取POST过来用户的OPENID</span>
+<span style="color: #008080;"> 37</span>     <span style="color: #800080;">$user_id</span> = I('user_id'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 38</span> 
+<span style="color: #008080;"> 39</span>    <span style="color: #800080;">$this</span>-&gt;app_id=<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">app_id1;
+</span><span style="color: #008080;"> 40</span>    <span style="color: #800080;">$this</span>-&gt;app_secret=<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">app_secret1;
+</span><span style="color: #008080;"> 41</span>    <span style="color: #800080;">$this</span>-&gt;apikey=<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">apikey1;
+</span><span style="color: #008080;"> 42</span>    <span style="color: #800080;">$this</span>-&gt;mchid=<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">mchid1;
+</span><span style="color: #008080;"> 43</span>    <span style="color: #800080;">$xml</span>=<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">tiXianAction();
+</span><span style="color: #008080;"> 44</span>    <span style="color: #800080;">$result</span>=<span style="color: #008080;">simplexml_load_string</span>(<span style="color: #800080;">$xml</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 45</span> 
+<span style="color: #008080;"> 46</span>    <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span>-&gt;return_code=='SUCCESS' &amp;&amp; <span style="color: #800080;">$result</span>-&gt;result_code=='SUCCESS'<span style="color: #000000;">) {
+</span><span style="color: #008080;"> 47</span> 
+<span style="color: #008080;"> 48</span>         <span style="color: #800080;">$cash</span> = D('cash'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 49</span>         <span style="color: #800080;">$data</span>['user_id'] = <span style="color: #800080;">$user_id</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 50</span>         <span style="color: #800080;">$data</span>['amount'] = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">amount;
+</span><span style="color: #008080;"> 51</span>         <span style="color: #800080;">$res</span> = <span style="color: #800080;">$cash</span>-&gt;where('user_id="'.<span style="color: #800080;">$user_id</span>.'"')-&gt;<span style="color: #000000;">find();
+</span><span style="color: #008080;"> 52</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 53</span>           <span style="color: #800080;">$res2</span> = <span style="color: #800080;">$cash</span>-&gt;where('user_id="'.<span style="color: #800080;">$user_id</span>.'"')-&gt;setInc('amount',<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">amount);
+</span><span style="color: #008080;"> 54</span>           <span style="color: #800080;">$res4</span> = D('member')-&gt;where('user_id="'.<span style="color: #800080;">$user_id</span>.'"')-&gt;setDec('user_balance',<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">amount);
+</span><span style="color: #008080;"> 55</span>         }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 56</span>           <span style="color: #800080;">$res3</span> = <span style="color: #800080;">$cash</span>-&gt;add(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 57</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 58</span> 
+<span style="color: #008080;"> 59</span>       <span style="color: #800080;">$output</span> = <span style="color: #0000ff;">array</span>('code' =&gt; 1, 'data' =&gt; <span style="color: #800080;">$result</span>-&gt;result_code, 'info' =&gt; '提现成功'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 60</span>       <span style="color: #0000ff;">exit</span>(json_encode(<span style="color: #800080;">$output</span><span style="color: #000000;">));
+</span><span style="color: #008080;"> 61</span>    }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 62</span> 
+<span style="color: #008080;"> 63</span>       <span style="color: #800080;">$output</span> = <span style="color: #0000ff;">array</span>('code' =&gt; 2, 'data' =&gt; <span style="color: #800080;">$xml</span>, 'info' =&gt; '提现失败'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 64</span>       <span style="color: #0000ff;">exit</span>(json_encode(<span style="color: #800080;">$output</span><span style="color: #000000;">));
+</span><span style="color: #008080;"> 65</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;"> 66</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;"> 67</span>   <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 68</span> <span style="color: #008000;">  * 提现接口操作,控制器调用
+</span><span style="color: #008080;"> 69</span> <span style="color: #008000;">  * @param $openid 用户openid 唯一标示
+</span><span style="color: #008080;"> 70</span> <span style="color: #008000;">  * @return
+</span><span style="color: #008080;"> 71</span>   <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 72</span>   <span style="color: #008000;">//</span><span style="color: #008000;">提现接口操作</span>
+<span style="color: #008080;"> 73</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> tiXianAction(){
+</span><span style="color: #008080;"> 74</span>    <span style="color: #008000;">//</span><span style="color: #008000;">获取xml数据</span>
+<span style="color: #008080;"> 75</span>    <span style="color: #800080;">$data</span>=<span style="color: #800080;">$this</span>-&gt;getdataXml(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">openid);
+</span><span style="color: #008080;"> 76</span>    <span style="color: #800080;">$ch</span> =<span style="color: #000000;"> curl_init ();
+</span><span style="color: #008080;"> 77</span>    <span style="color: #008000;">//</span><span style="color: #008000;">接口地址</span>
+<span style="color: #008080;"> 78</span>    <span style="color: #800080;">$MENU_URL</span>="https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 79</span> 
+<span style="color: #008080;"> 80</span>    curl_setopt ( <span style="color: #800080;">$ch</span>, CURLOPT_URL, <span style="color: #800080;">$MENU_URL</span><span style="color: #000000;"> );
+</span><span style="color: #008080;"> 81</span>    curl_setopt ( <span style="color: #800080;">$ch</span>, CURLOPT_CUSTOMREQUEST, "POST"<span style="color: #000000;"> );
+</span><span style="color: #008080;"> 82</span>    curl_setopt ( <span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">FALSE</span><span style="color: #000000;"> );
+</span><span style="color: #008080;"> 83</span>    curl_setopt ( <span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span style="color: #0000ff;">FALSE</span><span style="color: #000000;"> );
+</span><span style="color: #008080;"> 84</span> 
+<span style="color: #008080;"> 85</span>    <span style="color: #008000;">//</span><span style="color: #008000;">证书地址,微信支付下面</span>
+<span style="color: #008080;"> 86</span> 
+<span style="color: #008080;"> 87</span>     curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_SSLCERTTYPE,'PEM'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 88</span>     curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_SSLCERT, 'C:\web\www\Home\wx_pay\apiclient_cert.pem'); <span style="color: #008000;">//</span><span style="color: #008000;">证书这块大家把文件放到哪都行、</span>
+<span style="color: #008080;"> 89</span>     curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_SSLKEYTYPE,'PEM'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 90</span>     curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_SSLKEY, 'C:\web\www\Home\wx_pay\apiclient_key.pem');<span style="color: #008000;">//</span><span style="color: #008000;">注意证书名字千万别写错、
+</span><span style="color: #008080;"> 91</span> 
+<span style="color: #008080;"> 92</span> <span style="color: #008000;">   //$zs1=dirname(dirname(__FILE__)).'\wx_pay\apiclient_cert.pem';
+</span><span style="color: #008080;"> 93</span> <span style="color: #008000;">   //$zs2=dirname(dirname(__FILE__)).'\wx_pay\apiclient_key.pem';
+</span><span style="color: #008080;"> 94</span> <span style="color: #008000;">   //show_bug($zs1);
+</span><span style="color: #008080;"> 95</span> 
+<span style="color: #008080;"> 96</span> <span style="color: #008000;">   //curl_setopt($ch,CURLOPT_SSLCERT,$zs1);
+</span><span style="color: #008080;"> 97</span> <span style="color: #008000;">   //curl_setopt($ch,CURLOPT_SSLKEY,$zs2);
+</span><span style="color: #008080;"> 98</span> <span style="color: #008000;">   // curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MSIE 5.01;
+</span><span style="color: #008080;"> 99</span> <span style="color: #008000;">   // Windows NT 5.0)');
+</span><span style="color: #008080;">100</span> <span style="color: #008000;">   //curl_setopt ( $ch, CURLOPT_FOLLOWLOCATION, 1 );</span>
+<span style="color: #008080;">101</span>    curl_setopt ( <span style="color: #800080;">$ch</span>, CURLOPT_AUTOREFERER, 1<span style="color: #000000;"> );
+</span><span style="color: #008080;">102</span>    curl_setopt ( <span style="color: #800080;">$ch</span>, CURLOPT_POSTFIELDS, <span style="color: #800080;">$data</span><span style="color: #000000;"> );
+</span><span style="color: #008080;">103</span>    curl_setopt ( <span style="color: #800080;">$ch</span>, CURLOPT_RETURNTRANSFER, <span style="color: #0000ff;">true</span><span style="color: #000000;"> );
+</span><span style="color: #008080;">104</span>    <span style="color: #800080;">$info</span> = curl_exec ( <span style="color: #800080;">$ch</span><span style="color: #000000;"> );
+</span><span style="color: #008080;">105</span>     <span style="color: #008000;">//</span><span style="color: #008000;">返回结果</span>
+<span style="color: #008080;">106</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$info</span><span style="color: #000000;">){
+</span><span style="color: #008080;">107</span>       curl_close(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">108</span>       <span style="color: #0000ff;">return</span> <span style="color: #800080;">$info</span><span style="color: #000000;">;
+</span><span style="color: #008080;">109</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">110</span>       <span style="color: #800080;">$error</span> = curl_errno(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">111</span>       curl_close(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">112</span>       <span style="color: #0000ff;">return</span> "curl出错，错误码:<span style="color: #800080;">$error</span>"<span style="color: #000000;">;
+</span><span style="color: #008080;">113</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">114</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">115</span>   <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">116</span> <span style="color: #008000;">  * 获取数据封装为数组
+</span><span style="color: #008080;">117</span> <span style="color: #008000;">  * @param $openid 用户openid 唯一标示
+</span><span style="color: #008080;">118</span> <span style="color: #008000;">  * @return xml
+</span><span style="color: #008080;">119</span>   <span style="color: #008000;">*/</span>
+<span style="color: #008080;">120</span> 
+<span style="color: #008080;">121</span>   <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> getdataXml(<span style="color: #800080;">$openid</span><span style="color: #000000;">){
+</span><span style="color: #008080;">122</span>    <span style="color: #008000;">//</span><span style="color: #008000;">封装成数据</span>
+<span style="color: #008080;">123</span>    <span style="color: #800080;">$dataArr</span>=<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">124</span>      'amount'=&gt;<span style="color: #800080;">$this</span>-&gt;amount*100,<span style="color: #008000;">//</span><span style="color: #008000;">金额（以分为单位，必须大于100）</span>
+<span style="color: #008080;">125</span>      'check_name'=&gt;'NO_CHECK',<span style="color: #008000;">//</span><span style="color: #008000;">校验用户姓名选项，NO_CHECK：不校验真实姓名 FORCE_CHECK：强校验真实姓名（未实名认证的用户会校验失败，无法转账）OPTION_CHECK：针对已实名认证的用户才校验真实姓名（未实名认证用户不校验，可以转账成功）</span>
+<span style="color: #008080;">126</span>      'desc'=&gt;'提现',<span style="color: #008000;">//</span><span style="color: #008000;">描述</span>
+<span style="color: #008080;">127</span>      'mch_appid'=&gt;<span style="color: #800080;">$this</span>-&gt;app_id,
+<span style="color: #008080;">128</span>      'mchid'=&gt;<span style="color: #800080;">$this</span>-&gt;mchid,<span style="color: #008000;">//</span><span style="color: #008000;">商户号</span>
+<span style="color: #008080;">129</span>      'nonce_str'=&gt;<span style="color: #008080;">rand</span>(100000, 999999),<span style="color: #008000;">//</span><span style="color: #008000;">不长于32位的随机数</span>
+<span style="color: #008080;">130</span>      'openid'=&gt;<span style="color: #800080;">$openid</span>,<span style="color: #008000;">//</span><span style="color: #008000;">用户唯一标识</span>
+<span style="color: #008080;">131</span>      'partner_trade_no'=&gt;<span style="color: #800080;">$this</span>-&gt;order_sn,<span style="color: #008000;">//</span><span style="color: #008000;">商户订单号</span>
+<span style="color: #008080;">132</span>      're_user_name'=&gt;'',<span style="color: #008000;">//</span><span style="color: #008000;">用户姓名，check_name为NO_CHECK时为可选项</span>
+<span style="color: #008080;">133</span>      'spbill_create_ip'=&gt;<span style="color: #800080;">$_SERVER</span>["REMOTE_ADDR"],<span style="color: #008000;">//</span><span style="color: #008000;">服务器ip</span>
+<span style="color: #008080;">134</span> <span style="color: #000000;">   );
+</span><span style="color: #008080;">135</span>    <span style="color: #008000;">//</span><span style="color: #008000;">获取签名</span>
+<span style="color: #008080;">136</span>    <span style="color: #800080;">$sign</span>=<span style="color: #800080;">$this</span>-&gt;getSign(<span style="color: #800080;">$dataArr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">137</span>    <span style="color: #008000;">//</span><span style="color: #008000;">xml数据</span>
+<span style="color: #008080;">138</span>    <span style="color: #800080;">$data</span>="<span style="color: #000000;">&lt;xml&gt;
+</span><span style="color: #008080;">139</span>      &lt;mch_appid&gt;".<span style="color: #800080;">$dataArr</span>['mch_appid']."<span style="color: #000000;">&lt;/mch_appid&gt;
+</span><span style="color: #008080;">140</span>      &lt;mchid&gt;".<span style="color: #800080;">$dataArr</span>['mchid']."<span style="color: #000000;">&lt;/mchid&gt;
+</span><span style="color: #008080;">141</span>      &lt;nonce_str&gt;".<span style="color: #800080;">$dataArr</span>['nonce_str']."<span style="color: #000000;">&lt;/nonce_str&gt;
+</span><span style="color: #008080;">142</span>      &lt;partner_trade_no&gt;".<span style="color: #800080;">$dataArr</span>['partner_trade_no']."<span style="color: #000000;">&lt;/partner_trade_no&gt;
+</span><span style="color: #008080;">143</span>      &lt;openid&gt;".<span style="color: #800080;">$dataArr</span>['openid']."<span style="color: #000000;">&lt;/openid&gt;
+</span><span style="color: #008080;">144</span>      &lt;check_name&gt;".<span style="color: #800080;">$dataArr</span>['check_name']."<span style="color: #000000;">&lt;/check_name&gt;
+</span><span style="color: #008080;">145</span>      &lt;re_user_name&gt;".<span style="color: #800080;">$dataArr</span>['re_user_name']."<span style="color: #000000;">&lt;/re_user_name&gt;
+</span><span style="color: #008080;">146</span>      &lt;amount&gt;".<span style="color: #800080;">$dataArr</span>['amount']."<span style="color: #000000;">&lt;/amount&gt;
+</span><span style="color: #008080;">147</span>      &lt;desc&gt;".<span style="color: #800080;">$dataArr</span>['desc']."<span style="color: #000000;">&lt;/desc&gt;
+</span><span style="color: #008080;">148</span>      &lt;spbill_create_ip&gt;".<span style="color: #800080;">$dataArr</span>['spbill_create_ip']."<span style="color: #000000;">&lt;/spbill_create_ip&gt;
+</span><span style="color: #008080;">149</span>      &lt;sign&gt;".<span style="color: #800080;">$sign</span>."<span style="color: #000000;">&lt;/sign&gt;
+</span><span style="color: #008080;">150</span>      &lt;/xml&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;">151</span>    <span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">152</span> 
+<span style="color: #008080;">153</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">154</span>   <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">155</span> <span style="color: #008000;">  *   作用：格式化参数，签名过程需要使用
+</span><span style="color: #008080;">156</span>   <span style="color: #008000;">*/</span>
+<span style="color: #008080;">157</span>   <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> formatBizQueryParaMap(<span style="color: #800080;">$paraMap</span>, <span style="color: #800080;">$urlencode</span><span style="color: #000000;">)
+</span><span style="color: #008080;">158</span> <span style="color: #000000;">  {
+</span><span style="color: #008080;">159</span> 
+<span style="color: #008080;">160</span>    <span style="color: #800080;">$buff</span> = ""<span style="color: #000000;">;
+</span><span style="color: #008080;">161</span>    <span style="color: #008080;">ksort</span>(<span style="color: #800080;">$paraMap</span><span style="color: #000000;">);
+</span><span style="color: #008080;">162</span>    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$paraMap</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">)
+</span><span style="color: #008080;">163</span> <span style="color: #000000;">   {
+</span><span style="color: #008080;">164</span>      <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$v</span><span style="color: #000000;">){
+</span><span style="color: #008080;">165</span>       <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$urlencode</span><span style="color: #000000;">)
+</span><span style="color: #008080;">166</span> <span style="color: #000000;">      {
+</span><span style="color: #008080;">167</span>         <span style="color: #800080;">$v</span> = <span style="color: #008080;">urlencode</span>(<span style="color: #800080;">$v</span><span style="color: #000000;">);
+</span><span style="color: #008080;">168</span> <span style="color: #000000;">      }
+</span><span style="color: #008080;">169</span> 
+<span style="color: #008080;">170</span>       <span style="color: #800080;">$buff</span> .= <span style="color: #800080;">$k</span> . "=" . <span style="color: #800080;">$v</span> . "&amp;"<span style="color: #000000;">;
+</span><span style="color: #008080;">171</span> <span style="color: #000000;">     }
+</span><span style="color: #008080;">172</span> 
+<span style="color: #008080;">173</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;">174</span>    <span style="color: #800080;">$reqPar</span>=<span style="color: #0000ff;">NULL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">175</span>    <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$buff</span>) &gt; 0<span style="color: #000000;">)
+</span><span style="color: #008080;">176</span> <span style="color: #000000;">   {
+</span><span style="color: #008080;">177</span>      <span style="color: #800080;">$reqPar</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$buff</span>, 0, <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$buff</span>)-1<span style="color: #000000;">);
+</span><span style="color: #008080;">178</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;">179</span> 
+<span style="color: #008080;">180</span>    <span style="color: #0000ff;">return</span> <span style="color: #800080;">$reqPar</span><span style="color: #000000;">;
+</span><span style="color: #008080;">181</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">182</span> 
+<span style="color: #008080;">183</span>   <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">184</span> <span style="color: #008000;">  *   作用：生成签名
+</span><span style="color: #008080;">185</span>   <span style="color: #008000;">*/</span>
+<span style="color: #008080;">186</span>   <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> getSign(<span style="color: #800080;">$Obj</span><span style="color: #000000;">)
+</span><span style="color: #008080;">187</span> <span style="color: #000000;">  {
+</span><span style="color: #008080;">188</span> 
+<span style="color: #008080;">189</span>    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$Obj</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">)
+</span><span style="color: #008080;">190</span> <span style="color: #000000;">   {
+</span><span style="color: #008080;">191</span>      <span style="color: #800080;">$Parameters</span>[<span style="color: #800080;">$k</span>] = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+</span><span style="color: #008080;">192</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;">193</span>    <span style="color: #008000;">//</span><span style="color: #008000;">签名步骤一：按字典序排序参数</span>
+<span style="color: #008080;">194</span>    <span style="color: #008080;">ksort</span>(<span style="color: #800080;">$Parameters</span><span style="color: #000000;">);
+</span><span style="color: #008080;">195</span>    <span style="color: #800080;">$String</span> = <span style="color: #800080;">$this</span>-&gt;formatBizQueryParaMap(<span style="color: #800080;">$Parameters</span>, <span style="color: #0000ff;">false</span><span style="color: #000000;">);
+</span><span style="color: #008080;">196</span>    <span style="color: #008000;">//</span><span style="color: #008000;">echo '【string1】'.$String.'&lt;/br&gt;';
+</span><span style="color: #008080;">197</span> <span style="color: #008000;">   //签名步骤二：在string后加入KEY</span>
+<span style="color: #008080;">198</span>    <span style="color: #800080;">$String</span> = <span style="color: #800080;">$String</span>."&amp;key=".<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">apikey;
+</span><span style="color: #008080;">199</span>    <span style="color: #008000;">//</span><span style="color: #008000;">echo "【string2】".$String."&lt;/br&gt;";
+</span><span style="color: #008080;">200</span> <span style="color: #008000;">   //签名步骤三：MD5加密</span>
+<span style="color: #008080;">201</span>    <span style="color: #800080;">$String</span> = <span style="color: #008080;">md5</span>(<span style="color: #800080;">$String</span><span style="color: #000000;">);
+</span><span style="color: #008080;">202</span>    <span style="color: #008000;">//</span><span style="color: #008000;">echo "【string3】 ".$String."&lt;/br&gt;";
+</span><span style="color: #008080;">203</span> <span style="color: #008000;">   //签名步骤四：所有字符转为大写</span>
+<span style="color: #008080;">204</span>    <span style="color: #800080;">$result_</span> = <span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$String</span><span style="color: #000000;">);
+</span><span style="color: #008080;">205</span>    <span style="color: #008000;">//</span><span style="color: #008000;">echo "【result】 ".$result_."&lt;/br&gt;";</span>
+<span style="color: #008080;">206</span>    <span style="color: #0000ff;">return</span> <span style="color: #800080;">$result_</span><span style="color: #000000;">;
+</span><span style="color: #008080;">207</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">208</span>   <span style="color: #008000;">//</span><span style="color: #008000;">-----------</span>
+<span style="color: #008080;">209</span>   <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> http(<span style="color: #800080;">$url</span>, <span style="color: #800080;">$method</span>='POST', <span style="color: #800080;">$postfields</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$headers</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+</span><span style="color: #008080;">210</span> <span style="color: #000000;">  {
+</span><span style="color: #008080;">211</span>    <span style="color: #008080;">header</span>("Content-Type:text/html;charset=utf-8"<span style="color: #000000;">);
+</span><span style="color: #008080;">212</span>    <span style="color: #800080;">$ch</span> =<span style="color: #000000;"> curl_init();
+</span><span style="color: #008080;">213</span>    <span style="color: #008000;">/*</span><span style="color: #008000;"> Curl settings </span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">214</span>    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_URL, <span style="color: #800080;">$url</span><span style="color: #000000;">);
+</span><span style="color: #008080;">215</span>    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_POSTFIELDS, ""<span style="color: #000000;">);
+</span><span style="color: #008080;">216</span>    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_RETURNTRANSFER, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">217</span>    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">FALSE</span>); <span style="color: #008000;">//</span><span style="color: #008000;"> https请求 不验证证书和hosts</span>
+<span style="color: #008080;">218</span>    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span style="color: #0000ff;">FALSE</span><span style="color: #000000;">);
+</span><span style="color: #008080;">219</span>    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_TIMEOUT, 30<span style="color: #000000;">);
+</span><span style="color: #008080;">220</span>    <span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$method</span><span style="color: #000000;">){
+</span><span style="color: #008080;">221</span>      <span style="color: #0000ff;">case</span> 'POST':
+<span style="color: #008080;">222</span>       curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_POST, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">223</span>       <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">224</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;">225</span>    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_HTTPHEADER,<span style="color: #800080;">$headers</span><span style="color: #000000;">);
+</span><span style="color: #008080;">226</span>    curl_setopt(<span style="color: #800080;">$ch</span>, CURLINFO_HEADER_OUT, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">227</span>    <span style="color: #800080;">$response</span> = curl_exec(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">228</span>    <span style="color: #800080;">$http_code</span> = curl_getinfo(<span style="color: #800080;">$ch</span>, CURLINFO_HTTP_CODE); <span style="color: #008000;">//</span><span style="color: #008000;">返回请求状态码</span>
+<span style="color: #008080;">229</span>    curl_close(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+</span><span style="color: #008080;">230</span>    <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$http_code</span>, <span style="color: #800080;">$response</span><span style="color: #000000;">);
+</span><span style="color: #008080;">231</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">232</span> 
+<span style="color: #008080;">233</span> }</code></pre>
+
+<p>&nbsp;很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

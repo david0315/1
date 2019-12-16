@@ -1,0 +1,43 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[日常] 使用TCPDUMP和Ethereal抓包分析HTTP请求中的异常情况' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[日常] 使用TCPDUMP和Ethereal抓包分析HTTP请求中的异常情况</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11733307.html</div><br>
+    <p>在测试功能的过程中,出现这样一种现象.前端js发起ajax请求后,在浏览器的审查元素网络状态中可以看到status为pending,等15秒以后js会把当前超时的请求取消掉,变成了红色的cancel.针对这一现象,我在本地Windows电脑和远程Linux测试机进行了网络抓包分析.</p>
+<p><img src="./images/[日常] 使用TCPDUMP和Ethereal抓包分析HTTP请求中的异常情况0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>由于出现的几率很随机,但是出现频率挺高,我先在linux测试机中使用tcpdump进行的抓包分析,可以看到正常的请求是可以看得到数据的,异常的请求根本就没有连接数据,因此断定异常的数据根本就没有请求到我当前的机器.然后在本地windows电脑中使用Ethereal进行抓包分析,才发现了原因.</p>
+<p>我本地有进行域名绑定测试机host,host所使用的ip是内网IP,是这种形式172.16.228.187,但是在抓到的数据包中变成了我之前绑定的host是个公网IP,由于安全原因,公网IP已经被禁止直接访问了,才因此出现的异常.我猜测是在进行域名DNS解析的时候,偶尔会把我之前的缓存的host返回来,才造成的这种现象</p>
+<p>解决这一问题的方式是清除浏览器的所有缓存数据,清理自己的电脑的dns缓存,使用ipconfig/flushdns</p>
+<p>&nbsp;</p>
+<p><strong>那么下面这个是我正常情况下的tcpdump抓包结果,可以解释下各条记录的意义</strong><br />tcpdump -i eth1 port 80<br />使用tcpdump一定要用-i参数指定下监听哪个网卡,可以使用ifconfig查看当前ip的网卡,有的是eth0,有的是eth1,这样可以抓取到这个网卡上的数据.还要过滤一下端口号,一般就只看80端口的数据就可以了</p>
+<p>TCP三次握手的过程,可以在下面的请求中看得到.<br />第一次握手:10.222.128.166.60110 &gt; 172.16.228.187.http 这里可以知道客户端IP是10.222.128.166,请求来自于60110端口,目的IP是172.16.228.187的80端口.这里的Flag是很有意义的,Flags [S]表示的是<br />客户端的SYN请求,seq序列号是1594115281.<br />第二次握手:服务端返回给客户端Flags [S.],seq序列号4134215995, ack确认号是1594115282,ack是客户端seq的+1值<br />第三次握手:客户端给服务端 Flags [.],.表示标志位均为0 , ack是1</p>
+<p>15:40:19.988481 IP 10.222.128.166.60110 &gt; 172.16.228.187.http: Flags [S], seq 1594115281, win 8192, options [mss 1300,nop,wscale 8,nop,nop,sackOK], length 0<br />15:40:19.988528 IP 172.16.228.187.http &gt; 10.222.128.166.60110: Flags [S.], seq 4134215995, ack 1594115282, win 14600, options [mss 1460,nop,nop,sackOK,nop,wscale 7], length 0<br />15:40:19.995864 IP 10.222.128.166.60110 &gt; 172.16.228.187.http: Flags [.], ack 1, win 260, length 0</p>
+<p><br />下面就是实际的数据传输过程了,可以看到tcp的分段传输,客户端到服务端的数据seq 1:1180 ,长度1179,下一段是seq 1180:1221,长度41.<br />也可以看到应答机制,服务端给客户端的ack 1180,ack 1221.</p>
+<p>15:40:19.996031 IP 10.222.128.166.60110 &gt; 172.16.228.187.http: Flags [P.], seq 1:1180, ack 1, win 260, length 1179<br />15:40:19.996067 IP 172.16.228.187.http &gt; 10.222.128.166.60110: Flags [.], ack 1180, win 137, length 0<br />15:40:19.997779 IP 10.222.128.166.60110 &gt; 172.16.228.187.http: Flags [P.], seq 1180:1221, ack 1, win 260, length 41<br />15:40:19.997800 IP 172.16.228.187.http &gt; 10.222.128.166.60110: Flags [.], ack 1221, win 137, length 0<br />15:40:20.113390 IP 172.16.228.187.http &gt; 10.222.128.166.60110: Flags [P.], seq 1:953, ack 1221, win 137, length 952<br />15:40:20.114305 IP 172.16.228.187.http &gt; 10.222.128.166.60110: Flags [F.], seq 953, ack 1221, win 137, length 0<br />15:40:20.122015 IP 10.222.128.166.60110 &gt; 172.16.228.187.http: Flags [.], ack 954, win 256, length 0<br />15:40:20.122044 IP 10.222.128.166.60110 &gt; 172.16.228.187.http: Flags [F.], seq 1221, ack 954, win 256, length 0<br />15:40:20.122057 IP 172.16.228.187.http &gt; 10.222.128.166.60110: Flags [.], ack 1222, win 137, length 0</p>
+<p>六个标志位<br />同步SYN，在连接建立时用来同步序号。当SYN=1，ACK=0，表明是连接请求报文，若同意连接，则响应报文中应该使SYN=1，ACK=1；<br />确认ACK，仅当ACK=1时，确认号字段才有效。TCP规定，在连接建立后所有报文的传输都必须把ACK置1；<br />终止FIN，用来释放连接。当FIN=1，表明此报文的发送方的数据已经发送完毕，并且要求释放；<br />紧急URG，当URG=1，表明紧急指针字段有效。告诉系统此报文段中有紧急数据；<br />推送PSH，当两个应用进程进行交互式通信时，有时在一端的应用进程希望在键入一个命令后立即就能收到对方的响应，这时候就将PSH=1；<br />复位RST，当RST=1，表明TCP连接中出现严重差错，必须释放连接，然后再重新建立连接；</p>
+<p><br />windows电脑使用Ethereal也是需要先设置捕获的网卡,选对自己的iP网卡,可以使用ipconfig来查看</p>
+<p><img src="./images/[日常] 使用TCPDUMP和Ethereal抓包分析HTTP请求中的异常情况1.jpg" alt="" /></p>
+<p><strong>这些请求跑到了之前设置的公网IP上,根本就不会得到回应,因此前端就那里就会报出异常了</strong></p>
+<p><img src="./images/[日常] 使用TCPDUMP和Ethereal抓包分析HTTP请求中的异常情况2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

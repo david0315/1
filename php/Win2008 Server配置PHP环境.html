@@ -1,0 +1,120 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Win2008 Server配置PHP环境' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Win2008 Server配置PHP环境</center></div><div class='banquan'>原文出处:本文由博客园博主阿安安提供。<br/>
+原文连接:https://www.cnblogs.com/ydwzhang/p/10990864.html</div><br>
+    <h1 class="postTitle"><a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/aibk/p/7125685.html">Win2008 Server配置PHP环境</a></h1>
+<src class="clear">&nbsp;
+<src class="postBody">
+<src id="cnblogs_post_body" class="blogpost-body">
+<src id="navCategory">
+<p><strong>阅读目录</strong></p>
+<ul>
+<li><a href="https://aibk.cnblogs.com/p/7125685.html#_label0">创建一个网站</a></li>
+<li><a href="https://aibk.cnblogs.com/p/7125685.html#_label1">配置PHP环境</a></li>
+<li><a href="https://aibk.cnblogs.com/p/7125685.html#_label2">&nbsp;配置iis的&ldquo;处理应用程序映射&rdquo;</a></li>
+</ul>
+
+<p>在配置PHP环境之前要先配置好IIS。</p>
+<p>传送门-&gt;&nbsp;<a id="cb_post_title_url" class="postTitle2" href="https://aibk.cnblogs.com/p/7119303.html" target="_blank">Win2008 Server下配置安装IIS</a></p>
+<p>&nbsp;如果IIS是以默认的配置安装，则还需要安装CGI。</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706103752269-1914569642.png" alt="" /></p>
+<p>在这里勾选CGI，然后安装。</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706103825722-44626902.png" alt="" /></p>
+<src><a name="_label0"></a>
+<h2>创建一个网站</h2>
+<p>找到管理器</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706105204394-1554223543.png" alt="" /></p>
+<p>删除默认的网站。</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706105442440-1638417338.png" alt="" /></p>
+<p>创建一个新的网站。右击网站选择添加网站</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706105510862-509041022.png" alt="" /></p>
+<p>网站名称随意配置，物理路径为存放网站的路径</p>
+<p>如果服务器有绑定域名，在主机名那里配置。</p>
+<p>没有的话默认空就行了。</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706110224534-800407989.png" alt="" /></p>
+<p>去网站根目录随意添加一个html文档，然后测试一下</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706110352800-853373974.png" alt="" /></p>
+<p>&nbsp;<img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706110408534-2046562858.png" alt="" /></p>
+<src><a name="_label1"></a>
+<h2>配置PHP环境</h2>
+<p>下载php环境安装包，选择自己需要的版本</p>
+<p><a href="http://windows.php.net/downloads/releases/archives/">http://windows.php.net/downloads/releases/archives/</a></p>
+<p>这里我下载的是<a href="http://windows.php.net/downloads/releases/archives/php-5.6.9-nts-Win32-VC11-x86.zip">php-5.6.9-nts-Win32-VC11-x86.zip</a></p>
+<p>PHP的两种执行方式:ISAPI和FastCGI.</p>
+<p>nts是Non Thread Safe是非线程安全，这以FastCGI执行方式，他是以单一线程来执行操作，所以不需要进行线程的安全检查</p>
+<p>除去线程安全检查的防护反而可以提高执行效率，所以，如果是以FastCGI来执行PHP，建议选择NonThread Safe版本。</p>
+<p>反之如果以ISAPI执行方式，则建议选择Thread Safe版本。</p>
+<h4>下载好全部解压到自定义目录</h4>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706112624378-1275209503.png" alt="" /></p>
+<p>创建一个php.ini，php.ini由php.ini-production改名得到</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706112927128-1464232483.png" alt="" /></p>
+<h3>修改php.ini</h3>
+<p>搜索extension_dir，设置路径，</p>
+<p>里面路径为自己刚刚解压php的存放路径加上ext，记住是反斜杠，前面的分号去掉</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706113814456-1616527722.png" alt="" /></p>
+<p>根据需要开启组件，这里开启一些常用的。去掉分号就是开启了，</p>
+<p>以后如果需要什么就开启什么，当然如果嫌麻烦就现在全部开启。</p>
+<p>;extension=php_gd2.dll</p>
+<p>;extension=php_curl.dll</p>
+<p>;extension=php_mbstring.dll</p>
+<p>;extension=php_exif.dll</p>
+<p>;extension=php_mysql.dll</p>
+<p>;extension=php_mysqli.dll</p>
+<p>;extension=php_scokets.dll</p>
+<p>;extension=php_pdo_mysql.dll</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706120343706-1875617018.png" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>搜索date.timezone 设置时区，避免时间乱掉。记得分号去掉</p>
+<p>比如：Asia/Chongqing (重庆)，Asia/Shanghai (上海)，Asia/Urumqi (乌鲁木齐)，Asia/Macao (澳门)，Asia/Hong_Kong (香港)，Asia/Taipei (台北)，PRC</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706114117534-1306057224.png" alt="" /></p>
+<p>设置fastcgi.impersonate和cgi.rfc2616_headers</p>
+<p>&nbsp;<img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706115433456-372015086.png" alt="" /></p>
+<p>设置cgi.force_redirect = 0　 开启以CGI方式执行PHP</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706115609144-1612792216.png" alt="" /></p>
+<p>&nbsp;开启短标签支持，</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706115740690-1472270848.png" alt="" /></p>
+<src><a name="_label2"></a>
+<h2>&nbsp;配置iis的&ldquo;处理应用程序映射&rdquo;</h2>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706121004503-11671781.png" alt="" /></p>
+<p>添加模块映射</p>
+<p>点击右侧的&ldquo;添加模块映射&rdquo;，弹出模块映射设置窗口，名称输入&ldquo;*.php&rdquo;，</p>
+<p>模块选择&ldquo;FastCgiModule&rdquo;，执行程序选择你刚刚下载配置的PHP目录中的&ldquo;php-cgi.exe&rdquo;</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706121452675-1768914127.png" alt="" /></p>
+<p>配置默认文档</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706121704690-155522888.png" alt="" /></p>
+<p>&nbsp;点击右边的添加。</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706122340894-828046576.png" alt="" /></p>
+<p>重启IIS。</p>
+<p>在网站根目录添加一个测试文档，新建一个&ldquo;index.php&rdquo;，内容可以设置为&lt;?php phpinfo();&nbsp; ?&gt;</p>
+<p>&nbsp;<img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706123102815-489576676.png" alt="" /></p>
+<p>接着本地测试一下。</p>
+<p><img src="https://images2015.cnblogs.com/blog/1144724/201707/1144724-20170706124003581-764515087.png" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;PS：08的系统可能会缺少库，附上下载地址</p>
+<p>32位 Microsoft Visual C++ Redistributable 2012下载：<a href="http://download.microsoft.com/download/9/C/D/9CD480DC-0301-41B0-AAAB-FE9AC1F60237/VSU4/vcredist_x86.exe" target="_blank">http://download.microsoft.com/download/9/C/D/9CD480DC-0301-41B0-AAAB-FE9AC1F60237/VSU4/vcredist_x86.exe</a><br />64位 Microsoft Visual C++ Redistributable 2012下载：<a href="http://download.microsoft.com/download/9/C/D/9CD480DC-0301-41B0-AAAB-FE9AC1F60237/VSU4/vcredist_x64.exe" target="_blank">http://download.microsoft.com/download/9/C/D/9CD480DC-0301-41B0-AAAB-FE9AC1F60237/VSU4/vcredist_x64.exe</a></p>
+
+
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

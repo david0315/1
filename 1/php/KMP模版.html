@@ -1,0 +1,148 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修KMP模版' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>KMP模版</center></div><div class='banquan'>原文出处:本文由博客园博主Lop_TJ提供。<br/>
+原文连接:https://www.cnblogs.com/Tristanjiang/p/11356379.html</div><br>
+    <p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000; background-color: #ccffff;">字符串实在是太多图片了，所以为了保存我的笔记，写博客就是最好的办法</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000; background-color: #ccffff;"><span style="background-color: #ffffff;">1.KMP模版（出自caioj，但是现在不可以注册，所以我就把题面放上来）</span></span></p>
+<blockquote><center>
+<h3>1177: [视频]KMP模版：子串是否出现(元问题 by scy)</h3>
+<span class="green">时间限制: 1 Sec&nbsp;&nbsp;<span class="green">内存限制: 256 MB<br /><span class="green">提交: 686&nbsp;&nbsp;<span class="green">解决: 455<br />[<a href="http://61.142.69.42:81/submitpage.php?id=1177">提交</a>] [<a href="http://61.142.69.42:81/problemstatus.php?id=1177">状态</a>] [<a href="http://61.142.69.42:81/bbs.php?pid=1177">讨论版</a>] [命题人:<span id="creator"><a href="http://61.142.69.42:81/userinfo.php?user=admin">admin</a>]</span></span></span></span></span></center>
+<h4>题目描述</h4>
+<src class="content">【题意】<br /> 有两个字符串SA和SB，SA是母串，SB是子串，问子串SB是否在母串SA中出现过。<br /> 如果出现过输出第一次出现的起始位置和结束位置，否则输出"NO"<br />【输入文件】<br /> 第一行SA（1 &lt;= 长度 &lt;= 100 0000）<br /> 第二行SB（1 &lt;= 长度 &lt;= 1000）<br /> 【输出文件】<br /> 如果SB在SA中出现过输出第一次出现的起始位置和结束位置，否则输出"NO"<br />【样例1输入】<br />aaaaabaa<br /> aab<br />【样例1输出】<br />4 6<br />【样例2输入】<br />aaaaabaa<br /> aax<br />【样例2输出】
+<src class="content">NO
+
+
+
+
+</blockquote>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">我们第一个想到的一定是朴素算法，就是我们在sa长度每一个枚举sb的长度，看看有没有相同的，但是很遗憾，因为数据10万，O(nm)的时间复杂度怎么可能不炸呢？</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">所以我们就要用到一个很高级的东西就是KMP算法，这个算法是专门处理这些寻找字符串配对的一个算法，很好理解也很好实现，所以看一下我们下面的解释</span></p>
+<blockquote>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000;">我们需要定义一个p数组，这个p数组就是KMP模版题的最关键的地方</span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000;">p[ ]是记录sb[ ]当中从后面开始往前延伸几个字符，可以与前面开始往后延伸几个字符相匹配，</span><br /><span style="font-family: 'Microsoft YaHei'; font-size: 16px;"><span style="color: #000000;">就是字符的后缀和字符的前缀进行匹配，仅仅与sb[ ]有关</span><span style="text-decoration: underline;"><span style="color: #ff0000; text-decoration: underline;"> 记住：仅仅与sb[ ]有关</span></span></span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000;">那么这个这么抽象的p数组到底是干什么用的呢？</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000;">因为我们是把前后匹配的，每一个sb的位置都要匹配，所以我们如果要找第i个位置的 p[i]的时候，我们可以选择继承 p[i-1]的，继承分为两种</span><span style="color: #000000;">&nbsp;</span></p>
+<ul>
+<li><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">第一种就是如果我们搜索到的前缀的后一个等于我们的i，那么我们的p[i]等于p[i-1]+1</span></li>
+<li><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">第二种就是不等于的，我重点讲一下第二种情况</span></li>
+
+
+</ul>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000;"><img src="./images/KMP模版0.jpg" alt="" /></span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000;">&nbsp;这张图非常的重要，<span style="color: #ff0000;">（图片看不清楚，一定要下载下来看清楚颜色的范围）</span>因为他非常清晰的描述了我们KMP算法高效率的实现过程，为了方便，我们先定义 j=p[i-1]</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000;">如果找不到的话，我们就将j继承为 p[j]也就是上面图中的 p[p[i-1]]的位置，然后按照一步一步往下，我们就可以找到和i相等或者根本找不到相等的，</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px; color: #000000; background-color: #999999;">所以就是这样</span></p>
+
+
+</blockquote>
+<p>&nbsp;<span style="font-family: 'Microsoft YaHei'; font-size: 16px;">那么我相信到这里，大佬们已经不屑于看了，剩下就是<span style="font-size: 14pt;">代码的实现</span></span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;"><span style="font-size: 14pt;">（注释版，想要看代码理解的实现就打开这个）</span></span></p>
+<src class="cnblogs_code" onclick="cnblogs_code_show('85288a8c-b1a8-4438-bdd0-713e8c4f55cf')"><img id="code_img_closed_85288a8c-b1a8-4438-bdd0-713e8c4f55cf" class="code_img_closed" src="./images/KMP模版1.jpg" alt="" /><img id="code_img_opened_85288a8c-b1a8-4438-bdd0-713e8c4f55cf" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('85288a8c-b1a8-4438-bdd0-713e8c4f55cf',event)" src="./images/KMP模版2.jpg" alt="" />
+<src id="cnblogs_code_open_85288a8c-b1a8-4438-bdd0-713e8c4f55cf" class="cnblogs_code_hide">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">朴素算法：在sa字符串当中按照sb的长度枚举，长度相同且字符相同的时候，记录下来，时间复杂度O(nm)</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 2</span> #include&lt;cstdio&gt;
+<span style="color: #008080;"> 3</span> #include&lt;cstring&gt;
+<span style="color: #008080;"> 4</span> #include&lt;cstdlib&gt;
+<span style="color: #008080;"> 5</span> #include&lt;algorithm&gt;
+<span style="color: #008080;"> 6</span> #include&lt;cmath&gt;
+<span style="color: #008080;"> 7</span> #include&lt;iostream&gt;
+<span style="color: #008080;"> 8</span> <span style="color: #0000ff;">using</span> <span style="color: #0000ff;">namespace</span><span style="color: #000000;"> std;
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">char</span> sa[<span style="color: #800080;">1000010</span>],sb[<span style="color: #800080;">1010</span><span style="color: #000000;">];
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">int</span> p[<span style="color: #800080;">1010</span><span style="color: #000000;">];
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">/*</span><span style="color: #008000;">p[]是记录sb[]当中从后面开始往前延伸几个字符，可以与前面开始往后延伸几个字符相匹配，
+</span><span style="color: #008080;">12</span> <span style="color: #008000;">就是字符的后缀和字符的前缀进行匹配，仅仅与sb[]有关</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">13</span> <span style="color: #0000ff;">int</span><span style="color: #000000;"> main()
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">15</span>     scanf(<span style="color: #800000;">"</span><span style="color: #800000;">%s%s</span><span style="color: #800000;">"</span>,sa+<span style="color: #800080;">1</span>,sb+<span style="color: #800080;">1</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span>     <span style="color: #0000ff;">int</span> lena=strlen(sa+<span style="color: #800080;">1</span>),lenb=strlen(sb+<span style="color: #800080;">1</span><span style="color: #000000;">);
+</span><span style="color: #008080;">17</span>     p[<span style="color: #800080;">1</span>]=<span style="color: #800080;">0</span>;<span style="color: #008000;">/*</span><span style="color: #008000;">p数组初始化</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">for</span>(<span style="color: #0000ff;">int</span> i=<span style="color: #800080;">2</span>;i&lt;=lenb;i++<span style="color: #000000;">)
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">20</span>         <span style="color: #0000ff;">int</span> j=p[i-<span style="color: #800080;">1</span>];<span style="color: #008000;">/*</span><span style="color: #008000;">偷懒操作，如果前面一个人找到了，然后我们现在要搜索的，与前面匹配完的后一个相同，那么就很好了</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">21</span>         <span style="color: #0000ff;">while</span>(j&gt;<span style="color: #800080;">0</span> &amp;&amp; sb[i]!=sb[j+<span style="color: #800080;">1</span>]) j=p[j];<span style="color: #008000;">/*</span><span style="color: #008000;">这个就是p[]的重要性，不能直接继承前面的状态的话，就进行一个很神奇的操作
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">        |1--la----lb--|2-|6------|3--lc----ld--|4-|5----    
+</span><span style="color: #008080;">23</span> <span style="color: #008000;">        （这是一个很抽象的图，l5表示我们当前要匹配的，l3-l4是上一个匹配好的，l1-l2是和上一个匹配的前缀）
+</span><span style="color: #008080;">24</span> <span style="color: #008000;">        然后我们发现l5!=l6，所以不能继承前面的状态，那就意味着要重新搜索？不，我们可以把j定义到l2这个位置，也就是p[j]，
+</span><span style="color: #008080;">25</span> <span style="color: #008000;">        为什么呢？因为我们把l2作为我们要搜索匹配的最后一个数，然后往前搜索，显然：
+</span><span style="color: #008080;">26</span> <span style="color: #008000;">        l1~la=lb~l2=l3~lc=ld~l4，但是我们需要的只是l1~la=ld~l4，因为他们相同，并且他们的下一个分别相同，那么我们的i就匹配完了，
+</span><span style="color: #008080;">27</span> <span style="color: #008000;">        就可以退出记录答案了，但是如果不匹配，就继续将j定义到la这个位置，让他搜索</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">28</span>         <span style="color: #0000ff;">if</span>(sb[i]==sb[j+<span style="color: #800080;">1</span>]) p[i]=j+<span style="color: #800080;">1</span>; <span style="color: #0000ff;">else</span> p[i]=<span style="color: #800080;">0</span>; <span style="color: #008000;">/*</span><span style="color: #008000;">如果相同，就直接记录答案，否则没有答案（退出while之后才会来到这里）</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">29</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">30</span>     <span style="color: #0000ff;">int</span> st,ed,j=<span style="color: #800080;">0</span>;<span style="color: #008000;">/*</span><span style="color: #008000;">j表示匹配成功的个数</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">31</span>     <span style="color: #0000ff;">for</span>(<span style="color: #0000ff;">int</span> i=<span style="color: #800080;">1</span>;i&lt;=lena;i++)<span style="color: #008000;">/*</span><span style="color: #008000;">这个就是关于我们匹配好的p[]要怎么运用？</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">32</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">33</span>     <span style="color: #008000;">/*</span>
+<span style="color: #008080;">34</span> <span style="color: #008000;">    ------------|a--|5-|6--|b-l1------- sa
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">        |c--|3-|4--|d-l2--              sb   这里表示两个字符串，然后我们从1开始枚举lena，发现有相同之后就j++，当然我们自然希望下一位继续相同，
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">        但是如果不相同呢？那就要用到我们的p[]，假设当前j=5，然后分割出来的两个区间是完全相同的，同样的l1!=l2 
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">        这个时候我们就把j定义当ld，搜索到: lc~l3=l4~ld=la~l5=l6~lb，然后我们的目的就是要让
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">        lc~l3=lb~lb，这个时候只要他们的下一个相同就又有一部分相同的，就是这个道理和上面的是一样的 
+</span><span style="color: #008080;">39</span>     <span style="color: #008000;">*/</span> 
+<span style="color: #008080;">40</span>         <span style="color: #0000ff;">while</span>(j&gt;<span style="color: #800080;">0</span> &amp;&amp; sa[i]!=sb[j+<span style="color: #800080;">1</span>]) j=<span style="color: #000000;">p[j];
+</span><span style="color: #008080;">41</span>         <span style="color: #0000ff;">if</span>(sa[i]==sb[j+<span style="color: #800080;">1</span>]) j++<span style="color: #000000;">;
+</span><span style="color: #008080;">42</span>         <span style="color: #0000ff;">if</span>(j==lenb){ed=i; st=i-lenb+<span style="color: #800080;">1</span>; <span style="color: #0000ff;">break</span><span style="color: #000000;">;}
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">44</span>     <span style="color: #0000ff;">if</span>(j==lenb) printf(<span style="color: #800000;">"</span><span style="color: #800000;">%d %d\n</span><span style="color: #800000;">"</span>,st,ed); <span style="color: #0000ff;">else</span> printf(<span style="color: #800000;">"</span><span style="color: #800000;">NO\n</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+</span><span style="color: #008080;">45</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+</span><span style="color: #008080;">46</span> }</code></pre>
+
+<span class="cnblogs_code_collapse">Tristan code 注释版</span>
+<p>&nbsp;</p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;"><span style="font-size: 14pt;">（非注释版，已经能够理解并且打出代码的就看这个）</span></span></p>
+<src class="cnblogs_code" onclick="cnblogs_code_show('ecfb6e52-1c13-412b-b675-769bf5be4895')"><img id="code_img_closed_ecfb6e52-1c13-412b-b675-769bf5be4895" class="code_img_closed" src="./images/KMP模版1.jpg" alt="" /><img id="code_img_opened_ecfb6e52-1c13-412b-b675-769bf5be4895" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('ecfb6e52-1c13-412b-b675-769bf5be4895',event)" src="./images/KMP模版2.jpg" alt="" />
+<src id="cnblogs_code_open_ecfb6e52-1c13-412b-b675-769bf5be4895" class="cnblogs_code_hide">
+<pre><code><span style="color: #008080;"> 1</span> #include&lt;cstdio&gt;
+<span style="color: #008080;"> 2</span> #include&lt;cstring&gt;
+<span style="color: #008080;"> 3</span> #include&lt;cstdlib&gt;
+<span style="color: #008080;"> 4</span> #include&lt;algorithm&gt;
+<span style="color: #008080;"> 5</span> #include&lt;cmath&gt;
+<span style="color: #008080;"> 6</span> #include&lt;iostream&gt;
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">using</span> <span style="color: #0000ff;">namespace</span><span style="color: #000000;"> std;
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">char</span> sa[<span style="color: #800080;">1000010</span>],sb[<span style="color: #800080;">1010</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">int</span> p[<span style="color: #800080;">1010</span><span style="color: #000000;">];
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">int</span><span style="color: #000000;"> main()
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">12</span>     scanf(<span style="color: #800000;">"</span><span style="color: #800000;">%s</span><span style="color: #800000;">"</span>,sa+<span style="color: #800080;">1</span>); scanf(<span style="color: #800000;">"</span><span style="color: #800000;">%s</span><span style="color: #800000;">"</span>,sb+<span style="color: #800080;">1</span><span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>     <span style="color: #0000ff;">int</span> lena=strlen(sa+<span style="color: #800080;">1</span>),lenb=strlen(sb+<span style="color: #800080;">1</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>     p[<span style="color: #800080;">1</span>]=<span style="color: #800080;">0</span><span style="color: #000000;">;
+</span><span style="color: #008080;">15</span>     <span style="color: #0000ff;">for</span>(<span style="color: #0000ff;">int</span> i=<span style="color: #800080;">2</span>;i&lt;=lenb;i++<span style="color: #000000;">)
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">17</span>         <span style="color: #0000ff;">int</span> j=p[i-<span style="color: #800080;">1</span><span style="color: #000000;">];
+</span><span style="color: #008080;">18</span>         <span style="color: #0000ff;">while</span>(j&gt;<span style="color: #800080;">0</span> &amp;&amp; sb[i]!=sb[j+<span style="color: #800080;">1</span>]) j=<span style="color: #000000;">p[j];
+</span><span style="color: #008080;">19</span>         <span style="color: #0000ff;">if</span>(sb[i]==sb[j+<span style="color: #800080;">1</span>]) p[i]=j+<span style="color: #800080;">1</span>; <span style="color: #0000ff;">else</span> p[i]=<span style="color: #800080;">0</span><span style="color: #000000;">;
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">21</span>     <span style="color: #0000ff;">int</span> st,ed,j=<span style="color: #800080;">0</span><span style="color: #000000;">;
+</span><span style="color: #008080;">22</span>     <span style="color: #0000ff;">for</span>(<span style="color: #0000ff;">int</span> i=<span style="color: #800080;">1</span>;i&lt;=lena;i++<span style="color: #000000;">)
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">24</span>         <span style="color: #0000ff;">while</span>(j&gt;<span style="color: #800080;">0</span> &amp;&amp; sa[i]!=sb[j+<span style="color: #800080;">1</span>]) j=<span style="color: #000000;">p[j];
+</span><span style="color: #008080;">25</span>         <span style="color: #0000ff;">if</span>(sa[i]==sb[j+<span style="color: #800080;">1</span>]) j++<span style="color: #000000;">;
+</span><span style="color: #008080;">26</span>         <span style="color: #0000ff;">if</span>(j==lenb){ed=i; st=i-lenb+<span style="color: #800080;">1</span>; <span style="color: #0000ff;">break</span><span style="color: #000000;">;}
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">28</span>     <span style="color: #0000ff;">if</span>(j==lenb) printf(<span style="color: #800000;">"</span><span style="color: #800000;">%d %d\n</span><span style="color: #800000;">"</span>,st,ed); <span style="color: #0000ff;">else</span> printf(<span style="color: #800000;">"</span><span style="color: #800000;">NO\n</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+</span><span style="color: #008080;">29</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+</span><span style="color: #008080;">30</span> }</code></pre>
+
+<span class="cnblogs_code_collapse">Tristan Code 非注释版</span>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

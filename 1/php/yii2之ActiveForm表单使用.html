@@ -1,0 +1,328 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修yii2之ActiveForm表单使用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>yii2之ActiveForm表单使用</center></div><div class='banquan'>原文出处:本文由博客园博主link_xjxj提供。<br/>
+原文连接:https://www.cnblogs.com/jjq-exchange/p/10669570.html</div><br>
+    <p><span style="font-size: 14pt; font-family: arial, helvetica, sans-serif;"><span style="font-family: 隶书;"><strong>因目前项目并非前后端分离模式，且用到PHP的yii2框架（所有html代码，js较多内嵌在.php文件内多少采用同步提交【<strong>喷墨中...】</strong>），遂对于前端面上需要用到的yii2小组件一些整理（因是前端若涉及到php写法错误或者风格问题，敬请指点）</strong></span></span></p>
+<p><span style="font-size: 14pt; font-family: arial, helvetica, sans-serif;"><span style="font-family: 隶书;"><strong>&nbsp;使用场景尽量为表单</strong></span></span></p>
+<p><span style="font-size: 14pt; font-family: arial, helvetica, sans-serif;"><span style="font-family: 隶书;"><strong>　　基础注册调用小组件</strong></span></span></p>
+<p><span style="font-size: 14pt; font-family: arial, helvetica, sans-serif;"><span style="font-family: 隶书;"><strong>　　</strong></span></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+　　</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> yii\helpers\Html;
+　　</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> yii\widgets\ActiveForm;<br />？&gt;
+<br />　　//首先注册activeForm小部件，并赋值给$form(php中的声明变量方法用$ 等价于js中的var let)<br />　　//begin 标志小部件开始
+　　&lt;?php </span><span style="color: #800080;">$form</span> = ActiveForm::<span style="color: #000000;">begin([
+    　　</span>'id' =&gt; 'login-form', //声明小部件的id 即form的id<br />　　　　 //声明需要添加的属性 ，例如class ， data-x等
+    　　'options' =&gt; ['class' =&gt; 'form-horizontal'],<span style="color: #000000;">
+　　]) </span>?&gt;<br /><br />　　　　//注册完小部件后可以在 activeForm小部件声明块中调用小部件的方法
+　　    &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'password')-&gt;passwordInput() ?&gt;<br />
+//：：end标识小部件结束
+&lt;?php ActiveForm::<span style="color: #008080;">end</span>() ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-family: 楷体;"><span><span style="font-size: 15px;">1.首先就列出activeForm的一些基本方法：</span></span></span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　自定义input框：input();</span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　文本框:<code>textInput();</code>&nbsp;</span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　密码框:<code>passwordInput();</code></span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;"><code>　　</code></span><span style="font-family: 仿宋;">单选框:<code>radio()</code>,<code>radioList();</code>&nbsp;</span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　复选框:<code>checkbox()</code>,<code>checkboxList();</code></span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　下拉框:<code>dropDownList();</code>&nbsp;</span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　多选列表:listBox<code>();</code>&nbsp;</span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　隐藏域:<code>hiddenInput();</code>&nbsp;</span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　文本域:<code>textarea(['rows'=&gt;3]);</code>&nbsp;</span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　文件上传:<code>fileInput();</code>&nbsp;</span></p>
+<p><span style="font-size: 14px; font-family: 仿宋;">　　widget扩展 <span class="php"><span class="hljs-preprocessor">&lt;?= <span class="hljs-variable">$form-&gt;field(<span class="hljs-variable">$model, <span class="hljs-string">'username')-&gt;widget(\yii\widgets\MaskedInput::className(), [<span class="hljs-string">'mask' =&gt; <span class="hljs-string">'9999/99/99',]); <span class="hljs-preprocessor">?&gt;</span></span></span></span></span></span></span></span></span></p>
+<p>&nbsp;</p>
+<p><span class="php"><span class="hljs-preprocessor"><span class="xml"><span class="php"><span class="hljs-meta">&nbsp;2.下面我就逐一描述下各个方法的基本调用以及如何自定义所需(上述各方法中input之前均是描述的是input标签的类型)</span></span></span></span></span></p>
+<p><span class="php"><span class="hljs-preprocessor"><span class="xml"><span class="php"><span class="hljs-meta">　　2.1 input 文本框/密码框以及各指定类型框</span></span></span></span></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php <span style="color: #800080;">$form</span>=ActiveForm::begin(['id'=&gt;'login','class'=&gt;'login'])?&gt;
+    &lt;!-- 简易用法 使用activeForm 的 fiedld方法  --&gt;
+    &lt;!--<span style="color: #000000;"> 其中 该方法下有 
+        textInout</span>/<span style="color: #000000;">passwordInput 等一些常用input类型方法
+        hint 输入前的提示内容
+        error 错误内容 </span><span style="color: #008000;">//</span><span style="color: #008000;">一般由后台生成</span>
+<span style="color: #000000;">        label 可以更改label内的内容
+        在hint</span>,error,<span style="color: #000000;">label设置class后将会重置了 这些方法内原来属于容器上的class若需要可以原样赋回去
+    </span>--&gt;
+    &lt;!--<span style="color: #000000;"> 这里的
+        </span><span style="color: #800080;">$mode为跟字段有关的数据模型</span><span style="color: #000000;"> ，
+        第二个参数为关系模型中的字段不存在将报错，
+        第三个参数为模板内的一些内容的进行自定义
+    </span>--&gt;
+    &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username',<span style="color: #000000;">[
+        </span>'options'=&gt;[],<span style="color: #008000;">//</span><span style="color: #008000;">数组里面可以设置自需属性
+        // template 为字符串模板可自定义模板 ，
+        // 其中 {label} {input} {hint} {error} 存在是会调用对应封装好的html模板 当然你也可以不写这样就不会生成yii2内置小部件模板</span>
+        'template' =&gt; '{label} {input} {hint} {error}',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 以下三个分别可以设置label ，input ，hint，error的属性（都是选填项）
+        // 其中如果后面有使用-&gt;input...,label(...)等将会将这些里面的配置合并值对应的xxxOptions 内</span>
+        'labelOptions' =&gt;<span style="color: #000000;"> [
+            </span>'class'=&gt;'需要在label上添加的类名'
+            <span style="color: #008000;">//</span><span style="color: #008000;">....其他属性集</span>
+        ],
+        'inputOptions' =&gt; [],
+        'hintOptions' =&gt; [],
+        'errorOptions' =&gt; [],<span style="color: #000000;">
+    ])</span>-&gt;<span style="color: #000000;">textInput([
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 在options数组内可以设置任意属性</span>
+        'class'=&gt;'testClass',
+        'value'=&gt;'测试'<span style="color: #000000;">
+    ])</span>-&gt;<span style="color: #000000;">hint(
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 设置提示内容，当只有一个参数切为false（boolean）用于显示提示的标签</span>
+        'Please enter your name',<span style="color: #000000;">
+        [
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 设置任意属性</span>
+            'class' =&gt; 'testHint'<span style="color: #000000;">
+    ])</span>-&gt;<span style="color: #000000;">label(
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 设置label显示内容，当只有一个参数切为false（boolean）label标签将不会被渲染</span>
+        'Name',<span style="color: #000000;">
+        [
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 设置任意属性</span>
+            'class' =&gt;'testLabel'<span style="color: #000000;">
+    ])</span>-&gt;<span style="color: #000000;">error([
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 任意属性，当只有一个参数切为false（boolean）用于显示错误的标签</span>
+        'class'=&gt;'errors'<span style="color: #000000;">
+    ]) </span>?&gt;
+
+    &lt;!-- 可自定义类型input 这里只描述了input的参数  其余参数参考上个示例 --&gt;
+    &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username')-&gt;<span style="color: #000000;">input(
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> input内只允许放置两个参数即[type ,options]</span>
+        'email',<span style="color: #008000;">//</span><span style="color: #008000;">该处为指定type="xxxx"的input类型</span>
+        ['class'=&gt;'tests','value'=&gt;'值']<span style="color: #008000;">//</span><span style="color: #008000;">可在内部定义任何属性</span>
+    ) ?&gt;
+                       
+&lt;?php ActiveForm::<span style="color: #008080;">end</span>();?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>　　&nbsp;2.2 radio 单选框系列</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php <span style="color: #800080;">$form</span>=ActiveForm::begin(['id'=&gt;'login','class'=&gt;'login'])?&gt;
+
+    &lt;!--<span style="color: #000000;"> 
+        老实说对这个radio方法相当迷惑  一个单选按钮选择而且一旦选择无法取消，无法一次柑橘属性放置多个值 在有radioList方法的前提下觉得相当鸡肋
+        第二个参数中false为是否开启label标签若没开启 labelOption 将无效  ，label设置的值直接显示在容器内
+     </span>--&gt;
+    &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username')-&gt;<span style="color: #000000;">radio([
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 隐藏域中的值</span>
+        'uncheck' =&gt;'test1',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 定义lebal的内容</span>
+        'label' =&gt;'test',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> label上的任意属性</span>
+        'labelOptions'=&gt;<span style="color: #000000;">[
+            </span>'gs'=&gt;'test'<span style="color: #000000;">
+        ]
+    ]</span>,<span style="color: #0000ff;">false</span>)?&gt;
+
+    &lt;!--<span style="color: #000000;"> 
+        单选框组 
+
+        若要设置默认值，则在对应控制器中将指定字段设置为 需要选择的值
+        </span><span style="color: #800080;">$model</span>-&gt;username = 1<span style="color: #000000;">;
+    </span>--&gt;
+
+    &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username')-&gt;<span style="color: #000000;">radioList([
+        </span>'0'=&gt;'a',
+        '1'=&gt;'b',
+        '2'=&gt;'c'<span style="color: #000000;">
+    ]</span>,<span style="color: #000000;">[
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> tag声改变 class="radio"的父级标签 若tag设置为h3 
+        //    则 &lt;div id="loginform-username" key="testKey" role="radiogroup" aria-required="true"&gt; 
+        //    =&gt; 转为 &lt;h3 id="loginform-username" key="testKey" role="radiogroup" aria-required="true"&gt;
+        // &lt;div class="form-group field-loginform-username required"&gt;
+        //     &lt;label class="control-label"&gt;Username&lt;/label&gt;
+        //     &lt;input type="hidden" name="LoginForm[username]" value=""&gt;
+        //     &lt;div id="loginform-username" key="testKey" role="radiogroup" aria-required="true"&gt;
+        //         &lt;div class="radio"&gt;&lt;label&gt;&lt;input type="radio" name="LoginForm[username]" value="0"&gt; a&lt;/label&gt;&lt;/div&gt;
+        //         &lt;div class="radio"&gt;&lt;label&gt;&lt;input type="radio" name="LoginForm[username]" value="1"&gt; b&lt;/label&gt;&lt;/div&gt;
+        //         &lt;div class="radio"&gt;&lt;label&gt;&lt;input type="radio" name="LoginForm[username]" value="2"&gt; c&lt;/label&gt;&lt;/div&gt;
+        //     &lt;/div&gt;
+
+        //     &lt;p class="help-block help-block-error"&gt;&lt;/p&gt;
+        // &lt;/div&gt;</span>
+        'tag'=&gt;'h3',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 未选择是默认提交的值</span>
+        'unselect'=&gt;'1',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 如果设置了item选项，则忽略此选项</span>
+        'encode'=&gt;<span style="color: #0000ff;">false</span>,
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 每个单选块之间的内容 写的是什么字符串输出就什么字符串</span>
+        'separator'=&gt;'',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 定义在每个input单选按钮上的属性</span>
+        'itemOptions'=&gt;<span style="color: #000000;">[
+            </span>'tess'=&gt;'jzq'<span style="color: #000000;">
+        ]</span>,<br />　　　　　　//可调用的回调，可用于自定义与$Item中单个项对应的HTML代码的生成。此回调的签名必须是：函数($index、$Label、$name、$check、$value)，<br />　　　　　　//其中$index是整个列表中单选按钮的基于零的索引；$Label是单选按钮的标签；$name、$value和$check表示单选按钮输入的名称、值和选中状态。
+        'item'=&gt;<span style="color: #0000ff;">function</span>(<span style="color: #800080;">$index</span>, <span style="color: #800080;">$label</span>, <span style="color: #800080;">$name</span>, <span style="color: #800080;">$checked</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">){
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 这块跟encode是在下才疏学浅暂时还未明白啥子用处，待弄明白后在补上，若有码友知晓这块具体作用用法，希望不吝赐教，感激
+            // echo $index, $label, $name, $checked, $value;</span>
+        },
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 除此yii2有规定属性之外还可自定义任意属性  且上述属性均不是必填</span>
+    ])?&gt;</code></pre>
+
+<p>　　2.3 checkbox多选框系列</p>
+<p>　　</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php <span style="color: #800080;">$form</span>=ActiveForm::begin(['id'=&gt;'login','class'=&gt;'login'])?&gt;
+
+    &lt;!--<span style="color: #000000;"> 
+        checbox方法
+        该方法与radio 方法近似就不多说了 直接撸代码 具体可参考 radio
+     </span>--&gt;
+    &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username')-&gt;<span style="color: #000000;">checkbox([
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 隐藏域中的值</span>
+        'uncheck' =&gt;'test1',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 定义lebal的内容</span>
+        'label' =&gt;'test',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> label上的任意属性</span>
+        'labelOptions'=&gt;<span style="color: #000000;">[
+            </span>'gs'=&gt;'test'<span style="color: #000000;">
+        ]
+    ]</span>,<span style="color: #0000ff;">true</span>)?&gt;
+
+    &lt;!--<span style="color: #000000;"> 
+        checkboxList方法
+        多选框
+     </span>--&gt;
+     &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username')-&gt;<span style="color: #000000;">checkboxList([
+        </span>'1'=&gt;'篮球',
+        '2'=&gt;'足球',
+        '3'=&gt;'游戏',
+        '4'=&gt;'读书'<span style="color: #000000;">
+    ]</span>,<span style="color: #000000;">[
+         </span><span style="color: #008000;">//</span><span style="color: #008000;"> tag声改变 class="radio"的父级标签 若tag设置为h3 
+        //    则 &lt;div id="loginform-username" key="testKey" role="radiogroup" aria-required="true"&gt; 
+        //    =&gt; 转为 &lt;h3 id="loginform-username" key="testKey" role="radiogroup" aria-required="true"&gt;
+        // &lt;div class="form-group field-loginform-username required"&gt;
+        //     &lt;label class="control-label"&gt;Username&lt;/label&gt;
+        //     &lt;input type="hidden" name="LoginForm[username]" value=""&gt;
+        //     &lt;div id="loginform-username" key="testKey" role="radiogroup" aria-required="true"&gt;
+        //         &lt;div class="radio"&gt;&lt;label&gt;&lt;input type="radio" name="LoginForm[username]" value="0"&gt; a&lt;/label&gt;&lt;/div&gt;
+        //         &lt;div class="radio"&gt;&lt;label&gt;&lt;input type="radio" name="LoginForm[username]" value="1"&gt; b&lt;/label&gt;&lt;/div&gt;
+        //         &lt;div class="radio"&gt;&lt;label&gt;&lt;input type="radio" name="LoginForm[username]" value="2"&gt; c&lt;/label&gt;&lt;/div&gt;
+        //     &lt;/div&gt;
+
+        //     &lt;p class="help-block help-block-error"&gt;&lt;/p&gt;
+        // &lt;/div&gt;</span>
+        'tag'=&gt;'h3',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 未选择是默认提交的值</span>
+        'unselect'=&gt;'1',
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 如果设置了item选项，则忽略此选项</span>
+        'encode'=&gt;<span style="color: #0000ff;">false</span>,
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 每个单选块之间的内容 写的是什么字符串输出就什么字符串,建议如无特殊情况 请忽视该字段
+        // 'separator'=&gt;',',
+        // 定义在每个input单选按钮上的属性</span>
+        'itemOptions'=&gt;<span style="color: #000000;">[
+            </span>'tess'=&gt;'jzq'<span style="color: #000000;">
+        ]</span>,
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 用于替换html指向函数后若不做操作将会输出空
+        // 'item'=&gt;function($index, $label, $name, $checked, $value){
+            // 这块跟encode是在下才疏学浅暂时还未明白啥子用处，待弄明白后在补上，若有码友知晓这块具体作用用法，希望不吝赐教，感激
+            // echo $index, $label, $name, $checked, $value;
+        // },
+        // 除此yii2有规定属性之外还可自定义任意属性  且上述属性均不是必填</span>
+    ])?&gt;
+
+                       
+&lt;?php ActiveForm::<span style="color: #008080;">end</span>();?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>　　2.4 select下拉列表系列</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php <span style="color: #800080;">$form</span>=ActiveForm::begin(['id'=&gt;'login','class'=&gt;'login'])?&gt;
+
+    &lt;!--<span style="color: #000000;"> 
+        dropDownList方法
+        下拉列表
+     </span>--&gt;
+     &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username')-&gt;<span style="color: #000000;">dropDownList([
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">  二维数组直接回报上组标签</span>
+        'test'=&gt;<span style="color: #000000;">[
+            </span>'1'=&gt;'篮球',
+            '2'=&gt;'足球',<span style="color: #000000;">
+        ]</span>,
+        '3'=&gt;'游戏',
+        '4'=&gt;'读书'<span style="color: #000000;">
+    ]</span>,<span style="color: #000000;">[
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 设置下拉列表的默认请选择选项</span>
+        'prompt'=&gt;<span style="color: #000000;">[
+            </span>'text' =&gt; '请选择', 
+            'options' =&gt; ['value' =&gt; 'none', 'class' =&gt; 'prompt', 'label' =&gt; 'Select'<span style="color: #000000;">]
+        ]</span>,
+        'encode'=&gt;<span style="color: #0000ff;">false</span>,
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 对select option的设置条件以及更改内容</span>
+        'options'=&gt;<span style="color: #000000;">[
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 设置禁止选择项</span>
+            '2' =&gt; ['disabled' =&gt; <span style="color: #0000ff;">true</span>],
+            <span style="color: #008000;">//</span>替换或者追加指定key的内容,实际上原内容还在只是假设了 label 属性 和显示了 label的属性值</code></pre>
+<pre><code>            '4' =&gt; ['label' =&gt; 'value 2'],<span style="color: #000000;">
+        ]</span>,
+        'encodeSpaces'=&gt;<span style="color: #0000ff;">true</span>
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 除此yii2有规定属性之外还可自定义任意属性  且上述属性均不是必填</span>
+    ])?&gt;
+
+    
+
+        
+                       
+&lt;?php ActiveForm::<span style="color: #008080;">end</span>();?&gt;</code></pre>
+
+<p>　　&nbsp;2.5 widget 小部件</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php <span style="color: #800080;">$form</span>=ActiveForm::begin(['id'=&gt;'login','class'=&gt;'login'])?&gt;
+
+    &lt;!--<span style="color: #000000;"> 
+        小部件
+        用于强制输入正确内容的input部件
+     </span>--&gt;
+    &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username',<span style="color: #000000;">[
+        </span>'template'=&gt;'&lt;h2&gt;test&lt;/h2&gt; {label} {input} {error}'<span style="color: #000000;">
+    ])</span>-&gt;widget(\yii\widgets\MaskedInput::className(),<span style="color: #000000;"> [
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 指定input类型
+        // 'type'=&gt;'time',
+        // 指定必须输入的类型</span>
+        'mask' =&gt; '999-9999-9999',
+        'options'=&gt;['class' =&gt; 'form-control test'<span style="color: #000000;">]
+    ]); </span>?&gt;
+
+    &lt;!--<span style="color: #000000;"> 
+        用于生成带图片验证的input小部件
+        </span>--&gt;
+    &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'verifyCode')-&gt;widget(Captcha::className(),<span style="color: #000000;"> [
+        </span>'captchaAction' =&gt; 'login/captcha',
+        'options' =&gt;<span style="color: #000000;"> [
+            </span>'class' =&gt; 'two',
+            'id'=&gt;'two',
+            'placeholder' =&gt; '请输入验证码',<span style="color: #000000;">
+        ]</span>,
+        'template' =&gt; '{input}{image}',
+        'imageOptions' =&gt;<span style="color: #000000;"> [
+            </span>'alt' =&gt; 'images',<span style="color: #000000;">
+        ]
+    ])</span>?&gt;
+</code></pre>
+<pre><code>　　--------------------- 最后一个并未实测   -------------------------------</code></pre>
+<pre><code>&lt;!-- 自定义小部件 需在widget文件定义源文件 --&gt; &lt;?= <span style="color: #800080;">$form</span>-&gt;field(<span style="color: #800080;">$model</span>, 'username')-&gt;widget('WidgetClassName',<span style="color: #000000;"> [ </span><span style="color: #008000;">//</span><span style="color: #008000;"> configure additional widget properties here</span> ]) ?&gt; &lt;?php ActiveForm::<span style="color: #008080;">end</span>();?&gt;</code></pre>
+
+<p><span style="color: #ff0000;">&nbsp;以上是这段时间使用的一篇小总结 如有用法错误敬请指点</span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

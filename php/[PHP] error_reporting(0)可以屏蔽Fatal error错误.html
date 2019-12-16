@@ -1,0 +1,42 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] error_reporting(0)可以屏蔽Fatal error错误' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] error_reporting(0)可以屏蔽Fatal error错误</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11825012.html</div><br>
+    <p>按照以前的印象，error_reporting(0)屏蔽不了php的Fatal error级别的错误。<br />但是今天我遇到了一个问题才发现，它竟然可以屏蔽任何错误，包括Fatal error，浏览器会看不到500错误码，显示的是200，php-fpm下的php错误日志里没有任何输出，nginx下的错误日志里也没有任何输出。</p>
+<p>发现的过程是这样的，下载了一个开源代码，直接浏览器运行显示空白。看各种日志都没有错误信息，使用php-xdebug配合vscode，才看得到在首页获取session在连接数据库，我没有配置任何数据库，因此new PDO的时候连接不上，报的是Fatal error错误。</p>
+<p><img src="./images/[PHP] error_reporting(0)可以屏蔽Fatal error错误0.jpg" alt="" /></p>
+<p><img src="./images/[PHP] error_reporting(0)可以屏蔽Fatal error错误1.jpg" alt="" /><br />经过下面这几句测试，可以看到确实屏蔽了Fatal error，语法错误屏蔽不了</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">error_reporting</span>(0<span style="color: #000000;">);
+</span><span style="color: #0000ff;">new</span><span style="color: #000000;"> aaa();
+</span>?&gt;
+&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">error_reporting</span>(0<span style="color: #000000;">);
+</span><span style="color: #0000ff;">new</span><span style="color: #000000;"> PDO();
+</span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>我的测试环境为ubuntu，PHP版本是7.4，日志配置了下面这些，全都可以无视掉<br />/etc/php/7.4/fpm/pool.d/www.conf <br />php_flag[display_errors] = on<br />php_admin_value[error_log] = /var/log/php/www-error.log<br />php_admin_flag[log_errors] = on</p>
+<p>/etc/php/7.4/fpm/php.ini<br />display_errors = On</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

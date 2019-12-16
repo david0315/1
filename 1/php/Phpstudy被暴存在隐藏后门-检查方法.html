@@ -1,0 +1,75 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Phpstudy被暴存在隐藏后门-检查方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Phpstudy被暴存在隐藏后门-检查方法</center></div><div class='banquan'>原文出处:本文由博客园博主雨中落叶提供。<br/>
+原文连接:https://www.cnblogs.com/yuzly/p/11565997.html</div><br>
+    <p><span style="font-size: 18pt; color: #ff0000;">Phpstudy被暴存在隐藏后门-检查方法</span></p>
+<p><strong><span style="font-size: 18px; color: #000000;">一、事件背景</span></strong></p>
+<p><span style="font-size: 15px; color: #000000;">Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户。</span></p>
+<p><span style="font-size: 15px; color: #000000;">9月20日杭州公安微信公众账号发布了&ldquo;杭州警方通报打击涉网违法犯罪暨&ldquo;净网2019&rdquo;专项行动战果&rdquo;的文章，文章里说明phpstudy存在&ldquo;后门&rdquo;。</span></p>
+<p><strong><span style="font-size: 18px; color: #000000;">二、影响版本</span></strong></p>
+<p><span style="font-size: 15px;">phpstudy 2016版PHP5.4存在后门(软件作者声明)。<br /></span></p>
+<p><span style="font-size: 15px;">实际实际测试官网下载phpstudy2018版php-5.2.17和php-5.4.45也同样存在后门</span></p>
+<p><strong><span style="font-size: 18px;">三、后门检测方法</span></strong></p>
+<p><span style="font-size: 15px;">1、看官网发表声明说只要从官网下载的都不存在漏洞(<span style="color: #ff0000;">套路深~~~~~~~</span>)</span></p>
+<p><span style="font-size: 15px;"><span style="font-size: 18px;"><img src="./images/Phpstudy被暴存在隐藏后门-检查方法0.jpg" alt="" /></span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;2、哎呀，<span style="font-size: 15px;">吓得的我赶紧查一下自己的电脑从官网下载安装的phpstudy有没有后门。</span></p>
+<p><span style="font-size: 15px;">通过分析，后门代码存在于\ext\php_xmlrpc.dll模块中</span></p>
+<p><span style="font-size: 15px; color: #ff0000;">phpStudy2016和phpStudy2018自带的php-5.2.17、php-5.4.45</span></p>
+<p><span style="font-size: 15px; color: #ff0000;">phpStudy2016路径<br />php\php-5.2.17\ext\php_xmlrpc.dll<br />php\php-5.4.45\ext\php_xmlrpc.dll</span></p>
+<p><span style="color: #ff0000;"><span style="font-size: 15px;">phpStudy2018路径</span></span></p>
+<p><span style="font-size: 15px; color: #ff0000;">PHPTutorial\php\php-5.2.17\ext\php_xmlrpc.dll<br />PHPTutorial\php\php-5.4.45\ext\php_xmlrpc.dl</span></p>
+<p><span style="font-size: 15px; color: #ff0000;">用记事本打开此文件查找@eval，文件存在@eval(%s(&lsquo;%s&rsquo;))证明漏洞存在</span></p>
+<p><span style="color: #ff0000; font-size: 15px;">附后门文件MD5值：</span></p>
+<p><span style="color: #ff0000; font-size: 15px;">MD5: 0F7AD38E7A9857523DFBCE4BCE43A9E9</span><br /><span style="color: #ff0000; font-size: 15px;">MD5: C339482FD2B233FB0A555B629C0EA5D5</span></p>
+<p><span style="font-size: 15px;">3、手工分析</span></p>
+<p><span style="font-size: 15px;">3.1、查看phpstudy2016 php 5.4.45版本中是否存在漏洞，说明存在后门</span></p>
+<p><span style="font-size: 15px;"><img src="./images/Phpstudy被暴存在隐藏后门-检查方法1.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;<span style="font-size: 15px;">3.2、使用在线计算文件md5，查看疑似后门文件的md5,发现MD5值确实是后门文件的md5值。</span></p>
+<p><span style="font-size: 15px;"><img src="./images/Phpstudy被暴存在隐藏后门-检查方法2.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">3.3、查看phpstudy2016 php 5.2.17版本中是否存在漏洞，发现存在后门</span></p>
+<p><span style="font-size: 15px;"><img src="./images/Phpstudy被暴存在隐藏后门-检查方法3.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 15px;">&nbsp;3.4、使用在线计算文件md5，查看疑似后门文件的md5,发现MD5值确实是后门文件的md5值。</span></p>
+<p><span style="font-size: 15px;"><img src="./images/Phpstudy被暴存在隐藏后门-检查方法4.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 15px;">&nbsp;3.5、查看phpstudy2018 php 5.2.17版本中是否存在漏洞，说明存在后门</span></p>
+<p><span style="font-size: 15px;"><img src="./images/Phpstudy被暴存在隐藏后门-检查方法5.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 15px;">&nbsp;3.6、使用在线计算文件md5，查看疑似后门文件的md5,发现MD5值确实是后门文件的md5值。（0f7ad38e7a9857523dfbce4bce43a9e9）</span></p>
+<p><span style="font-size: 15px;">3.7、查看phpstudy2018 php 5.4.45版本中是否存在漏洞，说明存在后门</span></p>
+<p><span style="font-size: 15px;"><img src="./images/Phpstudy被暴存在隐藏后门-检查方法6.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 15px;">&nbsp;&nbsp;3.8、使用在线计算文件md5，查看疑似后门文件的md5,发现MD5值确实是后门文件的md5值。（c339482fd2b233fb0a555b629c0ea5d5）</span></p>
+<p><span style="font-size: 18px;"><strong>四、修复方法</strong></span></p>
+<p><span style="font-size: 15px;">1、可以从PHP官网下载原始php-5.4.45版本或php-5.2.17版本，替换其中的php_xmlrpc.dll</span></p>
+<p><span style="font-size: 15px;">https://windows.php.net/downloads/releases/archives/php-5.2.17-Win32-VC6-x86.zip</span><br /><span style="font-size: 15px;">https://windows.php.net/downloads/releases/archives/php-5.4.45-Win32-VC9-x86.zip</span></p>
+<p><span style="font-size: 15px;">2、目前phpstudy官网上的版本不存在后门，可在phpsudy官网下载安装包进行更新</span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 15px;">-------------------------------------------------------------------------------------</span></p>
+<p><span style="font-size: 15px;">phpStudy后门漏洞利用复现:<a href="https://www.cnblogs.com/yuzly/p/11610061.html" target="_blank">https://www.cnblogs.com/yuzly/p/11610061.html</a></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

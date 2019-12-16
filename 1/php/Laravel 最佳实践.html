@@ -1,0 +1,649 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel 最佳实践' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel 最佳实践</center></div><div class='banquan'>原文出处:本文由博客园博主司徒公子提供。<br/>
+原文连接:https://www.cnblogs.com/techcoder/p/11399395.html</div><br>
+    <h3 id="单一职责原则"><strong>单一职责原则</strong></h3>
+<p>一个类和一个方法应该只有一个责任。</p>
+<p>例如:</p>
+<pre><code><code>public function getFullNameAttribute()
+{
+    if (auth()-&gt;user() &amp;&amp; auth()-&gt;user()-&gt;hasRole(&#39;client&#39;) &amp;&amp; auth()-&gt;user()-&gt;isVerified()) {
+        return &#39;Mr. &#39; . $this-&gt;first_name . &#39; &#39; . $this-&gt;middle_name . &#39; &#39; . $this-&gt;last_name;
+    } else {
+        return $this-&gt;first_name[0] . &#39;. &#39; . $this-&gt;last_name;
+    }
+}</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>public function getFullNameAttribute()
+{
+    return $this-&gt;isVerifiedClient() ? $this-&gt;getFullNameLong() : $this-&gt;getFullNameShort();
+}
+
+public function isVerifiedClient()
+{
+    return auth()-&gt;user() &amp;&amp; auth()-&gt;user()-&gt;hasRole(&#39;client&#39;) &amp;&amp; auth()-&gt;user()-&gt;isVerified();
+}
+
+public function getFullNameLong()
+{
+    return &#39;Mr. &#39; . $this-&gt;first_name . &#39; &#39; . $this-&gt;middle_name . &#39; &#39; . $this-&gt;last_name;
+}
+
+public function getFullNameShort()
+{
+    return $this-&gt;first_name[0] . &#39;. &#39; . $this-&gt;last_name;
+}</code></code></pre>
+<h3 id="保持控制器的简洁"><strong>保持控制器的简洁</strong></h3>
+<p>如果您使用的是查询生成器或原始SQL查询，请将所有与数据库相关的逻辑放入Eloquent模型或Repository类中。</p>
+<p>例如:</p>
+<pre><code><code>public function index()
+{
+    $clients = Client::verified()
+        -&gt;with([&#39;orders&#39; =&gt; function ($q) {
+            $q-&gt;where(&#39;created_at&#39;, &#39;&gt;&#39;, Carbon::today()-&gt;subWeek());
+        }])
+        -&gt;get();
+
+    return view(&#39;index&#39;, [&#39;clients&#39; =&gt; $clients]);
+}</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>public function index()
+{
+    return view(&#39;index&#39;, [&#39;clients&#39; =&gt; $this-&gt;client-&gt;getWithNewOrders()]);
+}
+
+class Client extends Model
+{
+    public function getWithNewOrders()
+    {
+        return $this-&gt;verified()
+            -&gt;with([&#39;orders&#39; =&gt; function ($q) {
+                $q-&gt;where(&#39;created_at&#39;, &#39;&gt;&#39;, Carbon::today()-&gt;subWeek());
+            }])
+            -&gt;get();
+    }
+}</code></code></pre>
+<h3 id="使用自定义request类来进行验证"><strong>使用自定义Request类来进行验证</strong></h3>
+<p>把验证规则放到 Request 类中.</p>
+<p>例子:</p>
+<pre><code><code>public function store(Request $request)
+{
+    $request-&gt;validate([
+        &#39;title&#39; =&gt; &#39;required|unique:posts|max:255&#39;,
+        &#39;body&#39; =&gt; &#39;required&#39;,
+        &#39;publish_at&#39; =&gt; &#39;nullable|date&#39;,
+    ]);
+
+    ....
+}</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>public function store(PostRequest $request)
+{    
+    ....
+}
+
+class PostRequest extends Request
+{
+    public function rules()
+    {
+        return [
+            &#39;title&#39; =&gt; &#39;required|unique:posts|max:255&#39;,
+            &#39;body&#39; =&gt; &#39;required&#39;,
+            &#39;publish_at&#39; =&gt; &#39;nullable|date&#39;,
+        ];
+    }
+}</code></code></pre>
+<h3 id="业务代码要放到服务层中"><strong>业务代码要放到服务层中</strong></h3>
+<p>控制器必须遵循单一职责原则，因此最好将业务代码从控制器移动到服务层中。</p>
+<p>例子:</p>
+<pre><code><code>public function store(Request $request)
+{
+    if ($request-&gt;hasFile(&#39;image&#39;)) {
+        $request-&gt;file(&#39;image&#39;)-&gt;move(public_path(&#39;images&#39;) . &#39;temp&#39;);
+    }
+    
+    ....
+}</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>public function store(Request $request)
+{
+    $this-&gt;articleService-&gt;handleUploadedImage($request-&gt;file(&#39;image&#39;));
+
+    ....
+}
+
+class ArticleService
+{
+    public function handleUploadedImage($image)
+    {
+        if (!is_null($image)) {
+            $image-&gt;move(public_path(&#39;images&#39;) . &#39;temp&#39;);
+        }
+    }
+}</code></code></pre>
+<h3 id="dry原则-不要重复自己"><strong>DRY原则 不要重复自己</strong></h3>
+<p>尽可能重用代码，SRP可以帮助您避免重复造轮子。 此外尽量重复使用Blade模板，使用Eloquent的 scopes 方法来实现代码。</p>
+<p>例子:</p>
+<pre><code><code>public function getActive()
+{
+    return $this-&gt;where(&#39;verified&#39;, 1)-&gt;whereNotNull(&#39;deleted_at&#39;)-&gt;get();
+}
+
+public function getArticles()
+{
+    return $this-&gt;whereHas(&#39;user&#39;, function ($q) {
+            $q-&gt;where(&#39;verified&#39;, 1)-&gt;whereNotNull(&#39;deleted_at&#39;);
+        })-&gt;get();
+}</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>public function scopeActive($q)
+{
+    return $q-&gt;where(&#39;verified&#39;, 1)-&gt;whereNotNull(&#39;deleted_at&#39;);
+}
+
+public function getActive()
+{
+    return $this-&gt;active()-&gt;get();
+}
+
+public function getArticles()
+{
+    return $this-&gt;whereHas(&#39;user&#39;, function ($q) {
+            $q-&gt;active();
+        })-&gt;get();
+}</code></code></pre>
+<h3 id="使用orm而不是纯sql语句使用集合而不是数组"><strong>使用ORM而不是纯sql语句，使用集合而不是数组</strong></h3>
+<p>使用Eloquent可以帮您编写可读和可维护的代码。 此外Eloquent还有非常优雅的内置工具，如软删除，事件，范围等。</p>
+<p>例子:</p>
+<pre class="sql"><code>SELECT *
+FROM `articles`
+WHERE EXISTS (SELECT *
+              FROM `users`
+              WHERE `articles`.`user_id` = `users`.`id`
+              AND EXISTS (SELECT *
+                          FROM `profiles`
+                          WHERE `profiles`.`user_id` = `users`.`id`) 
+              AND `users`.`deleted_at` IS NULL)
+AND `verified` = &#39;1&#39;
+AND `active` = &#39;1&#39;
+ORDER BY `created_at` DESC</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>Article::has(&#39;user.profile&#39;)-&gt;verified()-&gt;latest()-&gt;get();</code></code></pre>
+<h3 id="集中处理数据"><strong>集中处理数据</strong></h3>
+<p>例子:</p>
+<pre><code><code>$article = new Article;
+$article-&gt;title = $request-&gt;title;
+$article-&gt;content = $request-&gt;content;
+$article-&gt;verified = $request-&gt;verified;
+// Add category to article
+$article-&gt;category_id = $category-&gt;id;
+$article-&gt;save();</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>$category-&gt;article()-&gt;create($request-&gt;validated());</code></code></pre>
+<h3 id="不要在模板中查询尽量使用惰性加载"><strong>不要在模板中查询，尽量使用惰性加载</strong></h3>
+<p>例子 (对于100个用户，将执行101次DB查询):</p>
+<pre><code><code>@foreach (User::all() as $user)
+    {{ $user-&gt;profile-&gt;name }}
+@endforeach</code></code></pre>
+<p>更优的写法 (对于100个用户，使用以下写法只需执行2次DB查询):</p>
+<pre><code><code>$users = User::with(&#39;profile&#39;)-&gt;get();
+
+...
+
+@foreach ($users as $user)
+    {{ $user-&gt;profile-&gt;name }}
+@endforeach</code></code></pre>
+<h3 id="注释你的代码但是更优雅的做法是使用描述性的语言来编写你的代码"><strong>注释你的代码，但是更优雅的做法是使用描述性的语言来编写你的代码</strong></h3>
+<p>例子:</p>
+<pre><code><code>if (count((array) $builder-&gt;getQuery()-&gt;joins) &gt; 0)</code></code></pre>
+<p>加上注释:</p>
+<pre><code><code>// 确定是否有任何连接
+if (count((array) $builder-&gt;getQuery()-&gt;joins) &gt; 0)</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>if ($this-&gt;hasJoins())</code></code></pre>
+<h3 id="不要把-js-和-css-放到-blade-模板中也不要把任何-html-代码放到-php-代码里"><strong>不要把 JS 和 CSS 放到 Blade 模板中，也不要把任何 HTML 代码放到 PHP 代码里</strong></h3>
+<p>例子:</p>
+<pre><code><code>let article = `{{ json_encode($article) }}`;</code></code></pre>
+<p>更好的写法:</p>
+<pre><code><code>&lt;input id=&quot;article&quot; type=&quot;hidden&quot; value=&quot;@json($article)&quot;&gt;
+
+Or
+
+&lt;button class=&quot;js-fav-article&quot; data-article=&quot;@json($article)&quot;&gt;{{ $article-&gt;name }}&lt;button&gt;</code></code></pre>
+<p>在Javascript文件中加上:</p>
+<pre class="javascript"><code>let article = $(&#39;#article&#39;).val();</code></code></pre>
+<p>当然最好的办法还是使用专业的PHP的JS包传输数据。</p>
+<h3 id="在代码中使用配置语言包和常量而不是使用硬编码"><strong>在代码中使用配置、语言包和常量，而不是使用硬编码</strong></h3>
+<p>例子:</p>
+<pre><code><code>public function isNormal()
+{
+    return $article-&gt;type === &#39;normal&#39;;
+}
+
+return back()-&gt;with(&#39;message&#39;, &#39;Your article has been added!&#39;);</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>public function isNormal()
+{
+    return $article-&gt;type === Article::TYPE_NORMAL;
+}
+
+return back()-&gt;with(&#39;message&#39;, __(&#39;app.article_added&#39;));</code></code></pre>
+<h3 id="使用社区认可的标准laravel工具"><strong>使用社区认可的标准Laravel工具</strong></h3>
+<p>强力推荐使用内置的Laravel功能和扩展包，而不是使用第三方的扩展包和工具。<br />
+如果你的项目被其他开发人员接手了，他们将不得不重新学习这些第三方工具的使用教程。<br />
+此外，当您使用第三方扩展包或工具时，你很难从Laravel社区获得什么帮助。 不要让你的客户为额外的问题付钱。</p>
+<table>
+<thead>
+<tr class="header">
+<th>想要实现的功能</th>
+<th>标准工具</th>
+<th>第三方工具</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>权限</td>
+<td>Policies</td>
+<td>Entrust, Sentinel 或者其他扩展包</td>
+</tr>
+<tr class="even">
+<td>资源编译工具</td>
+<td>Laravel Mix</td>
+<td>Grunt, Gulp, 或者其他第三方包</td>
+</tr>
+<tr class="odd">
+<td>开发环境</td>
+<td>Homestead</td>
+<td>Docker</td>
+</tr>
+<tr class="even">
+<td>部署</td>
+<td>Laravel Forge</td>
+<td>Deployer 或者其他解决方案</td>
+</tr>
+<tr class="odd">
+<td>自动化测试</td>
+<td>PHPUnit, Mockery</td>
+<td>Phpspec</td>
+</tr>
+<tr class="even">
+<td>页面预览测试</td>
+<td>Laravel Dusk</td>
+<td>Codeception</td>
+</tr>
+<tr class="odd">
+<td>DB操纵</td>
+<td>Eloquent</td>
+<td>SQL, Doctrine</td>
+</tr>
+<tr class="even">
+<td>模板</td>
+<td>Blade</td>
+<td>Twig</td>
+</tr>
+<tr class="odd">
+<td>数据操纵</td>
+<td>Laravel集合</td>
+<td>数组</td>
+</tr>
+<tr class="even">
+<td>表单验证</td>
+<td>Request classes</td>
+<td>他第三方包,甚至在控制器中做验证</td>
+</tr>
+<tr class="odd">
+<td>权限</td>
+<td>Built-in</td>
+<td>他第三方包或者你自己解决</td>
+</tr>
+<tr class="even">
+<td>API身份验证</td>
+<td>Laravel Passport</td>
+<td>第三方的JWT或者 OAuth 扩展包</td>
+</tr>
+<tr class="odd">
+<td>创建 API</td>
+<td>Built-in</td>
+<td>Dingo API 或者类似的扩展包</td>
+</tr>
+<tr class="even">
+<td>创建数据库结构</td>
+<td>Migrations</td>
+<td>直接用 DB 语句创建</td>
+</tr>
+<tr class="odd">
+<td>本土化</td>
+<td>Built-in</td>
+<td>第三方包</td>
+</tr>
+<tr class="even">
+<td>实时消息队列</td>
+<td>Laravel Echo, Pusher</td>
+<td>使用第三方包或者直接使用WebSockets</td>
+</tr>
+<tr class="odd">
+<td>创建测试数据</td>
+<td>Seeder classes, Model Factories, Faker</td>
+<td>手动创建测试数据</td>
+</tr>
+<tr class="even">
+<td>任务调度</td>
+<td>Laravel Task Scheduler</td>
+<td>脚本和第三方包</td>
+</tr>
+<tr class="odd">
+<td>数据库</td>
+<td>MySQL, PostgreSQL, SQLite, SQL Server</td>
+<td>MongoDB</td>
+</tr>
+</tbody>
+</table>
+<h3 id="遵循laravel命名约定"><strong>遵循laravel命名约定</strong></h3>
+<p>来源 <a href="http://www.php-fig.org/psr/psr-2/">PSR standards</a>.</p>
+<p>另外，遵循Laravel社区认可的命名约定：</p>
+<table>
+<thead>
+<tr class="header">
+<th>对象</th>
+<th>规则</th>
+<th>更优的写法</th>
+<th>应避免的写法</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>控制器</td>
+<td>单数</td>
+<td>ArticleController</td>
+<td><del>ArticlesController</del></td>
+</tr>
+<tr class="even">
+<td>路由</td>
+<td>复数</td>
+<td>articles/1</td>
+<td><del>article/1</del></td>
+</tr>
+<tr class="odd">
+<td>路由命名</td>
+<td>带点符号的蛇形命名</td>
+<td>users.show_active</td>
+<td><del>users.show-active, show-active-users</del></td>
+</tr>
+<tr class="even">
+<td>模型</td>
+<td>单数</td>
+<td>User</td>
+<td><del>Users</del></td>
+</tr>
+<tr class="odd">
+<td>hasOne或belongsTo关系</td>
+<td>单数</td>
+<td>articleComment</td>
+<td><del>articleComments, article_comment</del></td>
+</tr>
+<tr class="even">
+<td>所有其他关系</td>
+<td>复数</td>
+<td>articleComments</td>
+<td><del>articleComment, article_comments</del></td>
+</tr>
+<tr class="odd">
+<td>表单</td>
+<td>复数</td>
+<td>article_comments</td>
+<td><del>article_comment, articleComments</del></td>
+</tr>
+<tr class="even">
+<td>透视表</td>
+<td>按字母顺序排列模型</td>
+<td>article_user</td>
+<td><del>user_article, articles_users</del></td>
+</tr>
+<tr class="odd">
+<td>数据表字段</td>
+<td>使用蛇形并且不要带表名</td>
+<td>meta_title</td>
+<td><del>MetaTitle; article_meta_title</del></td>
+</tr>
+<tr class="even">
+<td>模型参数</td>
+<td>蛇形命名</td>
+<td>$model-&gt;created_at</td>
+<td><del>$model-&gt;createdAt</del></td>
+</tr>
+<tr class="odd">
+<td>外键</td>
+<td>带有_id后缀的单数模型名称</td>
+<td>article_id</td>
+<td><del>ArticleId, id_article, articles_id</del></td>
+</tr>
+<tr class="even">
+<td>主键</td>
+<td>-</td>
+<td>id</td>
+<td><del>custom_id</del></td>
+</tr>
+<tr class="odd">
+<td>迁移</td>
+<td>-</td>
+<td>2017_01_01_000000_create_articles_table</td>
+<td><del>2017_01_01_000000_articles</del></td>
+</tr>
+<tr class="even">
+<td>方法</td>
+<td>驼峰命名</td>
+<td>getAll</td>
+<td><del>get_all</del></td>
+</tr>
+<tr class="odd">
+<td>资源控制器</td>
+<td><a href="https://laravel.com/docs/master/controllers#resource-controllers">table</a></td>
+<td>store</td>
+<td><del>saveArticle</del></td>
+</tr>
+<tr class="even">
+<td>测试类</td>
+<td>驼峰命名</td>
+<td>testGuestCannotSeeArticle</td>
+<td><del>test_guest_cannot_see_article</del></td>
+</tr>
+<tr class="odd">
+<td>变量</td>
+<td>驼峰命名</td>
+<td>$articlesWithAuthor</td>
+<td><del>$articles_with_author</del></td>
+</tr>
+<tr class="even">
+<td>集合</td>
+<td>描述性的, 复数的</td>
+<td>$activeUsers = User::active()-&gt;get()</td>
+<td><del>$active, $data</del></td>
+</tr>
+<tr class="odd">
+<td>对象</td>
+<td>描述性的, 单数的</td>
+<td>$activeUser = User::active()-&gt;first()</td>
+<td><del>$users, $obj</del></td>
+</tr>
+<tr class="even">
+<td>配置和语言文件索引</td>
+<td>蛇形命名</td>
+<td>articles_enabled</td>
+<td><del>ArticlesEnabled; articles-enabled</del></td>
+</tr>
+<tr class="odd">
+<td>视图</td>
+<td>短横线命名</td>
+<td>show-filtered.blade.php</td>
+<td><del>showFiltered.blade.php, show_filtered.blade.php</del></td>
+</tr>
+<tr class="even">
+<td>配置</td>
+<td>蛇形命名</td>
+<td>google_calendar.php</td>
+<td><del>googleCalendar.php, google-calendar.php</del></td>
+</tr>
+<tr class="odd">
+<td>内容 (interface)</td>
+<td>形容词或名词</td>
+<td>Authenticatable</td>
+<td><del>AuthenticationInterface, IAuthentication</del></td>
+</tr>
+<tr class="even">
+<td>Trait</td>
+<td>使用形容词</td>
+<td>Notifiable</td>
+<td><del>NotificationTrait</del></td>
+</tr>
+</tbody>
+</table>
+<h3 id="尽可能使用简短且可读性更好的语法"><strong>尽可能使用简短且可读性更好的语法</strong></h3>
+<p>例子:</p>
+<pre><code><code>$request-&gt;session()-&gt;get(&#39;cart&#39;);
+$request-&gt;input(&#39;name&#39;);</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>session(&#39;cart&#39;);
+$request-&gt;name;</code></code></pre>
+<p>更多示例:</p>
+<table>
+<thead>
+<tr class="header">
+<th>常规写法</th>
+<th>更优雅的写法</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Session::get('cart')</code></td>
+<td><code>session('cart')</code></td>
+</tr>
+<tr class="even">
+<td><code>$request-&gt;session()-&gt;get('cart')</code></td>
+<td><code>session('cart')</code></td>
+</tr>
+<tr class="odd">
+<td><code>Session::put('cart', $data)</code></td>
+<td><code>session(['cart' =&gt; $data])</code></td>
+</tr>
+<tr class="even">
+<td><code>$request-&gt;input('name'), Request::get('name')</code></td>
+<td><code>$request-&gt;name, request('name')</code></td>
+</tr>
+<tr class="odd">
+<td><code>return Redirect::back()</code></td>
+<td><code>return back()</code></td>
+</tr>
+<tr class="even">
+<td><code>is_null($object-&gt;relation) ? null : $object-&gt;relation-&gt;id</code></td>
+<td><code>optional($object-&gt;relation)-&gt;id</code></td>
+</tr>
+<tr class="odd">
+<td><code>return view('index')-&gt;with('title', $title)-&gt;with('client', $client)</code></td>
+<td><code>return view('index', compact('title', 'client'))</code></td>
+</tr>
+<tr class="even">
+<td><code>$request-&gt;has('value') ? $request-&gt;value : 'default';</code></td>
+<td><code>$request-&gt;get('value', 'default')</code></td>
+</tr>
+<tr class="odd">
+<td><code>Carbon::now(), Carbon::today()</code></td>
+<td><code>now(), today()</code></td>
+</tr>
+<tr class="even">
+<td><code>App::make('Class')</code></td>
+<td><code>app('Class')</code></td>
+</tr>
+<tr class="odd">
+<td><code>-&gt;where('column', '=', 1)</code></td>
+<td><code>-&gt;where('column', 1)</code></td>
+</tr>
+<tr class="even">
+<td><code>-&gt;orderBy('created_at', 'desc')</code></td>
+<td><code>-&gt;latest()</code></td>
+</tr>
+<tr class="odd">
+<td><code>-&gt;orderBy('age', 'desc')</code></td>
+<td><code>-&gt;latest('age')</code></td>
+</tr>
+<tr class="even">
+<td><code>-&gt;orderBy('created_at', 'asc')</code></td>
+<td><code>-&gt;oldest()</code></td>
+</tr>
+<tr class="odd">
+<td><code>-&gt;select('id', 'name')-&gt;get()</code></td>
+<td><code>-&gt;get(['id', 'name'])</code></td>
+</tr>
+<tr class="even">
+<td><code>-&gt;first()-&gt;name</code></td>
+<td><code>-&gt;value('name')</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="使用ioc容器来创建实例-而不是直接new一个实例"><strong>使用IOC容器来创建实例 而不是直接new一个实例</strong></h3>
+<p>创建新的类会让类之间的更加耦合，使得测试越发复杂。请改用IoC容器或注入来实现。</p>
+<p>例子:</p>
+<pre><code><code>$user = new User;
+$user-&gt;create($request-&gt;validated());</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>public function __construct(User $user)
+{
+    $this-&gt;user = $user;
+}
+
+....
+
+$this-&gt;user-&gt;create($request-&gt;validated());</code></code></pre>
+<h3 id="避免直接从-.env-文件里获取数据"><strong>避免直接从 <code>.env</code> 文件里获取数据</strong></h3>
+<p>将数据传递给配置文件，然后使用<code>config（）</code>帮助函数来调用数据</p>
+<p>例子:</p>
+<pre><code><code>$apiKey = env(&#39;API_KEY&#39;);</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>// config/api.php
+&#39;key&#39; =&gt; env(&#39;API_KEY&#39;),
+
+// Use the data
+$apiKey = config(&#39;api.key&#39;);</code></code></pre>
+<h3 id="使用标准格式来存储日期用访问器和修改器来修改日期格式"><strong>使用标准格式来存储日期，用访问器和修改器来修改日期格式</strong></h3>
+<p>例子:</p>
+<pre><code><code>{{ Carbon::createFromFormat(&#39;Y-d-m H-i&#39;, $object-&gt;ordered_at)-&gt;toDateString() }}
+{{ Carbon::createFromFormat(&#39;Y-d-m H-i&#39;, $object-&gt;ordered_at)-&gt;format(&#39;m-d&#39;) }}</code></code></pre>
+<p>更优的写法:</p>
+<pre><code><code>// Model
+protected $dates = [&#39;ordered_at&#39;, &#39;created_at&#39;, &#39;updated_at&#39;];
+public function getSomeDateAttribute($date)
+{
+    return $date-&gt;format(&#39;m-d&#39;);
+}
+
+// View
+{{ $object-&gt;ordered_at-&gt;toDateString() }}
+{{ $object-&gt;ordered_at-&gt;some_date }}</code></code></pre>
+<h3 id="其他的一些好建议"><strong>其他的一些好建议</strong></h3>
+<p>永远不要在路由文件中放任何的逻辑代码。</p>
+<p>尽量不要在Blade模板中写原始 PHP 代码。</p>
+<blockquote>
+<p>原文作者：<a href="https://github.com/ikidnapmyself">ikidnapmyself</a></p>
+<p>原文链接：https://github.com/alexeymezenin/laravel-best-practices/</p>
+</blockquote>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

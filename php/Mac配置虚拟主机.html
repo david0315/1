@@ -1,0 +1,80 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Mac配置虚拟主机' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Mac配置虚拟主机</center></div><div class='banquan'>原文出处:本文由博客园博主MoonyHee提供。<br/>
+原文连接:https://www.cnblogs.com/wangziyue/p/10577174.html</div><br>
+    <p>一、启动Apache</p>
+<p>　　终端输入：sudo apachectl start</p>
+<p>Apache的安装目录在：/etc/apache2/，etc默认是隐藏的。有三种方式查看：&nbsp;</p>
+<p>1.桌面位于Finder时：shift+command+g，输入&ldquo;/etc&rdquo;（即Finder-前往-前往文件夹的快捷键）</p>
+<p>2.打开终端：cd /etc</p>
+<p>3.可以在terminal 输入 "open /etc"</p>
+<p>二、<strong>设置虚拟主机</strong>&nbsp;</p>
+<p>1.在终端运行&ldquo;sudo vi /etc/apache2/httpd.conf&rdquo;，打开Apche的配置文件&nbsp;</p>
+<p><span id="__mceDel"><span id="__mceDel">2.在httpd.conf中找到&ldquo;#Include /private/etc/apache2/extra/httpd-vhosts.conf&rdquo;，去掉前面的&ldquo;＃&rdquo;，保存并退出。&nbsp;</span></span></p>
+<p><span id="__mceDel"><span id="__mceDel"><span id="__mceDel">3.运行&ldquo;sudo apachectl restart&rdquo;，重启Apache后就开启了虚拟主机配置功能。&nbsp;</span></span></span></p>
+<p><span id="__mceDel">4.运行&ldquo;sudo vi /etc/apache2/extra/httpd-vhosts.conf&rdquo;，就打开了配置虚拟主机文件httpd-vhost.conf，配置虚拟主机了。需要注意的是该文件默认开启了两个作为例子的虚拟主机</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;VirtualHost *:80&gt;<span style="color: #000000;"> 
+ServerAdmin webmaster@dummy</span>-host.example.<span style="color: #000000;">com 
+DocumentRoot </span>"/usr/docs/dummy-host.example.com"<span style="color: #000000;"> 
+ServerName dummy</span>-host.example.<span style="color: #000000;">com 
+ErrorLog </span>"/private/var/log/apache2/dummy-host.example.com-error_log"<span style="color: #000000;"> 
+CustomLog </span>"/private/var/log/apache2/dummy-host.example.com-access_log"<span style="color: #000000;"> common 
+</span>&lt;/VirtualHost&gt; 
+&lt;VirtualHost *:80&gt;<span style="color: #000000;"> 
+ServerAdmin webmaster@dummy</span>-host2.example.<span style="color: #000000;">com 
+DocumentRoot </span>"/usr/docs/dummy-host2.example.com"<span style="color: #000000;"> 
+ServerName dummy</span>-host2.example.<span style="color: #000000;">com 
+ErrorLog </span>"/private/var/log/apache2/dummy-host2.example.com-error_log"<span style="color: #000000;"> 
+CustomLog </span>"/private/var/log/apache2/dummy-host2.example.com-access_log"<span style="color: #000000;"> common 
+</span>&lt;/VirtualHost&gt;</code></pre>
+
+<p>而实际上，这两个虚拟主机是不存在的，在没有配置任何其他虚拟主机时，可能会导致访问localhost时出现如下提示：&nbsp;<br />Forbidden&nbsp;<br />You don't have permission to access /index.php on this server</p>
+<p>最简单的办法就是在它们每行前面加上#，注释掉就好了，这样既能参考又不导致其他问题。</p>
+<p>5.增加如下配置，支持localhost访问，添加虚拟主机访问</p>
+<src class="cnblogs_code">
+<pre><code>&lt;VirtualHost *:80&gt;<span style="color: #000000;"> 
+DocumentRoot </span>"/Library/WebServer/Documents"<span style="color: #000000;"> 
+ServerName localhost 
+ErrorLog </span>"/private/var/log/apache2/localhost-error_log"<span style="color: #000000;"> 
+CustomLog </span>"/private/var/log/apache2/localhost-access_log"<span style="color: #000000;"> common 
+</span>&lt;/VirtualHost&gt; 
+&lt;VirtualHost *:80&gt;<span style="color: #000000;"> 
+DocumentRoot </span>"/Library/WebServer/Documents"<span style="color: #000000;"> 
+ServerName 虚拟主机地址 （如：www</span>.test.<span style="color: #000000;">com）
+ErrorLog </span>"/private/var/log/apache2/test-error_log"<span style="color: #000000;"> 
+CustomLog </span>"/private/var/log/apache2/test-access_log"<span style="color: #000000;"> common 
+</span>&lt;Directory /&gt;<span style="color: #000000;"> 
+Options Indexes FollowSymLinks MultiViews 
+AllowOverride None 
+Order deny</span>,<span style="color: #000000;">allow 
+Allow from all 
+</span>&lt;/Directory&gt; 
+&lt;/VirtualHost&gt;</code></pre>
+
+<p>保存，退出，重启Apache。</p>
+<p>6.运行&ldquo;sudo vi /etc/hosts&rdquo;，打开hosts配置文件，加入"127.0.0.1 www.test.com"，这样就可以配置完成test虚拟主机了。</p>
+<p>打开浏览器，输入：www.test.com</p>
+<p>It works！</p>
+<p>配置成功，和localhost一致！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

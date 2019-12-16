@@ -1,0 +1,73 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现支付宝登录' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现支付宝登录</center></div><div class='banquan'>原文出处:本文由博客园博主行走的阳光提供。<br/>
+原文连接:https://www.cnblogs.com/shineguang/p/11279709.html</div><br>
+    <src class="cnblogs_code">
+<pre><code><span style="font-size: 18px;"><strong>1.支付宝路由拼接</strong></span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> dev()
+    {
+        </span><span style="color: #800080;">$http</span> = 'https://openauth.alipaydev.com/oauth2/publicAppAuthorize.htm?'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$app_id</span> = ''<span style="color: #000000;">;
+        </span><span style="color: #800080;">$scope</span> = 'auth_user'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$redirect_uri</span> = <span style="color: #008080;">urlencode</span>(''<span style="color: #000000;">);
+        </span><span style="color: #800080;">$state</span> = '0'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$url</span> = <span style="color: #800080;">$http</span> . 'app_id=' . <span style="color: #800080;">$app_id</span> . '&amp;scope=' . <span style="color: #800080;">$scope</span> . '&amp;redirect_uri=' . <span style="color: #800080;">$redirect_uri</span> . '&amp;state=' . <span style="color: #800080;">$state</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;redirect(<span style="color: #800080;">$url</span><span style="color: #000000;">);
+    }</span></code></pre>
+
+<p><span style="font-size: 18px;"><strong>2.支付宝的回调页面</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> zhi()
+    {
+        </span><span style="color: #800080;">$params</span> =<span style="color: #000000;"> input();</span>
+        <span style="color: #0000ff;">require_once</span> './plugins/auth/AopSdk.php'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$aop</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> \AopClient ();
+        </span><span style="color: #800080;">$aop</span>-&gt;gatewayUrl = 'https://openapi.alipaydev.com/gateway.do'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$aop</span>-&gt;appId = '2016100200645172'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$aop</span>-&gt;rsaPrivateKey = '私钥'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$aop</span>-&gt;alipayrsaPublicKey = '公钥'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$aop</span>-&gt;apiVersion = '1.0'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$aop</span>-&gt;signType = 'RSA2'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$aop</span>-&gt;postCharset = 'UTF-8'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$aop</span>-&gt;format = 'json'<span style="color: #000000;">;</span>
+        <span style="color: #800080;">$request</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> \AlipaySystemOauthTokenRequest ();
+        </span><span style="color: #800080;">$request</span>-&gt;setGrantType("authorization_code"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$request</span>-&gt;setCode(<span style="color: #800080;">$params</span>['auth_code'<span style="color: #000000;">]);</span>
+        <span style="color: #800080;">$result</span> = <span style="color: #800080;">$aop</span>-&gt;execute(<span style="color: #800080;">$request</span><span style="color: #000000;">);</span>
+        <span style="color: #800080;">$result</span> = (<span style="color: #0000ff;">new</span> \think\Collection(<span style="color: #800080;">$result</span>))-&gt;<span style="color: #000000;">toArray();</span>
+        <span style="color: #800080;">$access_token</span> = <span style="color: #800080;">$result</span>['alipay_system_oauth_token_response']-&gt;access_token ?? ''<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$access_token</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">echo</span> json_encode(['msg' =&gt; 'code无效'],<span style="color: #000000;"> JSON_UNESCAPED_UNICODE);
+        }
+        </span><span style="color: #800080;">$request</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> \AlipayUserInfoShareRequest ();
+        </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$aop</span>-&gt;execute(<span style="color: #800080;">$request</span>, <span style="color: #800080;">$access_token</span><span style="color: #000000;">);
+        \app\home\logic\Auto</span>::ali(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$list</span> = \app\common\model\User::where('open_type', 'alipay')-&gt;where('openid', <span style="color: #800080;">$result</span>-&gt;alipay_user_info_share_response-&gt;user_id)-&gt;<span style="color: #000000;">find();
+        session(</span>'user_info', <span style="color: #800080;">$list</span>-&gt;<span style="color: #000000;">toArray());
+        </span><span style="color: #800080;">$blank_url</span> = session('blank_url') ?: 'home/index/index'<span style="color: #000000;">;
+        \app\home\logic\CartLogic</span>::<span style="color: #000000;">cookieToDb();
+        </span><span style="color: #800080;">$this</span>-&gt;redirect(<span style="color: #800080;">$blank_url</span><span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

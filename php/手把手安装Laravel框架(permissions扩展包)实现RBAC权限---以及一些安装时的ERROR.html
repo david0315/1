@@ -1,0 +1,56 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修手把手安装Laravel框架(permissions扩展包)实现RBAC权限---以及一些安装时的ERROR' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>手把手安装Laravel框架(permissions扩展包)实现RBAC权限---以及一些安装时的ERROR</center></div><div class='banquan'>原文出处:本文由博客园博主心常平提供。<br/>
+原文连接:https://www.cnblogs.com/whel0923/p/10602795.html</div><br>
+    <p>a.<strong><em>依赖管理工具,框架,环境</em></strong></p>
+<p>　　1.composer</p>
+<p>　　2.laravel(我的是5.5)　　</p>
+<p>　　3.PHP(我的7.2),MySql(我的5.7)</p>
+<p>b,<strong><em>安装</em></strong></p>
+<p>　　1.<strong>首先需要安装一个干净的 Laravel 项目，然后在项目根目录下通过 Composer 来安装扩展包依赖：</strong></p>
+<p>　　　　 composer create-project laravel/laravel permission --prefer-dist</p>
+<p>　　　&nbsp; &nbsp;&nbsp;<img src="./images/手把手安装Laravel框架(permissions扩展包)实现RBAC权限---以及一些安装时的ERROR0.jpg" alt="" width="1151" height="19" /></p>
+<p>　　2.<strong>进入安装完时生成的文件夹</strong></p>
+<pre><code><code>　　    <span style="font-size: 14px;">cd permission</span><br />        <img src="./images/手把手安装Laravel框架(permissions扩展包)实现RBAC权限---以及一些安装时的ERROR1.jpg" alt="" /><br /><br />　　　  <span style="font-size: 13px;">执行以下命令</span><br /></code></code></pre>
+<pre><code><code>　　　  <span style="font-size: 14px;">composer require spatie/laravel-permission</span><br />        <img src="./images/手把手安装Laravel框架(permissions扩展包)实现RBAC权限---以及一些安装时的ERROR2.jpg" alt="" /><br />　　　  <span style="font-size: 13px;">如:遇到了错误:不让下载,打开失败,</span><br /></code></code></pre>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<img src="./images/手把手安装Laravel框架(permissions扩展包)实现RBAC权限---以及一些安装时的ERROR3.jpg" alt="" /></p>
+<pre><code><span style="font-size: 13px;"><code>        不着急切换一下国内镜像然后就可以下载了</code></span></code></pre>
+<pre><code><code class="lang-bash"><span style="font-size: 14px;">       composer config -g repo.packagist composer https://packagist.phpcomposer.com</span><br /><br />　　<strong><span style="font-size: 14px;">3</span></strong>.<strong><span style="font-family: 'Microsoft YaHei'; font-size: 14px;">将扩展包提供的数据库迁移文件发布到&nbsp;<code>database/migrations</code>&nbsp;目录下：</span></strong><br /></code></code></pre>
+<pre><code><code><span style="font-size: 14px;">       php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="migrations"</span><br />　　　　<br />　　<strong><span style="font-size: 14px;">4</span></strong>.<span style="font-family: 'Microsoft YaHei';"><strong><span style="font-size: 14px;">然后迁移文件生成数据表</span></strong></span><br /><br />　　　  </code><code><span style="font-size: 14px;">php artisan migrate<br /></span><br />　　　  <span style="font-size: 13px;">如:遇到错误!!拒绝访问</span><br /></code></code></pre>
+<pre><code><code><img src="./images/手把手安装Laravel框架(permissions扩展包)实现RBAC权限---以及一些安装时的ERROR4.jpg" alt="" width="1259" height="47" /></code></code></pre>
+<p>　　　&nbsp; &nbsp; &nbsp;不急首先检查database.php中自己填写的信息是正确的,然后检查.env文件,完事!</p>
+<p>　　5.<span style="color: #000000;"><strong>配置文件</strong></span>　&nbsp;</p>
+<p>　　　　&nbsp; 接下来将扩展包提供的权限配置文件&nbsp;<code>permission.php</code>&nbsp;发布到&nbsp;<code>config</code>&nbsp;目录下以便对默认配置进行修改：</p>
+<pre><code><code>　　　　 <span style="font-size: 14px;">php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="config"<br />　　　　<br />　<strong>6</strong>.<span style="font-family: 'Microsoft YaHei';"><strong>恭喜你已经完成了</strong></span><span style="font-family: 'Microsoft YaHei';"><strong>基本操作接下来走</strong></span></span></code><span style="text-decoration: underline;"><em><strong><span style="font-size: 15px;">传送门</span></strong></em></span>:<br />　　　　<span style="font-size: 13px;"><strong>基于 Laravel Permission 扩展包在项目中轻松实现 RBAC 权限管理功能:<br />　　　　　　https://laravelacademy.org/post/9389.html<br />　　　 报错时参考的以下文章:<br />　　　　　　ERROR切换镜像:https://pkg.phpcomposer.com/<br />　　　　　　<br />　　　　　　ERROR</strong></span><strong><span style="font-size: 13px;">拒绝访问</span>:</strong><span style="font-size: 13px;"><strong>https://www.bbsmax.com/A/QW5Y8DNJma/</strong></span></code></pre>
+<pre><code><code><span style="font-size: 14px;">&nbsp;</span></code></code></pre>
+<h3>　　&nbsp; &nbsp;</h3>
+<pre><code><code class="lang-bash">&nbsp;</code></code></pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<pre><code><code>&nbsp;</code></code></pre>
+<pre><code><code>&nbsp;</code></code></pre>
+<p>&nbsp;</p>
+<pre><code><code>&nbsp;</code></code></pre>
+<p>　　</p>
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

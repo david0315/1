@@ -1,0 +1,75 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 上传文件' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 上传文件</center></div><div class='banquan'>原文出处:本文由博客园博主web小哥提供。<br/>
+原文连接:https://www.cnblogs.com/jc2182/p/11582421.html</div><br>
+    <p>PHP脚本可以与HTML表单一起使用，以允许用户将文件上载到服务器。最初将文件上载到临时目录中，然后通过PHP脚本重定位到目标目标。phpinfo.php页面中的<code class="jc-computer-code">upload_tmp_dir</code>信息将用于文件上载的临时目录，并且可以上载的文件的最大允许大小表示为<code class="jc-computer-code">upload_max_filesize</code>。这些参数在PHP配置文件<code class="jc-computer-code">php.ini</code>中设置。</p>
+<src>上传文件的过程遵循以下步骤
+<src>以下HTM代码创建一个上传器表单。此表单将方法属性设置为post，并将enctype属性设置为multipart/form-data
+<src>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+if(isset($_FILES['image'])){
+        $errors= array();
+        $file_name = $_FILES['image']['name'];
+        $file_size = $_FILES['image']['size'];
+        $file_tmp = $_FILES['image']['tmp_name'];
+        $file_type = $_FILES['image']['type'];
+        $name_arr = explode('.',$_FILES['image']['name']);
+        $file_ext=strtolower(end($name_arr));
+        $extensions= array("jpeg","jpg","png");
+        /* 规定可以上传的扩展名文件 */
+        if(in_array($file_ext,$extensions)=== false){
+                $errors[]="不允许扩展，请选择一个jpeg或png文件。";
+        }
+        /* 规定可以上传的文件大小 */
+        if($file_size &gt; 2097152) {
+                $errors[]='文件大小必须不超过2 MB';
+        }
+        if(empty($errors)==true) {
+            /* 把图片从临时文件夹内的文件移动到当前脚本所在的目录 */
+                move_uploaded_file($file_tmp,"./".$file_name);
+                echo "成功上传";
+        }else{
+                print_r($errors);
+        }
+}
+?&gt;
+&lt;html&gt;
+&lt;body&gt;
+&lt;!-- action 默认为当前脚本 --&gt;
+&lt;form action = "" method = "POST" enctype = "multipart/form-data"&gt;
+    &lt;input type = "file" name = "image" /&gt;
+    &lt;input type = "submit" name="提交" /&gt;
+    &lt;ul&gt;
+        &lt;li&gt;文件名: &lt;?php echo isset($_FILES['image']['name']) ? $_FILES['image']['name'] : '' ;  ?&gt;
+        &lt;li&gt;文件大小: &lt;?php echo isset($_FILES['image']['size']) ? $_FILES['image']['size'] : '' ;   ?&gt;
+        &lt;li&gt;文件类型: &lt;?php echo isset($_FILES['image']['type']) ? $_FILES['image']['type'] : '' ; ?&gt;
+    &lt;/ul&gt;
+&lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>　　<a href="https://www.jc2182.com/php-upload/3467.html" rel="nofollow noreferrer" target="_blank">查看显示的效果</a></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

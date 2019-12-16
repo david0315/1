@@ -1,0 +1,51 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] Workerman中的注册树模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] Workerman中的注册树模式</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/12001111.html</div><br>
+    <p>注册树模式是把对象挂到一个类的属性数组里，下次直接在这个数组里面取，保持全局唯一，一般在项目入口初始化的时候有用到。在workerman中一开始的就是个注册树模式的运用，下面是对他的模拟</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Worker{
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$_workers</span>=<span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;workerId=spl_object_hash(<span style="color: #800080;">$this</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">static</span>::<span style="color: #800080;">$_workers</span>[<span style="color: #800080;">$this</span>-&gt;workerId]=<span style="color: #800080;">$this</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> runAll(){
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #0000ff;">static</span>::<span style="color: #800080;">$_workers</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$worker</span><span style="color: #000000;">) {
+            </span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$worker</span><span style="color: #000000;">);
+        }
+    }
+}
+
+</span><span style="color: #0000ff;">new</span><span style="color: #000000;"> Worker();
+</span><span style="color: #0000ff;">new</span><span style="color: #000000;"> Worker();
+Worker</span>::runAll();</code></pre>
+
+<p>&nbsp;</p>
+<p>在Worker的构造函数中，把当前new的对象挂到了Worker类的静态变量属性数组里，在下次使用的时候直接在那个数组里取</p>
+<p><img src="./images/[PHP] Workerman中的注册树模式0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

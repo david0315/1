@@ -1,0 +1,114 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修laravel 框架配置404等异常页面的方法详解（代码示例）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>laravel 框架配置404等异常页面的方法详解（代码示例）</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11782692.html</div><br>
+    <p>本篇文章给大家带来的内容是关于laravel 框架配置404等异常页面的方法详解（代码示例），有一定的参考价值，有需要的朋友可以参考一下，希望对你有所帮助。</p>
+<p>在Laravel中所有的异常都由Handler类处理，该类包含两个方法：report和render，其中render方法将异常渲染到http响应中。laravel的Handler类文件位置：app/Exceptions/Handler,由于render方法时间异常渲染到http响应中，所以我们只需要修改下render方法即可<br />网上很多的方法是将render方法修改成：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">render(</code><code class="php variable">$request</code><code class="php plain">, Exception </code><code class="php variable">$exception</code><code class="php plain">)</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">if</code> <code class="php plain">(</code><code class="php variable">$exception</code><code class="php plain">) {</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">response()-&gt;view(</code><code class="php string">'error.'</code><code class="php plain">.</code><code class="php variable">$exception</code><code class="php plain">-&gt;getStatusCode(), [],</code><code class="php variable">$exception</code><code class="php plain">-&gt;getStatusCode());</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">parent::render(</code><code class="php variable">$request</code><code class="php plain">, </code><code class="php variable">$exception</code><code class="php plain">);</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">}</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>这时候你的测试可能是没有问题的，但是如果你如果写了登录的方法的话，这时候如果你访问必须要登录的页面的时候，这时候会报错</p>
+<p><span class="img-wrap"><img src="./images/laravel 框架配置404等异常页面的方法详解（代码示例）0.jpg" alt="" /></span></p>
+<p>这是由于如果你访问了必须要登录的页面的时候，这时候就会进入app/Exceptions/Handler.php的render方法，这时候$exception-&gt;getStatusCode()是不存在的，这时候就会报错了，那么如何解决呢？</p>
+<p><img src="./images/laravel 框架配置404等异常页面的方法详解（代码示例）1.jpg" alt="" /><img src="./images/laravel 框架配置404等异常页面的方法详解（代码示例）2.jpg" alt="" /><img src="./images/laravel 框架配置404等异常页面的方法详解（代码示例）3.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p>这时候我们找到parent::render的方法所在：</p>
+<p><span class="img-wrap"><img src="./images/laravel 框架配置404等异常页面的方法详解（代码示例）4.jpg" alt="" /></span></p>
+<p>这时候我们发现原来laravel框架已经将我们的这种情况包含进去了，那么我们就可以即将上面的方法改为：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">render(</code><code class="php variable">$request</code><code class="php plain">, Exception </code><code class="php variable">$exception</code><code class="php plain">)</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">if</code> <code class="php plain">(!(</code><code class="php variable">$exception</code> <code class="php keyword">instanceof</code> <code class="php plain">AuthenticationException)) {</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">response()-&gt;view(</code><code class="php string">'error.'</code><code class="php plain">.</code><code class="php variable">$exception</code><code class="php plain">-&gt;getStatusCode(), [],</code><code class="php variable">$exception</code><code class="php plain">-&gt;getStatusCode());</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">parent::render(</code><code class="php variable">$request</code><code class="php plain">, </code><code class="php variable">$exception</code><code class="php plain">);</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">}</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>这时候就完美解决了这个问题<br />然后在resources/view/error/下面新建错误页面，错误页面的命名为：{errorcode}..balde.php,其中的errorcode为错误码，例如404..balde.php</p>
+<p>配置完成后访问一个不存在的路由时即可跳转到你配置的404页面</p>
+<p>以上就是laravel 框架配置404等异常页面的方法详解（代码示例）的详细内容</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

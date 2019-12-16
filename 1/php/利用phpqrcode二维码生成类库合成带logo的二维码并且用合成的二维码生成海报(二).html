@@ -1,0 +1,124 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修利用phpqrcode二维码生成类库合成带logo的二维码并且用合成的二维码生成海报(二)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>利用phpqrcode二维码生成类库合成带logo的二维码并且用合成的二维码生成海报(二)</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/11713500.html</div><br>
+    <p><strong>前期准备</strong></p>
+<ul>
+<li>引入phpqrcode类库（下载地址：<a href="https://download.csdn.net/download/weixin_37557729/11891240" target="_blank">https://download.csdn.net/download/weixin_37557729/11891240</a>；支持彩色二维码的下载地址：<a href="https://download.csdn.net/download/weixin_37557729/11891244" target="_blank">https://download.csdn.net/download/weixin_37557729/11891244</a>）</li>
+<li>PHP开启GD扩展库支持</li>
+</ul>
+<p><strong>1、利用phpqrcode生成二维码：</strong></p>
+<p><strong>原理分析：</strong></p>
+<p>下载下来的类文件是一个压缩包，包含很多文件和演示程序，我们只需要里边的phpqrcode.php</p>
+<p>这一个文件就可以生成二维码了，它是一个多个类的集合文件，我们需要用到里边的<strong>QRcode类</strong>的<strong>png()</strong>方法：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">测试生成带头像的网站二维码海报</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> ce_haibao_qrcode(){
+        </span><span style="color: #800080;">$codeurl</span> = "https://www.baidu.com"<span style="color: #000000;">;
+
+        Vendor(</span>'PHPQRcode.class#phpqrcode'<span style="color: #000000;">);
+
+        </span><span style="color: #800080;">$logoQR</span> = "http://thirdwx.qlogo.cn/mmopen/vi_32/icaYhiapVcmsyGnHouHeSvYiaz8yxtvfBicgx5x8joGh4uNiaibp8skQf8Uv4CNtibsJDndbOQwI9LSvDQP6slFQaLy4g/132"<span style="color: #000000;">;
+
+        </span><span style="color: #800080;">$level</span>=3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$size</span>=6<span style="color: #000000;">;
+        </span><span style="color: #800080;">$errorCorrectionLevel</span> =<span style="color: #008080;">intval</span>(<span style="color: #800080;">$level</span>) ;<span style="color: #008000;">//</span><span style="color: #008000;">容错级别</span>
+        <span style="color: #800080;">$matrixPointSize</span> = <span style="color: #008080;">intval</span>(<span style="color: #800080;">$size</span>);<span style="color: #008000;">//</span><span style="color: #008000;">生成图片大小</span>
+
+        <span style="color: #800080;">$dirPath</span> ='./Uploads/qrcode/'.<span style="color: #008080;">date</span>('Y-m-d').'/';<span style="color: #008000;">//</span><span style="color: #008000;">保存二维码路径</span>
+        <span style="color: #800080;">$dirPath_B</span> ='/Uploads/qrcode/'.<span style="color: #008080;">date</span>('Y-m-d').'/';<span style="color: #008000;">//</span><span style="color: #008000;">保存二维码路径</span>
+        <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$dirPath</span><span style="color: #000000;">)){
+            </span><span style="color: #008080;">mkdir</span>(<span style="color: #800080;">$dirPath</span>, 0777<span style="color: #000000;">);
+        }
+        </span><span style="color: #800080;">$tmpName</span> = <span style="color: #008080;">time</span>().".png"; <span style="color: #008000;">//</span><span style="color: #008000;">保存在服务器上的二维码名称</span>
+        <span style="color: #800080;">$qrcodeName</span> = <span style="color: #800080;">$dirPath</span> .<span style="color: #800080;">$tmpName</span>; <span style="color: #008000;">//</span><span style="color: #008000;">保存在服务器上的二维码路径</span>
+        <span style="color: #800080;">$qrcodeName_B</span> = <span style="color: #800080;">$dirPath_B</span> .<span style="color: #800080;">$tmpName</span>; <span style="color: #008000;">//</span><span style="color: #008000;">保存在服务器上的二维码路径
+
+        //生成二维码图片</span>
+        <span style="color: #800080;">$object</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> \QRcode();
+        </span><span style="color: #800080;">$object</span>-&gt;png(<span style="color: #800080;">$codeurl</span>, <span style="color: #800080;">$qrcodeName</span>, <span style="color: #800080;">$errorCorrectionLevel</span>, <span style="color: #800080;">$matrixPointSize</span>, 2<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">$QR = imagecreatefrompng($qrcodeName);</span>
+        <span style="color: #800080;">$QR</span> = <span style="color: #800080;">$qrcodeName</span><span style="color: #000000;">;
+
+        </span><span style="color: #800080;">$QRlogoPath</span> = './Uploads/qrcode/qrlogo/'.<span style="color: #008080;">date</span>('Y-m-d').'/'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$QRlogoPath_B</span> = '/Uploads/qrcode/qrlogo/'.<span style="color: #008080;">date</span>('Y-m-d').'/'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span>(!<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$QRlogoPath</span><span style="color: #000000;">)){
+            </span><span style="color: #008080;">mkdir</span>(<span style="color: #800080;">$QRlogoPath</span>, 0777<span style="color: #000000;">);
+        }
+        </span><span style="color: #800080;">$qrcode</span> = <span style="color: #008080;">time</span>().'.png'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$QRlogo</span> = <span style="color: #800080;">$QRlogoPath</span> .<span style="color: #800080;">$qrcode</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$QRlogo_B</span> = <span style="color: #800080;">$QRlogoPath_B</span> .<span style="color: #800080;">$qrcode</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$logoQR</span> !==<span style="color: #0000ff;">FALSE</span><span style="color: #000000;">){
+            </span><span style="color: #800080;">$QR</span> = imagecreatefromstring(<span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$QR</span><span style="color: #000000;">));
+            </span><span style="color: #800080;">$logo</span> = imagecreatefromstring(<span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$logoQR</span><span style="color: #000000;">));
+
+            </span><span style="color: #800080;">$QR_width</span> = imagesx(<span style="color: #800080;">$QR</span>);<span style="color: #008000;">//</span><span style="color: #008000;">二维码图片宽度</span>
+            <span style="color: #800080;">$QR_height</span> = imagesy(<span style="color: #800080;">$QR</span>);<span style="color: #008000;">//</span><span style="color: #008000;">二维码图片高度</span>
+            <span style="color: #800080;">$logo_width</span> = imagesx(<span style="color: #800080;">$logo</span>);<span style="color: #008000;">//</span><span style="color: #008000;">logo图片宽度</span>
+            <span style="color: #800080;">$logo_height</span> = imagesy(<span style="color: #800080;">$logo</span>);<span style="color: #008000;">//</span><span style="color: #008000;">logo图片高度</span>
+            <span style="color: #800080;">$logo_qr_width</span> = <span style="color: #800080;">$QR_width</span> / 5<span style="color: #000000;">;
+            </span><span style="color: #800080;">$scale</span> = <span style="color: #800080;">$logo_width</span>/<span style="color: #800080;">$logo_qr_width</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$logo_qr_height</span> = <span style="color: #800080;">$logo_height</span>/<span style="color: #800080;">$scale</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$from_width</span> = (<span style="color: #800080;">$QR_width</span> - <span style="color: #800080;">$logo_qr_width</span>) / 2<span style="color: #000000;">;
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">重新组合图片并调整大小</span>
+            imagecopyresampled(<span style="color: #800080;">$QR</span>, <span style="color: #800080;">$logo</span>, <span style="color: #800080;">$from_width</span>, <span style="color: #800080;">$from_width</span>, 0, 0, <span style="color: #800080;">$logo_qr_width</span>,
+                <span style="color: #800080;">$logo_qr_height</span>, <span style="color: #800080;">$logo_width</span>, <span style="color: #800080;">$logo_height</span><span style="color: #000000;">);
+            </span><span style="color: #008080;">header</span>('Content-type: image/png'<span style="color: #000000;">);<br />　　　　　　　//合成带logo的二维码
+            ImagePng(</span><span style="color: #800080;">$QR</span>,<span style="color: #800080;">$QRlogo</span><span style="color: #000000;">);
+
+            </span><span style="color: #800080;">$dst_path</span> = './Uploads/haibao/haibao.png';<span style="color: #008000;">//</span><span style="color: #008000;">海报素材底图</span>
+            <span style="color: #800080;">$src_path</span> = <span style="color: #800080;">$QRlogo</span>;  <span style="color: #008000;">//</span><span style="color: #008000;">覆盖图，用上面的那张图QRlogo</span>
+
+            <span style="color: #800080;">$haibaoPath</span> = './Uploads/qrcode/haibao/'.<span style="color: #008080;">date</span>('Y-m-d').'/'<span style="color: #000000;">;
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">$haibaoPath_B = '/Uploads/qrcode/haibao/'.date('Y-m-d').'/';</span>
+            <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$haibaoPath</span><span style="color: #000000;">)){
+                </span><span style="color: #008080;">mkdir</span>(<span style="color: #800080;">$haibaoPath</span>, 0777<span style="color: #000000;">);
+            }
+            </span><span style="color: #800080;">$haibao</span> = <span style="color: #008080;">time</span>().'.png'<span style="color: #000000;">;
+            </span><span style="color: #800080;">$haibao</span> = <span style="color: #800080;">$haibaoPath</span> .<span style="color: #800080;">$haibao</span><span style="color: #000000;">;
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">$haibao_B = $haibaoPath_B .$haibao;
+
+            //创建图片实例</span>
+            <span style="color: #800080;">$dst</span> = imagecreatefromstring(<span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$dst_path</span>));<span style="color: #008000;">//</span><span style="color: #008000;">海报</span>
+            <span style="color: #800080;">$src</span> = imagecreatefromstring(<span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$src_path</span>));<span style="color: #008000;">//</span><span style="color: #008000;">二维码
+            //获取覆盖图的宽高</span>
+            <span style="color: #0000ff;">list</span>(<span style="color: #800080;">$src_w</span>, <span style="color: #800080;">$src_h</span>) = <span style="color: #008080;">getimagesize</span>(<span style="color: #800080;">$src_path</span><span style="color: #000000;">);
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">获取海报的宽高</span>
+            <span style="color: #0000ff;">list</span>(<span style="color: #800080;">$dst_w</span>, <span style="color: #800080;">$dst_h</span>) = <span style="color: #008080;">getimagesize</span>(<span style="color: #800080;">$dst_path</span><span style="color: #000000;">);
+
+           </span><span style="color: #008000;">//</span><span style="color: #008000;"> imagecopymerge($dst, $src, 20, 120, 0, 0, $src_w, $src_h, 100);</span>
+            imagecopymerge(<span style="color: #800080;">$dst</span>, <span style="color: #800080;">$src</span>, (<span style="color: #800080;">$dst_w</span>-<span style="color: #800080;">$src_w</span>)/2, <span style="color: #800080;">$dst_h</span>-100-<span style="color: #800080;">$src_h</span>, 0, 0, <span style="color: #800080;">$src_w</span>, <span style="color: #800080;">$src_h</span>, 100<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">list</span>(<span style="color: #800080;">$dst_w</span>, <span style="color: #800080;">$dst_h</span>) = <span style="color: #008080;">getimagesize</span>(<span style="color: #800080;">$dst_path</span><span style="color: #000000;">);
+            imagepng(</span><span style="color: #800080;">$dst</span>,<span style="color: #800080;">$haibao</span>);<span style="color: #008000;">//</span><span style="color: #008000;">生成图片并保存到服务器上 合成的海报</span>
+            imagedestroy(<span style="color: #800080;">$dst</span><span style="color: #000000;">);
+            imagedestroy(</span><span style="color: #800080;">$src</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$haibao</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$haibao</span>,1);<span style="color: #008000;">//</span><span style="color: #008000;">去掉左边第一个小点</span>
+            <span style="color: #800080;">$arr</span>['msg'] = <span style="color: #800080;">$haibao</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$arr</span>);<span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+        }
+        
+
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

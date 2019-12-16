@@ -1,0 +1,408 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole MySQL 连接池的实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole MySQL 连接池的实现</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11811917.html</div><br>
+    <p>开始今天的文章，这篇文章实现了 Swoole MySQL 连接池，代码是在《Swoole RPC 的实现》文章的基础上进行开发的。<br /><br />先回顾上篇文章的内容：<br /><br />&nbsp;&nbsp;&nbsp; 实现了 HTTP / TCP 请求<br /><br />&nbsp;&nbsp;&nbsp; 实现了 同步 / 异步 请求<br /><br />&nbsp;&nbsp;&nbsp; 分享了 OnRequest.php、OnReceive.php 源码<br /><br />&nbsp;&nbsp;&nbsp; 业务逻辑 Order.php 中返回的是假数据<br /><br />本篇文章主要的功能点：<br /><br />&nbsp;&nbsp;&nbsp; 业务逻辑 Order.php 中返回 MySQL 数据库中的数据。<br /><br />&nbsp;&nbsp;&nbsp; Task 启用了协程<br /><br />&nbsp;&nbsp;&nbsp; 支持 主/从 数据库配置<br /><br />&nbsp;&nbsp;&nbsp; 实现数据库连接池<br /><br />&nbsp;&nbsp;&nbsp; 实现数据库 CURD<br /><br />代码</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Order.php
+
+    &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    class Order    
+    {    
+        public function get_list($uid = 0, $type = 0)    
+        {    
+            //TODO 业务代码    
+            $rs[0]['order_code'] = '1';    
+            $rs[0]['order_name'] = '订单1';    
+            $rs[1]['order_code'] = '2';    
+            $rs[1]['order_name'] = '订单2';    
+            $rs[2]['order_code'] = '3';    
+            $rs[2]['order_name'] = '订单3';    
+            return $rs;    
+        }    
+    }    
+    修改成：    
+    class Order    
+    {    
+        private $mysql;    
+        private $table;    
+        public function __construct()    
+        {    
+            $pool = MysqlPool::getInstance();    
+            $this-&gt;mysql = $pool-&gt;get();    
+            $this-&gt;table = 'order';    
+        }    
+        public function add($code = '', $name = '')    
+        {    
+            //TODO 验证    
+            return $this-&gt;mysql-&gt;insert($this-&gt;table, ['code' =&gt; $code, 'name' =&gt; $name]);    
+        }    
+        public function edit($id = 0,  $name='')    
+        {    
+            //TODO 验证    
+            return $this-&gt;mysql-&gt;update($this-&gt;table, ['name' =&gt; $name], ['id' =&gt; $id]);    
+        }    
+        public function del($id = 0)    
+        {    
+            //TODO 验证    
+            return $this-&gt;mysql-&gt;delete($this-&gt;table, ['id' =&gt; $id]);    
+        }    
+        public function info($code = '')    
+        {    
+            //TODO 验证    
+            return $this-&gt;mysql-&gt;select($this-&gt;table, ['code' =&gt; $code]);    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />Task 启用协程<br /><br />一、需要新增两项配置：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    enable_coroutine      = true    
+    task_enable_coroutine = true
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />二、回调参数发生改变<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  $serv-&gt;on('Task', function ($serv, $task_id, $src_worker_id, $data) {    
+       ...    
+    });    
+    修改成：    
+    $serv-&gt;on('Task', function ($serv, $task) {    
+        $task-&gt;worker_id; //来自哪个`Worker`进程    
+        $task-&gt;id; //任务的编号    
+        $task-&gt;data; //任务的数据    
+    });
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />数据库 主/从 配置<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>Mysql.php
+
+    &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    $db['default']['pool_size']        = 3; //连接池个数    
+    $db['default']['pool_get_timeout'] = 0.5; //获取连接池超时时间    
+    $db['default']['timeout']          = 0.5; //数据库建立连接超时时间    
+    $db['default']['charset']          = 'utf8'; //字符集    
+    $db['default']['strict_type']      = false; //开启严格模式    
+    $db['default']['fetch_mode']       = true; //开启fetch模式    
+    $config['master']             = $db['default'];    
+    $config['master']['host']     = '127.0.0.1';    
+    $config['master']['port']     = 3306;    
+    $config['master']['user']     = 'root';    
+    $config['master']['password'] = '123456';    
+    $config['master']['database'] = 'demo';    
+    $config['slave']             = $db['default'];    
+    $config['slave']['host']     = '127.0.0.1';    
+    $config['slave']['port']     = 3306;    
+    $config['slave']['user']     = 'root';    
+    $config['slave']['password'] = '123456';    
+    $config['slave']['database'] = 'demo';
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />数据库连接池<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>MysqlPool.php
+
+    &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    class MysqlPool    
+    {    
+        private static $instance;    
+        private $pool;    
+        private $config;    
+        public static function getInstance($config = null)    
+        {    
+            if (empty(self::$instance)) {    
+                if (empty($config)) {    
+                    throw new RuntimeException("MySQL config empty");    
+                }    
+                self::$instance = new static($config);    
+            }    
+            return self::$instance;    
+        }    
+        public function __construct($config)    
+        {    
+            if (empty($this-&gt;pool)) {    
+                $this-&gt;config = $config;    
+                $this-&gt;pool = new chan($config['master']['pool_size']);    
+                for ($i = 0; $i &lt; $config['master']['pool_size']; $i++) {    
+                    go(function() use ($config) {    
+                        $mysql = new MysqlDB();    
+                        $res = $mysql-&gt;connect($config);    
+                        if ($res === false) {    
+                            throw new RuntimeException("Failed to connect mysql server");    
+                        } else {    
+                            $this-&gt;pool-&gt;push($mysql);    
+                        }    
+                    });    
+                }    
+            }    
+        }    
+        public function get()    
+        {    
+            if ($this-&gt;pool-&gt;length() &gt; 0) {    
+                $mysql = $this-&gt;pool-&gt;pop($this-&gt;config['master']['pool_get_timeout']);    
+                if (false === $mysql) {    
+                    throw new RuntimeException("Pop mysql timeout");    
+                }    
+                defer(function () use ($mysql) { //释放    
+                    $this-&gt;pool-&gt;push($mysql);    
+                });    
+                return $mysql;    
+            } else {    
+                throw new RuntimeException("Pool length &lt;= 0");    
+            }    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p>这里我还准备了一分学习图和资料，如下：</p>
+<p><img src="./images/Swoole MySQL 连接池的实现0.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><br /><br /><br /><br />数据库 CURD<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>MysqlDB.php
+
+    &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    class MysqlDB    
+    {    
+        private $master;    
+        private $slave;    
+        private $config;    
+        public function __call($name, $arguments)    
+        {    
+            if ($name != 'query') {    
+                throw new RuntimeException($name."：This command is not supported");    
+            } else {    
+                return $this-&gt;_execute($arguments[0]);    
+            }    
+        }    
+        public function connect($config)    
+        {    
+            //主库    
+            $master = new Swoole\Coroutine\MySQL();    
+            $res = $master-&gt;connect($config['master']);    
+            if ($res === false) {    
+                throw new RuntimeException($master-&gt;connect_error, $master-&gt;errno);    
+            } else {    
+                $this-&gt;master = $master;    
+            }    
+            //从库    
+            $slave = new Swoole\Coroutine\MySQL();    
+            $res = $slave-&gt;connect($config['slave']);    
+            if ($res === false) {    
+                throw new RuntimeException($slave-&gt;connect_error, $slave-&gt;errno);    
+            } else {    
+                $this-&gt;slave = $slave;    
+            }    
+            $this-&gt;config = $config;    
+            return $res;    
+        }    
+        public function insert($table = '', $data = [])    
+        {    
+            $fields = '';    
+            $values = '';    
+            $keys = array_keys($data);    
+            foreach ($keys as $k) {    
+                $fields .= "`".addslashes($k)."`, ";    
+                $values .= "'".addslashes($data[$k])."', ";    
+            }    
+            $fields = substr($fields, 0, -2);    
+            $values = substr($values, 0, -2);    
+            $sql = "INSERT INTO `{$table}` ({$fields}) VALUES ({$values})";    
+            return $this-&gt;_execute($sql);    
+        }    
+        public function update($table = '', $set = [], $where = [])    
+        {    
+            $arr_set = [];    
+            foreach ($set as $k =&gt; $v) {    
+                $arr_set[] = '`'.$k . '` = ' . $this-&gt;_escape($v);    
+            }    
+            $set = implode(', ', $arr_set);    
+            $where = $this-&gt;_where($where);    
+            $sql = "UPDATE `{$table}` SET {$set} {$where}";    
+            return $this-&gt;_execute($sql);    
+        }    
+        public function delete($table = '', $where = [])    
+        {    
+            $where = $this-&gt;_where($where);    
+            $sql = "DELETE FROM `{$table}` {$where}";    
+            return $this-&gt;_execute($sql);    
+        }    
+        public function select($table = '',$where = [])    
+        {    
+            $where = $this-&gt;_where($where);    
+            $sql = "SELECT * FROM `{$table}` {$where}";    
+            return $this-&gt;_execute($sql);    
+        }    
+        private function _where($where = [])    
+        {    
+            $str_where = '';    
+            foreach ($where as $k =&gt; $v) {    
+                $str_where .= " AND `{$k}` = ".$this-&gt;_escape($v);    
+            }    
+            return "WHERE 1 ".$str_where;    
+        }    
+        private function _escape($str)    
+        {    
+            if (is_string($str)) {    
+                $str = "'".$str."'";    
+            } elseif (is_bool($str)) {    
+                $str = ($str === FALSE) ? 0 : 1;    
+            } elseif (is_null($str)) {    
+                $str = 'NULL';    
+            }    
+            return $str;    
+        }    
+        private function _execute($sql)    
+        {    
+            if (strtolower(substr($sql, 0, 6)) == 'select') {    
+                $db = $this-&gt;_get_usable_db('slave');    
+            } else {    
+                $db = $this-&gt;_get_usable_db('master');    
+            }    
+            $result = $db-&gt;query($sql);    
+            if ($result === true) {    
+                return [    
+                    'affected_rows' =&gt; $db-&gt;affected_rows,    
+                    'insert_id'     =&gt; $db-&gt;insert_id,    
+                ];    
+            }    
+            return $result;    
+        }    
+        private function _get_usable_db($type)    
+        {    
+            if ($type == 'master') {    
+                if (!$this-&gt;master-&gt;connected) {    
+                    $master = new Swoole\Coroutine\MySQL();    
+                    $res = $master-&gt;connect($this-&gt;config['master']);    
+                    if ($res === false) {    
+                        throw new RuntimeException($master-&gt;connect_error, $master-&gt;errno);    
+                    } else {    
+                        $this-&gt;master = $master;    
+                    }    
+                }    
+                return $this-&gt;master;    
+            } elseif ($type == 'slave') {    
+                if (!$this-&gt;slave-&gt;connected) {    
+                    $slave = new Swoole\Coroutine\MySQL();    
+                    $res = $slave-&gt;connect($this-&gt;config['slave']);    
+                    if ($res === false) {    
+                        throw new RuntimeException($slave-&gt;connect_error, $slave-&gt;errno);    
+                    } else {    
+                        $this-&gt;slave = $slave;    
+                    }    
+                }    
+                return $this-&gt;slave;    
+            }    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />OnWorkerStart 中调用<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  try {    
+        MysqlPool::getInstance(get_config('mysql'));    
+    } catch (\Exception $e) {    
+        $serv-&gt;shutdown();    
+    } catch (\Throwable $throwable) {    
+        $serv-&gt;shutdown();    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />客户端发送请求<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> &lt;?php    
+    //新增    
+    $demo = [    
+        'type'  =&gt; 'SW',    
+        'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+        'param' =&gt; [    
+            'class'  =&gt; 'Order',    
+            'method' =&gt; 'add',    
+            'param' =&gt; [    
+                'code' =&gt; 'C'.mt_rand(1000,9999),    
+                'name' =&gt; '订单-'.mt_rand(1000,9999),    
+            ],    
+        ],    
+    ];    
+    //编辑    
+    $demo = [    
+        'type'  =&gt; 'SW',    
+        'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+        'param' =&gt; [    
+            'class'  =&gt; 'Order',    
+            'method' =&gt; 'edit',    
+            'param' =&gt; [    
+                'id' =&gt; '4',    
+                'name' =&gt; '订单-'.mt_rand(1000,9999),    
+            ],    
+        ],    
+    ];    
+    //删除    
+    $demo = [    
+        'type'  =&gt; 'SW',    
+        'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+        'param' =&gt; [    
+            'class'  =&gt; 'Order',    
+            'method' =&gt; 'del',    
+            'param' =&gt; [    
+                'id' =&gt; '1',    
+            ],    
+        ],    
+    ];    
+    //查询    
+    $demo = [    
+        'type'  =&gt; 'SW',    
+        'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+        'param' =&gt; [    
+            'class'  =&gt; 'Order',    
+            'method' =&gt; 'info',    
+            'param' =&gt; [    
+                'code' =&gt; 'C4649'    
+            ],    
+        ],    
+    ];    
+    $ch = curl_init();    
+    $options = [    
+        CURLOPT_URL  =&gt; 'http://10.211.55.4:9509/',    
+        CURLOPT_POST =&gt; 1,    
+        CURLOPT_POSTFIELDS =&gt; json_encode($demo),    
+    ];    
+    curl_setopt_array($ch, $options);    
+    curl_exec($ch);    
+    curl_close($ch);
+</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

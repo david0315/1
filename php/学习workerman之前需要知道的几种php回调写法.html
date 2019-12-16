@@ -1,0 +1,91 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修学习workerman之前需要知道的几种php回调写法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>学习workerman之前需要知道的几种php回调写法</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11973881.html</div><br>
+    <p><img src="./images/学习workerman之前需要知道的几种php回调写法0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>在workerman中会经常使用，我们先写一个回调函数，当某个行为被触发后使用该函数处理相关逻辑。</p>
+<p>在PHP中最常用的几种回调写法如下</p>
+<p><strong>匿名函数做为回调</strong></p>
+<p>匿名函数（Anonymous functions），也叫闭包函数（closures），允许临时创建一个没有指定名称的函数。最经常用作回调函数（callback）参数的值。当然，也有其它应用的情况。</p>
+<p>匿名函数的回调经常将其赋给一个变量（或一个对象的属性）</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>最终结果会输出11。</p>
+<p>这中间有一个use的用法，现在很多框架都在使用，包括我自己发布的 yii2-wx 在处理微信付款结果通知的时候也有用到。</p>
+<p>简单点说就是当我们设置了匿名函数的时候，可以从父作用域继承变量，比如如下代码</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>则结果是21，没错，匿名函数体可以使用继承过来的变量 $number。</p>
+<p>一点要注意的是，这种继承是在函数被定义的时候就确定了，比如如下代码</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>结果还是21，后面重新的赋值并没有起到作用。</p>
+<p>那我们如何解决这个问题那？</p>
+<p>@nai8@</p>
+<p>只需要将继承的变量设置为引用即可，如下</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法4.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>搞定了，22出现了。1 + 10 + 11;</p>
+<p>在workerman中一般匿名函数作为回调用法如下</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法5.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>普通函数作为回调</strong></p>
+<p>这种用法并没有什么可以多说的，不像匿名函数那么多细节，直接看代码。</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法6.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;在这里没有use用法，并且函数定义和赋值给变量顺序谁上谁下都可以，在语法上这只是对add的一次变量赋值，之所以能作为回调是我们使用了add() 导致的，在workerman中一般用法如下</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法7.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>类方法作为回调</strong></p>
+<p>学习了前面的知识，类的方法作为回调就好学了，一句话：将一个类的公共方法作为回调函数;</p>
+<p>直接上在workerman中的用法</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法8.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>我们将MyClass的onMsg方法作为回调赋值给$worker-&gt;onMessage。</p>
+<p><strong>类静态方法做为回调</strong></p>
+<p>这个最简单了，看代码。</p>
+<p><img src="./images/学习workerman之前需要知道的几种php回调写法9.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>我们将MyClass的静态方法onMsg方法作为回调赋值给worker-&gt;onMessage，因为是静态方法，在onMsg内不能用this哈。</p>
+<p>以上就是学习workerman之前需要知道的几种php回调写法的详细内容</p>
+<src class="Post-RichTextContainer">
+<src class="RichText ztext Post-RichText">
+<p>有需要学习交流的友人请加入Swoole交流群的咱们一起，有问题一起交流，一起进步！前提是你是学技术的。感谢阅读！</p>
+<a class="LinkCard LinkCard--noImage" href="https://link.zhihu.com/?target=https%3A//jq.qq.com/%3F_wv%3D1027%26k%3D5mcCu53" target="_blank" data-draft-node="block" data-draft-type="link-card" data-za-detail-view-id="172"><span class="LinkCard-content"><span class="LinkCard-text"><span class="LinkCard-title" data-text="true">点此加入该群<span class="LinkCard-meta">​jq.qq.com</span></span></span></span></a>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

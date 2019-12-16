@@ -1,0 +1,129 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修创 PHP RSA2 签名算法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>创 PHP RSA2 签名算法</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11908187.html</div><br>
+    <p><strong>&nbsp;&nbsp;&nbsp; 什么是RSA2 ？</strong><br /><br />RSA2 是在原来SHA1WithRSA签名算法的基础上，新增了支持SHA256WithRSA的签名算法。<br /><br />该算法比SHA1WithRSA有更强的安全能力。<br /><br />为了您的应用安全，强烈建议使用SHA256WithRSA的签名算法。</p>
+<p><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p>
+<table border="0">
+<tbody>
+<tr>
+<td>开发平台算法名称</td>
+<td>&nbsp; &nbsp; 标准签名算法名称</td>
+<td><br />&nbsp;&nbsp;&nbsp; 备注</td>
+</tr>
+<tr>
+<td>RSA2</td>
+<td>SHA256WithRSA</td>
+<td>（强烈推荐使用），强制要求RSA密钥的长度至少为2048</td>
+</tr>
+<tr>
+<td>RSA</td>
+<td>SHA1WithRSA </td>
+<td>对RSA密钥的长度不限制，推荐使用2048位以上</td>
+</tr>
+</tbody>
+</table>
+<p><br />&nbsp;&nbsp; <br /><strong>那些公司在使用 ？</strong><br /><br />一些大型公司的开发平台，比如支付宝、新浪微博。<br /><br />&nbsp;&nbsp;&nbsp;<strong> 创建私钥、公钥</strong><br /><br />//生成原始 RSA私钥文件<br />openssl genrsa -out rsa_private_key.pem 1024<br /><br />//将原始 RSA私钥转换为 pkcs8格式<br />openssl pkcs8 -topk8 -inform PEM -in rsa_private_key.pem -outform PEM -nocrypt -out private_key.pem<br /><br />//生成RSA公钥<br />openssl rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem<br /><br />&nbsp;<strong>&nbsp;&nbsp; PHP-RSA2签名验证</strong></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    class Rsa2
+    {
+        private static $PRIVATE_KEY = 'rsa_private_key.pem 内容';
+        private static $PUBLIC_KEY  = 'rsa_public_key.pem 内容';
+
+        /**
+         * 获取私钥
+         * @return bool|resource
+         */
+        private static function getPrivateKey()
+        {
+            $privKey = self::$PRIVATE_KEY;
+            return openssl_pkey_get_private($privKey);
+        }
+
+        /**
+         * 获取公钥
+         * @return bool|resource
+         */
+        private static function getPublicKey()
+        {
+            $publicKey = self::$PUBLIC_KEY;
+            return openssl_pkey_get_public($publicKey);
+        }
+
+        /**
+         * 创建签名
+         * @param string $data 数据
+         * @return null|string
+         */
+        public function createSign($data = '')
+        {
+            if (!is_string($data)) {
+                return null;
+            }
+            return openssl_sign(
+                        $data,
+                        $sign,
+                        self::getPrivateKey(),
+                        OPENSSL_ALGO_SHA256
+                      ) ? base64_encode($sign) : null;
+        }
+
+        /**
+         * 验证签名
+         * @param string $data 数据
+         * @param string $sign 签名
+         * @return bool
+         */
+        public function verifySign($data = '', $sign = '')
+        {
+            if (!is_string($sign) || !is_string($sign)) {
+                return false;
+            }
+            return (bool)openssl_verify(
+                          $data,
+                          base64_decode($sign),
+                          self::getPublicKey(),
+                          OPENSSL_ALGO_SHA256
+                        );
+        }
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />&nbsp;&nbsp;&nbsp; PHP 调用</p>
+<src class="cnblogs_Highlighter">
+<pre><code>    require_once "Rsa2.php";
+    $rsa2 = new Rsa2();
+
+    $data = 'my data'; //待签名字符串
+
+    $strSign = $rsa2-&gt;createSign($data);      //生成签名
+    var_dump($strSign);
+
+    $is_ok = $rsa2-&gt;verifySign($data, $sign); //验证签名
+    var_dump($is_ok);
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

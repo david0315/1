@@ -1,0 +1,105 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP的视图和模板' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP的视图和模板</center></div><div class='banquan'>原文出处:本文由博客园博主MingGyGy提供。<br/>
+原文连接:https://www.cnblogs.com/MingGyGy-Castle/p/11966613.html</div><br>
+    <h2>简单来说一个控制器对应一个视图，一个方法对应一个模板下面我们直接上图。</h2>
+<p>&nbsp;</p>
+<p><img src="./images/ThinkPHP的视图和模板0.jpg" alt="" /></p>
+<h2>二、给模板赋值</h2>
+<p>　　给模板赋值在这里用到了assign()这个函数，assign()函数第一个参数为给这个值自定义名称，第二个参数则是值</p>
+<p>　　栗子：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> testview(){
+   </span><span style="color: #800080;">$date</span>=Db::name("goods")-&gt;select();<span style="color: #008000;">//</span><span style="color: #008000;">数据库查询商品表  返回一个数据集</span>
+   <span style="color: #800080;">$this</span>-&gt;assign('date',<span style="color: #800080;">$date</span>); <span style="color: #008000;">//</span><span style="color: #008000;">把数据集给到date</span>
+   <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">fetch();
+}</span></code></pre>
+
+<p>　　那么这样相应的模板就拿到了date这个数据集了，下面就是这么在模板中使用这个数据集，直接上代码：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;table&gt;
+   &lt;tr&gt;
+        &lt;th&gt;商品ID&lt;/th&gt;
+        &lt;th&gt;商品名称&lt;/th&gt;
+        &lt;th&gt;商品价格&lt;/th&gt;
+        &lt;th&gt;操作&lt;/th&gt;
+   &lt;/tr&gt;<span style="color: #000000;">
+   {</span><span style="color: #0000ff;">foreach</span> <span style="color: #800080;">$date</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$value</span><span style="color: #000000;">}
+       </span>&lt;tr&gt;   
+        &lt;th&gt;{<span style="color: #800080;">$value</span>.id}&lt;/th&gt;
+        &lt;th&gt;{<span style="color: #800080;">$value</span>.goods_name}&lt;/th&gt;
+        &lt;th&gt;{<span style="color: #800080;">$value</span>.price}&lt;/th&gt;
+        &lt;th&gt;&lt;a href="#"&gt;删除&lt;/th&gt;
+       &lt;/tr&gt;<span style="color: #000000;">
+    {</span>/<span style="color: #0000ff;">foreach</span><span style="color: #000000;">}
+</span>&lt;/table&gt;</code></pre>
+
+<h2>三、在模板中该怎么注释</h2>
+<p>　　普通的HTML注释是无法注释{foreach}中的内容的，因为ThinkPHP会找到"{}"进行处理大括号中的内容，所以在这里我们用特殊的办法来注释，用&nbsp;&nbsp; {/*注释的内容*/}这样的方法来注释下面举个栗子</p>
+<src class="cnblogs_code">
+<pre><code>&lt;table&gt;
+   &lt;tr&gt;
+        &lt;th&gt;商品ID&lt;/th&gt;
+        &lt;th&gt;商品名称&lt;/th&gt;
+        &lt;th&gt;商品价格&lt;/th&gt;
+        &lt;th&gt;操作&lt;/th&gt;
+   &lt;/tr&gt;
+&lt;!--多行注释   用{<span style="color: #008000;">/*</span><span style="color: #008000;">注释的内容</span><span style="color: #008000;">*/</span>}--&gt;<span style="color: #000000;">
+{</span><span style="color: #008000;">/*</span><span style="color: #008000;">   
+{foreach $date as $value}
+       &lt;tr&gt;
+    &lt;!--单行注释   用{//注释的内容}--&gt;   
+        {//&lt;th&gt;{$value.id}&lt;/th&gt;}
+        &lt;th&gt;{$value.goods_name}&lt;/th&gt;
+        &lt;th&gt;{$value.price}&lt;/th&gt;
+        &lt;th&gt;&lt;a href="#"&gt;删除&lt;/th&gt;
+       &lt;/tr&gt;
+    {/foreach}
+</span><span style="color: #008000;">*/</span><span style="color: #000000;">}
+</span>&lt;/table&gt;</code></pre>
+
+<h2>四、在模板中使用函数</h2>
+<p>　　模板中也是可以使用strtoupper、md5等函数的，下面演示具体该怎么使用。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;test&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+     &lt;!--<span style="color: #000000;">
+  模版中的使用函数 例如后台传入一个jack，使用strtoupper()函数转成大写字母
+     </span>--&gt;<span style="color: #000000;">
+    {</span><span style="color: #800080;">$name</span> | <span style="color: #008080;">strtoupper</span><span style="color: #000000;">}
+     </span>&lt;br&gt;
+    &lt;!--调用md5函数给name加密--&gt;<span style="color: #000000;">
+    {</span><span style="color: #800080;">$name</span> | <span style="color: #008080;">md5</span>}&lt;br&gt;
+    &lt;!--多个使用函数 加密后字母大写--&gt;<span style="color: #000000;">
+    {</span><span style="color: #800080;">$name</span> | <span style="color: #008080;">md5</span> | <span style="color: #008080;">strtoupper</span>}&lt;br&gt;
+    &lt;!--使用指定class中的方法 如调用VERSION获取ThinkPHP的版本号--&gt;<span style="color: #000000;">
+    {</span>:think\\APP::<span style="color: #000000;">VERSION}
+</span>&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

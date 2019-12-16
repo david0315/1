@@ -1,0 +1,243 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel 实现前后台用户分离登录' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel 实现前后台用户分离登录</center></div><div class='banquan'>原文出处:本文由博客园博主Blog_Lee提供。<br/>
+原文连接:https://www.cnblogs.com/Super-Lee/p/11767931.html</div><br>
+    <p>在很多时候，我们需要前台和后台进行不同的登录操作，以限制用户权限，现在用 Laravel 实现这个需求。</p>
+<h2>前戏</h2>
+<h3>一、获取 Laravel</h3>
+<p>这个在文档中都有说明的，也比较简单，可以使用 composer 下载（我下载的时候是有些慢），我就复制之前下载好的空项目。</p>
+<h3>二、修改配置文件</h3>
+<p>在这一步我只修改了 .env 文件中的数据库配置。</p>
+<h3>三、运行项目</h3>
+<p>在项目根目录，运行</p>
+<src class="cnblogs_code">
+<pre><code>php artisan serve</code></pre>
+
+<p><img src="./images/Laravel 实现前后台用户分离登录0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;在浏览器中输入 http://127.0.0.1:8000 访问自己的项目。</p>
+<h2>进入正题</h2>
+<p>有两种方式实现前后台用户的分离登录，使用两个数据表或者使用一个数据表。</p>
+<h3>一、使用两个表（前台用户表和后台用户表）</h3>
+<h4>1、创建数据表</h4>
+<p>在项目根目录运行</p>
+<src class="cnblogs_code">
+<pre><code>php artisan make:migration create_users_table</code></pre>
+
+<p>执行上面的命令会在 database/migrations 目录下生成迁移文件 xxxx_create_users_table.php，这个文件在下载项目的时候是有的，可以直接修改，当然，多生成一个也没有关系吧。</p>
+<p>修改 xxxx_create_users_table.php 文件（如果已经执行了上面的命令，修改的时候注意文件 xxxx 部分的日期，不要改错了）。</p>
+<p><img src="./images/Laravel 实现前后台用户分离登录1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;这里我多加了一个字段，用来判断用户是否允许登录。</p>
+<p>在修改完成之后执行迁移。</p>
+<src class="cnblogs_code">
+<pre><code>php artisan migrate</code></pre>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;"><img src="./images/Laravel 实现前后台用户分离登录2.jpg" alt="" />
+<p>&nbsp;</p>
+<p>执行成功后，会在配置好的数据库中生成对应的表</p>
+
+<src style="text-align: left; float: none;">
+<src style="text-align: left; float: none;">
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录3.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;users 表就是我们要用到的前台用户表，然后用同样的方法，生成一个后台用户表</p>
+
+
+
+<src id="2951-1572399269469" style="white-space: pre-wrap;" data-theme="default" data-language="javascript">运行
+<src style="white-space: pre-wrap;" data-theme="default" data-language="javascript">
+<src class="cnblogs_code">
+<pre><code>php artisan make:migration create_admins_table</code></pre>
+
+<p>修改 xxxxx_create_admins_table.php 中的内容</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">执行迁移：
+<src id="5787-1572399260893" style="white-space: pre-wrap;" data-theme="default" data-language="javascript">
+<src class="cnblogs_code">
+<pre><code>php artisan:migrate</code></pre>
+
+<p>到这里，两个数据表就完成了。</p>
+
+<h4 style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">2、实现基本的登录</h4>
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">运行 php artisan make:auth 命令
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录4.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;这时会看到 app 目录下多了 User.php。</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">在 app 目录下新建 Models 目录，用来存放模型，将 User.php 移动到 Models 目录。
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">修改 User.php 中的内容（可以不移动，省去好多操作）。
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录5.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;改为：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录6.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;打开 config 文件夹下的 auth.php</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录7.jpg" alt="" />
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">改为
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录8.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;然后打开 Http/Controllers 文件夹，里面多了一个 Auth 文件夹，里面有我们注册登录使用的控制器。</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">打开 routes 文件夹下的 web.php 文件，修改
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录9.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;为：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录10.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;这时刷新浏览器页面，会发现跳转到了登录界面，当然，目前用户表中没有添加任何数据，现在向用户表中添加数据：</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">运行
+<src class="cnblogs_code">
+<pre><code>php artisan make:seeder UsersTableSeeder</code></pre>
+
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录11.jpg" alt="" />
+<p>&nbsp;</p>
+<p>运行成功之后，会在 database/seeds 目录下生成 UsersTableSeeder.php 文件，打开这个文件，在 run 这个方法中添加下面的内容：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录12.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;然后打开 DatabaseSeeder.php，在里面添加：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录13.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;完成编写之后，运行 composer dump-autoload</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">这时运行 php artisan db:seed
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录14.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;查看数据表：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录15.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;刚才新建的用户已经存在了，这时进行登录，发现可以成功访问。</p>
+
+<h4 style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">3、实现前台用户的稍复杂登录</h4>
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">我们在前面设置了 active 字段，用来验证用户是否允许登录，但是，目前 active 字段并没有进行验证，接下来就要验证 active 字段。
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">（1）修改 users 表中的 active 字段为 0。
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">（2）修改 vendor/laravel/framework/src/Illuminate/Auth/SessionGuard.php 文件
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录16.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;和 attempt 方法中的：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录17.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;（3）在 resources/lang 文件夹 en 文件夹中，打开 auth.php，在数组中添加：</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">
+<src class="cnblogs_code">
+<pre><code>'active' =&gt; 'This account is not allowed to login.'</code></pre>
+
+<p>（4）修改 blade 模板文件：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录18.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;然后再次使用之前的账号密码登录，发现会提示错误信息：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录19.jpg" alt="" />
+<p>&nbsp;</p>
+<h4>&nbsp;4、实现后台用户登录（前后台分离登录）</h4>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">出于安全考虑，后台用户不允许记住密码，因此的前台使用不同的登录界面。
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">由于是两个表实现，所以操作的数据库也不一样。
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">（1）添加后台用户，与添加前台用户相同，生成并运行 seeder
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">（2）添加 Admin 模型（注意模型的继承和 Trait 的使用）
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">（3）添加路由和控制器
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录20.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;并在控制器中添加 index 方法</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录21.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;在上面可以看到，我们使用的中间件还是 auth ，这就会和前台登录一样一样的了，可现在是后台登录呀。</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">（4）自定义中间件（默认中间件的位置在 app\Http\Middlewares）
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">
+<src class="cnblogs_code">
+<pre><code>php artisan make:middleware AuthAdmin</code></pre>
+
+<p>修改内容为：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录22.jpg" alt="" />
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code> php artisan make:middleware GuestAdmin</code></pre>
+
+<p>修改内容为：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录23.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;（5）打开 Http 目录下的 Kernel.php 文件，在 routeMiddleware 中添加：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录24.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;现在修改之前的路由：</p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录25.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;现在如果直接访问 127.0.0.1:8000/admin 会提示 LoginController 不存在，我们复制 Auth 文件夹下的 LoginController 到 Controllers 目录，也可以新建。</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">修改里面的内容为：
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录26.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;新建视图文件 login.blade.php，复制 auth 文件夹下的 login.blade.php 到 当前视图文件，去掉 checkbox，修改提交地址为 route('admin.login')，保存。</p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">然后。。。就 OK 了。
+<h3 style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">二、一个表实现（同一个表，使用字段进行区分）</h3>
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">在两个表实现的基础上，我们修改以下内容：
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">1、在 users 表中添加 type 字段（0 为前台用户，1 为后台用户）。
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">2、添加用户信息：
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录27.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;<span style="font-family: 'Microsoft YaHei', STXihei;">3、修改 route 文件</span></p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录28.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;<span style="font-family: 'Microsoft YaHei', STXihei;">4、修改 LoginController.php 文件</span></p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录29.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;<span style="font-family: 'Microsoft YaHei', STXihei;">删除 guard 方法，添加 credentials 方法</span></p>
+
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录30.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;<span style="font-family: 'Microsoft YaHei', STXihei;">目前来说已经基本实现了单表的前后台登录，但是现在是有 bug 的。</span></p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;"><span style="font-family: 'Microsoft YaHei', STXihei;">如果我在访问 localhost:8000 时登录了 user 用户，这时直接在浏览器地址栏中输入 localhost:8000/admin 也是可以访问到后台的，但是 user 用户是没有权限的，这样就出现了很大的安全隐患，我是这样想的，在中间件中多加一条判断，看用户是否有进入后台的权限，如果没有就返回前一页，有就可以访问。</span>
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录31.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;<span style="font-family: 'Microsoft YaHei', STXihei;">在视图层中显示错误信息。</span></p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;"><span style="font-family: 'Microsoft YaHei', STXihei;">打开 layout/app.blade.php，在文件末尾处添加 JavaScript 代码：</span>
+<src style="text-align: left; float: none;"><img src="./images/Laravel 实现前后台用户分离登录32.jpg" alt="" />
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18pt;"><strong>OVER!</strong></span></p>
+
+<src style="white-space: pre-wrap; text-align: left; line-height: 1.75; font-size: 14px;">&nbsp;
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,228 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole和Redis实现的并发队列处理系统' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole和Redis实现的并发队列处理系统</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11905420.html</div><br>
+    <p>由于PHP不支持多线程，但是作为一个完善的系统，有很多操作都是需要异步完成的。为了完成这些异步操作，我们做了一个基于Redis队列任务系统。</p>
+<p>大家知道，一个消息队列处理系统主要分为两大部分：消费者和生产者。</p>
+<p>在我们的系统中，主系统作为生产者，任务系统作为消费者。</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>具体的工作流程如下：</p>
+<p>1、主系统将需要需要处理的任务名称+任务参数push到队列中。</p>
+<p>2、任务系统实时的对任务队列进行pop，pop出来一个任务就fork一个子进程，由子进程完成具体的任务逻辑。</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>具体代码如下：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;"> * 启动守护进程
+</span><span style="color: #008080;"> 3</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 4</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> runAction() {
+</span><span style="color: #008080;"> 5</span>     Tools::log_message('ERROR', 'daemon/run' . ' | action: restart', 'daemon-'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">while</span> (<span style="color: #0000ff;">true</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 7</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">fork_process();
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">13</span> <span style="color: #008000;"> * 创建子进程
+</span><span style="color: #008080;">14</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">15</span> <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> fork_process() {
+</span><span style="color: #008080;">16</span>     <span style="color: #800080;">$ppid</span> = <span style="color: #008080;">getmypid</span><span style="color: #000000;">();
+</span><span style="color: #008080;">17</span>     <span style="color: #800080;">$pid</span> =<span style="color: #000000;"> pcntl_fork();
+</span><span style="color: #008080;">18</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$pid</span> == 0) {<span style="color: #008000;">//</span><span style="color: #008000;">子进程</span>
+<span style="color: #008080;">19</span>         <span style="color: #800080;">$pid</span> =<span style="color: #000000;"> posix_getpid();
+</span><span style="color: #008080;">20</span>         <span style="color: #008000;">//</span><span style="color: #008000;">echo "* Process {$pid} was created \n\n";</span>
+<span style="color: #008080;">21</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">mq_process();
+</span><span style="color: #008080;">22</span>         <span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+</span><span style="color: #008080;">23</span>     } <span style="color: #0000ff;">else</span> {<span style="color: #008000;">//</span><span style="color: #008000;">主进程</span>
+<span style="color: #008080;">24</span>         <span style="color: #800080;">$pid</span> = pcntl_wait(<span style="color: #800080;">$status</span>, WUNTRACED); <span style="color: #008000;">//</span><span style="color: #008000;">取得子进程结束状态</span>
+<span style="color: #008080;">25</span>         <span style="color: #0000ff;">if</span> (pcntl_wifexited(<span style="color: #800080;">$status</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">26</span>             <span style="color: #008000;">//</span><span style="color: #008000;">echo "\n\n* Sub process: {$pid} exited with {$status}";
+</span><span style="color: #008080;">27</span> <span style="color: #008000;">            //Tools::log_message('INFO', 'daemon/run succ' . '|status:' . $status . '|pid:' . $ppid . '|childpid:' . $pid );</span>
+<span style="color: #008080;">28</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">29</span>             Tools::log_message('ERROR', 'daemon/run fail' . '|status:' . <span style="color: #800080;">$status</span> . '|pid:' . <span style="color: #800080;">$ppid</span> . '|childpid:' . <span style="color: #800080;">$pid</span>, 'daemon-'<span style="color: #000000;">);
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">33</span> 
+<span style="color: #008080;">34</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">35</span> <span style="color: #008000;"> * 业务任务队列处理
+</span><span style="color: #008080;">36</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">37</span> <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> mq_process() {
+</span><span style="color: #008080;">38</span>     <span style="color: #800080;">$data_pop</span> = <span style="color: #800080;">$this</span>-&gt;masterRedis-&gt;rPop(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">redis_list_key);
+</span><span style="color: #008080;">39</span>     <span style="color: #800080;">$data</span> = json_decode(<span style="color: #800080;">$data_pop</span>, 1<span style="color: #000000;">);
+</span><span style="color: #008080;">40</span>     <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$data</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">41</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">FALSE</span><span style="color: #000000;">;
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">43</span>     <span style="color: #800080;">$worker</span> = '_task_' . <span style="color: #800080;">$data</span>['worker'<span style="color: #000000;">];
+</span><span style="color: #008080;">44</span>     <span style="color: #800080;">$class_name</span> = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['class']) ? <span style="color: #800080;">$data</span>['class'] : 'TaskproModel'<span style="color: #000000;">;
+</span><span style="color: #008080;">45</span>     <span style="color: #800080;">$params</span> = <span style="color: #800080;">$data</span>['params'<span style="color: #000000;">];
+</span><span style="color: #008080;">46</span>     <span style="color: #800080;">$class</span> = <span style="color: #0000ff;">new</span> <span style="color: #800080;">$class_name</span><span style="color: #000000;">();
+</span><span style="color: #008080;">47</span>     <span style="color: #800080;">$class</span>-&gt;<span style="color: #800080;">$worker</span>(<span style="color: #800080;">$params</span><span style="color: #000000;">);
+</span><span style="color: #008080;">48</span>     <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">TRUE</span><span style="color: #000000;">;
+</span><span style="color: #008080;">49</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>这是一个简单的任务处理系统。</p>
+<p>通过这个任务系统帮助我们实现了异步，到目前为止已经稳定运行了将近一年。</p>
+<p>但很可惜，它是一个单进程的系统。它是一直在不断的fork，如果有任务就处理，没有任务就跳过。</p>
+<p>这样很稳定。</p>
+<p>但问题有两个：一是不断地fork、pop会浪费服务器资源，二是不支持并发！</p>
+<p>第一个问题还好，但第二个问题就很严重。</p>
+<p>当主系统 同时 抛过来大量的任务时，任务的处理时间就会无限的拉长。</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<h3>新的设计</h3>
+<p>为了解决并发的问题，我们计划做一个更加高效强壮的队里处理系统。</p>
+<p>因为在PHP7之前不支持多线程，所以我们采用多进程。</p>
+<p>从网上找了不少资料，大多所谓的多进程都是N个进程同时在后台运行。</p>
+<p>显然这是不合适的。</p>
+<p>我的预想是：每pop出一个任务就fork一个任务，任务执行完成后子进程结束。</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<h3>遇到的问题</h3>
+<h3>1、如何控制最大进程数</h3>
+<p>这个问题很简单，那就是每fork一个子进程就自增一次。而当子进程执行完成就自减一次。</p>
+<p>自增没有问题，我们就在主进程中操作就完了。那么该如何自减呢？</p>
+<p>可能你会说，当然是在子进程中啊。但这里你需要注意：当fork的时候是从主进程复制了一份资源给子进程，这就意味着你无法在子进程中操作主进程中的计数器！</p>
+<p>所以，这里就需要了解一个知识点：信号。</p>
+<p>具体的可以自行Google，这里直接看代码。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> install signal handler for dead kids</span>
+<span style="color: #008080;">2</span> pcntl_signal(SIGCHLD, <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$this</span>, "sig_handler"));</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>这就安装了一个信号处理器。当然还缺少一点。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">declare</span>(ticks = 1);</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>declare是一个控制结构语句，具体的用法也请去Google。</p>
+<p>这句代码的意思就是每执行一条低级语句就调用一次信号处理器。</p>
+<p>这样，每当子进程结束的时候就会调用信号处理器，我们就可以在信号处理器中进行自减。</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<h3>2、如何解决进程残留</h3>
+<p>在多进程开发中，如果处理不当就会导致进程残留。</p>
+<p>为了解决进程残留，必须得将子进程回收。</p>
+<p>那么如何对子进程进行回收就是一个技术点了。</p>
+<p>在pcntl的demo中，包括很多博文中都是说在主进程中回收子进程。</p>
+<p>但我们是基于Redis的brpop的，而brpop是阻塞的。</p>
+<p>这就导致一个问题：当执行N个任务之后，任务系统空闲的时候主进程是阻塞的，而在发生阻塞的时候子进程还在执行，所以就无法完成最后几个子进程的进程回收。。。</p>
+<p>这里本来一直很纠结，但当我将信号处理器搞定之后就也很简单了。</p>
+<p>进程回收也放到信号处理器中去。</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<h3>新系统的评估</h3>
+<p>pcntl是一个进程处理的扩展，但很可惜它对多进程的支持非常乏力。</p>
+<p>所以这里采用Swoole扩展中的Process。</p>
+<p>具体代码如下：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">declare</span>(ticks = 1<span style="color: #000000;">);
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">class</span> JobDaemonController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Yaf_Controller_Abstract{
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> Trait_Redis;
+</span><span style="color: #008080;"> 5</span> 
+<span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$maxProcesses</span> = 800<span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$child</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$masterRedis</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$redis_task_wing</span> = 'task:wing'; <span style="color: #008000;">//</span><span style="color: #008000;">待处理队列</span>
+<span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> init(){
+</span><span style="color: #008080;">12</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> install signal handler for dead kids</span>
+<span style="color: #008080;">13</span>         pcntl_signal(SIGCHLD, <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$this</span>, "sig_handler"<span style="color: #000000;">));
+</span><span style="color: #008080;">14</span>         <span style="color: #008080;">set_time_limit</span>(0<span style="color: #000000;">);
+</span><span style="color: #008080;">15</span>         <span style="color: #008080;">ini_set</span>('default_socket_timeout', -1); <span style="color: #008000;">//</span><span style="color: #008000;">队列处理不超时,解决redis报错:read error on connection</span>
+<span style="color: #008080;">16</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">17</span> 
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> redis_client(){
+</span><span style="color: #008080;">19</span>         <span style="color: #800080;">$rds</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;">20</span>         <span style="color: #800080;">$rds</span>-&gt;connect('redis.master.host',6379<span style="color: #000000;">);
+</span><span style="color: #008080;">21</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$rds</span><span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> process(swoole_process <span style="color: #800080;">$worker</span>){<span style="color: #008000;">//</span><span style="color: #008000;"> 第一个处理</span>
+<span style="color: #008080;">25</span>         <span style="color: #800080;">$GLOBALS</span>['worker'] = <span style="color: #800080;">$worker</span><span style="color: #000000;">;
+</span><span style="color: #008080;">26</span>         swoole_event_add(<span style="color: #800080;">$worker</span>-&gt;pipe, <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$pipe</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">27</span>             <span style="color: #800080;">$worker</span> = <span style="color: #800080;">$GLOBALS</span>['worker'<span style="color: #000000;">];
+</span><span style="color: #008080;">28</span>             <span style="color: #800080;">$recv</span> = <span style="color: #800080;">$worker</span>-&gt;read();            <span style="color: #008000;">//</span><span style="color: #008000;">send data to master</span>
+<span style="color: #008080;">29</span> 
+<span style="color: #008080;">30</span>             <span style="color: #008080;">sleep</span>(<span style="color: #008080;">rand</span>(1, 3<span style="color: #000000;">));
+</span><span style="color: #008080;">31</span>             <span style="color: #0000ff;">echo</span> "From Master: <span style="color: #800080;">$recv</span>\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">32</span>             <span style="color: #800080;">$worker</span>-&gt;<span style="color: #0000ff;">exit</span>(0<span style="color: #000000;">);
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;">34</span>         <span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> testAction(){
+</span><span style="color: #008080;">38</span>         <span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; 10000; <span style="color: #800080;">$i</span>++<span style="color: #000000;">){
+</span><span style="color: #008080;">39</span>             <span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;">40</span>                 'abc' =&gt; <span style="color: #800080;">$i</span>,
+<span style="color: #008080;">41</span>                 'timestamp' =&gt; <span style="color: #008080;">time</span>().<span style="color: #008080;">rand</span>(100,999<span style="color: #000000;">)
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">            ];
+</span><span style="color: #008080;">43</span>             <span style="color: #800080;">$this</span>-&gt;masterRedis-&gt;lpush(<span style="color: #800080;">$this</span>-&gt;redis_task_wing, json_encode(<span style="color: #800080;">$data</span><span style="color: #000000;">));
+</span><span style="color: #008080;">44</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">45</span>         <span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+</span><span style="color: #008080;">46</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">47</span> 
+<span style="color: #008080;">48</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> runAction(){
+</span><span style="color: #008080;">49</span>         <span style="color: #0000ff;">while</span> (1<span style="color: #000000;">){
+</span><span style="color: #008080;">50</span> <span style="color: #008000;">//</span><span style="color: #008000;">            echo "\t now we de have $this-&gt;child child processes\n";</span>
+<span style="color: #008080;">51</span>             <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;child &lt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">maxProcesses){
+</span><span style="color: #008080;">52</span>                 <span style="color: #800080;">$rds</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">redis_client();
+</span><span style="color: #008080;">53</span>                 <span style="color: #800080;">$data_pop</span> = <span style="color: #800080;">$rds</span>-&gt;brpop(<span style="color: #800080;">$this</span>-&gt;redis_task_wing, 3);<span style="color: #008000;">//</span><span style="color: #008000;">无任务时,阻塞等待</span>
+<span style="color: #008080;">54</span>                 <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$data_pop</span><span style="color: #000000;">){
+</span><span style="color: #008080;">55</span>                     <span style="color: #0000ff;">continue</span><span style="color: #000000;">;
+</span><span style="color: #008080;">56</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;">57</span>                 <span style="color: #0000ff;">echo</span> "\t Starting new child | now we de have <span style="color: #800080;">$this</span>-&gt;child child processes\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">58</span>                 <span style="color: #800080;">$this</span>-&gt;child++<span style="color: #000000;">;
+</span><span style="color: #008080;">59</span>                 <span style="color: #800080;">$process</span> = <span style="color: #0000ff;">new</span> swoole_process([<span style="color: #800080;">$this</span>, 'process'<span style="color: #000000;">]);
+</span><span style="color: #008080;">60</span>                 <span style="color: #800080;">$process</span>-&gt;write(json_encode(<span style="color: #800080;">$data_pop</span><span style="color: #000000;">));
+</span><span style="color: #008080;">61</span>                 <span style="color: #800080;">$pid</span> = <span style="color: #800080;">$process</span>-&gt;<span style="color: #000000;">start();
+</span><span style="color: #008080;">62</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">63</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">64</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">65</span> 
+<span style="color: #008080;">66</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> sig_handler(<span style="color: #800080;">$signo</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">67</span> <span style="color: #008000;">//</span><span style="color: #008000;">        echo "Recive: $signo \r\n";</span>
+<span style="color: #008080;">68</span>         <span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$signo</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">69</span>             <span style="color: #0000ff;">case</span> SIGCHLD:
+<span style="color: #008080;">70</span>                 <span style="color: #0000ff;">while</span>(<span style="color: #800080;">$ret</span> = swoole_process::wait(<span style="color: #0000ff;">false</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">71</span> <span style="color: #008000;">//</span><span style="color: #008000;">                    echo "PID={$ret['pid']}\n";</span>
+<span style="color: #008080;">72</span>                     <span style="color: #800080;">$this</span>-&gt;child--<span style="color: #000000;">;
+</span><span style="color: #008080;">73</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;">74</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">75</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">76</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>最终，经过测试，单核1G的服务器执行1到3秒的任务可以做到800的并发。</p>
+<p>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,124 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP-FPM 与 Nginx 的通信机制总结' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP-FPM 与 Nginx 的通信机制总结</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11867154.html</div><br>
+    <h2>PHP-FPM 介绍</h2>
+<src data-unique="180419">&nbsp;
+<h3>CGI 协议与 FastCGI 协议</h3>
+<p>每种动态语言（ PHP,Python 等）的代码文件需要通过对应的解析器才能被服务器识别，而 CGI 协议就是用来使解释器与服务器可以互相通信。PHP 文件在服务器上的解析需要用到 PHP 解释器，再加上对应的 CGI 协议，从而使服务器可以解析到 PHP 文件。</p>
+<p>由于 CGI 的机制是每处理一个请求需要 fork 一个 CGI 进程，请求结束再 kill 掉这个进程，在实际应用上比较浪费资源，于是就出现了 CGI 的改良版本 FastCGI，FastCGI 在请求处理完后，不会 kill 掉进程，而是继续处理多个请求，这样就大大提高了效率。</p>
+<src data-unique="2891d9">&nbsp;
+<h3>PHP-FPM 是什么</h3>
+<p>PHP-FPM 即 PHP-FastCGI Process Manager， 它是 FastCGI 的实现，并提供了进程管理的功能。进程包含 master 进程和 worker 进程两种；master 进程只有一个，负责监听端口，接收来自服务器的请求，而 worker 进程则一般有多个（具体数量根据实际需要进行配置），每个进程内部都会嵌入一个 PHP 解释器，是代码真正执行的地方。</p>
+<src data-unique="53ffc8">&nbsp;
+<h2>Nginx 与 php-fpm 通信机制</h2>
+<p>当我们访问一个网站（如 www.test.com）的时候，处理流程是这样的：</p>
+<src class="cnblogs_code">
+<pre><code>  www.test.<span style="color: #000000;">com
+        </span>|
+        |<span style="color: #000000;">
+      Nginx
+        </span>|
+        |<span style="color: #000000;">
+路由到 www</span>.test.com/index.<span style="color: #000000;">php
+        </span>|
+        |<span style="color: #000000;">
+加载 nginx 的 fast</span>-<span style="color: #000000;">cgi 模块
+        </span>|
+        |<span style="color: #000000;">
+fast</span>-cgi 监听 127.0.0.1:9000<span style="color: #000000;"> 地址
+        </span>|
+        |<span style="color: #000000;">
+www</span>.test.com/index.php 请求到达 127.0.0.1:9000
+        |
+        |<span style="color: #000000;">
+     等待处理</span>...</code></pre>
+
+<p>&nbsp;</p>
+<src data-unique="a4de5c">&nbsp;
+<h3>Nginx 与 php-fpm 的结合</h3>
+<p>在 Linux 上，nginx 与 php-fpm 的通信有 tcp socket 和 unix socket 两种方式。</p>
+<p>tcp socket 的优点是可以跨服务器，当 nginx 和 php-fpm 不在同一台机器上时，只能使用这种方式。</p>
+<p>Unix socket 又叫 IPC (inter-process communication 进程间通信) socket，用于实现同一主机上的进程间通信，这种方式需要在 nginx 配置文件中填写 php-fpm 的 socket 文件位置。</p>
+<p>两种方式的数据传输过程如下图所示：</p>
+<src class="fluidbox__wrap"><a class="fluidbox fluidbox__instance-18 fluidbox--initialized fluidbox--closed fluidbox--ready" href="./images/PHP-FPM 与 Nginx 的通信机制总结0.jpg"><img class="fluidbox__thumb" src="./images/PHP-FPM 与 Nginx 的通信机制总结0.jpg" alt="" /></a>
+<src class="fluidbox__ghost">&nbsp;
+
+<p>&nbsp;</p>
+<p>二者的不同：</p>
+<p>由于 Unix socket 不需要经过网络协议栈，不需要打包拆包、计算校验和、维护序号和应答等，只是将应用层数据从一个进程拷贝到另一个进程。所以其效率比 tcp socket 的方式要高，可减少不必要的 tcp 开销。不过，unix socket 高并发时不稳定，连接数爆发时，会产生大量的长时缓存，在没有面向连接协议的支撑下，大数据包可能会直接出错不返回异常。而 tcp 这样的面向连接的协议，可以更好的保证通信的正确性和完整性。</p>
+<p>Nginx 与 php-fpm 结合只需要在各自的配置文件中做设置即可：</p>
+<p>1） Nginx 中的配置</p>
+<p>以 tcp socket 通信为例</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">server {
+</span><span style="color: #008080;"> 2</span>     listen       80; <span style="color: #008000;">#</span><span style="color: #008000;">监听 80 端口，接收http请求</span>
+<span style="color: #008080;"> 3</span>     server_name  www.test.com; <span style="color: #008000;">#</span><span style="color: #008000;">就是网站地址</span>
+<span style="color: #008080;"> 4</span>     root /usr/local/etc/nginx/www/huxintong_admin; <span style="color: #008000;">#</span><span style="color: #008000;"> 准备存放代码工程的路径</span>
+<span style="color: #008080;"> 5</span>     <span style="color: #008000;">#</span><span style="color: #008000;">路由到网站根目录 www.test.com 时候的处理</span>
+<span style="color: #008080;"> 6</span>     location /<span style="color: #000000;"> {
+</span><span style="color: #008080;"> 7</span>         index index.php; <span style="color: #008000;">#</span><span style="color: #008000;">跳转到 www.test.com/index.php</span>
+<span style="color: #008080;"> 8</span> <span style="color: #000000;">        autoindex on;
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    }   
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>     <span style="color: #008000;">#</span><span style="color: #008000;">当请求网站下 php 文件的时候，反向代理到 php-fpm</span>
+<span style="color: #008080;">12</span>     location ~ \.<span style="color: #000000;">php$ {
+</span><span style="color: #008080;">13</span>         <span style="color: #0000ff;">include</span> /usr/local/etc/nginx/fastcgi.conf; <span style="color: #008000;">#</span><span style="color: #008000;">加载 nginx 的 fastcgi 模块</span>
+<span style="color: #008080;">14</span> <span style="color: #000000;">        fastcgi_intercept_errors on;
+</span><span style="color: #008080;">15</span>         fastcgi_pass   127.0.0.1:9000; <span style="color: #008000;">#</span><span style="color: #008000;"> tcp 方式，php-fpm 监听的 IP 地址和端口</span>
+<span style="color: #008080;">16</span>        <span style="color: #008000;">#</span><span style="color: #008000;"> fasrcgi_pass /usr/run/php-fpm.sock # unix socket 连接方式</span>
+<span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>2) php-fpm 的配置</p>
+<pre class=" language-php"><code class="  language-php">listen <span class="token operator">= <span class="token number">127.0<span class="token number">.0<span class="token number">.1<span class="token punctuation">:<span class="token number">9000
+<span class="token shell-comment comment"># 或者下面这样
+listen <span class="token operator">= <span class="token operator">/<span class="token keyword">var<span class="token operator">/run<span class="token operator">/php<span class="token operator">-fpm<span class="token punctuation">.sock
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<blockquote>
+<p>注意，在使用 unix socket 方式连接时，由于 socket 文件本质上是一个文件，存在权限控制的问题，所以需要注意 nginx 进程的权限与 php-fpm 的权限问题，不然会提示无权限访问。（在各自的配置文件里设置用户）</p>
+</blockquote>
+<p>通过以上配置即可完成 php-fpm 与 nginx 的通信。</p>
+<src data-unique="c9fff6">&nbsp;
+<h3>在应用中的选择</h3>
+<p>如果是在同一台服务器上运行的 nginx 和 php-fpm，且并发量不高（不超过 1000），选择 unix socket，以提高 nginx 和 php-fpm 的通信效率。<br />如果是面临高并发业务，则考虑选择使用更可靠的 tcp socket，以负载均衡、内核优化等运维手段维持效率。</p>
+<p>若并发较高但仍想用 unix socket 时，可通过以下方式提高 unix socket 的稳定性。</p>
+<p>1）将 sock 文件放在 /dev/shm 目录下，此目录下将 sock 文件放在内存里面，内存的读写更快。</p>
+<p>2）提高 backlog</p>
+<p>backlog 默认位 128，1024 这个值换成自己正常的 QPS，配置如下。</p>
+<p>nginx.conf 文件中</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">server {
+</span><span style="color: #008080;">2</span>         listen 80 <span style="color: #0000ff;">default</span> backlog = 1024<span style="color: #000000;">;
+</span><span style="color: #008080;">3</span>        }</code></pre>
+
+<p>&nbsp;</p>
+<p>php-fpm.conf 文件中</p>
+<pre class=" language-php"><code class="  language-php">listen<span class="token punctuation">.backlog <span class="token operator">= <span class="token number">1024</span></span></span></code></code></pre>
+<p>3）增加 sock 文件和 php-fpm 实例</p>
+<p>在 /dev/shm 新建一个 sock 文件，在 nginx 中通过 upstream 模块将请求负载均衡到两个 sock 文件，并且将两个 sock 文件分别对应到两套 php-fpm 实例上。</p>
+<p><em>&nbsp;</em></p>
+<src>&nbsp;
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

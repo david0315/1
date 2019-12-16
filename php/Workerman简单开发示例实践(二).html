@@ -1,0 +1,67 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Workerman简单开发示例实践(二)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Workerman简单开发示例实践(二)</center></div><div class='banquan'>原文出处:本文由博客园博主dreams7433提供。<br/>
+原文连接:https://www.cnblogs.com/phperlinxinlan/p/11132759.html</div><br>
+    <p>一、在Workerman目录下创建ws_test.php，如下图，并输入如下代码：</p>
+<p><img src="./images/Workerman简单开发示例实践(二)0.jpg" alt="" /></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> Workerman\Worker;
+</span><span style="color: #0000ff;">require_once</span> __DIR__ . '/Autoloader.php'<span style="color: #000000;">;
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 注意：使用的是websocket协议</span>
+<span style="color: #800080;">$ws_worker</span> = <span style="color: #0000ff;">new</span> Worker("websocket://0.0.0.0:2000"<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 启动4个进程对外提供服务</span>
+<span style="color: #800080;">$ws_worker</span>-&gt;<span style="color: #008080;">count</span> = 4<span style="color: #000000;">;
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 当收到客户端发来的数据后返回hello $data给客户端</span>
+<span style="color: #800080;">$ws_worker</span>-&gt;onMessage = <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">)
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 向客户端发送hello $data</span>
+    <span style="color: #800080;">$connection</span>-&gt;send('hello ' . <span style="color: #800080;">$data</span><span style="color: #000000;">);
+};
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 运行worker</span>
+Worker::runAll();</code></pre>
+
+<p>二、cmd输入php ws_test.php start，如下图所示：</p>
+<p><img src="./images/Workerman简单开发示例实践(二)1.jpg" alt="" /></p>
+<p>三、chrome浏览器按F12打开控制台，在Console输入如下代码：</p>
+<src class="cnblogs_code">
+<pre><code>ws = <span style="color: #0000ff;">new</span> WebSocket("ws://127.0.0.1:2000"<span style="color: #000000;">);
+ws.onopen </span>= <span style="color: #0000ff;">function</span><span style="color: #000000;">() {
+    alert(</span>"连接成功"<span style="color: #000000;">);
+    ws.send(</span>'tom'<span style="color: #000000;">);
+    alert(</span>"给服务端发送一个字符串：tom"<span style="color: #000000;">);
+};
+ws.onmessage </span>= <span style="color: #0000ff;">function</span><span style="color: #000000;">(e) {
+    alert(</span>"收到服务端的消息：" +<span style="color: #000000;"> e.data);
+};</span></code></pre>
+
+<p>四、响应结果如下图：</p>
+<p><img src="./images/Workerman简单开发示例实践(二)2.jpg" alt="" /></p>
+<p><img src="./images/Workerman简单开发示例实践(二)3.jpg" alt="" /></p>
+<p><img src="./images/Workerman简单开发示例实践(二)4.jpg" alt="" /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

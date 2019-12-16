@@ -1,0 +1,85 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP上传图片基本代码示例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP上传图片基本代码示例</center></div><div class='banquan'>原文出处:本文由博客园博主dreams7433提供。<br/>
+原文连接:https://www.cnblogs.com/phperlinxinlan/p/11277948.html</div><br>
+    <p>一、HTML代码如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;form name=<span style="color: #800000;">"</span><span style="color: #800000;">form2</span><span style="color: #800000;">"</span> method=<span style="color: #800000;">"</span><span style="color: #800000;">post</span><span style="color: #800000;">"</span> action=<span style="color: #800000;">"</span><span style="color: #800000;">?type=add</span><span style="color: #800000;">"</span> enctype=<span style="color: #800000;">"</span><span style="color: #800000;">multipart/form-data</span><span style="color: #800000;">"</span>&gt;
+&lt;input type=<span style="color: #800000;">"</span><span style="color: #800000;">file</span><span style="color: #800000;">"</span> name=<span style="color: #800000;">"</span><span style="color: #800000;">file</span><span style="color: #800000;">"</span> id=<span style="color: #800000;">"</span><span style="color: #800000;">cover</span><span style="color: #800000;">"</span> required/&gt;
+&lt;/form&gt;</code></pre>
+
+<p>二、PHP代码如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">if</span> ((<span style="color: #800080;">$_GET</span>["type"] == "edit") &amp;&amp; <span style="color: #800080;">$_POST</span><span style="color: #000000;">) {
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">判断上传的文件是否出错,是的话，返回错误</span>
+    <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$_FILES</span>["file"]["error"<span style="color: #000000;">])
+    {
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$_FILES</span>["file"]["error"<span style="color: #000000;">];
+        </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">没有出错
+        //加限制条件
+        //判断上传文件类型为png或jpg且大小不超过1024000B</span>
+        <span style="color: #0000ff;">if</span>((<span style="color: #800080;">$_FILES</span>["file"]["type"]=="image/png"||<span style="color: #800080;">$_FILES</span>["file"]["type"]=="image/jpeg")&amp;&amp;<span style="color: #800080;">$_FILES</span>["file"]["size"]&lt;1024000<span style="color: #000000;">)
+        {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">防止文件名重复</span>
+            <span style="color: #800080;">$path</span> = "/upload/movie/".<span style="color: #008080;">date</span>('Y-m-d')."/".<span style="color: #008080;">time</span>().<span style="color: #800080;">$_FILES</span>["file"]["name"<span style="color: #000000;">];
+            </span><span style="color: #800080;">$filename</span> = <span style="color: #800080;">$_SERVER</span>['DOCUMENT_ROOT'].<span style="color: #800080;">$path</span><span style="color: #000000;">;
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">转码，把utf-8转成gb2312,返回转换后的字符串， 或者在失败时返回 FALSE。
+            //$filename =iconv("UTF-8","gb2312",$filename);
+            //检查文件或目录是否存在</span>
+            <span style="color: #0000ff;">if</span>(<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$filename</span><span style="color: #000000;">))
+            {
+                </span><span style="color: #0000ff;">echo</span>"该文件已存在"<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+            {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">保存文件,   move_uploaded_file 将上传的文件移动到新位置</span>
+                <span style="color: #0000ff;">if</span> ( ! @<span style="color: #008080;">copy</span>(<span style="color: #800080;">$_FILES</span>['file']['tmp_name'], <span style="color: #800080;">$file_name</span><span style="color: #000000;">)){
+                    </span><span style="color: #800080;">$dir</span> = <span style="color: #800080;">$_SERVER</span>['DOCUMENT_ROOT'].'/upload/moviepic/'.<span style="color: #008080;">date</span>('Y-m-d'<span style="color: #000000;">);
+                    </span><span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_dir</span>(<span style="color: #800080;">$dir</span><span style="color: #000000;">)){
+                        </span><span style="color: #008080;">mkdir</span>(<span style="color: #800080;">$dir</span>,0777<span style="color: #000000;">);
+                    }
+                    </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>['file']['tmp_name'],<span style="color: #800080;">$filename</span><span style="color: #000000;">)){
+                        </span><span style="color: #0000ff;">echo</span> "上传成功"<span style="color: #000000;">;
+                    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                        </span><span style="color: #0000ff;">echo</span> "上传失败"<span style="color: #000000;">;
+                        </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+                    }
+                }
+
+
+            }
+        }
+        </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+        {
+            </span><span style="color: #0000ff;">echo</span>"文件类型不对"<span style="color: #000000;">;
+        }
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

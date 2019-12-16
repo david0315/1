@@ -1,0 +1,330 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP全栈学习笔记19' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP全栈学习笔记19</center></div><div class='banquan'>原文出处:本文由博客园博主达达前端小酒馆提供。<br/>
+原文连接:https://www.cnblogs.com/dashucoding/p/10795296.html</div><br>
+    <p><img src="./images/PHP全栈学习笔记190.jpg" alt="image.png" /></p>
+<p>thinkphp框架是一个免费的，开源，快速，简单的面向对象的轻量级PHP开发框架。</p>
+<p>了解什么是thinkphp概述，thinkphp项目目录结构，thinkphp的控制器，视图，thinkphp项目构建流程，thinkphp配置，thinkphp的模型，熟悉内置模板引擎。</p>
+<p>thinkphp框架的特点，是一个功能丰富的轻量级的PHP开发框架，让web应用开发更简单，，更快速。</p>
+<p>特性：<br />
+类库导入，url模式，编译机制，查询语言，视图模型，分组模块，模板引擎，ajax支持，缓存机制。</p>
+<p>thinkphp可以支持windows/unix服务器环境，可运行于包含apache,iis在内的多种web服务。下载thinkPHP：</p>
+<p>ThinkPHP的目录结构<br />
+自动生成目录<br />
+项目目录部署方案<br />
+命名规范<br />
+项目构建流程</p>
+<p><img src="./images/PHP全栈学习笔记191.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记192.jpg" alt="image.png" /></p>
+<p>自动生成目录</p>
+<p><img src="./images/PHP全栈学习笔记193.jpg" alt="image.png" /></p>
+<p>项目目录部署方案</p>
+<p><img src="./images/PHP全栈学习笔记194.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记195.jpg" alt="image.png" /></p>
+<p>项目构建流程<br />
+<img src="./images/PHP全栈学习笔记196.jpg" alt="image.png" /></p>
+<p>ThinkPHP的配置<br />
+配置格式<br />
+调试配置</p>
+<p><img src="./images/PHP全栈学习笔记197.jpg" alt="image.png" /></p>
+<p>ThinkPHP的控制器</p>
+<p>控制器<br />
+跨模块调用</p>
+<p>1、模型的命名<br />
+2、实例化模型<br />
+3、属性访问<br />
+4、连接数据库<br />
+5、创建数据<br />
+6、连贯操作<br />
+7、CURD操作</p>
+<pre><code><code>&lt;?php
+$db = array (
+        &#39;server&#39; =&gt; &#39;localhost&#39;,
+        &#39;port&#39; =&gt; &#39;3306&#39;,
+        &#39;username&#39; =&gt; &#39;root&#39;,
+        &#39;password&#39; =&gt; &#39;dada&#39;,
+        &#39;database&#39; =&gt; &#39;dada&#39; 
+);
+
+
+$conn = @mysql_connect($db[&#39;server&#39;].&#39;:&#39;.$db[&#39;port&#39;],$db[&#39;username&#39;],$db[&#39;password&#39;]);
+if (! $conn) {
+    echo &quot;服务器不能连！&quot; . mysql_error();
+} else {
+    // 声明字符集
+    mysql_set_charset(&#39;utf8&#39;, $conn);
+    // 选择数据库
+    mysql_select_db($db[&#39;database&#39;], $conn);
+}</code></code></pre>
+<pre><code><code>&lt;?php
+if (! isset ( $_SESSION )) {
+    session_start ();
+}
+if (! isset ( $_SESSION [&#39;userName&#39;] )) {
+    header ( &quot;location:login.php&quot; );
+}
+$userName = $_SESSION [&#39;userName&#39;];
+
+// 访问数据库，查询学生表指定学号的学生
+require_once &#39;dbconfig.php&#39;;
+if (! isset ( $_REQUEST [&#39;id&#39;] )) {
+    header ( &quot;location:index.php&quot; );
+}
+$id = $_REQUEST [&#39;id&#39;];
+$sql = &quot;select * from student where id = $id&quot;;
+// exit($sql);
+$result = mysql_query ( $sql );
+$row = mysql_fetch_array ( $result )?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+&lt;title&gt;学生信息&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&#39;right&#39;&gt;用户名：&lt;?=$userName?&gt;   &lt;a href=&#39;loginout.php&#39;&gt;退出登录&lt;/a&gt;&lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div align=&#39;center&#39;&gt;
+        &lt;hr /&gt;
+        &lt;h1&gt;学生信息&lt;/h1&gt;
+        &lt;form action=&#39;editdo.php&#39; method=&#39;post&#39;&gt;
+            &lt;input type=&#39;hidden&#39; name=&#39;id&#39; value=&#39;&lt;?=$row [&#39;id&#39;]?&gt;&#39;/&gt;
+            &lt;table width=300&gt;
+                &lt;tr&gt;
+                    &lt;td align=&#39;center&#39;&gt;学号&lt;/td&gt;
+                    &lt;td&gt;&lt;input type=&#39;text&#39; name=&#39;studentId&#39;
+                        value=&#39;&lt;?=$row [&#39;studentId&#39;]?&gt;&#39; /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td align=&#39;center&#39;&gt;姓名&lt;/td&gt;
+                    &lt;td&gt;&lt;input type=&#39;text&#39; name=&#39;name&#39; value=&#39;&lt;?=$row [&#39;name&#39;]?&gt;&#39; /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td align=&#39;center&#39;&gt;班级&lt;/td&gt;
+                    &lt;td&gt;&lt;input type=&#39;text&#39; name=&#39;className&#39;
+                        value=&#39;&lt;?=$row [&#39;className&#39;]?&gt;&#39; /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td align=&#39;center&#39;&gt;生日&lt;/td&gt;
+                    &lt;td&gt;&lt;input type=&#39;text&#39; name=&#39;birthday&#39;
+                        value=&#39;&lt;?=$row [&#39;birthday&#39;]?&gt;&#39; /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td align=&#39;center&#39;&gt;性别&lt;/td&gt;
+                    &lt;td&gt;
+                    &lt;input type=&#39;radio&#39; name=&#39;sex&#39; value=&#39;男&#39; &lt;?=$row [&#39;sex&#39;]==&#39;男&#39;?&#39;checked&#39;:&#39;&#39;?&gt;&gt;男 &lt;/input&gt;
+                    &lt;input type=&#39;radio&#39; name=&#39;sex&#39; value=&#39;女&#39; &lt;?=$row [&#39;sex&#39;]==&#39;女&#39;?&#39;checked&#39;:&#39;&#39;?&gt;&gt;女&lt;/input&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td align=&#39;center&#39;&gt;民族&lt;/td&gt;
+                    &lt;td&gt;&lt;input type=&#39;text&#39; name=&#39;nation&#39; value=&#39;&lt;?=$row [&#39;nation&#39;]?&gt;&#39; /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td colspan=2 align=&#39;center&#39;&gt;&lt;input type=&#39;submit&#39; value=&#39;确认修改&#39; /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+require_once &#39;dbconfig.php&#39;;
+header ( &quot;content-type:text/html;charset=utf-8&quot; );
+
+// 取表单数据
+$id = $_REQUEST [&#39;id&#39;];
+$studentId = $_REQUEST [&#39;studentId&#39;];
+$name = $_REQUEST [&#39;name&#39;];
+$className = $_REQUEST [&#39;className&#39;];
+$birthday = $_REQUEST [&#39;birthday&#39;];
+$sex = $_REQUEST [&#39;sex&#39;];
+$nation = $_REQUEST [&#39;nation&#39;];
+
+// sql语句中字符串数据类型都要加引号，数字字段随便
+$sql = &quot;update student set studentId =&#39;$studentId&#39;,name = &#39;$name&#39;,className = &#39;$className&#39;,birthday = &#39;$birthday&#39;,sex =&#39;$sex&#39;,nation=&#39;$nation&#39; where id = $id&quot;;
+if (mysql_query ( $sql )) {
+    echo &quot;修改成功！！！&lt;br/&gt;&quot;;
+    echo &quot;&lt;a href=&#39;index.php&#39;&gt;回到主页&lt;/a&gt;&quot;;
+} else {
+    echo &quot;修改失败！！！&lt;br/&gt;&quot;;
+    echo &quot;&lt;a href=&#39;index.php&#39;&gt;系统错误&lt;/a&gt;&quot;;
+}</code></code></pre>
+<pre><code><code>&lt;?php
+if (! isset ( $_SESSION )) {
+    session_start ();
+}
+if (! isset ( $_SESSION [&#39;userName&#39;] )) {
+    header ( &quot;location:login.php&quot; );
+}
+$userName = $_SESSION [&#39;userName&#39;];
+// 访问数据库，查询学生表
+require_once &#39;dbconfig.php&#39;;
+$sql = &quot;select * from student&quot;;
+$result = mysql_query ( $sql );
+?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+&lt;title&gt;学生信息&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&#39;right&#39;&gt;用户名：&lt;?=$userName?&gt;   &lt;a href=&#39;loginout.php&#39;&gt;退出登录&lt;/a&gt;&lt;/a&gt;
+    &lt;/div&gt;
+    &lt;hr /&gt;
+    &lt;h1&gt;学生信息&lt;/h1&gt;
+    &lt;table border=1&gt;
+        &lt;tr&gt;
+            &lt;th&gt;学号&lt;/td&gt;
+            &lt;th&gt;姓名&lt;/td&gt;
+            &lt;th&gt;班级&lt;/td&gt;
+            &lt;th&gt;生日&lt;/td&gt;
+            &lt;th&gt;性别&lt;/td&gt;
+            &lt;th&gt;民族&lt;/td&gt;
+            &lt;th&gt;操作&lt;/th&gt;
+        &lt;/tr&gt;
+&lt;?php
+while ( $row = mysql_fetch_array ( $result ) ) {
+    echo &quot;&lt;tr&gt;&quot;;
+    echo &quot;&lt;td&gt;&quot; . $row [&#39;studentId&#39;] . &quot;&lt;/td&gt;&quot;;
+    echo &quot;&lt;td&gt;&quot; . $row [&#39;name&#39;] . &quot;&lt;/td&gt;&quot;;
+    echo &quot;&lt;td&gt;&quot; . $row [&#39;className&#39;] . &quot;&lt;/td&gt;&quot;;
+    echo &quot;&lt;td&gt;&quot; . $row [&#39;birthday&#39;] . &quot;&lt;/td&gt;&quot;;
+    echo &quot;&lt;td&gt;&quot; . $row [&#39;sex&#39;] . &quot;&lt;/td&gt;&quot;;
+    echo &quot;&lt;td&gt;&quot; . $row [&#39;nation&#39;] . &quot;&lt;/td&gt;&quot;;
+    echo &quot;&lt;td&gt;&quot; .&quot;&lt;a href=\&quot;edit.php?id=&#39;&quot;. $row [&#39;id&#39;] .&quot;&#39;\&quot;&gt;编辑&lt;/a&gt;&lt;/td&gt;&quot;;
+    echo &quot;&lt;/tr&gt;&quot;;
+}
+?&gt;
+&lt;/table&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<pre><code><code>&lt;html&gt;  
+&lt;head&gt;  
+&lt;title&gt;Login&lt;/title&gt;  
+&lt;meta http-equiv=&quot;Content-Type&quot;  content= &quot;text/html; charset=utf-8&quot; &gt;  
+&lt;/head&gt;  
+  
+&lt;body&gt;  
+&lt;h1&gt;1606登录&lt;/h1&gt;
+&lt;form name=&quot;form1&quot;  method= &quot;post&quot;  action= &quot;logindo.php&quot; &gt;  
+  &lt;table width=&quot;300&quot;  border= &quot;0&quot;  align= &quot;center&quot;  cellpadding= &quot;2&quot;  cellspacing= &quot;2&quot; &gt;  
+    &lt;tr&gt;  
+      &lt;td width=&quot;150&quot; &gt;&lt;div align= &quot;right&quot; &gt;用户名：&lt;/div&gt;&lt;/td&gt;  
+      &lt;td width=&quot;150&quot; &gt;&lt;input type= &quot;text&quot;  name= username &gt;&lt;/td&gt;  
+    &lt;/tr&gt;  
+    &lt;tr&gt;  
+      &lt;td&gt;&lt;div align=&quot;right&quot; &gt;密码：&lt;/div&gt;&lt;/td&gt;  
+      &lt;td&gt;&lt;input type=&quot;password&quot;  name= &quot;passcode&quot; &gt;&lt;/td&gt;  
+    &lt;/tr&gt;  
+    
+  &lt;/table&gt;  
+  &lt;p align=&quot;center&quot; &gt;  
+    &lt;input type=&quot;submit&quot;  name= &quot;Submit&quot;  value= &quot;登录&quot; &gt;  
+    &lt;input type=&quot;reset&quot;  name= &quot;Reset&quot;  value= &quot;重置&quot; &gt; 
+    &lt;a href=&#39;register.php&#39;&gt;注册&lt;/a&gt;
+  &lt;/p&gt;  
+&lt;/form&gt;  
+&lt;/body&gt;  
+&lt;/html&gt;  </code></code></pre>
+<pre><code><code>&lt;?php
+header ( &quot;content-type:text/html;charset=utf-8&quot; );
+if (! isset ( $_SESSION )) {
+    session_start ();
+}
+if (isset ( $_SESSION [&#39;userName&#39;] )) {
+    header ( &quot;location:index.php&quot; );
+} elseif (! isset ( $_REQUEST [&#39;username&#39;] )) {
+    header ( &quot;location:login.php&quot; );
+} else {
+    $username = $_POST [&#39;username&#39;];
+    $passcode = $_POST [&#39;passcode&#39;];
+    
+    //计算摘要
+    $password2 = sha1 ( $passcode );
+    
+    require_once &#39;dbconfig.php&#39;;
+    // 根据用户名和密码去查询帐号表
+    $sql = &quot;select * from user where username= &#39;$username&#39; and password=&#39;$password2&#39;&quot;;
+    $result = mysql_query ( $sql, $conn );
+    if ($row = mysql_fetch_array ( $result )) {
+        $_SESSION [&#39;userName&#39;] = $username;
+        header ( &quot;location:index.php&quot; );
+    } else {
+        echo &quot;&lt;script&gt;alert(&#39;用户名或密码错误!&#39;);&lt;/script&gt;&quot;;
+        echo &quot;用户名或密码错误！&lt;br/&gt;&quot;;
+        echo &quot;&lt;a href=&#39;login.php&#39;&gt;重新登陆&lt;/a&gt;&quot;;
+    }
+}
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+if(!isset($_SESSION)){
+    session_start();
+}
+session_destroy();
+header(&quot;location:login.php&quot;);</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+&lt;title&gt;Insert title here&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1 align=&#39;center&#39;&gt;欢迎注册&lt;/h1&gt;
+    &lt;hr&gt;
+    &lt;form action=&quot;registerdo.php&quot; method=&#39;post&#39;&gt;
+        &lt;label&gt;用户名：&lt;/label&gt;&lt;input type=&#39;text&#39; name=&#39;username&#39; /&gt; &lt;label&gt;密码：&lt;/label&gt;&lt;input
+            type=&#39;text&#39; name=&#39;password&#39; /&gt; &lt;input type=&#39;submit&#39; name=&#39;hh&#39;
+            value=&#39;提交&#39; /&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+require_once &#39;dbconfig.php&#39;;
+header(&quot;content-type:text/html;charset=utf-8&quot;);
+//取表单数据
+$username = $_REQUEST[&#39;username&#39;];
+$password = $_REQUEST[&#39;password&#39;];
+$password2 = sha1($password);
+
+//sql语句中字符串数据类型都要加引号，数字字段随便
+$sql = &quot;INSERT INTO user(id, username, password, status) VALUES (null,&#39;$username&#39;,&#39;$password2&#39;,1)&quot;;
+//exit($sql);
+
+if(mysql_query($sql)){
+    echo &quot;注册成功！！！&lt;br/&gt;&quot;;
+    echo &quot;&lt;a href=&#39;login.php&#39;&gt;去登录&lt;/a&gt;&quot;;
+}else{
+    echo &quot;注册失败！！！&lt;br/&gt;&quot;;
+    echo &quot;&lt;a href=&#39;register.php&#39;&gt;重注册&lt;/a&gt;&quot;;
+}</code></code></pre>
+<h2 id="结言">结言</h2>
+<p>好了，欢迎在留言区留言，与大家分享你的经验和心得。</p>
+<p>感谢你学习今天的内容，如果你觉得这篇文章对你有帮助的话，也欢迎把它分享给更多的朋友，感谢。</p>
+<p>感谢！承蒙关照！您真诚的赞赏是我前进的最大动力！</p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-da750878d19e7fa1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-826395d4148483a1?imageMogr2/auto-orient/strip" alt="image" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

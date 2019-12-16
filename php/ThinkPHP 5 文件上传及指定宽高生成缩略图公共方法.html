@@ -1,0 +1,29 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP 5 文件上传及指定宽高生成缩略图公共方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP 5 文件上传及指定宽高生成缩略图公共方法</center></div><div class='banquan'>原文出处:本文由博客园博主luenmicro提供。<br/>
+原文连接:https://www.cnblogs.com/luenmicro/p/11324063.html</div><br>
+    <pre><code>这个是非常常用的案例，ThinkPHP 5 文件上传及指定宽高生成缩略图公共方法<br />/**<br /> * 单文件上传<br /> * name：表单上传文件的名字<br /> * ext： 文件允许的后缀，字符串形式<br /> * path：文件保存目录<br /> */<br />public function file_upload($name,$ext,$path){<br /> $dir_path=ROOT_PATH.'/public/uploads/'.$path;<br /> if (!is_dir($dir_path))mkdir($dir_path, 0777);// 使用最大权限0777创建文件<br /> $file = request()-&gt;file($name);<br /> $info = $file-&gt;validate(['size'=&gt;1572864,'ext'=&gt;$ext])-&gt;move($dir_path,true,false);<br /> if($info){<br /> // 成功上传后 获取上传信息<br /> $file_path = $info-&gt;getSaveName();<br /> $data['file_path'] = '/uploads/'.$path.'/'.$info-&gt;getSaveName();<br /> }else{<br /> // 上传失败获取错误信息<br /> $data['file_path'] =$file-&gt;getError();<br /> }<br /> return $data;<br /> }<br /><br /> /**<br /> * 图片缩率图处理<br /> * file_path：文件路径<br /> * width :目标宽度<br /> * height:目标高<br /> * path：文件保存目录 : 需事先手动创建<br /> */<br /> public function file_upload_thumb($file_path,$width,$height,$path){<br /> $fiel_url = ROOT_PATH."/public".$file_path;<br /> $image = \think\Image::open($fiel_url);<br /> $save_url = '/uploads/'.$path."/".sha1($fiel_url)."_".$width."_".$height.".".$image-&gt;type();<br /> $save_name = ROOT_PATH."/public".$save_url;<br /> $image-&gt;thumb($width, $height)-&gt;save($save_name);<br /> return $save_url;<br /> }</code></pre>
+<pre><code></code></pre>
+<pre><code>/*<br /> * 图片上传接口<br /> */<br /> public  function img_upload(){</code></pre>
+<pre><code><br /> if(!empty($_FILES["file_img"]["name"])){<br /> $file_mes = $this-&gt;file_upload('file_img','jpg,png,gif,jpeg','gift');<br /> $file_path  = $file_mes['file_path'];<br /> switch ($upload_type) {<br /> case '1':<br /> $return_data['prize_img'] = $file_path; <br /> $return_data['prize_img_view'] = Config::get("config.host_url").$file_path; <br /> $return_data['prize_img_400'] = $this-&gt;file_upload_thumb($file_path,400,400,'gift_thumb');<br /> $return_data['prize_img_200'] = $this-&gt;file_upload_thumb($file_path,200,200,'gift_thumb');<br /> $return_data['prize_img_150'] = $this-&gt;file_upload_thumb($file_path,150,150,'gift_thumb');<br /> break;<br /> default:<br /> $return_data['img_path'] ='';  <br /> break;<br /> }<br /> return json(['code' =&gt; '1', 'message' =&gt; '上传成功','result'=&gt;$return_data]);<br /> }else{<br /> return json(['code' =&gt; '2', 'message' =&gt; '图片不能为空！','result'=&gt;null]);<br /> }<br /><br /> }</code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

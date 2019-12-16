@@ -1,0 +1,32 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[Linux]F5负载均衡器' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[Linux]F5负载均衡器</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11311361.html</div><br>
+    <p>F5负载均衡器是硬件的负载均衡设备</p>
+<p><img src="./images/[Linux]F5负载均衡器0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>F5配置最简单负载均衡，需要配置的参数有Node（节点）、Pool（资源池）、和Virtual Server（虚拟服务器），它们的关系是，先配置Node，然后配置VS。Node是最基本的定义，如每个服务器就是一个Node，负载均衡Pool是一组Node接收和处理流量的一组设备，如web服务器集群。BIGIP系统将客户机流量请求发送到Pool成员中的任一服务器上（Node），然后将Pool与BIGIP系统中的Virtual server相关联，最后，BIGIP系统将进入Virtual Server中流量传输到Pool成员，Pool再传达给Node。</p>
+<p>&nbsp;<img src="./images/[Linux]F5负载均衡器1.jpg" alt="" /></p>
+<p>负载均衡算法:<br />		负载均衡设备本身都是以负载均衡算法为基础的,负载均衡算法分为两种:静态负载均衡算法和动态负载均衡算法.  </p>
+<p><strong>		轮询（RoundRobin）</strong>：顺序循环将请求一次顺序循环地连接每个服务器。 当其中某个服务器发生第二到第7层的故障，BIGIP就把其从顺序循环队列中拿出，不参加下一次的轮询，直到其恢复正常。   &middot;比率（Ratio）：给每个服务器分配一个加权值为比例，根椐这个比例，把用户的请求分配到每个服务器。当其中某个服务器发生第二到第7层的故障，BIGIP就把其从服务器队列中拿出，不参加下一次的用户请求的分配，直到其恢复正常。  <br />		<strong>优先权（Priority）</strong>：给所有服务器分组，给每个组定义优先权，BIGIP用户的请求，分配给优先级最高的服务器组（在同一组内，采用轮询或比率算法，分配用户的请求）；当最高优先级中所有服务器出现故障，BIGIP才将请求送给次优先级的服务器组。这种方式，实际为用户提供一种热备份的方式。   <br />		<strong>最少的连接方式（Least Connection）</strong>：传递新的连接给那些进行最少连接处理的服务器。当其中某个服务器发生第二到第7层的故障，BIGIP就把其从服务器队列中拿出，不参加下一次的用户请求的分配，直到其恢复正常。  <br />		<strong>最快模式（Fastest）</strong>：传递连接给那些响应最快的服务器。当其中某个服务器发生第二到第7层的故障，BIGIP就把其从服务器队列中拿出，不参加下一次的用户请求的分配，直到其恢复正常。<br />		<strong>观察模式（Observed）</strong>：连接数目和响应时间以这两项的最佳平衡为依据为新的请求选择服务器。当其中某个服务器发生第二到第7层的故障，BIGIP就把其从服务器队列中拿出，不参加下一次的用户请求的分配，直到其恢复正常。<br />		<strong>预测模式（Predictive）</strong>：BIGIP利用收集到的服务器当前的性能指标，进行预测分析，选择一台服务器在下一个时间片内，其性能将达到最佳的服务器相应用户的请求。(被BIGIP进行检测) <br />		<strong>动态性能分配（DynamicRatio-APM)</strong>:BIGIP收集到的应用程序和应用服务器的各项性能参数，动态调整流量分配。<br />		<strong>动态服务器补充（DynamicServer Act.)</strong>:当主服务器群中因故障导致数量减少时，动态地将备份服务器补充至主服务器群。<br />		<strong>服务质量(QoS)</strong>：按不同的优先级对数据流进行分配。<br />		<strong>服务类型(ToS)</strong>：按不同的服务类型（在Type of Field中标识）对数据流进行分配。<br />		<strong>规则模式</strong>：针对不同的数据流设置导向规则，用户可自行编辑流量分配规则，BIGIP利用这些规则对通过的数据流实施导向控制</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

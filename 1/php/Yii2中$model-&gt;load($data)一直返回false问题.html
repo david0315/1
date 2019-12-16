@@ -1,0 +1,91 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Yii2中$model-&gt;load($data)一直返回false问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Yii2中$model-&gt;load($data)一直返回false问题</center></div><div class='banquan'>原文出处:本文由博客园博主幽篁晓筑提供。<br/>
+原文连接:https://www.cnblogs.com/woods1815/p/11437940.html</div><br>
+    <p>&nbsp;</p>
+<p>上次使用$model-&gt;load()方法时一直返回false，数据添加不成功，这里记录一下：</p>
+<p><strong>出错代码：</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+    </span>'name' =&gt; 'test',
+    'phone' =&gt; '13000000000',
+    'email' =&gt; '123456@qq.com'<span style="color: #000000;">
+];
+</span><span style="color: #800080;">$model</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> User();
+</span><span style="color: #800080;">$model</span>-&gt;load(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$model</span>-&gt;<span style="color: #000000;">validate()) {
+    </span><span style="color: #800080;">$model</span>-&gt;<span style="color: #000000;">save();
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p><strong>查找问题：</strong></p>
+<p>以下是Yii2中load()方法的具体实现：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> load(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$formName</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$scope</span> = <span style="color: #800080;">$formName</span> === <span style="color: #0000ff;">null</span> ? <span style="color: #800080;">$this</span>-&gt;formName() : <span style="color: #800080;">$formName</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$scope</span> === '' &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$this</span>-&gt;setAttributes(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+ 
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>[<span style="color: #800080;">$scope</span><span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$this</span>-&gt;setAttributes(<span style="color: #800080;">$data</span>[<span style="color: #800080;">$scope</span><span style="color: #000000;">]);
+ 
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }
+ 
+    </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>1、通过查看load()方法可知，load()方法有两个参数，第一个参数 $data 是要填充的数据，第二个参数 $formName 是选择指定的模型。</p>
+<p>2、如果第二个参数不传，$formName 会默认为null，会默认取当前模型 $this-&gt;formName()。</p>
+<p>3、如果指定了模型，会将模型名称作为key值，通过 $data[$formName] 取值，也就是这时候应该传的 $data 格式是：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+    </span>'User' =&gt;<span style="color: #000000;"> [
+        </span>'name' =&gt; 'test',
+        'phone' =&gt; '13000000000',
+        'email' =&gt; '123456@qq.com'<span style="color: #000000;">
+    ]
+];</span></code></pre>
+
+<p>4、如果 $formName 传空字符串，则 $data 传递参数格式为：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+    </span>'name' =&gt; 'test',
+    'phone' =&gt; '13000000000',
+    'email' =&gt; '123456@qq.com'<span style="color: #000000;">
+];</span></code></pre>
+
+<p>这时应该使用：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$model</span>-&gt;load(<span style="color: #800080;">$data</span>, '');</code></pre>
+
+<p>也可以直接使用以下代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$model</span>-&gt;attributes = <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 或者</span>
+<span style="color: #800080;">$model</span>-&gt;setAttributes(<span style="color: #800080;">$data</span>);</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

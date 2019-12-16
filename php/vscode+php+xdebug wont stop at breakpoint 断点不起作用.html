@@ -1,0 +1,75 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修vscode+php+xdebug wont stop at breakpoint 断点不起作用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>vscode+php+xdebug wont stop at breakpoint 断点不起作用</center></div><div class='banquan'>原文出处:本文由博客园博主花自有道提供。<br/>
+原文连接:https://www.cnblogs.com/tyonly/p/vscode_xdebug_breakpoint_not_working.html</div><br>
+    <h1 class="gh-header-title"><span class="js-issue-title">not stopping on breakpoints</span></h1>
+<h2><strong><span class="js-issue-title">breakpoint not working</span></strong></h2>
+<p>原因：</p>
+<p>1） php.ini xdebug 端口不配置的情况下，默认是 9000，如果vscode里面改为了其他端口，php.ini里面也要改为同样的端口。</p>
+<p>如：</p>
+<p>　　a) vscode launch.json </p>
+<src class="cnblogs_Highlighter">
+<pre><code>"configurations": [
+        {
+            "name": "Listen for XDebug",
+            "type": "php",
+            "request": "launch",
+            "port": 9179,
+            "stopOnEntry":true,
+            "log": true
+        },
+        {
+            "name": "Launch currently open script",
+            "type": "php",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${fileDirname}",
+            <span style="color: #ff0000;">"port": 9179,</span>
+            "stopOnEntry": false,
+            "log":true
+        }
+</code></pre>
+
+<p>&nbsp;php.ini 需要这么设置</p>
+<src class="cnblogs_Highlighter">
+<pre><code>[XDebug]
+xdebug.profiler_append = 0
+xdebug.profiler_enable = 1
+xdebug.profiler_enable_trigger = 0
+xdebug.profiler_output_dir ="D:\BtSoft\WebSoft\temp\xdebug\"
+xdebug.trace_output_dir ="D:\BtSoft\WebSoft\temp\xdebug\"
+xdebug.profiler_output_name = "cache.out.%t-%s"
+xdebug.remote_enable = 1
+xdebug.remote_handler = "dbgp"
+xdebug.remote_host = "127.0.0.1"
+xdebug.remote_autostart = 1
+xdebug.remote_autorestart=1
+xdebug.remote_connect_back=1
+<span style="color: #ff0000;">xdebug.remote_port=9179</span>
+xdebug.remote_log = "D:\BtSoft\WebSoft\temp\xdebug\debug.log"
+zend_extension=php_xdebug.dll
+</code></pre>
+
+<p>&nbsp;</p>
+<p>否则断点不起作用</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

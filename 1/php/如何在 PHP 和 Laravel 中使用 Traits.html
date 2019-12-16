@@ -1,0 +1,116 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修如何在 PHP 和 Laravel 中使用 Traits' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>如何在 PHP 和 Laravel 中使用 Traits</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11858108.html</div><br>
+    <p><br /><br /></p>
+<src>
+<p>事实上，PHP 作为一门编程语言存在的问题之一，就是你只能使用单继承。这意味着一个类只能从另一个类中继承。例如，可能希望从几个不同的类继承方法，以防止代码重复。在 PHP 5.4 中 一个新的语言特性被添加进来，这就是众所周知的 Traits，它在 Laravel 框架中被广泛使用。</p>
+<p>PHP 官方网站给出了 Traits 的定义，如下:</p>
+<blockquote><em>&ldquo; Trait 是单继承语言（如 PHP ）中的一种代码复用机制。 Trai 的目的是减少单继承语言的一些限制，能让开发者自由的重用在不同的类层次结构下几个独立类中的方法。 Trait 的语义组合与类的定义在某种程度上减少了代码的复杂度，避免了与多继承和 Mixins 相关的一些典型问题。</em><br /> Trait 与类非常相似，但它的目的仅仅是用更好、一致的方式汇聚一些方法。 Trait 本身不能被实例化。除了传统继承之外，它能水平组合行为，换言之，类的应用程序不需要继承。&rdquo;<br /> </blockquote>
+<h2>PHP Traits是什么?</h2>
+<p>Trait 是一组简单的包含在另一个类中的方法。 Trait 就像一个抽象类一样，无法单独实例化。</p>
+<p>一个 Trait 示例就像下面这样：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">trait SharePost {
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> share(<span style="color: #800080;">$item</span><span style="color: #000000;">)
+</span><span style="color: #008080;">4</span> <span style="color: #000000;">  {
+</span><span style="color: #008080;">5</span>     <span style="color: #0000ff;">return</span> 'share this post'<span style="color: #000000;">;
+</span><span style="color: #008080;">6</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">7</span> 
+<span style="color: #008080;">8</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后，您可以在其他类中这样使用 Trait ：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Post {
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span>   <span style="color: #0000ff;">use</span><span style="color: #000000;"> SharePost;
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Comment {
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span>   <span style="color: #0000ff;">use</span><span style="color: #000000;"> SharePost;
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>现在，如果您要从这些类中创建新对象，您会发现它们都可以使用 <code>share()</code>方法：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$post</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Post;
+</span><span style="color: #008080;">2</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$post</span>-&gt;share(''); <span style="color: #008000;">//</span><span style="color: #008000;"> 'share this post' </span>
+<span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span> <span style="color: #800080;">$comment</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Comment;
+</span><span style="color: #008080;">5</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$comment</span>-&gt;share(''); <span style="color: #008000;">//</span><span style="color: #008000;"> 'share this post'</span></code></pre>
+
+<p>&nbsp;</p>
+
+<h2>Traits 如何工作 ?</h2>
+<p>从上面例子可以看到, 尽管 <code>Post</code> 和 <code>Comment</code> 本身没有定义方法，但是他们可以调用 <code>share()</code> 方法。</p>
+<p>Trait 是运行时 「复制和粘贴」 代码的一种方式.</p>
+<p>这意味着 Trait 被复制到 <code>Post</code> and <code>Comment</code> ，因此当你实例化一个新实例， 可以直接调用 <code>share()</code> 方法。</p>
+<p>我会定期检查我的代码以及如何构造新代码，目的是为了将来可以快速构建新功能，并且可以轻松的开启新项目。</p>
+<p><strong>那么，怎样在laravel中使用traits呢?</strong></p>
+<p>首先我在项目的<code>Http</code> 目录下创建一个Traits文件夹，并且新建了一个名叫 <code>BrandsTrait.php</code> 的Trait文件</p>
+<p>使用它就像这样：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Http\Traits\BrandsTrait;
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #0000ff;">class</span> YourController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller {
+</span><span style="color: #008080;">4</span>         <span style="color: #0000ff;">use</span><span style="color: #000000;"> BrandsTrait;
+</span><span style="color: #008080;">5</span> 
+<span style="color: #008080;">6</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> addProduct() {
+</span><span style="color: #008080;">7</span>             <span style="color: #800080;">$brands</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">brandsAll();
+</span><span style="color: #008080;">8</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">9</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这是我的 BrandsTrait.php</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Http\Traits;
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Brand;
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">trait BrandsTrait {
+</span><span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> brandsAll() {
+</span><span style="color: #008080;"> 7</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 从品牌表中获取所有品牌.</span>
+<span style="color: #008080;"> 8</span>         <span style="color: #800080;">$brands</span> = Brand::<span style="color: #000000;">all();
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$brands</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">12</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>甚至， 如果您在模型中找到另一种与产品和品牌相互作用有关的通用方法，那么将代码写在该 trait 是个不错的选择。</p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

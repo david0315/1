@@ -1,0 +1,31 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修微信支付JsApi 40163错误' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>微信支付JsApi 40163错误</center></div><div class='banquan'>原文出处:本文由博客园博主格兰迪主c提供。<br/>
+原文连接:https://www.cnblogs.com/gelandizhuc/p/10609633.html</div><br>
+    <src style="margin-left: 30px;">微信支付JsApi 40163错误<br />错误：<br />未定义数组索引：openid 。<br />经过检查发现是 ：微信支付授权获取 openId {&ldquo;errcode&rdquo;:40163,&ldquo;errmsg&rdquo;:&ldquo;code been used&rdquo;,}<br />原因为：微信支付code 只能使用一次，当第二次重复使用时就会出现此错误。<br />解决相关参考：https://www.e-learn.cn/content/php/1102683<br />参考中的方法本人尝试无果，故自己根据原因重写：<br />经排查发现问题出在：<br />WxPay.JsApiPay.php中的GetOpenid方法,源码为：
+<src style="margin-left: 30px;">/**<br />&nbsp;* <br />&nbsp;* 通过跳转获取用户的openid，跳转流程如下：<br />&nbsp;* 1、设置自己需要调回的url及其其他参数，跳转到微信服务器https://open.weixin.qq.com/connect/oauth2/authorize<br />&nbsp;* 2、微信服务处理完成之后会跳转回用户redirect_uri地址，此时会带上一些参数，如：code<br />&nbsp;* <br />&nbsp;* @return 用户的openid<br />&nbsp;*/<br />public function GetOpenid()<br />{
+<src style="margin-left: 30px;">&nbsp;&nbsp; //通过code获得openid<br />&nbsp;&nbsp; if (!isset($_GET['code']) ){<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //触发微信返回code码<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $baseUrl = urlencode('http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $url = $this-&gt;__CreateOauthUrlForCode($baseUrl);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Header("Location: $url");<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exit();<br />&nbsp;&nbsp; } else {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //获取code码，以获取openid<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $code = $_GET['code'];<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $openid = $this-&gt;getOpenidFromMp($code);<br />&nbsp;&nbsp;&nbsp; <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return $openid;<br />&nbsp;&nbsp; }<br />}<br />改后代码为：
+<src style="margin-left: 30px;">/**<br />&nbsp;* <br />&nbsp;* 通过跳转获取用户的openid，跳转流程如下：<br />&nbsp;* 1、设置自己需要调回的url及其其他参数，跳转到微信服务器https://open.weixin.qq.com/connect/oauth2/authorize<br />&nbsp;* 2、微信服务处理完成之后会跳转回用户redirect_uri地址，此时会带上一些参数，如：code<br />&nbsp;* <br />&nbsp;* @return 用户的openid<br />&nbsp;*/<br />public function GetOpenid()<br />{
+<src style="margin-left: 30px;">&nbsp;&nbsp; //通过code获得openid<br />&nbsp;&nbsp; if (!isset($_GET['code']) ){<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //触发微信返回code码<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $baseUrl = urlencode('http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $url = $this-&gt;__CreateOauthUrlForCode($baseUrl);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Header("Location: $url");<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exit();<br />&nbsp;&nbsp; } else {<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //获取code码，以获取openid<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $code = $_GET['code'];<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if(session("?$code")){<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $openid = $this-&gt;getOpenidFromMp($code);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }else{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $openid= session($code);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; session($code, $openid);// ######&nbsp; 2019.03.01&nbsp; 加&nbsp; 为解决code been used
+<src style="margin-left: 30px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return $openid;<br />&nbsp;&nbsp; }<br />}<br />逻辑为将获取到的openid以code为名存入session；当再次请求时，查询该次请求中以code为名的session是否存在，以此防止二次使用code。
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

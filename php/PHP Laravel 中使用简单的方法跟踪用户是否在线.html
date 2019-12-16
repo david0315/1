@@ -1,0 +1,82 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP Laravel 中使用简单的方法跟踪用户是否在线' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP Laravel 中使用简单的方法跟踪用户是否在线</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11815698.html</div><br>
+    <p>　　今天，我的任务是，在 Laravel 应用程序用户个人资料页面上，用户名旁边添加一个绿点，表示他们是否在线。我首先想到的是，我们将需要启动一个 node.js 服务器并跟踪每个用户的活动套接字连接。然后用当前登录的用户套接字，我们可以实时更新在线状态！唯一的问题是，这是我们目前的要求，有点超过顶部，并没有完全必要的，直到我们的功能，需要达到第二个准确性，如实时聊天。</p>
+<p>一位同事指出，对于目前的需求，MySpace 用来处理 &ldquo;在线&rdquo; 功能的方式可能就足够了。就我们所知，MySpace 用来显示用户是否在线的方式是基于他们在网站上的最后一项活动。如果他们的最后一次活动在 X 分钟内，我们会显示 &ldquo;在线&rdquo; 徽章，如果没有，我们不会。简单！</p>
+<p>　　让我们为用户的上次活动在用户表中添加一个字段，并且在请求每个页面时更新它。然后当我们需要检查用户是否在线，我们可以将该时间戳与当前时间戳进行比较，如果在 X 分钟内，则他们在线！虽然这可以工作得很好，这取决于你正在构建的应用程序，它会向数据库添加不必要的&nbsp;写入，这会在某种程度上降低你应用程序的速度。一个好的折衷办法是将这些信息存储在应用程序缓存中。 缓存的好处是可以简化这种方法，因为可以设置缓存为过期。</p>
+<p>现在我们决定使用缓存实现这个特性，下一个问题是这个代码应该在哪里运行，以便它在每个请求上运行？我有两个想法可以实现：</p>
+<p>创建一个 BaseController，让你所有的 Controller 都继承它<br />创建一个中间件<br />经过一些思考，并意识到我需要在所有已经编写的构造函数中添加对父构造函数的调用，我选择在中间件中实现。</p>
+<p>我们有个计划，让我们进入代码！</p>
+<p>首先，我们需要创建一个中间件。在终端中输入以下命令：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>php artisan make:middleware LogLastUserActivity</code></pre>
+
+<p>接下来我们打开以下 php 文件</p>
+<src class="cnblogs_code">
+<pre><code>app/Http/Middleware/LogLastUserActivity.php.</code></pre>
+
+<p>在其中的 handle 方法中添加下面的代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">if</span>(Auth::<span style="color: #000000;">check()) {
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$expiresAt</span> = Carbon::now()-&gt;addMinutes(5<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> Cache::put('user-is-online-' . Auth::user()-&gt;id, <span style="color: #0000ff;">true</span>, <span style="color: #800080;">$expiresAt</span><span style="color: #000000;">);
+</span><span style="color: #008080;">4</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>接下来，我们打开 app/Http/Kernel.php 文件。如果您使用的是 Laravel 5.1 或 更早的版本， 您应该把代码直接放置到&nbsp;$middleware&nbsp;数组中。 如果您的版本是 5.2.* , 您应该把代码放置到&nbsp;$middlewareGroups&nbsp;的 web 中 。注意，一定要把代码放到&nbsp;StartSession&nbsp;中间件的下方，否则 Auth 门面将不会正确在 user 中记录 log。我的更新配置设置如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$middlewareGroups</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 2</span> 'web' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 3</span> \App\Http\Middleware\EncryptCookies::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 4</span> \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 5</span> \Illuminate\Session\Middleware\StartSession::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 6</span> \Illuminate\View\Middleware\ShareErrorsFromSession::<span style="color: #0000ff;">class</span>
+<span style="color: #008080;"> 7</span> \App\Http\Middleware\VerifyCsrfToken::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 8</span> \App\Http\Middleware\LogLastUserActivity::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 9</span> ],
+<span style="color: #008080;">10</span> 'api' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;">11</span> 'throttle:60,1',
+<span style="color: #008080;">12</span> ],
+<span style="color: #008080;">13</span> ];</code></pre>
+
+<p>&nbsp;</p>
+<p>最后一步是添加一个方法到我们的 user 对象中去检测这个值。在 app/User.php 我们添加下面的方法:</p>
+<src class="cnblogs_Highlighter">
+<pre><code>public function isOnline()
+{
+return Cache::has('user-is-online-' . $this-&gt;id);
+}
+</code></pre>
+
+<p>　　</p>
+<p>现在在任何页面中你就能添加下面的方法:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> @<span style="color: #0000ff;">if</span>(<span style="color: #800080;">$user</span>-&gt;<span style="color: #000000;">isOnline())
+</span><span style="color: #008080;">2</span> user is online!!
+<span style="color: #008080;">3</span> @<span style="color: #0000ff;">endif</span></code></pre>
+
+<p>&nbsp;</p>
+<p>重要提示 -- 确保在你的文件顶部使用 use 引入所有的 facades!</p>
+<p>我希望上面这些能帮助到你们解决这个问题！<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

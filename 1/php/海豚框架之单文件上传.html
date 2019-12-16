@@ -1,0 +1,72 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修海豚框架之单文件上传' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>海豚框架之单文件上传</center></div><div class='banquan'>原文出处:本文由博客园博主哟~好莱坞提供。<br/>
+原文连接:https://www.cnblogs.com/cyk2/p/11950810.html</div><br>
+    <p>我在网上找到的关于文件上传部分，然后记录下来，方便下次使用。</p>
+<p>写一个公共函数用于上传文件，例如写在function.php文件中，而不是直接修改common.php文件</p>
+<p>直接上代码，首先是函数部分：</p>
+<p>参数部分：用户id，文件，你也可以设置文件大小和上传路径</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span> post_upload_one(<span style="color: #800080;">$uid</span>,<span style="color: #800080;">$file</span>'<span style="color: #000000;">){
+
+    </span><span style="color: #800080;">$file</span> = request()-&gt;<span style="color: #008080;">file</span>(<span style="color: #800080;">$file</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$file</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$data</span>['code'] = '2'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$data</span>['msg'] = '未选择图片'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+    }
+    </span><span style="background-color: #ffff00;"><em><strong><span style="color: #800080;">$size</span>=11548484</strong></em><strong></strong><em><strong><span style="color: #800080;">$path</span>='/uploads/apifile'<span style="color: #000000;">;
+
+    </span></strong></em></span><span style="color: #800080;">$info</span> = <span style="color: #800080;">$file</span>-&gt;move(Env::get('root_path') .'/public'.<span style="color: #800080;">$path</span>.<span style="color: #000000;">DIRECTORY_SEPARATOR);
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$info</span><span style="color: #000000;">) {</span><span style="color: #008000;">
+        // 获取附件信息</span>
+        <span style="color: #800080;">$file_info</span> =<span style="color: #000000;"> [
+            </span>'uid' =&gt; <span style="color: #800080;">$uid</span>,
+            'name' =&gt; <span style="color: #800080;">$file</span>-&gt;getInfo('name'),
+            'mime' =&gt; <span style="color: #800080;">$file</span>-&gt;getInfo('type'),
+            'path' =&gt; <span style="color: #008080;">str_replace</span>('\\', '/','uploads/apifile' . DIRECTORY_SEPARATOR . <span style="color: #008080;">str_replace</span>('\\', '/', <span style="color: #800080;">$info</span>-&gt;getSaveName()) ),
+            'ext' =&gt; <span style="color: #800080;">$info</span>-&gt;getExtension(),
+            'size' =&gt; <span style="color: #800080;">$info</span>-&gt;getSize(),
+            'md5' =&gt; <span style="color: #800080;">$info</span>-&gt;hash('md5'),
+            'sha1' =&gt; <span style="color: #800080;">$info</span>-&gt;hash('sha1'),
+            'module' =&gt; 'user',
+<span style="color: #000000;">
+        ];
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$file_add</span> = AttachmentModel::create(<span style="color: #800080;">$file_info</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$data</span>['code'] = '0'<span style="color: #000000;">;
+            </span><span style="color: #800080;">$data</span>['msg'] = <span style="color: #800080;">$file_add</span>-&gt;<span style="color: #000000;">id;</span>
+            <span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #800080;">$data</span>['code'] = '1'<span style="color: #000000;">;
+    </span><span style="color: #800080;">$data</span>['msg'] = <span style="color: #800080;">$file</span>-&gt;<span style="color: #000000;">getError();
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>然后是调用我们写好的公共函数</p>
+<src class="cnblogs_code">
+<pre><code> <span style="color: #800080;">$data</span>['image']=<span style="color: #800080;">$_FILES</span><span style="color: #000000;">;
+ </span><span style="color: #800080;">$cc</span> = post_upload_one(<span style="color: #800080;">$uid</span>,'image');</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

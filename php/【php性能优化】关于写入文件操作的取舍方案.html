@@ -1,0 +1,80 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【php性能优化】关于写入文件操作的取舍方案' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【php性能优化】关于写入文件操作的取舍方案</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10709513.html</div><br>
+    <p>对于使用php对文件进行写入操作有两种方案一种使用</p>
+<p>file_put_contents() 和 fopen()/fwrite()/fclose() 两种方案至于应该怎么选，我觉得应该分情况选择，下面是实验的效果图</p>
+<p>场景一：</p>
+<p>写入的文件内容不多，不需要分批写入</p>
+<p>使用file_put_contents()的情况</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$str</span> = ""<span style="color: #000000;">;
+</span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0;<span style="color: #800080;">$i</span> &lt; 30000;<span style="color: #800080;">$i</span>++<span style="color: #000000;">){
+    </span><span style="color: #800080;">$str</span> .= '这是小段文本'<span style="color: #000000;">;
+}
+</span><span style="color: #008080;">file_put_contents</span>('file1.txt',<span style="color: #800080;">$str</span>);</code></pre>
+
+<p><img src="./images/【php性能优化】关于写入文件操作的取舍方案0.jpg" alt="" /></p>
+<p>执行完操作写入文件用时 2557&nbsp;&micro;s</p>
+<p>使用 fopen 方式</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$str</span> = ""<span style="color: #000000;">;
+</span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0;<span style="color: #800080;">$i</span> &lt; 30000;<span style="color: #800080;">$i</span>++<span style="color: #000000;">){
+    </span><span style="color: #800080;">$str</span> .= '这是小段文本'<span style="color: #000000;">;
+}
+</span><span style="color: #800080;">$handle</span> = <span style="color: #008080;">fopen</span>('file2.txt','w'<span style="color: #000000;">);
+</span><span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$handle</span>,<span style="color: #800080;">$str</span><span style="color: #000000;">);
+</span><span style="color: #008080;">fclose</span>(<span style="color: #800080;">$handle</span>);</code></pre>
+
+<p><img src="./images/【php性能优化】关于写入文件操作的取舍方案1.jpg" alt="" /></p>
+<p>写入操作总耗时 2670&nbsp;&micro;s 虽然差距不大，但是我进行了多次实验，显示第二种方案确实比第一种时间长</p>
+<p>场景二：</p>
+<p>如果是将文本分批写入文件中的情况下</p>
+<p>使用file_put_contents()的情况：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0;<span style="color: #800080;">$i</span> &lt; 30000;<span style="color: #800080;">$i</span>++<span style="color: #000000;">){
+    </span><span style="color: #800080;">$str</span> = '这是小段文本'<span style="color: #000000;">;
+    </span><span style="color: #008080;">file_put_contents</span>('file1.txt',<span style="color: #800080;">$str</span>,<span style="color: #000000;">FILE_APPEND);
+}</span></code></pre>
+
+<p><img src="./images/【php性能优化】关于写入文件操作的取舍方案2.jpg" alt="" /></p>
+<p>用时 6215 ms</p>
+<p>使用 fopen 方式</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$handle</span> = <span style="color: #008080;">fopen</span>('file2.txt','w'<span style="color: #000000;">);
+</span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0;<span style="color: #800080;">$i</span> &lt; 30000;<span style="color: #800080;">$i</span>++<span style="color: #000000;">){
+    </span><span style="color: #800080;">$str</span> = '这是小段文本'<span style="color: #000000;">;
+    </span><span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$handle</span>,<span style="color: #800080;">$str</span><span style="color: #000000;">);
+}
+</span><span style="color: #008080;">fclose</span>(<span style="color: #800080;">$handle</span>);</code></pre>
+
+<p><img src="./images/【php性能优化】关于写入文件操作的取舍方案3.jpg" alt="" /></p>
+<p>总共用时 866 ms 两者之间的差距还是蛮大的！</p>
+<p><span style="color: #ff0000; font-size: 18pt;">总结：</span></p>
+<p><span style="color: #ff0000; font-size: 18pt;">对于写入文件操作如果是一次性写入的话则优先选用 file_put_contents() 方案；如果是分批写入的话则应该选择 fopen() 方案毕竟差距还是很大的~</span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

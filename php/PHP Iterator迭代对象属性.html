@@ -1,0 +1,123 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP Iterator迭代对象属性' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP Iterator迭代对象属性</center></div><div class='banquan'>原文出处:本文由博客园博主itbsl提供。<br/>
+原文连接:https://www.cnblogs.com/itbsl/p/10690133.html</div><br>
+    <p>foreach用法和之前的数组遍历是一样的，只不过这里遍历的key是属性名，value是属性值。在类外部遍历时，只能遍历到public属性的，因为其它的都是受保护的，类外部不可见。</p>
+<pre><code><code>class HardDiskDrive {
+
+    public $brand;
+    public $color;
+    public $cpu;
+    public $workState;
+
+    protected $memory;
+    protected $hardDisk;
+
+    private $price;
+
+    public function __construct($brand, $color, $cpu, $workState, $memory, $hardDisk, $price) {
+
+        $this-&gt;brand = $brand;
+        $this-&gt;color = $color;
+        $this-&gt;cpu   = $cpu;
+        $this-&gt;workState = $workState;
+        $this-&gt;memory = $memory;
+        $this-&gt;hardDisk = $hardDisk;
+        $this-&gt;price = $price;
+    }
+
+}
+
+$hardDiskDrive = new HardDiskDrive(&#39;希捷&#39;, &#39;silver&#39;, &#39;tencent&#39;, &#39;well&#39;, &#39;1T&#39;, &#39;hard&#39;, &#39;$456&#39;);
+
+foreach ($hardDiskDrive as $property =&gt; $value) {
+
+    var_dump($property, $value);
+    echo &#39;&lt;br&gt;&#39;;
+}</code></code></pre>
+<p>输出结果为:</p>
+<pre class="shell"><code>string(5) &quot;brand&quot; string(6) &quot;希捷&quot; 
+string(5) &quot;color&quot; string(6) &quot;silver&quot; 
+string(3) &quot;cpu&quot; string(7) &quot;tencent&quot; 
+string(9) &quot;workState&quot; string(4) &quot;well&quot; </code></code></pre>
+<p>通过输出结果我们也可以看得出来常规遍历是无法访问受保护的属性的。<br />
+如果我们想遍历出对象的所有属性，就需要控制foreach的行为，就需要给类对象，提供更多的功能，需要继承自Iterator的接口:<br />
+为什么一个类只要实现了Iterator迭代器，其对象就可以被用作foreach的对象呢？其实原因很简单，在对PHP实例对象使用foreach语法时，会检查这个实例有没有实现Iterator接口，如果实现了，就会通过内置方法或使用实现类中的方法模拟foreach语句。<br />
+该接口，实现了foreach需要的每个操作。foreach的执行流程如下图：</p>
+<p><img src="./images/PHP Iterator迭代对象属性0.jpg" /></p>
+<p>看图例中，foreach中有几个关键步骤：5个。</p>
+<p>而Iterator迭代器中所要求的实现的5个方法，就是用来帮助foreach,实现在遍历对象时的5个关键步骤：</p>
+<p>当foreach去遍历对象时, 如果发现对象实现了Ierator接口, 则执行以上5个步骤时, 不是foreach的默认行为, 而是调用对象的对应方法即可:</p>
+<p><img src="./images/PHP Iterator迭代对象属性1.jpg" /></p>
+<p>示例代码:</p>
+<pre><code><code>class Team implements Iterator {
+
+    //private $name = &#39;itbsl&#39;;
+    //private $age  = 25;
+    //private $hobby = &#39;fishing&#39;;
+
+    private $info = [&#39;name&#39; =&gt; &#39;itbsl&#39;, &#39;age&#39; =&gt; 25, &#39;hobby&#39; =&gt; &#39;fishing&#39;];
+
+    public function rewind()
+    {
+        reset($this-&gt;info); //重置数组指针
+    }
+
+    public function valid()
+    {
+        //如果为null,表示没有元素，返回false
+        //如果不为null,返回true
+
+        return !is_null(key($this-&gt;info));
+    }
+
+    public function current()
+    {
+        return current($this-&gt;info);
+    }
+
+    public function key()
+    {
+        return key($this-&gt;info);
+    }
+
+    public function next()
+    {
+        return next($this-&gt;info);
+    }
+
+}
+
+$team = new Team();
+
+foreach ($team as $property =&gt; $value) {
+
+    var_dump($property, $value);
+    echo &#39;&lt;br&gt;&#39;;
+}</code></code></pre>
+<p>输出结果为:</p>
+<pre class="shell"><code>string(4) &quot;name&quot; string(5) &quot;itbsl&quot; 
+string(3) &quot;age&quot; int(25) 
+string(5) &quot;hobby&quot; string(7) &quot;fishing&quot; </code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

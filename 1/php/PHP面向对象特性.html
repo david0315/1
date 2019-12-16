@@ -1,0 +1,592 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP面向对象特性' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP面向对象特性</center></div><div class='banquan'>原文出处:本文由博客园博主itbsl提供。<br/>
+原文连接:https://www.cnblogs.com/itbsl/p/10689967.html</div><br>
+    <src class="toc">
+    <p class="toc-title">目录</p>
+    <src class="toc-list">
+        <ul>
+        <li><a href="#创建对象">创建对象</a></li>
+        <li><a href="#成员属性">成员属性</a></li>
+        <li><a href="#成员方法">成员方法</a></li>
+        <li><a href="#构造方法">构造方法</a></li>
+        <li><a href="#析构方法">析构方法</a></li>
+        <li><a href="#垃圾回收机制">垃圾回收机制</a></li>
+        <li><a href="#访问修饰符">访问修饰符</a></li>
+        <li><a href="#魔术方法">魔术方法</a></li>
+        <li><a href="#对象比较">对象比较</a></li>
+        <li><a href="#继承">继承</a></li>
+        <li><a href="#重载">重载</a></li>
+        <li><a href="#属性重载">属性重载</a></li>
+        <li><a href="#方法重写">方法重写</a></li>
+        <li><a href="#属性重写">属性重写</a></li>
+        <li><a href="#静态属性">静态属性</a></li>
+        <li><a href="#静态方法">静态方法</a></li>
+        <li><a href="#多态">多态</a></li>
+        <li><a href="#类型约束">类型约束</a></li>
+        <li><a href="#抽象类">抽象类</a></li>
+        <li><a href="#接口">接口</a></li>
+        <li><a href="#final关键字">final关键字</a></li>
+        <li><a href="#类常量">类常量</a></li>
+        <li><a href="#对象遍历">对象遍历</a></li>
+        <li><a href="#php内置标准类">PHP内置标准类</a></li>
+        <li><a href="#其它数据类型转成对象">其它数据类型转成对象</a></li>
+        </ul>
+    
+
+<h3 id="创建对象">创建对象</h3>
+<pre><code><code>$对象名 = new 类名();
+$对象名 = new 类名;</code></code></pre>
+<ul>
+<li>new 是一个关键字，表示创建一个新的实例。</li>
+<li>在类定义内部，可以用 <code>new self</code> 和 <code>new parent</code> 创建新对象。</li>
+</ul>
+<h3 id="成员属性">成员属性</h3>
+<p>成员属性必须要有访问修饰符，如果不写，会报错。</p>
+<p>成员属性的默认值为NULL。</p>
+<p>示例：</p>
+<pre><code><code>class Test {
+    
+    public $name; //共有
+    protected $height; //保护
+    private $age; //私有
+} </code></code></pre>
+<h3 id="成员方法">成员方法</h3>
+<p>成员方法如果不写访问修饰符，则默认为public。</p>
+<p>我们可以指定成员方法里的参数的类型，如 类类型，或者数组类型（array），也可以是接口类型，但是接口类型要注意，因为接口没有实例，当我们声明参数类型为接口类型的时候，那么传入的参数只要是实现了该接口的类的实例即可。</p>
+<p>示例：</p>
+<pre><code><code>class Test {
+    
+    function hello() {} //默认为public
+    public function say() {} //公有
+    protected function smile() {} //保护
+    private function laugh() {} //私有
+}</code></code></pre>
+<h3 id="构造方法">构造方法</h3>
+<ul>
+<li><strong>一个类里只能有一个构造方法</strong>。</li>
+<li>没有返回值(即使在构造方法里写了返回值也没有意义)</li>
+<li>在创建一个类的新对象时，系统会自动的调用类的构造方法完成对新对象的初始化。</li>
+<li>如果我们没有重写默认构造函数，那么系统会默认帮我们创建一个没有参数的构造函数，<code>public function __construct(){}</code>,如果我们重写了构造函数，那么我们自定义的构造函数就会覆盖系统默认的构造函数。</li>
+<li>如果我们自定义的构造函数里有行参，那么当我们创建对象的时候就必须传入相应的实参。否则会报错。</li>
+</ul>
+<p>示例:</p>
+<pre><code><code>class Test {
+
+    public function __construct() {
+        echo &#39;hello, world&lt;br&gt;&#39;;
+    }
+}
+
+$testObj = new Test();
+
+
+class One {
+
+    public function __construct($param) {
+
+        echo $param;
+    }
+}
+
+$oneObj = new One(&#39;hello, world&lt;br&gt;&#39;);</code></code></pre>
+<p>输出结果:</p>
+<pre class="shell"><code>hello, world
+hello, world</code></code></pre>
+<h3 id="析构方法">析构方法</h3>
+<ul>
+<li>当一个对象没有被任何变量引用时就会自动销毁,并在被销毁前自动调用析构函数，无论程序有没有结束，只要一个对象没有被任何变量引用就会被销毁。</li>
+<li>当PHP程序运行结束后，所有的对象都会被销毁，对象在被销毁前，会自动调用析构函数。</li>
+<li>默认情况下，析构函数销毁对象的顺序和创建对象的顺序正好相反。最先创建的对象最后被销毁，强调默认情况下是因为，我们可以手动销毁对象，这样的话对象销毁的顺序就和默认情况不一样了，当PHP程序执行完后，那时候销毁对象的方法就是采用的默认方法。</li>
+<li>如果我们定义的一个类里专门有个属性是用来连接数据库的，当我们创建了该类的实例对象，并且用该成员属性连接数据库后，如果该类型的实例对象占用资源较大，我们往往会在使用后就立即销毁，虽然该对象能被销毁，但是该对象的成员属性所连接的资源却不会被自动销毁，需要我们自己手动销毁，这时，我们可以在析构函数里添加一句关闭数据库连接的语句就好了（mysql_close(要关闭的资源)）。</li>
+</ul>
+<p>示例:</p>
+<pre><code><code>class Test {
+
+    public function __construct() {
+        echo &#39;hello, world&lt;br&gt;&#39;;
+    }
+
+    public function __destruct()
+    {
+        echo &#39;执行一些回收资源的操作&lt;br&gt;&#39;;
+    }
+}
+
+$testObj = new Test();</code></code></pre>
+<p>输出结果:</p>
+<pre class="shell"><code>hello, world
+执行一些回收资源的操作</code></code></pre>
+<h3 id="垃圾回收机制">垃圾回收机制</h3>
+<ul>
+<li>在PHP中，当一个对象没有任何引用指向它的时候，就会成为一个垃圾对象，PHP将启用垃圾回收器将对象销毁。</li>
+<li>在PHP程序退出前，PHP也将启用垃圾回收器，销毁对象。</li>
+</ul>
+<h3 id="访问修饰符">访问修饰符</h3>
+<ul>
+<li><p>public</p>
+<p>如果没有为方法指定访问修饰符，它将是<code>public</code>。公有的属性或方法可以在类的内部或外部进行访问。</p></li>
+<li><p>protected</p>
+<p>如果一个属性或方法指定访问修饰符为<code>protected</code>,那么被标记的属性或方法只能在类内部访问，被修饰的属性和方法能被子类继承。</p></li>
+<li><p>private</p>
+<p>如果一个属性或方法指定访问修饰符为<code>private</code>,那么被标记的属性或方法只能在类内部访问，私有的属性和方法将不会被继承。</p></li>
+</ul>
+<h3 id="魔术方法">魔术方法</h3>
+<ol>
+<li><p>魔术方法都是在满足某个条件时，由系统自动调用。</p></li>
+<li><p>魔术方法的名字，都是以两个下划线(__)开头的，因此我们在自定义函数时，函数名不要以两个下划线开头。</p></li>
+<li><p>一些常用的魔术方法</p>
+<pre><code><code>__construct():
+ 构造方法
+__destruct():
+ 析构方法
+__set():
+ 在给不可访问属性赋值(比如：protected/private/不存在)时，__set()会被调用。
+__get():
+ 读取不可访问属性的值(比如：protected/private/不存在)时，__get()会被调用。
+__isset():
+ 当对不可访问属性(比如:protected/private/不存在)调用isset()或empty()时，__isset()会被调用。
+__unset():
+ 当对不可访问属性(比如:protected/private/不存在)调用unset()时，__unset()会被调用。
+__toString():
+ 当我们把一个对象当做字符串输出时，就会自动调用__stoString（）方法。
+__clone():
+ 如果定义了__clone方法，则新创建的对象clone(复制生成的对象)中的__clone()会被调用。用法如下：
+ $copy_of_object = clone $object;
+ 克隆后的对象与原对象的地址不一样。
+ 当对象被复制后，PHP 5 会对对象的所有属性执行一个浅复制（shallow copy）。所有的引用属性 仍然会是一个指向原来的变量的引用。
+ 如果想防止其他程序员克隆某个对象，可以重写__clone()方法并把访问修饰符设置为private。
+__call():
+ 在对象中调用一个不可访问(比如函数访问修饰符为protected/private/不存在)方法时，__call()会被调用。
+__callStatic():
+ 用静态方式中调用一个不可访问方法时，__callStatic() 会被调用。</code></code></pre></li>
+</ol>
+<h3 id="对象比较">对象比较</h3>
+<p>当使用比较运算符（<em>==</em>）比较两个对象变量时，比较的原则是：如果两个对象的属性和属性值 都相等，而且两个对象是同一个类的实例，那么这两个对象变量相等。</p>
+<p>而如果使用全等运算符（<em>===</em>），这两个对象变量一定要指向某个类的同一个实例（即同一个对象）。</p>
+<p>示例:</p>
+<pre><code><code>class Test {
+
+    public $name = &#39;itbsl&#39;;
+    public $age  = 25;
+}
+
+$testObj  = new Test();
+$testObj2 = new Test();
+
+if ($testObj == $testObj2) {
+    echo &#39;相等&lt;br&gt;&#39;;
+} else {
+    echo &#39;不相等&lt;br&gt;&#39;;
+}
+
+$testObj2-&gt;name = &#39;jack&#39;;
+
+if ($testObj == $testObj2) {
+    echo &#39;相等&lt;br&gt;&#39;;
+} else {
+    echo &#39;不相等&lt;br&gt;&#39;;
+}</code></code></pre>
+<h3 id="继承">继承</h3>
+<p>即使父类的某些属性设置为私有的，子类仍然能够继承，但是对子类却是不可见的。当子类对象使用父类的私有属性的时候，会自动触发重载机制，在子类创建一个和父类私有属性同名的属性。此时子类使用的属性并不是父类的私有属性了，而是通过重载创建的和父类私有属性同名的属性罢了。</p>
+<p>如果在子类中需要访问其父类的构造方法（ 方法的访问修饰符是public/protected）可以使用父类::方法名(或者 parent::方法名)来完成。（推荐使用parent::方法名，并且一般调用父类构造方法都是parent::__construct();）</p>
+<p>调用父类的普通方法直接用this-&gt;方法名即可。（也可以用父类名::方法名或者 parent::方法名 ，但是不推荐）</p>
+<p>继承并不是直接把父类的属性和方法直接拷贝到子类里面来。而是建立了一种关联。原本我以为是直接把父类的属性和方法直接拷贝过来，最后发现只是建立了一种关联。下图证明了不是直接拷贝，当在子类里调用父类的方法时，父类输出自己的属性时输出结果都和初始化不一样了（private属性除外，因为是私有的，子类无法看见，所以子类也无法重写父类的私有属性），如果是直接拷贝的话，那么当调用父类的方法时应该输出100,200,300才对，所以说继承不是直接拷贝。</p>
+<pre><code><code>class A {
+
+    public    $num1 = 100;
+    protected $num2 = 200;
+    private   $num3 = 300;
+
+    public function show1() {
+        echo &#39;num1 = &#39; . $this-&gt;num1 . &#39;&lt;br&gt;&#39;;
+    }
+
+    public function show2() {
+        echo &#39;num2 = &#39; . $this-&gt;num2 . &#39;&lt;br&gt;&#39;;
+    }
+
+    public function show3() {
+        echo &#39;num3 = &#39; . $this-&gt;num3 . &#39;&lt;br&gt;&#39;;
+    }
+}
+
+class B extends A {
+
+    public    $num1 = 1;
+    protected $num2 = 2;
+    private   $num3 = 3;
+
+    public function show1() {
+        echo &#39;num1 = &#39; . $this-&gt;num1 . &#39;&lt;br&gt;&#39;;
+        parent::show1();
+    }
+
+    public function show2() {
+        echo &#39;num2 = &#39; . $this-&gt;num2 . &#39;&lt;br&gt;&#39;;
+        parent::show2();
+    }
+
+    public function show3() {
+        echo &#39;num3 = &#39; . $this-&gt;num3 . &#39;&lt;br&gt;&#39;;
+        parent::show3();
+    }
+}
+
+$bObj = new B();
+$bObj-&gt;show1();
+$bObj-&gt;show2();
+$bObj-&gt;show3();</code></code></pre>
+<p>输出结果：</p>
+<pre class="shell"><code>num1 = 1
+num1 = 1
+num2 = 2
+num2 = 2
+num3 = 3
+num3 = 300</code></code></pre>
+<h3 id="重载">重载</h3>
+<p>PHP所提供的&quot;重载&quot;（overloading）是指动态地&quot;创建&quot;类属性和方法。我们是通过<strong>魔术方法</strong>（magic methods）来实现的。</p>
+<p>当调用当前环境下未定义或不可见的类属性或方法时，重载方法会被调用。本节后面将使用&quot;不可访问属性（inaccessible properties）&quot;和&quot;不可访问方法（inaccessible methods）&quot;来称呼这些未定义或不可见的类属性或方法。</p>
+<p><strong>属性重载只能在对象中进行。在静态方法中，这些魔术方法将不会被调用</strong>。所以这些方法都不能被声明为 static。从 PHP5.3.0 起, 将这些魔术方法定义为 <em>static</em> 会产生一个警告。</p>
+<p><strong>所有重载方法都必须被声明为public。</strong></p>
+<p><strong>这些魔术方法都参数都不能通过引用传递。</strong></p>
+<p>PHP中的&quot;重载&quot;与其它绝大多数面向对象语言不同。传统的&quot;重载&quot;是用于提供多个同名的类方法，但各方法的参数类型和个数不同。</p>
+<p>因为PHP处理赋值运算的方式，__set()的返回值将被忽略。类似的，在下面这样的链式赋值中，__get()不会被调用。</p>
+<pre><code><code>$a = $obj-&gt;b = 8;</code></code></pre>
+<p>在除 isset() 外的其它语言结构中无法使用重载的属性，这意味着当对一个重载的属性使用 empty() 时，重载魔术方法将不会被调用。</p>
+<p>为避开此限制，必须将重载属性赋值到本地变量再使用 empty()。</p>
+<pre><code><code>//在对象中调用一个不可访问方法时，__call() 会被调用。
+public mixed __call(string $name , array $arguments)
+
+//用静态方式中调用一个不可访问方法时，__callStatic() 会被调用。
+public static mixed __callStatic(string $name , array $arguments)</code></code></pre>
+<h3 id="属性重载">属性重载</h3>
+<p>我们曾经提过，当我们访问或给一个<strong>不可访问</strong>(protected/private)的属性或者<strong>不存在</strong>的属性赋值时，就会调用相应的系统魔术方法<code>__get($property)</code>、<code>__set($property, $value)</code>，如果我们不重写这两个方法，当我们给不存在的属性赋值时，系统会自动帮我们创建一个public的属性，我们可以自己重写这两个方法来管理这些这些动态创建的属性。或者直接不让产生动态属性。当我们不重写这两个方法就不可访问属性赋值时，会报致命错误。</p>
+<p>示例：</p>
+<pre><code><code>class Obj {
+
+    protected $name = &#39;itbsl&#39;;
+
+
+
+}
+
+$obj = new Obj();
+$obj-&gt;name = &quot;jack&quot;; //此处会报致命错误
+
+var_dump($obj);</code></code></pre>
+<p>错误信息为:</p>
+<pre class="shell"><code>Fatal error: Uncaught Error: Cannot access protected property Obj::$name</code></code></pre>
+<p>当我们重写了<code>__set()</code>方法就没问题了</p>
+<pre><code><code>class Obj {
+
+    protected $str = &#39;itbsl&#39;;
+
+    public function __set($name, $value)
+    {
+        $this-&gt;$name = $value;
+    }
+
+}
+
+$obj = new Obj();
+$obj-&gt;str = &quot;jack&quot;;
+
+var_dump($obj);</code></code></pre>
+<p>属性重载可以帮助我们动态管理新的属性也可以禁止动态创建属性。</p>
+<p>(1)动态管理</p>
+<pre><code><code>class Dog {
+
+    //定义一个数组，管理我们动态增加的属性和值
+    private $arr = [];
+    
+    //这里我们重写__set来管理动态增加的属性
+    public function __set($name, $value)
+    {
+        $this-&gt;arr[$name] = $value;
+    }
+    
+    public function __get($name)
+    {
+        return isset($this-&gt;arr[$name]) ? $this-&gt;arr[$name] : null;
+    }
+}</code></code></pre>
+<p>(2)禁止创建动态属性。重写set方法，里面什么也不做。</p>
+<pre><code><code>class Dog {
+    
+    //这里我们重写__set来管理动态增加的属性
+    public function __set($name, $value)
+    {
+       //just do nothing
+    }  
+}</code></code></pre>
+<h3 id="方法重写">方法重写</h3>
+<p><strong>在子类中重写父类的方法时要，重写的方法的访问控制符不能比父类的方法的访问控制符的级别小</strong>。例如：如果父类的访问控制符为public，则子类重写方法的访问修饰符只能为public，如果父类的为protected，则子类的访问修饰控制符可以为protected或public。<strong>重写属性也要遵守上面的规则</strong>。</p>
+<h3 id="属性重写">属性重写</h3>
+<p>如果子类有和父类相同的属性，如果属性是public或者protected则会重写父类的属性，如果是private则创建一个同名的新私有属性，同时仍然会继承父类的同名私有属性。</p>
+<h3 id="静态属性">静态属性</h3>
+<ol>
+<li>静态属性不属于某个对象，而是所有对象共享的属性，每个对象都可以访问它。</li>
+<li>静态属性属于类的范畴，而不是某个对象的独有特性。</li>
+<li>在类中，使用和访问静态变量的方式是 <code>self::$静态属性</code>。</li>
+<li>在类外，使用和访问静态变量的方式是 <code>类名::$静态属性</code>(要求访问修饰符为public)。</li>
+<li>当我们用var_dump()输出一个对象的时候，该对象的静态变量不会被输出。</li>
+<li>就像其它所有的 PHP 静态变量一样，静态属性只能被初始化为文字或常量，不能使用表达式。所以可以把静态属性初始化为整数或数组，但不能初始化为另一个变量或函数返回值，也不能指向一个对象。</li>
+</ol>
+<h3 id="静态方法">静态方法</h3>
+<ol>
+<li>静态方法的访问方式为 <code>类名::静态方法名()</code>; 同时也可以用<code>对象名-&gt;静态方法名()</code>;和<code>对象名::静态方法名()</code>，但是后两种不推荐，尽量只用第一种。</li>
+<li>在类的外部调用静态方法，要求静态方法的访问修饰符必须是<strong>public</strong>的。</li>
+<li>在类内部调用静态方法： <code>self::静态方法</code> 或者 <code>类名::静态方法</code> 通过<code>$this</code>也可以。只推荐第一种方式。在类的内部访问静态方法，无论是什么修饰符都可以访问静态方法。</li>
+<li>静态方法中不可以访问非静态属性和非静态方法。</li>
+<li>普通的成员方法，可以访问静态属性。</li>
+</ol>
+<p>静态属性和普通属性的区别：</p>
+<p>(1)加上static称静态变量，否则就是普通属性</p>
+<p>(2)静态属性是与类相关的，所有对象共享的属性</p>
+<p>(3)普通属性属于每个对象个体的属性。</p>
+<h3 id="多态">多态</h3>
+<p>由于PHP变量没有类型限制，所以PHP是天生支持多态的。</p>
+<h3 id="类型约束">类型约束</h3>
+<p>类型约束支持的类型有 array 、 callable 、 对象类型 、 接口</p>
+<h3 id="抽象类">抽象类</h3>
+<p>当父类的一些方法不能确定时，可以用abstract关键字来修饰该方法[抽象方法],用abstract来修饰该类[抽象类]。</p>
+<p>(1) 如果你希望把某个方法做成 抽象方法 ，则前面写上 abstract</p>
+<p>(2) 如果一个类中有抽象方法，那么该类必须声明为抽象类。</p>
+<p>(3) 抽象类最主要的作用在于设计，它的目的是让其它的类继承它，并实现其中的抽象方法。如果子类继承了该抽象类，除非继承该抽象类的子类也被声明为抽象类，否则必须实现抽象类中所有的抽象方法，如果不实现就会报错。</p>
+<p>(4) 抽象类不能被实例化</p>
+<p>(5) 抽象类可以没有abstract方法</p>
+<p>(6) 抽象类可以有非抽象方法，成员属性和常量</p>
+<p>(7) 抽象方法不能有函数体</p>
+<p>基本语法:</p>
+<pre><code><code>abstract class 类名 {
+    abstract 修饰符 function 函数名(参数列表);
+}</code></code></pre>
+<p>普通类如何继承抽象类？</p>
+<pre><code><code>abstract class Superman {
+    public $name;
+    public $age;
+    
+    public function __construct($name, $age) {
+        
+        $this-&gt;name = $name;
+        $this-&gt;age  = $age;
+    }
+    
+    abstract public function run();
+    abstract public function fly();
+    abstract public function attach();
+}
+
+class Spiderman extends Superman {
+    
+    public function run()
+    {
+        echo &#39;Spiderman is running on the net.&lt;br&gt;&#39;;
+    }
+    
+    public function fly()
+    {
+        echo &#39;Spiderman can hang in the sky through net.&lt;br&gt;&#39;;
+    }
+    
+    public function attach()
+    {
+        echo &#39;Spider attach.&lt;br&gt;&#39;;
+    }
+}</code></code></pre>
+<h3 id="接口">接口</h3>
+<p>(1) 接口就是给出一些没有实现的方法，封装到一起，到某个类要使用的时候，再根据具体情况把这些方法写出来。</p>
+<p>(2)基本语法：</p>
+<pre><code><code>interface 接口名 {
+    //方法[不含方法体]
+}</code></code></pre>
+<p>(3)接口中所有的方法都不能有主体</p>
+<p>(4)一个类可以实现多个接口，接口名之间用逗号隔开</p>
+<pre><code><code>class 类名 implements 接口1, 接口2 {
+    
+}</code></code></pre>
+<p>(5)接口中可以有属性，但只能是常量，并且是公开可访问的。默认是public，但不能用public显式修饰</p>
+<p>(6)接口中的方法都必须是public的，默认就是public</p>
+<p>(7)一个接口不能继承其它的类，但是可以继承别的接口，而且一个接口可以继承多个接口</p>
+<pre><code><code>interface 接口名 extends 接口1, 接口2 {
+    //方法[不含方法体]
+}</code></code></pre>
+<p>(8)接口不能被实例化</p>
+<p>(9)接口是更加抽象的抽象类，接口里的所有方法都没有方法体。接口体现了程序设计的多态和高内聚低耦合的设计思想。</p>
+<p>(10)说明：</p>
+<p>接口的命名规范一般是字符 i 开头，然后第二个字符大写，形式如：iXxxx，比如：iUsb</p>
+<p>(11)如何使用接口中的常量</p>
+<p>接口名::常量名；</p>
+<p>如果某个类要实现接口，需要用implements 关键字。并且实现接口里的所有方法，如果该类要实现多个接口，则所有的接口的所有的方法都要实现，只要存在没有实现的接口里的方法就会报错。</p>
+<p>示例:</p>
+<pre><code><code>interface Displayable {
+    function display();
+}
+
+class Base {
+    function operation() {
+        echo &#39;operate something.&lt;br&gt;&#39;;
+    }
+}
+
+class SubClass extends Base implements Displayable {
+
+    function display()
+    {
+        echo &#39;display.&lt;br&gt;&#39;;
+    }
+}
+
+$temp = new SubClass();
+$temp-&gt;display();</code></code></pre>
+<h3 id="final关键字">final关键字</h3>
+<p>(1) 作用：</p>
+<p>​ 因为安全的考虑，类的某个方法不允许子类通过重写来修改。</p>
+<p>​ 不希望某个类被其它的类继承。</p>
+<p>(2) PHP5新增了一个final关键字。如果父类中的方法被声明为final，则子类无法覆盖该方法。如果一个类被声明为final，则该类不能被继承。</p>
+<p>(3) final不能够修饰成员属性(变量)</p>
+<p>(4) final方法不能被重写，但可以被继承。即使是被声明为final的方法也依然能够被继承并被使用，只是不能重写(修改)罢了。</p>
+<p>(5) 一般来说，final类中不会出现final方法，因为final类都不能被继承，也就不会去重写override final类的方法了。</p>
+<p>(6) <strong>final类是可以被实例化的</strong>。</p>
+<h3 id="类常量">类常量</h3>
+<p>可以把在类中始终保持不变的值定义为常量。在定义和使用常量的时候不需要使用 $ 符号。</p>
+<p>常量的值必须是一个定值，不能是变量、类属性、数学运算的结果或函数调用。</p>
+<p>接口（interface）中也可以定义常量。更多示例见文档中的接口部分。</p>
+<p>自 PHP 5.3.0 起，可以用一个变量来动态调用类。但该变量的值不能为关键字（如 <em>self</em>，<em>parent</em> 或 <em>static</em>）。</p>
+<p>细节说明：</p>
+<p>(1) 常量名一般字母全部大写：TAX_RATE，中间可以有下划线</p>
+<p>(2) <strong>在定义常量的同时，必须赋初值</strong>，比如 const TAX_RATE = 1.1</p>
+<p>(3) const关键字前不能用public/protected/private修饰。默认是public</p>
+<p>(4) 访问常量</p>
+<p>在类的外部 <code>类名::常量名</code> <code>接口名::常量名</code></p>
+<p>在类的内部 <code>类名::常量名</code> <code>self::常量名</code></p>
+<p>(5) 常量的值在定义的时候就初始化，以后就不能修改</p>
+<p>(6) 常量可以被子类继承</p>
+<p>(7) 一个常量是属于一个类的，而不是某个对象的。</p>
+<p>(8) 常量是全局性的，可以在任何地方访问。</p>
+<p>(9) 在类里面不能用define定义常量。</p>
+<p>(10) 常量的值可以是基本类型数据和数组。不可以是对象。</p>
+<h3 id="对象遍历">对象遍历</h3>
+<p>foreach用法和之前的数组遍历是一样的，只不过这里遍历的key是属性名，value是属性值。在类外部遍历时，只能遍历到public属性的，因为其它的都是受保护的，类外部不可见。</p>
+<p>示例:</p>
+<pre><code><code>
+class HardDiskDrive {
+
+    public $brand;
+    public $color;
+    public $cpu;
+    public $workState;
+
+    protected $memory;
+    protected $hardDisk;
+
+    private $price;
+
+    public function __construct($brand, $color, $cpu, $workState, $memory, $hardDisk, $price) {
+
+        $this-&gt;brand = $brand;
+        $this-&gt;color = $color;
+        $this-&gt;cpu   = $cpu;
+        $this-&gt;workState = $workState;
+        $this-&gt;memory = $memory;
+        $this-&gt;hardDisk = $hardDisk;
+        $this-&gt;price = $price;
+    }
+
+}
+
+$hardDiskDrive = new HardDiskDrive(&#39;希捷&#39;, &#39;silver&#39;, &#39;tencent&#39;, &#39;well&#39;, &#39;1T&#39;, &#39;hard&#39;, &#39;$456&#39;);
+
+foreach ($hardDiskDrive as $property =&gt; $value) {
+
+    var_dump($property, $value);
+    echo &#39;&lt;br&gt;&#39;;
+}</code></code></pre>
+<p>输出结果为:</p>
+<pre class="shell"><code>string(5) &quot;brand&quot; string(6) &quot;希捷&quot; 
+string(5) &quot;color&quot; string(6) &quot;silver&quot; 
+string(3) &quot;cpu&quot; string(7) &quot;tencent&quot; 
+string(9) &quot;workState&quot; string(4) &quot;well&quot; </code></code></pre>
+<p>如果我们想遍历出对象的所有属性，就需要控制foreach的行为，就需要给类对象，提供更多的功能，需要继承自Iterator的接口:</p>
+<p>该接口，实现了foreach需要的每个操作。foreach的执行流程如下图：</p>
+<p><img src="./images/PHP面向对象特性0.jpg" /></p>
+<p>看图例中，foreach中有几个关键步骤：5个。</p>
+<p>而Iterator迭代器中所要求的实现的5个方法，就是用来帮助foreach,实现在遍历对象时的5个关键步骤：</p>
+<p>当foreach去遍历对象时, 如果发现对象实现了Ierator接口, 则执行以上5个步骤时, 不是foreach的默认行为, 而是调用对象的对应方法即可:</p>
+<p><img src="./images/PHP面向对象特性1.jpg" /></p>
+<p>示例代码:</p>
+<pre><code><code>class Team implements Iterator {
+
+    //private $name = &#39;itbsl&#39;;
+    //private $age  = 25;
+    //private $hobby = &#39;fishing&#39;;
+
+    private $info = [&#39;itbsl&#39;, 25, &#39;fishing&#39;];
+
+    public function rewind()
+    {
+        reset($this-&gt;info); //重置数组指针
+    }
+
+    public function valid()
+    {
+        //如果为null,表示没有元素，返回false
+        //如果不为null,返回true
+
+        return !is_null(key($this-&gt;info));
+    }
+
+    public function current()
+    {
+        return current($this-&gt;info);
+    }
+
+    public function key()
+    {
+        return key($this-&gt;info);
+    }
+
+    public function next()
+    {
+        return next($this-&gt;info);
+    }
+
+}
+
+$team = new Team();
+
+foreach ($team as $property =&gt; $value) {
+
+    var_dump($property, $value);
+    echo &#39;&lt;br&gt;&#39;;
+}</code></code></pre>
+<h3 id="php内置标准类">PHP内置标准类</h3>
+<p>如果我们希望把一些数据，以对象的属性的方式存储，同时我们又不想定义一个类，可以考虑使用PHP内置标准类stdClass[standard标准]</p>
+<p>基本用法：</p>
+<pre><code><code>//注意: stdClass()不是我们自定义的类，而是PHP内置的
+$person = new stdClass();</code></code></pre>
+<p>然后我们就可以直接用$person-&gt;属性的方式来使用，属性都不是系统的，我们自己也没定义，但是当我们使用这个属性的时候，系统发现没有定义就会调用重载方法，重载这个属性。自动帮我们创建这个属性。</p>
+<h3 id="其它数据类型转成对象">其它数据类型转成对象</h3>
+<p>如果，我们希望把非对象类型转换成对象，可以通过如下方法实现，(object)来强制转换，把这些数据转换成标准内置类stdClass，此种转换不改变原有数据类型</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,72 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【php设计模式】适配器模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【php设计模式】适配器模式</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10949217.html</div><br>
+    <p><span style="font-size: 18px;"><span style="background-color: #ff0000;">&nbsp;</span> 适配器模式(对象适配器、类适配器)：　</span></p>
+<p>　　<span style="font-size: 16px;">将一个类的接口转换成客户希望的另一个接口。适配器模式让那些接口不兼容的类可以一起工作。</span></p>
+<p><em id="__mceDel"><span style="font-size: 16px;">　　在适配器模式定义中所提及的接口是指广义的接口，它可以表示一个方法或者方法的集合。</span><br /><span style="font-size: 18px;"><span style="background-color: #ff0000;">&nbsp;</span> 角色：</span><br />	　　<span style="font-size: 16px;">Target(目标抽象类)</span><br /><span style="font-size: 16px;">		　　　　目标抽象类定义客户所需的接口，可以是一个抽象类或接口，也可以是具体类。</span><br /><span style="font-size: 16px;">	　　Adapter(适配器类)</span><br /><span style="font-size: 16px;">		　　　　它可以调用另一个接口，作为一个转换器，对Adaptee和Target进行适配。它是适配器模式的核心。</span><br /><span style="font-size: 16px;">	　　Adaptee(适配者类)</span><br /><span style="font-size: 16px;">		　　　　适配者即被适配的角色，它定义了一个已经存在的接口，这个接口需要适配，适配者类包好了客户希望的业务方法。</span></em></p>
+<p><span style="color: #99cc00;"><span style="font-size: 16px;">对象适配器：</span></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">interface</span><span style="color: #000000;"> Target{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> MethodOne();
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> MethodTwo();
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Adaptee{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> MethodOne(){
+        </span><span style="color: #0000ff;">echo</span> "+++++++++\n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span> Adapter <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Target{
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$adaptee</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Adaptee <span style="color: #800080;">$adaptee</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;adaptee = <span style="color: #800080;">$adaptee</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> MethodOne(){
+        </span><span style="color: #800080;">$this</span>-&gt;adaptee-&gt;<span style="color: #000000;">MethodOne();
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> MethodTwo(){
+        </span><span style="color: #0000ff;">echo</span> "------------"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #800080;">$adaptee</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Adaptee();
+</span><span style="color: #800080;">$adapter</span> = <span style="color: #0000ff;">new</span> Adapter(<span style="color: #800080;">$adaptee</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$adapter</span>-&gt;MethodOne();</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="color: #99cc00; font-size: 16px;">类适配器：</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span> Adapter2 <span style="color: #0000ff;">extends</span> Adaptee <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Target{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> MethodTwo(){
+        </span><span style="color: #0000ff;">echo</span> "-----------"<span style="color: #000000;">;
+    }
+}
+</span><span style="color: #800080;">$adapter2</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Adapter2();
+</span><span style="color: #800080;">$adapter2</span>-&gt;MethodOne();</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

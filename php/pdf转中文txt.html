@@ -1,0 +1,88 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修pdf转中文txt' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>pdf转中文txt</center></div><div class='banquan'>原文出处:本文由博客园博主郭_小_宁提供。<br/>
+原文连接:https://www.cnblogs.com/xnguo/p/10703157.html</div><br>
+    <p>最近项目需要实现根据关键字搜索pdf内容，实现思路就是提取pdf文本，然后进行索引。</p>
+<p>工具上选择：</p>
+<p>IText 4.16之后采用agpl License，不能用作商用，而且转换中文会有乱码问题,</p>
+<p>pdfsharp 采用MIT License，权限上没有问题，但是转换中文也会有乱码,</p>
+<p>最后决定采用xpdf.</p>
+<p>官网地址：<a href="https://www.xpdfreader.com/download.html">https://www.xpdfreader.com/download.html</a></p>
+<p>需要下载对应的xpdf包，本人采用的windows x64 版本</p>
+<p>此外还要下载中文字符集包：<a href="https://xpdfreader-dl.s3.amazonaws.com/xpdf-chinese-simplified.tar.gz" target="_blank">简体中文字符集</a></p>
+<p>包准备工作如下：</p>
+<ol>
+<li>在合适目录创建xpdf文件夹</li>
+<li>将下载的包解压并将bin64文件夹下的pdftotext.exe 拷贝到xpdf文件夹下</li>
+<li>解压中文字符集后进入文件夹继续解压xpdf-chinese-simplified.tar，在解压后的xpdf-chinese-simplified文件夹拷贝到xpdf下</li>
+<li>在xpdf文件夹下创建xpdf的字符加载文件xpdfrc</li>
+<li>打开xpdf文件夹下的子文件chinese-simplified里的add-to-xpdfrc，将里面内容copy到xpdfrc</li>
+</ol>
+<p>将xpdf文件夹copy到项目合适位置实现功能，这里只演示单个文件的转换工作，本人是将xpdf访问asp.mvc启动工程的根目录下进行测试的(<strong>文件路径有空格一定要加双引</strong>号)</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>   <span style="color: #0000ff;">public</span> ActionResult Search(<span style="color: #0000ff;">string</span><span style="color: #000000;"> keyword)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;"> 3</span>             <span style="color: #0000ff;">var</span> rooPath = Server.MapPath(<span style="color: #800000;">"</span><span style="color: #800000;">~/</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>             ProcessStartInfo startInfo = <span style="color: #0000ff;">new</span><span style="color: #000000;"> ProcessStartInfo
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">            {
+</span><span style="color: #008080;"> 6</span>                 UseShellExecute = <span style="color: #0000ff;">false</span><span style="color: #000000;">,
+</span><span style="color: #008080;"> 7</span>                 WindowStyle =<span style="color: #000000;"> ProcessWindowStyle.Normal,
+</span><span style="color: #008080;"> 8</span>                 RedirectStandardInput = <span style="color: #0000ff;">true</span><span style="color: #000000;">,
+</span><span style="color: #008080;"> 9</span>                 RedirectStandardOutput = <span style="color: #0000ff;">true</span><span style="color: #000000;">,
+</span><span style="color: #008080;">10</span>                 RedirectStandardError = <span style="color: #0000ff;">true</span><span style="color: #000000;">,
+</span><span style="color: #008080;">11</span>                 CreateNoWindow = <span style="color: #0000ff;">false</span><span style="color: #000000;">,
+</span><span style="color: #008080;">12</span>                 WorkingDirectory = <span style="color: #0000ff;">string</span>.Format(<span style="color: #800000;">"</span><span style="color: #800000;">{0}xpdf</span><span style="color: #800000;">"</span><span style="color: #000000;">, rooPath),
+</span><span style="color: #008080;">13</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">FileName = string.Format("{0}xpdf\\pdftotext.exe", rooPath)</span>
+<span style="color: #008080;">14</span>                 FileName =<span style="color: #800000;">"</span><span style="color: #800000;">cmd.exe</span><span style="color: #800000;">"</span>
+<span style="color: #008080;">15</span> <span style="color: #000000;">            };
+</span><span style="color: #008080;">16</span>             <span style="color: #008000;">//</span><span style="color: #008000;">pdftotext.exe  -layout -enc GBK  你不知道的JavaScript（下卷）.pdf</span>
+<span style="color: #008080;">17</span>             <span style="color: #0000ff;">var</span> arguments = <span style="color: #0000ff;">string</span>.Format(<span style="color: #800000;">"</span><span style="color: #800000;">/C pdftotext.exe -layout -enc GBK \"{1}\" \"{2}\"</span><span style="color: #800000;">"</span>, rooPath, rooPath + <span style="color: #800000;">@"</span><span style="color: #800000;">xpdf\1.pdf</span><span style="color: #800000;">"</span>, rooPath + <span style="color: #800000;">@"</span><span style="color: #800000;">xpdf\JavaScript.txt</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+</span><span style="color: #008080;">18</span>             <span style="color: #008000;">//</span><span style="color: #008000;">var arguments = string.Format(@"{0}1.pdf", rooPath);</span>
+<span style="color: #008080;">19</span>             startInfo.Arguments =<span style="color: #000000;"> arguments;
+</span><span style="color: #008080;">20</span>             <span style="color: #0000ff;">var</span> ss = <span style="color: #0000ff;">string</span><span style="color: #000000;">.Empty;
+</span><span style="color: #008080;">21</span> 
+<span style="color: #008080;">22</span>             <span style="color: #0000ff;">using</span> (Process process =<span style="color: #000000;"> Process.Start(startInfo))
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">            {
+</span><span style="color: #008080;">24</span>                
+<span style="color: #008080;">25</span>                 process.OutputDataReceived += <span style="color: #0000ff;">new</span> DataReceivedEventHandler((<span style="color: #0000ff;">object</span> sender, DataReceivedEventArgs e) =&gt;
+<span style="color: #008080;">26</span> <span style="color: #000000;">                {
+</span><span style="color: #008080;">27</span>                     ss +=<span style="color: #000000;"> e.Data;
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">                });
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">                process.BeginOutputReadLine();
+</span><span style="color: #008080;">30</span>                 <span style="color: #0000ff;">using</span> (<span style="color: #0000ff;">var</span> error =<span style="color: #000000;"> process.StandardError)
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">                {
+</span><span style="color: #008080;">32</span>                     ss +=<span style="color: #000000;"> error.ReadToEnd();
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;">34</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">等待退出 </span>
+<span style="color: #008080;">35</span> <span style="color: #000000;">                process.WaitForExit();
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">37</span> 
+<span style="color: #008080;">38</span>             <span style="color: #0000ff;">return</span><span style="color: #000000;"> Json(ss, JsonRequestBehavior.AllowGet);
+</span><span style="color: #008080;">39</span>         }</code></pre>
+
+<p>error 可能会有报字体的错误，但不影响转换，可以忽略：</p>
+<p>Syntax Error: Unknown character collection 'DYNA-HK1'<br />Syntax Error: Unknown character collection 'DYNA-HK1'</p>
+<p>下面再附上工程目录：</p>
+<p><img src="./images/pdf转中文txt0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

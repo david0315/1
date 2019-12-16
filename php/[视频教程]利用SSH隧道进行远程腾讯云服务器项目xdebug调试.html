@@ -1,0 +1,64 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[视频教程]利用SSH隧道进行远程腾讯云服务器项目xdebug调试' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[视频教程]利用SSH隧道进行远程腾讯云服务器项目xdebug调试</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11701296.html</div><br>
+    <p>我的远程服务器是腾讯云的ubuntu系统机器，本地我的电脑系统是deepin的系统，使用的IDE是vscode。现在就来使用本地的IDE来调试腾讯云中为网站项目<br />实现逻辑是访问网站域名后，请求被转发给腾讯云本地的9001端口，通过ssh隧道，会直接被转发给deepin本地系统的9001端口。vscode会监听9001端口接收到腾讯云传递过来的请求，进入断点调试模式，结束后会把请求返回给腾讯云，腾讯云继续处理请求</p>
+<p>首先安装必须的扩展<br />    1.IDE中安装扩展PHP Debug，直接安装就行<br />    2.腾讯云中安装xdebug的扩展，使用命令apt-get install php-xdebug</p>
+<p>配置IDE的PHP Debug扩展</p>
+<p><img src="./images/[视频教程]利用SSH隧道进行远程腾讯云服务器项目xdebug调试0.jpg" alt="" /></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 使用 IntelliSense 了解相关属性。 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 悬停以查看现有属性的描述。
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 欲了解更多信息，请访问: </span><span style="color: #008000; text-decoration: underline;">https://go.microsoft.com/fwlink/?linkid=830387</span>
+    <span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">0.2.0</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+    </span><span style="color: #800000;">"</span><span style="color: #800000;">configurations</span><span style="color: #800000;">"</span><span style="color: #000000;">: [
+        {
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">Listen for XDebug</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">php</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">request</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">launch</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">port</span><span style="color: #800000;">"</span>: <span style="color: #800080;">9001</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">pathMappings</span><span style="color: #800000;">"</span><span style="color: #000000;">: {
+                </span><span style="color: #800000;">"</span><span style="color: #800000;">/var/www/html/vscode/</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">${workspaceRoot}</span><span style="color: #800000;">"</span><span style="color: #000000;">
+            }
+        },
+        {
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">Launch currently open script</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">php</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">request</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">launch</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">program</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">${file}</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">cwd</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">${fileDirname}</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">port</span><span style="color: #800000;">"</span>: <span style="color: #800080;">9001</span><span style="color: #000000;">
+        }
+    ]
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>配置PHP-FPM的php.ini的xdebug<br />[XDebug]<br />xdebug.remote_enable = 1<br />xdebug.remote_autostart = 1<br />xdebug.remote_host = 127.0.0.1<br />xdebug.remote_port = 9001<br />xdebug.remote_log = /tmp/xdebug.log</p>
+<p><img src="./images/[视频教程]利用SSH隧道进行远程腾讯云服务器项目xdebug调试1.jpg" alt="" /></p>
+<p>通过SSH隧道开启远程端口转发，把腾讯云的9001端口转发给deepin本地的9001端口<br />ssh -R 9001:127.0.0.1:9001 ubuntu@115.159.28.111</p>
+<p>IDE中启动监听模式，打断点进行调试</p>
+<p><img src="./images/[视频教程]利用SSH隧道进行远程腾讯云服务器项目xdebug调试2.jpg" alt="" /></p>
+<p><span style="font-size: 16px;"><strong>详细操作演示可以查看我的B站视频</strong></span></p>
+<p><span style="font-size: 16px;"><strong><a href="https://www.bilibili.com/video/av71667758/" target="_blank">https://www.bilibili.com/video/av71667758/</a></strong></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,28 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[MySQL] MVCC 多版本并发控制实现的事务' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[MySQL] MVCC 多版本并发控制实现的事务</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10677999.html</div><br>
+    <p>1.没有一个统一的实现标准,实现了非阻塞的读操作,写操作也只锁定必要的行<br />2.通过保存数据在某个时间点的快照实现的<br />3.典型的有乐观并发控制和悲观并发控制<br />4.innodb的mvcc是每次事务都有递增的版本号,通过在每行记录的后面添加两列隐藏字段,两列分别是是创建版本号和删除版本号,存储操作它事务的版本号<br />5.在事务中增删改查就是对两列版本号字段进行操作</p>
+<p>insert 为新插入的每一行保存当前事务版本号到 行创建版本号字段<br />update 插入一行新的保存当前事务创建版本号,修改原行数据的删除版本号为本次事务的版本号<br />delete 修改行的删除版本号字段为本次事务的版本号<br />select 查询 创建版本号字段 小于等于当前事务版本的数据    确保该记录是本次之前就存在的或本次事务新插的<br />	   查询 删除版本号字段 不存在或者大于当前版本的数据 确保该记录在本次事务之前没删除</p>
+<p>6.这样的设计就不需要加锁了,读和操作性能好,但是需要额外的存储空间<br />7.mvcc只在REPEATABLE READ和READ COMMITED两个隔离下工作;READ UNCOMMITED总是读取最新数据;SERIALIZABLE对读取的行都加锁</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

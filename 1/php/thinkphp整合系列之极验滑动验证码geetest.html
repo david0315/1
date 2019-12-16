@@ -1,0 +1,286 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修thinkphp整合系列之极验滑动验证码geetest' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>thinkphp整合系列之极验滑动验证码geetest</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/11043037.html</div><br>
+    <p>给一个央企做官网，登录模块用的thinkphp验证码类。但是2019-6-10到12号，国家要求央企检验官网漏洞，防止黑客攻击，正直贸易战激烈升级时期，所以各事业单位很重视官网安全性，于是乎集团总部就委托了宁波一个专业检测公司用专业工具检测出，后台验证码能用打码工具暴力破解，发函要求整改。so，就有了下面的极速验证图形</p>
+<p><img src="https://img2018.cnblogs.com/blog/1482937/201906/1482937-20190618001827244-148733772.png" alt="" /></p>
+<p><img src="https://img2018.cnblogs.com/blog/1482937/201906/1482937-20190618001835860-1101262625.png" alt="" /></p>
+<p><span style="font-size: 18px;"><strong>官网：<a href="http://www.geetest.com/" target="_blank">http://www.geetest.com/</a></strong></span></p>
+<p>一：注册获取key<br />注册；创建应用；获取key；</p>
+<p><img src="https://img2018.cnblogs.com/blog/1482937/201906/1482937-20190618002330046-162091428.png" alt="" /></p>
+<p>&nbsp;</p>
+<p><img src="https://img2018.cnblogs.com/blog/1482937/201906/1482937-20190618002150423-355686996.png" alt="" /></p>
+<p>二：导入sdk<br />/ThinkPHP/Library/Org/Xb/GeetestLip.class.php（此处<span style="color: #ff0000;">GeetestLip.class.php</span>是我重新命名的geetest类文件，原名为class.geetestlib.php）</p>
+<p><img src="https://img2018.cnblogs.com/blog/1482937/201906/1482937-20190618003305521-2083622445.png" alt="" /></p>
+<p>此处牵扯到thinkphp引入第三方类，我把第三方类放到Org/Util/Xb下面了，同时对该类文件加入命名空间如下，否则实例化类时找不到文件</p>
+<p><img src="https://img2018.cnblogs.com/blog/1482937/201906/1482937-20190618003740236-46374446.png" alt="" /></p>
+<p>&nbsp;</p>
+<p>三：生成验证样式&nbsp;</p>
+<p>admin/view/public/cdtsh_log_smfyws.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset="GBK" /&gt;
+    &lt;title&gt;网站管理系统后台&lt;/title&gt;
+    &lt;script language="javascript" type="text/javascript" src="__JS__/jquery.js"&gt;&lt;/script&gt;
+    &lt;link rel="stylesheet" href="__CSS__/jquery.validator.css"&gt;
+    &lt;script type="text/javascript" src="__JS__/jquery.validator.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="__JS__/zh_CN.js"&gt;&lt;/script&gt;
+    &lt;link href="__CSS__/admin_login.css?v20130227" rel="stylesheet" /&gt;
+    &lt;script&gt;<span style="color: #000000;">
+        $(document)</span>.ready(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+            </span><span style="color: #0000ff;">var</span> verifyimg = $(".verifyimg").attr("src"<span style="color: #000000;">);
+            $(</span>".reloadverify").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+                </span><span style="color: #0000ff;">if</span>( verifyimg.indexOf('?')&gt;0<span style="color: #000000;">){
+                    $(</span>".verifyimg").attr("src", verifyimg+'&amp;random='+Math.<span style="color: #000000;">random());
+                }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                    $(</span>".verifyimg").attr("src", verifyimg.replace(/\?.*$/,'')+'?'+Math.<span style="color: #000000;">random());
+                }
+            });
+        });
+
+    </span>&lt;/script&gt;
+
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;div <span style="color: #0000ff;">class</span>="wrap"&gt;
+
+    &lt;h1&gt;&lt;a href="javascript:;" style="height: 116px; width: 250px;"&gt;后台管理中心&lt;/a&gt;&lt;/h1&gt;
+
+    &lt;form method="post"  action="{:U('Admin/Public/cdtsh_log_smfyws')}"&gt;
+
+        &lt;div <span style="color: #0000ff;">class</span>="login"&gt;
+
+            &lt;ul&gt;
+
+                &lt;li&gt;
+
+                    &lt;input <span style="color: #0000ff;">class</span>="input"  id="username" name="username"type="text"  title="用户名" data-rule="required;username"  placeholder="用户名" /&gt;
+
+                    &lt;span <span style="color: #0000ff;">class</span>="msg-box n-right" style="position:absolute; left: 248px; top: 12px; " <span style="color: #0000ff;">for</span>="username"&gt;&lt;/span&gt;
+
+                &lt;/li&gt;
+
+                &lt;li&gt;
+
+                    &lt;input <span style="color: #0000ff;">class</span>="input"  name="password" type="password"  title="密码"  data-rule="required;password" placeholder="密码"/&gt;
+
+                    &lt;span <span style="color: #0000ff;">class</span>="msg-box n-right" style="position:absolute;left: 248px; top: 12px;" <span style="color: #0000ff;">for</span>="password"&gt;&lt;/span&gt;
+
+                &lt;/li&gt;
+
+                &lt;li&gt;
+
+                    &lt;input <span style="color: #0000ff;">class</span>="input" id="verify" name="verify" type="text" style="width:130px;"  title="密码" data-ok=" " placeholder="验证码" data-tip="输入验证码！" title="验证码" data-rule="required;text;remote[{:U('Admin/Public/check_verify')}]" /&gt;
+
+                    &lt;div <span style="color: #0000ff;">class</span>="yanzhengma_box" id="verifyshow"&gt;   &lt;img <span style="color: #0000ff;">class</span>="verifyimg reloadverify" style=" cursor: pointer;" align="right"  src="{:U('public/verify')}" title="点击刷新"&gt; &lt;/div&gt;
+
+                    &lt;span <span style="color: #0000ff;">class</span>="msg-box n-right" style="position:absolute;left: 248px; top: 12px;" <span style="color: #0000ff;">for</span>="verify"&gt;&lt;/span&gt;
+
+                &lt;/li&gt;
+
+            &lt;/ul&gt;
+            &lt;ul&gt;
+                
+                    &lt;!--&lt;input type="button" value="异步验证登录" onclick="check_verify()"&gt;--&gt;
+                    &lt;!--&lt;input type="submit" value="post提交登录"&gt;--&gt;
+                    &lt;div id="captcha"&gt;&lt;/div&gt;
+                
+            &lt;/ul&gt;
+
+            &lt;button type="submit" <span style="color: #0000ff;">class</span>="btn" id="subbtn"&gt;登录&lt;/button&gt;
+
+
+
+        &lt;/div&gt;
+
+    &lt;/form&gt;
+
+&lt;/div&gt;
+
+&lt;script src="http://static.geetest.com/static/tools/gt.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+    <span style="color: #0000ff;">var</span> handler = <span style="color: #0000ff;">function</span><span style="color: #000000;"> (captchaObj) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 将验证码加到id为captcha的元素里</span>
+        captchaObj.appendTo("#captcha"<span style="color: #000000;">);
+     };
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 获取验证码</span>
+    $.get("{:U('Admin/Public/verifys')}", <span style="color: #0000ff;">function</span><span style="color: #000000;">(data) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 使用initGeetest接口
+        // 参数1：配置参数，与创建Geetest实例时接受的参数一致
+        // 参数2：回调，回调的第一个参数验证码对象，之后可以使用它做appendTo之类的事件</span>
+<span style="color: #000000;">        initGeetest({
+            gt</span>: data.gt,<span style="color: #000000;">
+            challenge</span>: data.challenge,<span style="color: #000000;">
+            product</span>: "float", <span style="color: #008000;">//</span><span style="color: #008000;"> 产品形式</span>
+            offline: !data.success,<span style="color: #000000;">
+            new_captcha</span>:'true',<span style="color: #000000;">
+            width</span>:'260px',<span style="color: #000000;">
+        }</span>,<span style="color: #000000;"> handler);
+    }</span>,'json'<span style="color: #000000;">);
+   
+</span>&lt;/script&gt;
+
+&lt;/body&gt;
+
+&lt;/html&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>四：验证函数<br />/Application/Common/Common/function.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * geetest检测验证码
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> geetest_chcek_verify(<span style="color: #800080;">$data</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$geetest_id</span> = "7149e2021d7938157e"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$geetest_key</span> = "62b92039e1e9cf9455"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$geetest</span>=<span style="color: #0000ff;">new</span> \Org\Util\Xb\GeetestLib(<span style="color: #800080;">$geetest_id</span>,<span style="color: #800080;">$geetest_key</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$user_id</span>=<span style="color: #800080;">$_SESSION</span>['geetest']['user_id'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$ip_address</span>=<span style="color: #800080;">$_SESSION</span>['geetest']['ip_address'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$dataa</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+        </span>"user_id" =&gt; <span style="color: #800080;">$user_id</span>, <span style="color: #008000;">#</span><span style="color: #008000;"> 网站用户id</span>
+        "client_type" =&gt; "web", <span style="color: #008000;">#</span><span style="color: #008000;">web:电脑上的浏览器；h5:手机上的浏览器，包括移动应用内完全内置的web_view；native：通过原生SDK植入APP应用的方式</span>
+        "ip_address" =&gt; <span style="color: #800080;">$ip_address</span>, <span style="color: #008000;">#</span><span style="color: #008000;"> 请在此处传输用户请求验证时所携带的IP</span>
+<span style="color: #000000;">    );
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_SESSION</span>['geetest']['gtserver']==1<span style="color: #000000;">){
+        </span><span style="color: #800080;">$result</span>=<span style="color: #800080;">$geetest</span>-&gt;success_validate(<span style="color: #800080;">$data</span>['geetest_challenge'], <span style="color: #800080;">$data</span>['geetest_validate'], <span style="color: #800080;">$data</span>['geetest_seccode'], <span style="color: #800080;">$dataa</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">return $result;</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">return 11;</span>
+            <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">return 22;</span>
+            <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$geetest</span>-&gt;fail_validate(<span style="color: #800080;">$data</span>['geetest_challenge'],<span style="color: #800080;">$data</span>['geetest_validate'],<span style="color: #800080;">$data</span>['geetest_seccode'<span style="color: #000000;">])) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">return 33;</span>
+            <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;    
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">return 44;</span>
+            <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+    }
+}
+
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">获取id地址</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> GetIP() {
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_SERVER</span>["HTTP_CLIENT_IP"<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$cip</span> = <span style="color: #800080;">$_SERVER</span>["HTTP_CLIENT_IP"<span style="color: #000000;">];
+    } </span><span style="color: #0000ff;">elseif</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_SERVER</span>["HTTP_X_FORWARDED_FOR"<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$cip</span> = <span style="color: #800080;">$_SERVER</span>["HTTP_X_FORWARDED_FOR"<span style="color: #000000;">];
+    } </span><span style="color: #0000ff;">elseif</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_SERVER</span>["REMOTE_ADDR"<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$cip</span> = <span style="color: #800080;">$_SERVER</span>["REMOTE_ADDR"<span style="color: #000000;">];
+    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$cip</span> = "无法获取！"<span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$cip</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>五：php 生成验证码 并 验证</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">极速验证</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> verifys(){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">require_once dirname(dirname(dirname(__FILE__))) . '/lib/class.geetestlib.php';
+        //require_once dirname(dirname(__FILE__)) . '/config/config.php';
+
+       // $GtSdk = new GeetestLib(CAPTCHA_ID, PRIVATE_KEY);</span>
+        <span style="color: #800080;">$geetest_id</span> = "7149e2021d7938157e9"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$geetest_key</span> = "62b92039e1e9cf"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$geetest</span>=<span style="color: #0000ff;">new</span> \Org\Util\Xb\GeetestLib(<span style="color: #800080;">$geetest_id</span>,<span style="color: #800080;">$geetest_key</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">dump($geetest);die;</span>
+        <span style="color: #800080;">$user_id</span> = "test"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$data</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+            </span>"user_id" =&gt; <span style="color: #800080;">$user_id</span>, <span style="color: #008000;">#</span><span style="color: #008000;"> 网站用户id</span>
+            "client_type" =&gt; "web", <span style="color: #008000;">#</span><span style="color: #008000;">web:电脑上的浏览器；h5:手机上的浏览器，包括移动应用内完全内置的web_view；native：通过原生SDK植入APP应用的方式</span>
+            "ip_address" =&gt; GetIP(), <span style="color: #008000;">#</span><span style="color: #008000;"> 请在此处传输用户请求验证时所携带的IP</span>
+<span style="color: #000000;">        );
+        </span><span style="color: #800080;">$status</span> = <span style="color: #800080;">$geetest</span>-&gt;pre_process(<span style="color: #800080;">$data</span>,1<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">dump($status);</span>
+        <span style="color: #800080;">$_SESSION</span>['geetest']=<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+            </span>'gtserver'=&gt;<span style="color: #800080;">$status</span>,
+            'user_id'=&gt;<span style="color: #800080;">$user_id</span>,
+            'ip_address'=&gt;GetIP(),<span style="color: #000000;">
+            );
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$geetest</span>-&gt;<span style="color: #000000;">get_response_str();
+    }
+    
+    
+ </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> cdtsh_log_smfyws() {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_SESSION</span>['userid'<span style="color: #000000;">]) {
+            </span><span style="color: #800080;">$this</span>-&gt;redirect('Admin/Index/Index'<span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (IS_POST) {
+                </span><span style="color: #800080;">$username</span> = <span style="color: #800080;">$_POST</span>['username'<span style="color: #000000;">];
+                </span><span style="color: #800080;">$password</span> = <span style="color: #800080;">$_POST</span>['password'<span style="color: #000000;">];
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">$geetest_challenge = $_POST['geetest_challenge'];
+                //$geetest_validate = $_POST['geetest_validate'];
+                //$geetest_seccode = $_POST['geetest_seccode'];</span>
+                <span style="color: #800080;">$data</span>=I('post.'<span style="color: #000000;">);
+                </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$data</span>['geetest_challenge']=="" ||  <span style="color: #800080;">$data</span>['geetest_validate']=="" ||<span style="color: #800080;">$data</span>['geetest_seccode']==""<span style="color: #000000;"> ){
+                    </span><span style="color: #800080;">$this</span>-&gt;error('请进行图形验证'<span style="color: #000000;">);
+                }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;">dump(geetest_chcek_verify($data));</span>
+                    <span style="color: #0000ff;">if</span> (geetest_chcek_verify(<span style="color: #800080;">$data</span><span style="color: #000000;">)){
+                        </span><span style="color: #008000;">//</span><span style="color: #008000;">echo '验证成功';</span>
+                        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;loginAdmin(<span style="color: #800080;">$username</span>, <span style="color: #800080;">$password</span><span style="color: #000000;">)) {
+                            </span><span style="color: #800080;">$data</span> = M("User")-&gt;where("username='".<span style="color: #800080;">$username</span>."' and password='".<span style="color: #008080;">md5</span>(<span style="color: #800080;">$password</span>)."'")-&gt;<span style="color: #000000;">find();
+                            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$data</span>["status"] != 1<span style="color: #000000;">) {
+                                </span><span style="color: #008000;">//</span><span style="color: #008000;">判断是否禁用</span>
+                                <span style="color: #800080;">$this</span>-&gt;recordLoginAdmin(<span style="color: #800080;">$_POST</span>['username'], <span style="color: #800080;">$_POST</span>['password'], 0, "账号禁用"); <span style="color: #008000;">//</span><span style="color: #008000;">记录登录日志</span>
+                                <span style="color: #800080;">$this</span>-&gt;error('该帐号禁用'<span style="color: #000000;">);
+                            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                                </span><span style="color: #800080;">$save</span>["lastlogin_time"] = <span style="color: #008080;">time</span><span style="color: #000000;">();
+                                </span><span style="color: #800080;">$save</span>["lastlogin_ip"] =<span style="color: #000000;"> get_client_ip();
+                                </span><span style="color: #800080;">$save</span>["login_num"] = <span style="color: #800080;">$data</span>["login_num"] + 1<span style="color: #000000;">;
+                                </span><span style="color: #800080;">$status</span> = M("user")-&gt;where(<span style="color: #0000ff;">array</span>("id" =&gt; <span style="color: #800080;">$data</span>['id']))-&gt;save(<span style="color: #800080;">$save</span><span style="color: #000000;">);
+                                </span><span style="color: #800080;">$_SESSION</span>['userid'] = <span style="color: #800080;">$data</span>['id'<span style="color: #000000;">];
+                                </span><span style="color: #800080;">$_SESSION</span>['user'] = <span style="color: #800080;">$data</span>['username'<span style="color: #000000;">];
+                                </span><span style="color: #800080;">$_SESSION</span>['rid'] = <span style="color: #800080;">$data</span>['a_Id'<span style="color: #000000;">];
+                                </span><span style="color: #800080;">$this</span>-&gt;recordLoginAdmin(<span style="color: #800080;">$_POST</span>['username'], <span style="color: #800080;">$_POST</span>['password'], 1); <span style="color: #008000;">//</span><span style="color: #008000;">记录登录日志</span>
+
+                                <span style="color: #800080;">$this</span>-&gt;redirect('Admin/Index/Index'<span style="color: #000000;">);
+                                </span><span style="color: #008000;">//</span><span style="color: #008000;">$this-&gt;success('登录成功',U('Admin/Index/Index'));</span>
+<span style="color: #000000;">                            }
+                        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                            </span><span style="color: #800080;">$this</span>-&gt;recordLoginAdmin(<span style="color: #800080;">$_POST</span>['username'], <span style="color: #800080;">$_POST</span>['password'], 0, "账号密码错误"); <span style="color: #008000;">//</span><span style="color: #008000;">记录登录日志</span>
+                            <span style="color: #800080;">$this</span>-&gt;error('登录失败'<span style="color: #000000;">);
+                        }
+                    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                        </span><span style="color: #008000;">//</span><span style="color: #008000;">echo '图形验证失败';</span>
+                        <span style="color: #800080;">$this</span>-&gt;error('图形验证失败'<span style="color: #000000;">);
+                    }
+                }
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">display();
+            }
+        }
+    }</span></code></pre>
+
+<p>到这里就结束了</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

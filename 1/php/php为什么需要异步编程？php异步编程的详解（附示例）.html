@@ -1,0 +1,366 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php为什么需要异步编程？php异步编程的详解（附示例）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php为什么需要异步编程？php异步编程的详解（附示例）</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11809168.html</div><br>
+    <src>本篇文章给大家带来的内容是关于php为什么需要异步编程？php异步编程的详解（附示例），有一定的参考价值，有需要的朋友可以参考一下，希望对你有所帮助。
+<p>我对 php 异步的知识还比较混乱，写这篇是为了整理，可能有错。</p>
+<p>传统的 php-fpm 一个进程执行一个请求，要达到多少并发，就要生成多少个进程。更糟糕的是每次请求都需要重新编译执行，导致并发一直上不来。因此出现了 Swoole 和 WorkerMan 两个国内流行的常驻内存框架[1]。这两个框架原理都是通过事件循环，让程序一直停留在内存，等待外部请求，达到高并发。</p>
+<p><strong>为什么需要异步</strong></p>
+<p>先来看一个例子</p>
+<p>在工作目录下新建文件 slowServer.php</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">sleep(5); </code><code class="php comments">// 5秒后才能返回请求</code></p>
+<p class="line number3 index2 alt2"><code class="php functions">echo</code> <code class="php string">'done'</code><code class="php plain">;</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>开启服务</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">$ php -S localhost:8081 slowServer.php</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>开另一个终端，安装依赖</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">$ pecl install event # 安装 event 扩展</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">$ composer </code><code class="php keyword">require</code> <code class="php plain">workerman/workerman</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">$ composer </code><code class="php keyword">require</code> <code class="php plain">react/http-client:^0.5.9</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>新建文件 worker.php</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">require_once</code> <code class="php plain">__DIR__ . </code><code class="php string">'/vendor/autoload.php'</code><code class="php plain">;</code></p>
+<p class="line number2 index1 alt1"><code class="php keyword">use</code> <code class="php plain">Workerman\Worker;</code></p>
+<p class="line number3 index2 alt2"><code class="php keyword">use</code> <code class="php plain">Workerman\Connection\AsyncTcpConnection;</code></p>
+<p class="line number4 index3 alt1"><code class="php keyword">use</code> <code class="php plain">Amp\Artax\Response;</code></p>
+<p class="line number5 index4 alt2">&nbsp;</p>
+<p class="line number6 index5 alt1"><code class="php variable">$http_worker</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">Worker(</code><code class="php string">"http://0.0.0.0:8082"</code><code class="php plain">);</code></p>
+<p class="line number7 index6 alt2">&nbsp;</p>
+<p class="line number8 index7 alt1"><code class="php variable">$http_worker</code><code class="php plain">-&gt;</code><code class="php functions">count</code> <code class="php plain">= 1; </code><code class="php comments">// 只开一个进程</code></p>
+<p class="line number9 index8 alt2">&nbsp;</p>
+<p class="line number10 index9 alt1"><code class="php variable">$http_worker</code><code class="php plain">-&gt;onMessage = </code><code class="php keyword">function</code><code class="php plain">(</code><code class="php variable">$connection</code><code class="php plain">, </code><code class="php variable">$host</code><code class="php plain">) {</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php plain">1;</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$data</code> <code class="php plain">= </code><code class="php functions">file_get_contents</code><code class="php plain">(</code><code class="php string">'http://localhost:8081'</code><code class="php plain">);</code></p>
+<p class="line number13 index12 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$connection</code><code class="php plain">-&gt;send(</code><code class="php variable">$data</code><code class="php plain">);</code></p>
+<p class="line number14 index13 alt1"><code class="php plain">};</code></p>
+<p class="line number15 index14 alt2">&nbsp;</p>
+<p class="line number16 index15 alt1"><code class="php plain">Worker::runAll();</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>开启服务器</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">php worker.php start</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>在浏览器开启两个标签，都打开网址 http://localhost:8082 。这时可以看到终端输出&ldquo;1&rdquo;，过了一会儿又输出&ldquo;1&rdquo;，原因是8081服务器在处理第一个请求的时候阻塞在了等待8081返回之中，等第一个请求结束后，才开始处理第二个请求。也就是说请求是一个一个执行的，要达到多少个并发，就要建立多少个进程，跟 php-fpm 一样。现在修改一下代码</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php variable">$http_worker</code><code class="php plain">-&gt;onMessage = </code><code class="php keyword">function</code><code class="php plain">(</code><code class="php variable">$connection</code><code class="php plain">, </code><code class="php variable">$host</code><code class="php plain">) {</code></p>
+<p class="line number2 index1 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php plain">1;</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$loop</code>&nbsp;&nbsp;&nbsp; <code class="php plain">= Worker::getEventLoop();</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$client</code>&nbsp; <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">\React\HttpClient\Client(</code><code class="php variable">$loop</code><code class="php plain">);</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$request</code> <code class="php plain">= </code><code class="php variable">$client</code><code class="php plain">-&gt;request(</code><code class="php string">'GET'</code><code class="php plain">, </code><code class="php string">'http://localhost:8081'</code><code class="php plain">);</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$request</code><code class="php plain">-&gt;on(</code><code class="php string">'error'</code><code class="php plain">, </code><code class="php keyword">function</code><code class="php plain">(Exception </code><code class="php variable">$e</code><code class="php plain">) </code><code class="php keyword">use</code> <code class="php plain">(</code><code class="php variable">$connection</code><code class="php plain">) {</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$connection</code><code class="php plain">-&gt;send(</code><code class="php variable">$e</code><code class="php plain">);</code></p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">});</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$request</code><code class="php plain">-&gt;on(</code><code class="php string">'response'</code><code class="php plain">, </code><code class="php keyword">function</code> <code class="php plain">(</code><code class="php variable">$response</code><code class="php plain">) </code><code class="php keyword">use</code> <code class="php plain">(</code><code class="php variable">$connection</code><code class="php plain">) {</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$response</code><code class="php plain">-&gt;on(</code><code class="php string">'data'</code><code class="php plain">, </code><code class="php keyword">function</code> <code class="php plain">(</code><code class="php variable">$data</code><code class="php plain">) </code><code class="php keyword">use</code> <code class="php plain">(</code><code class="php variable">$connection</code><code class="php plain">) {</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$connection</code><code class="php plain">-&gt;send(</code><code class="php variable">$data</code><code class="php plain">);</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">});</code></p>
+<p class="line number13 index12 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">});</code></p>
+<p class="line number14 index13 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$request</code><code class="php plain">-&gt;</code><code class="php functions">end</code><code class="php plain">();</code></p>
+<p class="line number15 index14 alt2"><code class="php plain">};</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>现在打开服务，再在浏览器发起请求，发现第二个&ldquo;1&rdquo;在请求后就马上输出了，而这时第一个请求还没结束。这表明进程不再阻塞，并发量取决于 cpu 和 内存，而不是进程数。</p>
+<p><strong>为什么需要异步</strong></p>
+<p>通过上面的例子已经很明白了，reactphp 框架通过把 http 请求变成异步，让 onMessage 函数变成非阻塞，cpu 可以去处理下一个请求。即从 cpu 循环等待 8081 返回，变成了 epoll 等待。</p>
+<p><strong>异步的意义在于把 cpu 从 io 等待中解放出来，可以处理其他计算任务。</strong>&nbsp;如果你想知道怎么用框架实现异步，看到这里就可以了。WorkerMan 配合 ReactPHP 或者自身的 AsyncTcpConnection 已经可以满足很多 io 请求异步化的需求。下面继续讨论这些框架是怎么做到异步的。</p>
+<p><strong>哪些地方应该被做成异步</strong></p>
+<p>通过上面的例子已经知道一旦执行到不需要 cpu，但是要等待 io 的时候，应该把 io 的过程做成异步。</p>
+<p><strong>实现事件循环</strong></p>
+<p>上面的例子是通过 reactphp 把 http 请求变成了异步，其实 WorkerMan 框架本身也是异步的，下面来看看 WorkerMan 是怎么使 onMessage 函数可以异步接受请求。先来新建下面这个文件 react.php</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php variable">$context</code> <code class="php plain">= stream_context_create();</code></p>
+<p class="line number3 index2 alt2"><code class="php variable">$socket</code> <code class="php plain">= stream_socket_server(</code><code class="php string">'tcp://0.0.0.0:8081'</code><code class="php plain">, </code><code class="php variable">$errno</code><code class="php plain">, </code><code class="php variable">$errmsg</code><code class="php plain">, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN,</code><code class="php variable">$context</code><code class="php plain">); // 注册一个 fd（file descriptor)</code></p>
+<p class="line number4 index3 alt1">&nbsp;</p>
+<p class="line number5 index4 alt2"><code class="php keyword">function</code> <code class="php plain">react(</code><code class="php variable">$socket</code><code class="php plain">){</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$new_socket</code> <code class="php plain">= stream_socket_accept(</code><code class="php variable">$socket</code><code class="php plain">, 0, </code><code class="php variable">$remote_address</code><code class="php plain">);</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php plain">1;</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">}</code></p>
+<p class="line number9 index8 alt2">&nbsp;</p>
+<p class="line number10 index9 alt1"><code class="php variable">$eventBase</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">EventBase();</code></p>
+<p class="line number11 index10 alt2"><code class="php variable">$event</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">Event(</code><code class="php variable">$eventBase</code><code class="php plain">, </code><code class="php variable">$socket</code><code class="php plain">, Event::READ | Event::PERSIST, </code><code class="php string">'react'</code><code class="php plain">, </code><code class="php variable">$socket</code><code class="php plain">); </code><code class="php comments">// 注册一个事件，检测 fd 有没有写入内容</code></p>
+<p class="line number12 index11 alt1"><code class="php variable">$event</code><code class="php plain">-&gt;add();</code></p>
+<p class="line number13 index12 alt2"><code class="php variable">$eventBase</code><code class="php plain">-&gt;loop(); </code><code class="php comments">// 开始循环</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>开始执行</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">$ php react.php</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>在另一个终端执行</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">telnet 127.0.0.1 8081</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>这时就会看到第一个终端输出'1'。</p>
+<p>我之前写过一篇文章《php使用epoll》，是这篇文章的基础。那篇文章里事件回调是通过定时来实现，即</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php variable">$event</code><code class="php plain">-&gt;add(</code><code class="php variable">$seconds</code><code class="php plain">);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>而这里，事件回调是通过检测 fd 是否有写入内容来实现，这个过程不需要 cpu 参与。当 fd 有内容写入时，会调函数 'react'，这时开始使用 cpu。如果这时候进程执行另一个异步请求，比如用 reactphp 框架请求一个网页，那么程序会让出 cpu，此时如果有另一个请求进<strong>来，就可以回调执行另一个 'react' 函数。由此提高了并发量。</strong></p>
+<p><strong>协程</strong></p>
+<p><strong>生成器 Generater</strong></p>
+<p>这是生成器的 PHP 官方文档 http://php.net/manual/zh/lang...</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php keyword">function</code> <code class="php plain">gen_one_to_three() {</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">for</code> <code class="php plain">(</code><code class="php variable">$i</code> <code class="php plain">= 1; </code><code class="php variable">$i</code> <code class="php plain">&lt;= 3; </code><code class="php variable">$i</code><code class="php plain">++) {</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">//注意变量$i的值在不同的yield之间是保持传递的。</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">yield </code><code class="php variable">$i</code><code class="php plain">;</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">}</code></p>
+<p class="line number8 index7 alt1">&nbsp;</p>
+<p class="line number9 index8 alt2"><code class="php variable">$generator</code> <code class="php plain">= gen_one_to_three();</code></p>
+<p class="line number10 index9 alt1"><code class="php keyword">foreach</code> <code class="php plain">(</code><code class="php variable">$generator</code> <code class="php keyword">as</code> <code class="php variable">$value</code><code class="php plain">) {</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php string">"$value\n"</code><code class="php plain">;</code></p>
+<p class="line number12 index11 alt1"><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>生成器就是每次程序执行到 yield 的时候保存状态，然后返回 $i，是否继续执行 gen_one_to_three 里的循环，取决于主程序是否继续调用</p>
+<p><strong>什么是协程</strong></p>
+<p>上面的程序另一种写法是</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php variable">$i</code> <code class="php plain">= 1;</code></p>
+<p class="line number3 index2 alt2"><code class="php keyword">function</code> <code class="php plain">gen_one_to_three() {</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">global</code> <code class="php variable">$i</code><code class="php plain">;</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">if</code> <code class="php plain">(</code><code class="php variable">$i</code><code class="php plain">&lt;=3){</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php variable">$i</code><code class="php plain">++;</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">}</code></p>
+<p class="line number9 index8 alt2">&nbsp;</p>
+<p class="line number10 index9 alt1"><code class="php keyword">while</code> <code class="php plain">(</code><code class="php variable">$value</code> <code class="php plain">= gen_one_to_three()) {</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php string">"$value\n"</code><code class="php plain">;</code></p>
+<p class="line number12 index11 alt1"><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>由此可见，协程就是一种对函数的封装，使其变成一种可以被中断的函数，行为更像是子进程或子线程，而不是函数。协程的具体写法这里不细写，因为协程的写法十分复杂，可能需要再做一层封装才能好用。</p>
+<p><strong>协程与异步</strong></p>
+<p>既然协程可以被中断，那么只要在程序发起请求后发起事件循环，然后用 yield 返回，然后程序继续执行主程序部分，等事件返回后触发函数，执行 Generatot::next() 或 Generator::send() 来继续执行协程部分。封装好后就好像没有异步回调函数一样，和同步函数很像。</p>
+<p>现在已经有 ampphp 和 swoole 两个框架封装了协程，有兴趣可以了解一下。</p>
+<p><img src="./images/php为什么需要异步编程？php异步编程的详解（附示例）0.jpg" alt="" /></p>
+<p><strong>明确的学习思路能更高效的学习</strong></p>
+<p><strong><img src="./images/php为什么需要异步编程？php异步编程的详解（附示例）1.jpg" alt="" /></strong></p>
+<p>&nbsp;</p>
+<p><a href="https://jq.qq.com/?_wv=1027&amp;k=5Spo1ah" target="_blank"><strong>点击加入该群学习</strong></a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

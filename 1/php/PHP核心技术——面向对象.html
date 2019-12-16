@@ -1,0 +1,103 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP核心技术——面向对象' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP核心技术——面向对象</center></div><div class='banquan'>原文出处:本文由博客园博主高级生命体提供。<br/>
+原文连接:https://www.cnblogs.com/geniusrun/p/10607653.html</div><br>
+    <h2 id="类与对象">类与对象:</h2>
+<ul>
+<li>类的定义与实例化。</li>
+</ul>
+<pre><code><code>//定义类
+class person{
+    public $name;
+    public $gender;
+    public function say(){
+        echo $this-&gt;name,&quot;\tis &quot;,$this-&gt;gender,&quot;\r\n&quot;;
+    }
+}
+
+class family{
+    public $people;
+    public $location;
+    public function __construct($p,$loc)
+    {
+        $this-&gt;people=$p;
+        $this-&gt;location=$loc;
+    }
+
+}
+
+//实例化
+$student=new person();
+$student-&gt;name=&#39;Tom&#39;;
+$student-&gt;gender=&quot;male&quot;;
+$student-&gt;say();
+
+
+$teacher=new person();
+$teacher-&gt;name=&#39;Kate&#39;;
+$teacher-&gt;gender=&quot;female&quot;;
+$teacher-&gt;say();</code></code></pre>
+<ul>
+<li>类定义了一系列的属性和方法，并提供了实际的操作细节，这些方法可以用来对属性进行加工。</li>
+<li>对象含有类属性的具体值，这就是类的实例化。正是由于属性的不同，才能区分不同的对象。在上面例子里，由于student和teacher的性别和姓名不一样，才得以区分开二人。</li>
+<li>对象由属性和方法组成</li>
+<li>由于PHP的对象是用数组来模拟的，因此我们把对象转为数组，就能看到这个对象所拥有的属性了。</li>
+</ul>
+<pre><code><code>print_r((array)$student);
+var_dump($student);</code></code></pre>
+<ul>
+<li>对象就是一堆数据。既然如此，可以把一个对象存储起来，以便需要时用。这就是对象的序列化。</li>
+</ul>
+<pre><code><code>$str=serialize($student);
+echo $str;
+file_put_contents(&#39;store.txt&#39;, $str);
+$str=file_get_contents(&#39;store.txt&#39;);
+$student=unserialize($str);
+$student-&gt;say();</code></code></pre>
+<ul>
+<li>对象序列化后，存储的只是对象的属性。类是由属性和方法组成的，而对象则是属性的集合，由同一个类生成的不同对象，拥有各自不同的属性，但共享了类的代码空间中方法区域的代码</li>
+<li>对象也是一种很普通的变量，不同的是其携带了对象的属性和类的入口。</li>
+<li>而对象和数组的区别在于：对象还有个指针，指向了它所属的类。在对student对象序列化时，我们看到了“person”这几个字符，这个标识符就标志了这个对象归属于person类，故在取出这个对象后，可以立即对其执行所包含的方法。</li>
+</ul>
+<pre><code><code>$tom=new family($student,&#39;peking&#39;);
+echo serialize($student);
+echo &quot;-----------\n&quot;;
+$student_arr=array(&#39;name&#39;=&gt;&#39;Tom&#39;,&#39;gender&#39;=&gt;&#39;male&#39;);
+echo &quot;-----------\n&quot;;
+echo serialize($student_arr);
+print_r($tom);
+echo &quot;-----------\n&quot;;
+echo serialize($tom);</code></code></pre>
+<ul>
+<li>类是定义一系列属性和操作的模板，而对象则把属性进行具体化，然后交给类处理。</li>
+<li>对象就是数据，对象本身不包含方法。但是对象有一个“指针”指向一个类，这个类里可以有方法。</li>
+<li>方法描述不同属性所导致的不同表现。</li>
+<li>类和对象是不可分割的，有对象就必定有一个类和其对应，否则这个对象也就成了没有亲人的孩子（但有一个特殊情况存在，就是由标量进行强制类型转换的object，没有一个类和它对应。此时，PHP中一个称为“孤儿”的stdClass类就会收留这个对象）。</li>
+</ul>
+<hr />
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>[PHP核心技术与最佳实践]</li>
+</ul>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

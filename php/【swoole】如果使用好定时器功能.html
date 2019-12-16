@@ -1,0 +1,101 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【swoole】如果使用好定时器功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【swoole】如果使用好定时器功能</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10700524.html</div><br>
+    <p>swoole中提供了一个定期器的用法</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$server</span>-&gt;tick(1000, <span style="color: #0000ff;">function</span>() <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$server</span>-&gt;send(<span style="color: #800080;">$fd</span>, "hello world"<span style="color: #000000;">);
+    });</span></code></pre>
+
+<p>开始的时候我是这么用的，看下代码</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #800080;">$serv</span> = <span style="color: #0000ff;">new</span> Swoole\Server("0.0.0.0", 9501<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$serv</span>-&gt;set(<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+    </span>'worker_num' =&gt; 1,    <span style="color: #008000;">//</span><span style="color: #008000;">worker process num</span>
+<span style="color: #000000;">));
+
+</span><span style="color: #800080;">$serv</span>-&gt;on('connect', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">){
+    </span><span style="color: #0000ff;">echo</span> "客户端 ".<span style="color: #800080;">$fd</span>."连接成功 \n"<span style="color: #000000;">;
+});
+</span><span style="color: #800080;">$serv</span>-&gt;on('receive', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$reactor_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">echo</span> "客户端 ".<span style="color: #800080;">$fd</span>."发来消息：".<span style="color: #800080;">$data</span>."\n"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$serv</span>-&gt;send(<span style="color: #800080;">$fd</span>, 'Swoole已经介绍到您发送的消息: '.<span style="color: #800080;">$data</span><span style="color: #000000;">);
+});
+</span><span style="color: #800080;">$serv</span>-&gt;on('close', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">echo</span> "客户端 {<span style="color: #800080;">$fd</span>}关闭连接\n"<span style="color: #000000;">;
+});
+
+</span><span style="color: #800080;">$serv</span>-&gt;on('WorkerStart', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$worker_id</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$serv</span>-&gt;tick(2000, <span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+        </span><span style="color: #0000ff;">echo</span> "执行定时器任务 ".<span style="color: #008080;">time</span>()." \n"<span style="color: #000000;">;
+    });
+});
+
+</span><span style="color: #800080;">$serv</span>-&gt;start();</code></pre>
+
+<p>开始使用定时器的时候我放到了 onWorkStart 中执行，这样做的话可以保证在单个worker进程的情况下定时器可以正常运行，但是对于swoole来说让它单进程工作显然辱没了它的 "才华" ，于是我将 work_num 设置为2 然后意外就发生啦,如图</p>
+<p><img src="./images/【swoole】如果使用好定时器功能0.jpg" alt="" /></p>
+<p>我们可以看到有两个定期器在工作一个任务执行了相同的两次，于是这种方法是不对的，当然我们可以在 onWorkStart 中通过判断 worker_id 来避免这种情况，但是后来我发现其实还有另外一种相对来说好点的方法，就是使用 用户自定义进程来做</p>
+<src class="cnblogs_code">
+<pre><code>bool Server-&gt;addProcess(Process <span style="color: #800080;">$process</span>);</code></pre>
+
+<p>代码如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #800080;">$serv</span> = <span style="color: #0000ff;">new</span> Swoole\Server("0.0.0.0", 9501<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$serv</span>-&gt;set(<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+    </span>'worker_num' =&gt; 2,    <span style="color: #008000;">//</span><span style="color: #008000;">worker process num</span>
+<span style="color: #000000;">));
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">创建自定义进程</span>
+<span style="color: #800080;">$process</span> = <span style="color: #0000ff;">new</span> Swoole\Process(<span style="color: #0000ff;">function</span>(<span style="color: #800080;">$process</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$serv</span><span style="color: #000000;">) {
+    </span><span style="color: #800080;">$serv</span>-&gt;tick(2000, <span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+        </span><span style="color: #0000ff;">echo</span> "执行定时器任务 ".<span style="color: #008080;">time</span>()." \n"<span style="color: #000000;">;
+    });
+});
+
+</span><span style="color: #800080;">$serv</span>-&gt;addProcess(<span style="color: #800080;">$process</span><span style="color: #000000;">);
+
+</span><span style="color: #800080;">$serv</span>-&gt;on('connect', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">){
+    </span><span style="color: #0000ff;">echo</span> "客户端 ".<span style="color: #800080;">$fd</span>."连接成功 \n"<span style="color: #000000;">;
+});
+</span><span style="color: #800080;">$serv</span>-&gt;on('receive', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$reactor_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">echo</span> "客户端 ".<span style="color: #800080;">$fd</span>."发来消息：".<span style="color: #800080;">$data</span>."\n"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$serv</span>-&gt;send(<span style="color: #800080;">$fd</span>, 'Swoole已经介绍到您发送的消息: '.<span style="color: #800080;">$data</span><span style="color: #000000;">);
+});
+</span><span style="color: #800080;">$serv</span>-&gt;on('close', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">echo</span> "客户端 {<span style="color: #800080;">$fd</span>}关闭连接\n"<span style="color: #000000;">;
+});
+
+</span><span style="color: #800080;">$serv</span>-&gt;start();</code></pre>
+
+<p>执行效果：</p>
+<p><img src="./images/【swoole】如果使用好定时器功能1.jpg" alt="" /></p>
+<p>ok！完美执行</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

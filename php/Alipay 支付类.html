@@ -1,0 +1,383 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Alipay 支付类' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Alipay 支付类</center></div><div class='banquan'>原文出处:本文由博客园博主yangzailu提供。<br/>
+原文连接:https://www.cnblogs.com/yangzailu/p/11752471.html</div><br>
+    <p>本版本参考网友</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php
+
+namespace App\Tools;
+
+class Alipay
+{
+
+    //应用ID,您的APPID。
+    private $appID         = '111';
+    //商户私钥
+    private $rsaPrivateKey = '11'
+    
+    private $notifyUrl     = '/pay/alipay/notify';
+    //同步跳转
+    private $returnUrl     = '/pay/alipay/notify';
+    //编码格式
+    private $charset       = 'UTF-8';
+    //签名方式
+    private $signType      = 'RSA2';
+    //支付宝网关
+    private $gatewayUrl    = 'https://openapi.alipay.com/gateway.do';
+    //支付宝公钥,查看地址：https://openhome.alipay.com/platform/keyManage.htm 对应APPID下的支付宝公钥。
+    private $rsaPublicKey  = 'MIIBIjANBgkqhkiG9w0gws9xPckXVEoGDtrQTEeKvHmoJ81R+wKAHdXnHwzkts1pCYlvfQoAeJf8ibr6qyWkWX/aTrrM72Dd2HewIDAQAB';
+    private $fileCharset   = "UTF-8";
+    // 表单提交字符集编码
+    public $postCharset    = "UTF-8";
+    //私钥文件路径
+    public $rsaPrivateKeyFilePath;
+
+    /**
+     * 发起订单
+     * @param float $totalFee 收款总费用 单位元
+     * @param string $outTradeNo 唯一的订单号
+     * @param string $orderName 订单名称
+     * @param string $notifyUrl 支付结果通知url 不要有问号
+     * @param string $timestamp 订单发起时间
+     * @return array
+     */
+    public function pcPay($totalFee, $outTradeNo, $orderName, $httpmethod = "POST")
+    {
+        //公共提交参数
+        $commonConfigs            = array(
+            'app_id'     =&gt; $this-&gt;appID,
+            'method'     =&gt; 'alipay.trade.page.pay', //接口名称
+            'format'     =&gt; 'JSON',
+            'return_url' =&gt; $this-&gt;returnUrl,
+            'charset'    =&gt; $this-&gt;charset,
+            'sign_type'  =&gt; 'RSA2',
+            'timestamp'  =&gt; date('Y-m-d H:i:s'),
+            'version'    =&gt; '1.0',
+            'notify_url' =&gt; $this-&gt;notifyUrl,
+        );
+        //请求参数
+        $requestConfigs           = array(
+            'out_trade_no' =&gt; $outTradeNo,
+            'product_code' =&gt; 'FAST_INSTANT_TRADE_PAY',
+            'total_amount' =&gt; $totalFee, //单位 元
+            'subject'      =&gt; $orderName, //订单标题
+        );
+        $apiParams['biz_content'] = json_encode($requestConfigs);
+
+        //合并数组
+        $totalParams         = array_merge($apiParams, $commonConfigs);
+        //待签名字符串
+        $preSignStr          = $this-&gt;getSignContent($totalParams);
+        //生成签名
+        $totalParams["sign"] = $this-&gt;generateSign($totalParams, $this-&gt;signType);
+
+        if ("GET" == strtoupper($httpmethod)) {
+            //        //value做urlencode
+            $preString  = $this-&gt;getSignContentUrlencode($totalParams);
+            //拼接GET请求串
+            $requestUrl = $this-&gt;gatewayUrl . "?" . $preString;
+            return $requestUrl;
+        } else {
+            //拼接表单字符串
+            return $this-&gt;buildRequestForm($totalParams);
+        }
+    }
+
+    /**
+     * 支付回调
+     * @param type $param
+     */
+    public function notify($param)
+    {
+        $result = $this-&gt;check($param);
+        return $result;
+    }
+
+    /**
+     * 验签方法
+     * @param $arr 验签支付宝返回的信息，使用支付宝公钥。
+     * @return boolean
+     */
+    protected function check($arr)
+    {
+        $result = $this-&gt;rsaCheckV1($arr, $this-&gt;rsaPublicKey, $this-&gt;signType);
+        return $result;
+    }
+
+    /**
+     * 建立请求，以表单HTML形式构造（默认）
+     * @param $para_temp 请求参数数组
+     * @return 提交表单HTML文本
+     */
+    protected function buildRequestForm($para_temp)
+    {
+
+        $sHtml = "&lt;form id='alipaysubmit' name='alipaysubmit' action='" . $this-&gt;gatewayUrl . "?charset=" . trim($this-&gt;postCharset) . "' method='POST' &gt;";
+        while (list($key, $val) = each($para_temp)) {
+            if (false === $this-&gt;checkEmpty($val)) {
+                //$val = $this-&gt;characet($val, $this-&gt;postCharset);
+                $val = str_replace("'", "&amp;apos;", $val);
+                //$val = str_replace("\"","&amp;quot;",$val);
+                $sHtml .= "&lt;input type='hidden' name='" . $key . "' value='" . $val . "'/&gt;";
+            }
+        }
+//        foreach ($para_temp as $key =&gt; $val) {
+//            if (false === $this-&gt;checkEmpty($val)) {
+//                //$val = $this-&gt;characet($val, $this-&gt;postCharset);
+//                $val   = str_replace("'", "&amp;apos;", $val);
+//                //$val = str_replace("\"","&amp;quot;",$val);
+//                $sHtml .= "&lt;input type='hidden' name='" . $key . "' value='" . $val . "'/&gt;";
+//            }
+//        }
+
+        //submit按钮控件请不要含有name属性
+        $sHtml = $sHtml . "&lt;input type='submit' value='ok' style='display:none;''&gt;&lt;/form&gt;";
+
+        $sHtml = $sHtml . "&lt;script&gt;document.forms['alipaysubmit'].submit();&lt;/script&gt;";
+
+        return $sHtml;
+    }
+
+    /**
+     * 生成签名所需字符串
+     * @param type $params
+     * @return string
+     */
+    public function getSignContent($params)
+    {
+        ksort($params);
+
+        $stringToBeSigned = "";
+        $i                = 0;
+        foreach ($params as $k =&gt; $v) {
+            if (false === $this-&gt;checkEmpty($v) &amp;&amp; "@" != substr($v, 0, 1)) {
+
+                // 转换成目标字符集
+                $v = $this-&gt;characet($v, $this-&gt;postCharset);
+
+                if ($i == 0) {
+                    $stringToBeSigned .= "$k" . "=" . "$v";
+                } else {
+                    $stringToBeSigned .= "&amp;" . "$k" . "=" . "$v";
+                }
+                $i++;
+            }
+        }
+
+        unset($k, $v);
+        return $stringToBeSigned;
+    }
+
+    /**
+     * url拼接转义字符
+     * 此方法对value做urlencode
+     * @param type $params
+     * @return string
+     */
+    public function getSignContentUrlencode($params)
+    {
+        ksort($params);
+
+        $stringToBeSigned = "";
+        $i                = 0;
+        foreach ($params as $k =&gt; $v) {
+            if (false === $this-&gt;checkEmpty($v) &amp;&amp; "@" != substr($v, 0, 1)) {
+
+                // 转换成目标字符集
+                $v = $this-&gt;characet($v, $this-&gt;postCharset);
+
+                if ($i == 0) {
+                    $stringToBeSigned .= "$k" . "=" . urlencode($v);
+                } else {
+                    $stringToBeSigned .= "&amp;amp" . "$k" . "=" . urlencode($v);
+                }
+                $i++;
+            }
+        }
+
+        unset($k, $v);
+        return $stringToBeSigned;
+    }
+
+    /**
+     * 生成签名
+     * @param type $data
+     * @param type $signType
+     * @return type
+     */
+    protected function sign($data, $signType = "RSA")
+    {
+        if ($this-&gt;checkEmpty($this-&gt;rsaPrivateKeyFilePath)) {
+            $priKey = $this-&gt;rsaPrivateKey;
+            $res    = "-----BEGIN RSA PRIVATE KEY-----\n" .
+                    wordwrap($priKey, 64, "\n", true) .
+                    "\n-----END RSA PRIVATE KEY-----";
+        } else {
+            $priKey = file_get_contents($this-&gt;rsaPrivateKeyFilePath);
+            $res    = openssl_get_privatekey($priKey);
+        }
+
+        ($res) or die('您使用的私钥格式错误，请检查RSA私钥配置');
+
+        if ("RSA2" == $signType) {
+            openssl_sign($data, $sign, $res, OPENSSL_ALGO_SHA256);
+        } else {
+            openssl_sign($data, $sign, $res);
+        }
+
+        if (!$this-&gt;checkEmpty($this-&gt;rsaPrivateKeyFilePath)) {
+            openssl_free_key($res);
+        }
+        $sign = base64_encode($sign);
+        return $sign;
+    }
+
+    /**
+     * 校验$value是否非空
+     *  if not set ,return true;
+     *    if is null , return true;
+     * */
+    protected function checkEmpty($value)
+    {
+        if (!isset($value)) {
+            return true;
+        }
+
+        if ($value === null) {
+            return true;
+        }
+
+        if (trim($value) === "") {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 转换字符集编码
+     * @param $data
+     * @param $targetCharset
+     * @return string
+     */
+    protected function characet($data, $targetCharset)
+    {
+        if (!empty($data)) {
+            $fileType = $this-&gt;fileCharset;
+            if (strcasecmp($fileType, $targetCharset) != 0) {
+                $data = mb_convert_encoding($data, $targetCharset, $fileType);
+                //                $data = iconv($fileType, $targetCharset.'//IGNORE', $data);
+            }
+        }
+        return $data;
+    }
+
+    /**
+     *
+     * @param type $params
+     * @param type $signType
+     * @return type
+     */
+    public function generateSign($params, $signType = "RSA")
+    {
+        return $this-&gt;sign($this-&gt;getSignContent($params), $signType);
+    }
+
+    /**
+     *
+     * @param type $params
+     * @param type $signType
+     * @return type
+     */
+    public function rsaSign($params, $signType = "RSA")
+    {
+        return $this-&gt;sign($this-&gt;getSignContent($params), $signType);
+    }
+
+    /** rsaCheckV1 &amp; rsaCheckV2
+     *  验证签名
+     *  在使用本方法前，必须初始化AopClient且传入公钥参数。
+     *  公钥是否是读取字符串还是读取文件，是根据初始化传入的值判断的。
+     * */
+    public function rsaCheckV1($params, $rsaPublicKeyFilePath, $signType = 'RSA')
+    {
+        $sign                = $params['sign'];
+        $params['sign_type'] = null;
+        $params['sign']      = null;
+        return $this-&gt;verify($this-&gt;getSignContent($params), $sign, $rsaPublicKeyFilePath, $signType);
+    }
+
+    public function rsaCheckV2($params, $rsaPublicKeyFilePath, $signType = 'RSA')
+    {
+        $sign           = $params['sign'];
+        $params['sign'] = null;
+        return $this-&gt;verify($this-&gt;getSignContent($params), $sign, $rsaPublicKeyFilePath, $signType);
+    }
+
+    /**
+     * 验证
+     * @param type $data
+     * @param type $sign
+     * @param type $rsaPublicKeyFilePath
+     * @param type $signType
+     * @return type
+     */
+    public function verify($data, $sign, $rsaPublicKeyFilePath, $signType = 'RSA')
+    {
+
+        if ($this-&gt;checkEmpty($this-&gt;rsaPrivateKeyFilePath)) {
+
+            $pubKey = $this-&gt;rsaPublicKey;
+            $res    = "-----BEGIN PUBLIC KEY-----\n" .
+                    wordwrap($pubKey, 64, "\n", true) .
+                    "\n-----END PUBLIC KEY-----";
+        } else {
+            //读取公钥文件
+            $pubKey = file_get_contents($rsaPublicKeyFilePath);
+            //转换为openssl格式密钥
+            $res    = openssl_get_publickey($pubKey);
+        }
+
+        ($res) or die('支付宝RSA公钥错误。请检查公钥文件格式是否正确');
+
+        //调用openssl内置方法验签，返回bool值
+
+        if ("RSA2" == $signType) {
+            $result = (bool) openssl_verify($data, base64_decode($sign), $res, OPENSSL_ALGO_SHA256);
+        } else {
+            $result = (bool) openssl_verify($data, base64_decode($sign), $res);
+        }
+
+        if (!$this-&gt;checkEmpty($this-&gt;rsaPrivateKeyFilePath)) {
+            //释放资源
+            openssl_free_key($res);
+        }
+
+        return $result;
+    }
+
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

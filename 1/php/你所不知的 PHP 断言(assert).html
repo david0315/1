@@ -1,0 +1,218 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修你所不知的 PHP 断言(assert)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>你所不知的 PHP 断言(assert)</center></div><div class='banquan'>原文出处:本文由博客园博主Jioby提供。<br/>
+原文连接:https://www.cnblogs.com/shockerli/p/php-assert.html</div><br>
+    <blockquote>
+<p>PHP 中的断言常用于调试，检查一个表达式或语句是否为 FALSE。本文带你重新认识 PHP <code>assert()</code> 函数的神(Qi)通(Yin)广(Ji)大(Qiao)。</p>
+<p>本文基于 PHP Version 7.1.28</p>
+</blockquote>
+<h2 id="什么是断言">什么是断言</h2>
+<p>编写程序时，常会做出一定的假设，那断言就是用来捕获假设的异常，我们也可以认为断言是异常的一种特殊形式。</p>
+<p>断言一般用于程序执行结构的判断，不可让断言处理业务流程。用的最多的场景就是单元测试，一般的单元测试框架都采用了断言。</p>
+<pre><code><code>assert(1 == 2);
+
+// 运行结果:
+// Warning: assert(): assert(1 == 2) failed in /Users/shocker/Desktop/demo.php on line 25</code></code></pre>
+<h2 id="php-中的断言">PHP 中的断言</h2>
+<p>在 PHP 中，采用 <a href="https://www.php.net/manual/zh/function.assert.php">assert()</a> 函数对表达式进行断言。</p>
+<pre><code><code>// PHP 5
+assert ( mixed $assertion [, string $description ] ) : bool
+
+// PHP 7
+assert ( mixed $assertion [, Throwable $exception ] ) : bool</code></code></pre>
+<h3 id="传统的断言方式-php-5-7">传统的断言方式 (PHP 5 &amp; 7)</h3>
+<blockquote>
+<p>参数 assertion 既支持表达式，也支持表达式字符串（某些特定的场景会用到，比如判断某个字符串表达式是否合法）</p>
+</blockquote>
+<p>如果 assertion 是字符串，它将会被 <code>assert()</code> 当做 PHP 代码来执行。assertion 是字符串的优势是当禁用断言时它的开销会更小，<strong>并且在断言失败时消息会包含 assertion 表达式</strong>。</p>
+<p>断言这个功能应该只被用来调试。你应该用于完整性检查时测试条件是否始终应该为 TRUE，来指示某些程序错误，或者检查具体功能的存在（类似扩展函数或特定的系统限制和功能）。</p>
+<p>断言不应该用于普通运行时操作，类似输入参数的检查。作为一个经验法则，在断言禁用时你的代码也应该能够正确地运行。</p>
+<p><strong>使用示例:</strong></p>
+<pre><code><code>function my_assert_handler($file, $line, $code, $desc)
+{
+    echo &quot;Assertion Failed:
+    File &#39;{$file}&#39;
+    Line &#39;{$line}&#39;
+    Code &#39;{$code}&#39;
+    Desc &#39;{$desc}&#39;
+&quot;;
+}
+
+// 设置回调函数
+assert_options(ASSERT_CALLBACK, &#39;my_assert_handler&#39;);
+
+// 让一则断言失败
+assert(&#39;1 == 2&#39;, &#39;1 不可能等于 2&#39;);</code></code></pre>
+<p><strong>运行结果:</strong></p>
+<pre><code><code>Assertion Failed:
+    File &#39;/Users/shocker/Desktop/demo.php&#39;
+    Line &#39;29&#39;
+    Code &#39;1 == 2&#39;
+    Desc &#39;1 不可能等于 2&#39;</code></code></pre>
+<h3 id="支持异常的断言-仅-php-7">支持异常的断言 (仅 PHP 7)</h3>
+<p>在 PHP 7 中，<code>assert()</code> 是一个语言结构，允许在不同环境中生效不同的措施，具体可见 <a href="https://www.php.net/manual/zh/ini.core.php#ini.zend.assertions">zend.assertions</a> 配置。</p>
+<p>另外，还支持通过 <a href="https://www.php.net/manual/en/class.assertionerror.php">AssertionError</a> 捕获错误。</p>
+<p><strong>使用示例:</strong></p>
+<pre><code><code>assert_options(ASSERT_EXCEPTION, 1); // 在断言失败时产生异常
+
+try {
+    // 用 AssertionError 异常替代普通字符串
+    assert(true == false, new AssertionError(&#39;True is not false!&#39;));
+} catch (Throwable $e) {
+    echo $e-&gt;getMessage();
+}</code></code></pre>
+<p><strong>运行结果:</strong></p>
+<pre><code><code>True is not false!</code></code></pre>
+<h2 id="对断言行为进行控制">对断言行为进行控制</h2>
+<p>PHP 支持 <a href="https://www.php.net/manual/zh/function.assert-options.php">assert_options()</a> 函数对断言进行配置，也可用 ini 进行设置</p>
+<blockquote>
+<p>以下配置中，常量标志用于 <code>assert_options()</code> 函数进行配置，ini 设置用于 <code>ini_set()</code> 函数设置，效果一样</p>
+</blockquote>
+<table>
+<thead>
+<tr class="header">
+<th>标志</th>
+<th>INI 设置</th>
+<th style="text-align: center;">默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ASSERT_ACTIVE</td>
+<td>assert.active</td>
+<td style="text-align: center;">&quot;1&quot;</td>
+<td>启用 <code>assert()</code> 断言</td>
+</tr>
+<tr class="even">
+<td>ASSERT_WARNING</td>
+<td>assert.warning</td>
+<td style="text-align: center;">&quot;1&quot;</td>
+<td>为每个失败的断言产生一个 PHP 警告（warning）</td>
+</tr>
+<tr class="odd">
+<td>ASSERT_BAIL</td>
+<td>assert.bail</td>
+<td style="text-align: center;">&quot;0&quot;</td>
+<td>在断言失败时中止执行</td>
+</tr>
+<tr class="even">
+<td>ASSERT_QUIET_EVAL</td>
+<td>assert.quiet_eval</td>
+<td style="text-align: center;">&quot;0&quot;</td>
+<td>在断言表达式求值时禁用 error_reporting</td>
+</tr>
+<tr class="odd">
+<td>ASSERT_CALLBACK</td>
+<td>assert.callback</td>
+<td style="text-align: center;">NULL</td>
+<td>断言<strong>失败时</strong>调用该回调函数</td>
+</tr>
+<tr class="even">
+<td>ASSERT_EXCEPTION</td>
+<td>assert.exception</td>
+<td style="text-align: center;">&quot;0&quot;</td>
+<td>在断言失败时产生 <a href="https://www.php.net/manual/en/class.assertionerror.php">AssertionError</a> 异常 （自 PHP 7.0.0 起有效）</td>
+</tr>
+</tbody>
+</table>
+<p><code>zend.assertions</code> 是个特殊的配置（PHP &gt;= 7.0.0 支持），<strong>控制不同运行环境下断言的行为</strong>，仅可用 <code>ini_set()</code> 进行设置。并且，设置了<code>1</code>就不能再设置为<code>-1</code>，反之亦然，其他不受限。</p>
+<blockquote>
+<ul>
+<li><strong>1</strong>: 编译代码，并执行(开发模式)</li>
+<li><strong>0</strong>: 编辑代码，但运行时跳过</li>
+<li><strong>-1</strong>: 不编译代码(生产模式)</li>
+</ul>
+</blockquote>
+<h2 id="版本的不兼容">版本的不兼容</h2>
+<ul>
+<li><p>PHP &gt;= 5.4.8，description 可作为第四个参数提供给 ASSERT_CALLBACK 模式里的回调函数</p></li>
+<li><p>在 PHP 5 中，参数 assertion 必须是可执行的字符串，或者运行结果为布尔值的表达式</p></li>
+<li><p>在 PHP 7 中，参数 assertion 可以是任意表达式，并用其运算结果作为断言的依据</p></li>
+<li><p>在 PHP 7 中，参数 exception 可以是个 <a href="https://www.php.net/manual/en/class.throwable.php">Throwable</a> 对象，用于捕获表达式运行错误或断言结果为失败。(当然 <a href="https://www.php.net/manual/zh/info.configuration.php#ini.assert.exception">assert.exception</a> 需开启)</p></li>
+<li><p>PHP &gt;= 7.0.0，支持 <code>zend.assertions</code>、<code>assert.exception</code> 相关配置及其特性</p></li>
+<li><p>PHP &gt;= 7.2 版本开始，参数 assertion 不再支持字符串</p>
+<blockquote>
+<p>详见 <a href="https://www.php.net/manual/zh/migration72.deprecated.php">PHP 7.2.x 中废弃的功能</a></p>
+</blockquote>
+<pre><code><code>Deprecated: assert(): Calling assert() with a string argument is deprecated</code></code></pre></li>
+</ul>
+<h2 id="应用场景">应用场景</h2>
+<h3 id="调试输出">调试输出</h3>
+<p><strong>先看示例:</strong></p>
+<pre><code><code>assert(&#39;1 == 2&#39;, &#39;1 不可能等于 2&#39;);</code></code></pre>
+<p><strong>运行结果:</strong></p>
+<pre><code><code>Warning: assert(): 1 不可能等于 2: &quot;1 == 2&quot; failed in /Users/shocker/Desktop/demo.php on line 10</code></code></pre>
+<p><strong>类似于:</strong></p>
+<pre><code><code>$expression = 1 == 2;
+if (!($expression)) {
+    echo &quot;1 不可能等于 2\n&quot;;
+    var_dump($expression);
+    echo __FILE__ . &quot;\n&quot;;
+}</code></code></pre>
+<p>但是，我们无法得知 $expression 的具体表达式，也无法得知具体的执行行数。</p>
+<h3 id="单元测试">单元测试</h3>
+<pre><code><code>function arraySum(array $nums) {
+    $sum = 0;
+    foreach ($nums as $n) {
+        $sum += $n;
+    }
+
+    return $sum;
+}
+
+assert(arraySum([1, 2, 3]) == 6, &#39;arraySum() 测试不通过:&#39;);
+assert(is_numeric(arraySum([1, 2, 3])), &#39;arraySum() 测试不通过:&#39;);</code></code></pre>
+<p>是不是跟我们用 <a href="https://phpunit.de">PHPUnit</a> 写单元测试很像😆</p>
+<h3 id="验证表达式">验证表达式</h3>
+<blockquote>
+<p><strong>Tip:</strong></p>
+<p>PHP 7 开始，新增了 <a href="https://www.php.net/manual/en/class.error.php">Error</a> 类用于捕获 PHP 内置错误，包括语法错误。Error 与之前的 Exception 均继承自 <a href="https://www.php.net/manual/en/class.throwable.php">Throwable</a>，所以从 7.0.0 开始，Throwable 可以捕获一切错误和异常。</p>
+</blockquote>
+<p>下例演示了如何验证某个字符串表达式是否为合法的 PHP 表达式:</p>
+<pre><code><code>try {
+    assert(&#39;a +== 1&#39;);
+} catch (Throwable $e) {
+    echo $e-&gt;getMessage(), &quot;\n&quot;;
+}</code></code></pre>
+<p><strong>运行结果:</strong></p>
+<pre><code><code>Failure evaluating code: 
+a +== 1</code></code></pre>
+<h2 id="安全问题">安全问题</h2>
+<p>假设是下列代码，会有什么结果呢？</p>
+<pre><code><code>function demo(){
+    file_put_contents(&#39;data.log&#39;, &#39;shockerli.net&#39;);
+    return true;
+}
+
+$func = $_GET[&quot;func&quot;];
+assert(&quot;$func()&quot;);</code></code></pre>
+<p>所以，对于 assert 函数，正常情况下是不建议用于生产环境的。</p>
+<p>与 eval 一样会执行任何 PHP 代码，危害极大。这也是 PHP 从 7.2 开始废弃支持字符串表达式的原因。</p>
+<hr />
+<blockquote>
+<p>感谢您的阅读，觉得内容不错，点个赞吧 😆<br />
+原文地址: <a href="https://shockerli.net/post/php-assert/?source=cnblogs">https://shockerli.net/post/php-assert/</a></p>
+</blockquote>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

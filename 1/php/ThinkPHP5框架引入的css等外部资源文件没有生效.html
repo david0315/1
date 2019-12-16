@@ -1,0 +1,92 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP5框架引入的css等外部资源文件没有生效' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP5框架引入的css等外部资源文件没有生效</center></div><div class='banquan'>原文出处:本文由博客园博主小friend提供。<br/>
+原文连接:https://www.cnblogs.com/sfriend/p/11283881.html</div><br>
+    <p>静态资源文件一般是放在public目录里，不只是css，只要是静态资源文件都没有显示出来。<br />
+<em>（更好的阅读体验可访问 <a href="http://www.hellomao.top/2019/08/01/php_thinkphp/">这里</a> ）</em></p>
+<h1 id="问题陈述">问题陈述</h1>
+<h2 id="文件结构">文件结构</h2>
+<p><img src="./images/ThinkPHP5框架引入的css等外部资源文件没有生效0.jpg" /></p>
+<p><img src="./images/ThinkPHP5框架引入的css等外部资源文件没有生效1.jpg" /></p>
+<h2 id="文件内容">文件内容</h2>
+<p>三个文件分别为：Index.php、test.html、test.css</p>
+<pre><code><code>//Index.php
+&lt;?php
+namespace app\index\controller;
+use think\Controller;
+class Index extends Controller
+{
+    public function index()
+    {
+        return $this-&gt;fetch();
+    }
+}</code></code></pre>
+<pre class="html"><code>&lt;!--index.html--&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;This is the test&lt;/title&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;/static/test.css&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<pre class="css"><code>/*test.css*/
+h1 {
+    color: red;
+}</code></code></pre>
+<p><strong>为了方便问题陈述，使用了虚拟主机。集成环境为xampp，不使用也可，本质上都是一样的。不能配置虚拟主机可参考最后的方法</strong></p>
+<h2 id="虚拟主机的配置">虚拟主机的配置</h2>
+<ol>
+<li>找到服务器 <code>apache\conf\extra\httpd-vhosts.conf</code> 文件，配置以下内容<br />
+<img src="./images/ThinkPHP5框架引入的css等外部资源文件没有生效2.jpg" /><br />
+最重要的就是标记的两行，可见我把 服务器名（ServerName）test.io 映射到了 我的项目文件 test目录</li>
+<li>配置host文件，完成域名 test.io 到本地服务器 127.0.0.1 的映射<br />
+用管理员打开 <code>C:\Windows\System32\drivers\etc\hosts</code> 文件，在末尾添加<br />
+<img src="./images/ThinkPHP5框架引入的css等外部资源文件没有生效3.jpg" /></li>
+<li>重启服务器，在浏览器输入 <a href="http://test.io/public/" class="uri">http://test.io/public/</a> 就直接访问到了我们的test项目文件。</li>
+</ol>
+<h2 id="出现的问题">出现的问题</h2>
+<p>也就才开始显示出本文的重点：我们之前引入的 test.css 没有生效<br />
+<img src="./images/ThinkPHP5框架引入的css等外部资源文件没有生效4.jpg" /></p>
+<h1 id="原因分析">原因分析</h1>
+<p>我们在引入 css 文件的时候，使用的是<code>&lt;link rel=&quot;stylesheet&quot; href=&quot;/static/test.css&quot;&gt;</code><br />
+可见，我们默认是把 public目录 作为根目录来使用的（ /static 在 public 目录下）<br />
+而我们在配置虚拟主机的时候，使用的是<code>DocumentRoot &quot;C:/xampp/htdocs/www/test/&quot;</code> 是把 test 项目文件作为根目录使用。<strong>代码使用的根目录与项目实际根目录不在同一位置。所以，引入的文件不能正确的显示出来。</strong></p>
+<h1 id="解决方法">解决方法</h1>
+<ol>
+<li><p>修改虚拟主机对应的目录为<code>DocumentRoot &quot;C:/xampp/htdocs/www/test/public/</code>，把根目录直接映射到public目录，重启服务器。这样就可以在 html 文件里直接使用 /static 来引入静态资源文件。<br />
+最终的效果：<br />
+<img src="./images/ThinkPHP5框架引入的css等外部资源文件没有生效5.jpg" /></p></li>
+<li><p>修改html 引入外部文件的代码为：<code>&lt;link rel=&quot;stylesheet&quot; href=&quot;/public/static/test.css&quot;&gt;</code>，这样也能使用引入的文件，不过自然是麻烦一些。<br />
+最终的效果：<br />
+<img src="./images/ThinkPHP5框架引入的css等外部资源文件没有生效6.jpg" /></p></li>
+</ol>
+<p>如果没有配置虚拟主机，在浏览器直接输入的 127.0.0.1，可根据显示出的内容，自行判断所处的位置，然后调整代码或修改配置文件。<br />
+例如：如果出现的是这种<br />
+<img src="./images/ThinkPHP5框架引入的css等外部资源文件没有生效7.jpg" /><br />
+发现直接定位的是项目主文件。那么就需要在代码中这样使用：<code>&lt;link rel=&quot;stylesheet&quot; href=&quot;/public/static/test.css&quot;&gt;</code>。然后点击 public/ 即可正确显示。反之，如果直接显示出了页面，就不用再加 /public 了。</p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

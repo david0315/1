@@ -1,0 +1,219 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP程序员-常用工具' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP程序员-常用工具</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11889109.html</div><br>
+    <h2 id="h2-u4E09u8FDEu95EE">三连问</h2>
+<p>经常有社区的同学问: &ldquo;我的PHP程序有没有阻塞，我的PHP程序有没有开启协程(对自己写好的代码表示不自信)，我的PHP程序有没有问题&rdquo;．然后贴出了自己的程序，然后进入了愉快的灌水环节，随着时间的流逝，我们并没有形成系统的解决方法．求人不如求己，我们自己来解决这些问题．</p>
+<h2 id="h2-u65B9u6CD5u8BBA"><span class="header-link octicon octicon-link">方法论</span></h2>
+<p>最近接触到一个牛X的名词-方法论．<br />引用了百度百科一段名词解释</p>
+<blockquote>
+<p>方法论，就是关于人们认识世界、改造世界的方法的理论。<br />它是人们用什么样的方式、方法来观察事物和处理问题。概括地说，世界观主要解决世界&ldquo;是什么&rdquo;的问题，方法论主要解决&ldquo;怎么办&rdquo;的问题。<br />方法论是一种以解决问题为目标的理论体系或系统，通常涉及对问题阶段、任务、工具、方法技巧的论述。方法论会对一系列具体的方法进行分析研究、系统总结并最终提出较为一般性的原则。<br />方法论也是一个哲学概念。人们关于&ldquo;世界是什么、怎么样&rdquo;的根本观点是世界观。用这种观点作指导去认识世界和改造世界，就成了方法论。 方法论是普遍适用于各门具体社会科学并起指导作用的范畴、原则、理论、方法和手段的总和。历史唯物主义的著作中经常提到方法论这个概念。</p>
+
+
+</blockquote>
+<p>我们PHP程序员是不是也可以有一个方法，解决一些很容易碰到的基础问题．借这个平台抛砖引玉，希望大家多多指教．<br />还是引用一个牛X的命题，我是谁，从哪来，到哪去？我们也来扪心三连问</p>
+<ul>
+<li>我是谁</li>
+<li>我要干啥</li>
+<li>干的咋样</li>
+
+
+</ul>
+<h2 id="h2-u6211u662Fu8C01"><span class="header-link octicon octicon-link">我是谁</span></h2>
+<blockquote>
+<p>这是一个几千年来无数人探索的问题．</p>
+
+
+</blockquote>
+<p>PHP是一个解释型的语言，我们首先要上来看看自己的执行的PHP在哪里，是什么，以免在陌生的机器上一顿操作猛如虎才发现没对上号，比如笔者的机器上装了好多个版本的PHP．不要笑话这个问题，真的有不少人工作几年忽略了这个问题．直到他某一天在这个上面浪费了两小时&hellip;.(逃</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">$ which php
+</span><span style="color: #008080;">2</span> /home/shiguangqi/bin/<span style="color: #000000;">php
+</span><span style="color: #008080;">3</span> $ ll /home/shiguangqi/bin/<span style="color: #000000;">php
+</span><span style="color: #008080;">4</span> lrwxrwxrwx 1 shiguangqi shiguangqi 30 10月 25 12:09 /home/shiguangqi/bin/php -&gt; /usr/local/php-7.2.14<span style="color: #008000;">//</span><span style="color: #008000;">bin/php*</span></code></pre>
+
+<p>&nbsp;</p>
+<p>PHP安装的版本，加载了什么配置文件，PHP的编译参数是什么，有没有你关注的扩展被加载，加载的配置是什么版本等一系列问题．<br />比如我这里是把不同版本的PHP对应到自己的目录的一个软连上，自由切换不同版本</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> $ php -<span style="color: #000000;">v
+</span><span style="color: #008080;">2</span> PHP 7.2.14 (cli) (built: Jul 4 2019 11:02:01<span style="color: #000000;">) ( NTS DEBUG )
+</span><span style="color: #008080;">3</span> Copyright (c) 1997-2018<span style="color: #000000;"> The PHP Group
+</span><span style="color: #008080;">4</span> Zend Engine v3.2.0, Copyright (c) 1998-2018 Zend Technologies</code></pre>
+
+<p>&nbsp;</p>
+<p>加载什么配置</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> $ php --<span style="color: #000000;">ini
+</span><span style="color: #008080;">2</span> Configuration <span style="color: #008080;">File</span> (php.ini) Path: /usr/local/php-7.2.14/<span style="color: #000000;">lib
+</span><span style="color: #008080;">3</span> Loaded Configuration <span style="color: #008080;">File</span>: /usr/local/php-7.2.14/lib/php.<span style="color: #000000;">ini
+</span><span style="color: #008080;">4</span> Scan <span style="color: #0000ff;">for</span> additional .ini files in:<span style="color: #000000;"> (none)
+</span><span style="color: #008080;">5</span> Additional .ini files parsed: (none)</code></pre>
+
+<p>&nbsp;</p>
+<p>编译参数,　我这个版本是debug版本，默认静态编译了这些模块．</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> $ php -i |<span style="color: #000000;"> grep configure
+</span><span style="color: #008080;">2</span> Configure Command =&gt; './configure' '--prefix=/usr/local/php-7.2.14' '--with-config-file-path=/usr/local/php-7.2.14/lib' '--with-mysqli=mysqlnd' '--with-jpeg-dir' '--with-png-dir' '--with-iconv-dir' '--with-freetype-dir' '--with-zlib' '--with-mhash' '--with-libxml-dir' '--with-curl' '--with-mcrypt' '--with-gd' '--with-openssl' '--enable-ftp' '--enable-xml' '--enable-bcmath' '--enable-gd-native-ttf' '--enable-mbregex' '--enable-mbstring' '--enable-pcntl' '--enable-sockets' '--enable-fpm' '--enable-soap' '--enable-zip' '--enable-debug'</code></pre>
+
+<p>&nbsp;</p>
+<p>查看PHP扩展相关, 其实可以通过<code>php --help</code>&nbsp;查看更多的用法．<br />比如大家常用的</p>
+<src class="cnblogs_code">
+<pre><code>php --ri swoole</code></pre>
+
+<p>&nbsp;</p>
+<h2 id="h2-u6211u8981u5E72u5565"><span class="header-link octicon octicon-link">我要干啥</span></h2>
+<blockquote>
+<p>以目标为导向</p>
+</blockquote>
+<p>这一部分对于我们来说最熟悉不过，我们每天干的就是这个事情．<br />设计服务之前要心中要蓝图，最好把90％的时间用来想，10%的时间用来写．不仅犯错少，而且质量高．<br />比如我要查询redis,然后写了两个最简单的代码</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis;
+</span><span style="color: #008080;"> 3</span> <span style="color: #800080;">$redis</span>-&gt;connect("127.0.0.1", 6379<span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span> <span style="color: #800080;">$var</span> = <span style="color: #800080;">$redis</span>-&gt;get("key"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 5</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$var</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 7</span> Swoole\Runtime::<span style="color: #000000;">enableCoroutine();
+</span><span style="color: #008080;"> 8</span> go(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 9</span> <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis;
+</span><span style="color: #008080;">10</span> <span style="color: #800080;">$redis</span>-&gt;connect("127.0.0.1", 6379<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span> <span style="color: #800080;">$var</span> = <span style="color: #800080;">$redis</span>-&gt;get("key"<span style="color: #000000;">);
+</span><span style="color: #008080;">12</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$var</span><span style="color: #000000;">);
+</span><span style="color: #008080;">13</span> });</code></pre>
+
+<p>&nbsp;</p>
+<p>然后我们愉快的得出了同样的结果．</p>
+<h2 id="h2-u5E72u7684u548Bu6837"><span class="header-link octicon octicon-link">干的咋样</span></h2>
+<blockquote>
+<p>以目标为导向，以结果为标准．</p>
+</blockquote>
+<p>得出结果很容易，问题是我们干的质量怎么样呢，上面的例子只是类比，大家不要耻笑这两个例子太简单．<br />strace 将是我们有帮手<br />我们可以这样，看到核心业务的系统调用</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> strace -s 1000 php redis.<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> socket(AF_INET, SOCK_STREAM, IPPROTO_IP) = 3
+<span style="color: #008080;"> 3</span> fcntl(3, F_GETFL) = 0x2<span style="color: #000000;"> (flags O_RDWR)
+</span><span style="color: #008080;"> 4</span> fcntl(3, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+<span style="color: #008080;"> 5</span> connect(3, {sa_family=AF_INET, sin_port=htons(6379), sin_addr=inet_addr("127.0.0.1")}, 16) = -1<span style="color: #000000;"> EINPROGRESS (Operation now in progress)
+</span><span style="color: #008080;"> 6</span> poll([{fd=3, events=POLLIN|POLLOUT|POLLERR|POLLHUP}], 1, 60000) = 1 ([{fd=3, revents=<span style="color: #000000;">POLLOUT}])
+</span><span style="color: #008080;"> 7</span> getsockopt(3, SOL_SOCKET, SO_ERROR, [0], [4]) = 0
+<span style="color: #008080;"> 8</span> fcntl(3, F_SETFL, O_RDWR) = 0
+<span style="color: #008080;"> 9</span> setsockopt(3, SOL_TCP, TCP_NODELAY, [1], 4) = 0
+<span style="color: #008080;">10</span> setsockopt(3, SOL_SOCKET, SO_KEEPALIVE, [0], 4) = 0
+<span style="color: #008080;">11</span> poll([{fd=3, events=POLLIN|POLLPRI|POLLERR|POLLHUP}], 1, 0) = 0<span style="color: #000000;"> (Timeout)
+</span><span style="color: #008080;">12</span> sendto(3, "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n", 22, MSG_DONTWAIT, <span style="color: #0000ff;">NULL</span>, 0) = 22
+<span style="color: #008080;">13</span> poll([{fd=3, events=POLLIN|POLLPRI|POLLERR|POLLHUP}], 1, 0) = 0<span style="color: #000000;"> (Timeout)
+</span><span style="color: #008080;">14</span> poll([{fd=3, events=POLLIN|POLLERR|POLLHUP}], 1, 60000) = 1 ([{fd=3, revents=<span style="color: #000000;">POLLIN}])
+</span><span style="color: #008080;">15</span> recvfrom(3, "$6\r\nvalue2\r\n", 8192, MSG_DONTWAIT, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = 12
+<span style="color: #008080;">16</span> write(1, "string(6) \"", 11<span style="color: #0000ff;">string</span>(6) "<span style="color: #000000;">) = 11
+</span><span style="color: #008080;">17</span> write(1, "value2", 6value2) = 6</code></pre>
+
+<p>&nbsp;</p>
+<p>我们还可以加上一些参数，得到更详细的数据,当前系统调用的消耗的时间和当前时间戳</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> $ strace -ttt -T -s 1000 php redis.<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 1572266793.054360 socket(AF_INET, SOCK_STREAM, IPPROTO_IP) = 3 &lt;0.000013&gt;
+<span style="color: #008080;"> 3</span> 1572266793.054389 fcntl(3, F_GETFL) = 0x2 (flags O_RDWR) &lt;0.000007&gt;
+<span style="color: #008080;"> 4</span> 1572266793.054414 fcntl(3, F_SETFL, O_RDWR|O_NONBLOCK) = 0 &lt;0.000008&gt;
+<span style="color: #008080;"> 5</span> 1572266793.054438 connect(3, {sa_family=AF_INET, sin_port=htons(6379), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress) &lt;0.000070&gt;
+<span style="color: #008080;"> 6</span> 1572266793.054533 poll([{fd=3, events=POLLIN|POLLOUT|POLLERR|POLLHUP}], 1, 60000) = 1 ([{fd=3, revents=POLLOUT}]) &lt;0.000008&gt;
+<span style="color: #008080;"> 7</span> 1572266793.054565 getsockopt(3, SOL_SOCKET, SO_ERROR, [0], [4]) = 0 &lt;0.000008&gt;
+<span style="color: #008080;"> 8</span> 1572266793.054594 fcntl(3, F_SETFL, O_RDWR) = 0 &lt;0.000006&gt;
+<span style="color: #008080;"> 9</span> 1572266793.054619 setsockopt(3, SOL_TCP, TCP_NODELAY, [1], 4) = 0 &lt;0.000008&gt;
+<span style="color: #008080;">10</span> 1572266793.054644 setsockopt(3, SOL_SOCKET, SO_KEEPALIVE, [0], 4) = 0 &lt;0.000007&gt;
+<span style="color: #008080;">11</span> 1572266793.054689 poll([{fd=3, events=POLLIN|POLLPRI|POLLERR|POLLHUP}], 1, 0) = 0 (Timeout) &lt;0.000007&gt;
+<span style="color: #008080;">12</span> 1572266793.054717 sendto(3, "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n", 22, MSG_DONTWAIT, <span style="color: #0000ff;">NULL</span>, 0) = 22 &lt;0.000030&gt;
+<span style="color: #008080;">13</span> 1572266793.054788 poll([{fd=3, events=POLLIN|POLLPRI|POLLERR|POLLHUP}], 1, 0) = 1 ([{fd=3, revents=POLLIN}]) &lt;0.000007&gt;
+<span style="color: #008080;">14</span> 1572266793.054816 recvfrom(3, "$", 1, MSG_PEEK, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = 1 &lt;0.000009&gt;
+<span style="color: #008080;">15</span> 1572266793.054851 poll([{fd=3, events=POLLIN|POLLERR|POLLHUP}], 1, 60000) = 1 ([{fd=3, revents=POLLIN}]) &lt;0.000007&gt;
+<span style="color: #008080;">16</span> 1572266793.054878 recvfrom(3, "$6\r\nvalue2\r\n", 8192, MSG_DONTWAIT, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = 12 &lt;0.000009&gt;
+<span style="color: #008080;">17</span> 1572266793.054923 write(1, "string(6) \"", 11<span style="color: #0000ff;">string</span>(6) "<span style="color: #000000;">) = 11 &lt;0.000010&gt;
+</span><span style="color: #008080;">18</span> 1572266793.054951 write(1, "value2"<span style="color: #000000;">, 6value2) = 6 &lt;0.000009&gt;
+</span><span style="color: #008080;">19</span> 1572266793.054977 write(1, "\"\n", 2"</code></pre>
+
+<p>&nbsp;</p>
+<p>我们就可以逐行查看程序系统调用的详情．很容易发现，这个程序是阻塞的，虽然每个系统调用的时间极短．但换个业务，换个依赖可就不是这样．但万变不离其宗．</p>
+<p>我们再来看第二个程序，也就是开启协程后的系统调用</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> 1572266985.463011 socket(AF_INET, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 4 &lt;0.000016&gt;
+<span style="color: #008080;"> 2</span> 1572266985.463048 fcntl(4, F_GETFL) = 0x2 (flags O_RDWR) &lt;0.000006&gt;
+<span style="color: #008080;"> 3</span> 1572266985.463070 fcntl(4, F_SETFL, O_RDWR|O_NONBLOCK) = 0 &lt;0.000006&gt;
+<span style="color: #008080;"> 4</span> 1572266985.463092 setsockopt(4, SOL_TCP, TCP_NODELAY, [1], 4) = 0 &lt;0.000007&gt;
+<span style="color: #008080;"> 5</span> 1572266985.463127 setsockopt(4, SOL_TCP, TCP_NODELAY, [1], 4) = 0 &lt;0.000005&gt;
+<span style="color: #008080;"> 6</span> 1572266985.463167 connect(4, {sa_family=AF_INET, sin_port=htons(6379), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress) &lt;0.000076&gt;
+<span style="color: #008080;"> 7</span> 1572266985.463296 epoll_ctl(3, EPOLL_CTL_ADD, 4, {EPOLLOUT, {u32=4, u64=38654705668}}) = 0 &lt;0.000011&gt;
+<span style="color: #008080;"> 8</span> 1572266985.463353 epoll_wait(3, [{EPOLLOUT, {u32=4, u64=38654705668}}], 4096, 60000) = 1 &lt;0.000007&gt;
+<span style="color: #008080;"> 9</span> 1572266985.463383 epoll_ctl(3, EPOLL_CTL_DEL, 4, <span style="color: #0000ff;">NULL</span>) = 0 &lt;0.000008&gt;
+<span style="color: #008080;">10</span> 1572266985.463407 getsockopt(4, SOL_SOCKET, SO_ERROR, [0], [4]) = 0 &lt;0.000008&gt;
+<span style="color: #008080;">11</span> 1572266985.463445 setsockopt(4, SOL_TCP, TCP_NODELAY, [1], 4) = 0 &lt;0.000007&gt;
+<span style="color: #008080;">12</span> 1572266985.463467 setsockopt(4, SOL_SOCKET, SO_KEEPALIVE, [0], 4) = 0 &lt;0.000007&gt;
+<span style="color: #008080;">13</span> 1572266985.463525 recvfrom(4, 0x7f29bb9b033d, 1, MSG_PEEK, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = -1 EAGAIN (<span style="color: #0000ff;">Resource</span> temporarily unavailable) &lt;0.000008&gt;
+<span style="color: #008080;">14</span> 1572266985.463556 sendto(4, "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n", 22, 0, <span style="color: #0000ff;">NULL</span>, 0) = 22 &lt;0.000033&gt;
+<span style="color: #008080;">15</span> 1572266985.463633 recvfrom(4, 0x7f29bb9b033d, 1, MSG_PEEK, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = -1 EAGAIN (<span style="color: #0000ff;">Resource</span> temporarily unavailable) &lt;0.000006&gt;
+<span style="color: #008080;">16</span> 1572266985.463662 recvfrom(4, "$6\r\nvalue2\r\n", 8192, 0, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = 12 &lt;0.000007&gt;
+<span style="color: #008080;">17</span> 1572266985.463713 write(1, "string(6) \"", 11<span style="color: #0000ff;">string</span>(6) "<span style="color: #000000;">) = 11 &lt;0.000009&gt;
+</span><span style="color: #008080;">18</span> 1572266985.463740 write(1, "value2", 6value2) = 6 &lt;0.000008&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>可以发现，通过创建socket，然后connect操作，然后通过epoll_ctl加入监听，是通过多路复用的方式，这里是没有阻塞等待的，我们可以通过这种方式明确的确认自己的程序细节．<br />比如，可以从第八行看到这里超时等待的时间是<code>60s</code>.<br />然后我们修改代码超时时间为0.5s</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> Swoole\Runtime::<span style="color: #000000;">enableCoroutine();
+</span><span style="color: #008080;">3</span> go(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;">4</span> <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis;
+</span><span style="color: #008080;">5</span> <span style="color: #800080;">$redis</span>-&gt;connect("127.0.0.1", 6379, 0.5<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span> <span style="color: #800080;">$var</span> = <span style="color: #800080;">$redis</span>-&gt;get("key"<span style="color: #000000;">);
+</span><span style="color: #008080;">7</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$var</span><span style="color: #000000;">);
+</span><span style="color: #008080;">8</span> });</code></pre>
+
+<p>&nbsp;</p>
+<p>然后继续查看</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> 1572267648.851924 socket(AF_INET, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 4 &lt;0.000011&gt;
+<span style="color: #008080;"> 2</span> 1572267648.851952 fcntl(4, F_GETFL) = 0x2 (flags O_RDWR) &lt;0.000004&gt;
+<span style="color: #008080;"> 3</span> 1572267648.851968 fcntl(4, F_SETFL, O_RDWR|O_NONBLOCK) = 0 &lt;0.000004&gt;
+<span style="color: #008080;"> 4</span> 1572267648.851986 setsockopt(4, SOL_TCP, TCP_NODELAY, [1], 4) = 0 &lt;0.000005&gt;
+<span style="color: #008080;"> 5</span> 1572267648.852011 setsockopt(4, SOL_TCP, TCP_NODELAY, [1], 4) = 0 &lt;0.000006&gt;
+<span style="color: #008080;"> 6</span> 1572267648.852042 connect(4, {sa_family=AF_INET, sin_port=htons(6379), sin_addr=inet_addr("127.0.0.1")}, 16) = -1 EINPROGRESS (Operation now in progress) &lt;0.000058&gt;
+<span style="color: #008080;"> 7</span> 1572267648.852131 epoll_ctl(3, EPOLL_CTL_ADD, 4, {EPOLLOUT, {u32=4, u64=38654705668}}) = 0 &lt;0.000006&gt;
+<span style="color: #008080;"> 8</span> 1572267648.852164 epoll_wait(3, [{EPOLLOUT, {u32=4, u64=38654705668}}], 4096, 500) = 1 &lt;0.000006&gt;
+<span style="color: #008080;"> 9</span> 1572267648.852184 epoll_ctl(3, EPOLL_CTL_DEL, 4, <span style="color: #0000ff;">NULL</span>) = 0 &lt;0.000005&gt;
+<span style="color: #008080;">10</span> 1572267648.852201 getsockopt(4, SOL_SOCKET, SO_ERROR, [0], [4]) = 0 &lt;0.000006&gt;
+<span style="color: #008080;">11</span> 1572267648.852225 setsockopt(4, SOL_TCP, TCP_NODELAY, [1], 4) = 0 &lt;0.000058&gt;
+<span style="color: #008080;">12</span> 1572267648.852302 setsockopt(4, SOL_SOCKET, SO_KEEPALIVE, [0], 4) = 0 &lt;0.000006&gt;
+<span style="color: #008080;">13</span> 1572267648.852350 recvfrom(4, 0x7f71f91b033d, 1, MSG_PEEK, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = -1 EAGAIN (<span style="color: #0000ff;">Resource</span> temporarily unavailable) &lt;0.000006&gt;
+<span style="color: #008080;">14</span> 1572267648.852373 sendto(4, "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n", 22, 0, <span style="color: #0000ff;">NULL</span>, 0) = 22 &lt;0.000029&gt;
+<span style="color: #008080;">15</span> 1572267648.852446 recvfrom(4, "$", 1, MSG_PEEK, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = 1 &lt;0.000011&gt;
+<span style="color: #008080;">16</span> 1572267648.852486 recvfrom(4, "$6\r\nvalue2\r\n", 8192, 0, <span style="color: #0000ff;">NULL</span>, <span style="color: #0000ff;">NULL</span>) = 12 &lt;0.000006&gt;
+<span style="color: #008080;">17</span> 1572267648.852523 write(1, "string(6) \"", 11<span style="color: #0000ff;">string</span>(6) "<span style="color: #000000;">) = 11 &lt;0.000008&gt;
+</span><span style="color: #008080;">18</span> 1572267648.852543 write(1, "value2", 6value2) = 6 &lt;0.000006&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>然后第8行可以发现，超时的时间变为500ms, 这样可以发现一些简单，但是非常重要的细节．同样第一个例子的超时时间也可以阅读到．</p>
+<p>运行中的进程可以通过　<code>strace -p pid</code>&nbsp;来查看详情．<br />关于<code>strace</code>更详细的用法可以　<code>man strace</code>&nbsp;来查看．</p>
+<h2 id="h2-u5347u534E"><span class="header-link octicon octicon-link">升华</span></h2>
+<p>如果我们的项目很复杂，怎么定位自己运行时问题，阻塞等待时间太长，死循环等问题．其实也是利用<code>strace</code>工具，可以先结合<code>top</code>来查看系统的负载，以及进程占用资源．常见的也就是内存和CPU.<br /><code>vmstat</code>　也是非常好的工具．<br />当然也有全自动化的工具，比如<code>swoole tracker</code>深入PHP内核，可以全自动检查阻塞，甚至是内存泄漏．当然也可以自己写脚本来实现．</p>
+<p>常用的工具还有<code>gdb</code>,下一篇我们一起来实验<code>gdb</code>工具对<code>PHP</code>程序员的巨大作用．</p>
+<ul>
+<li>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></li>
+</ul>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

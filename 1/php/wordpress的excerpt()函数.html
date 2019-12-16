@@ -1,0 +1,80 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修wordpress的excerpt()函数' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>wordpress的excerpt()函数</center></div><div class='banquan'>原文出处:本文由博客园博主六月游乐提供。<br/>
+原文连接:https://www.cnblogs.com/catcher625/p/10605921.html</div><br>
+    <p>问题：在wordpres中的single页面，本身引用的&lt;?php the_excerpt(); ?&gt;，但是在页面上显示的却是文章的内容</p>
+<p>原因：the_excerpt(); 在excerpt没有内容的时候，会截取文章的内容。</p>
+<p>以下内容来自https://blog.csdn.net/qq_37788558/article/details/73478267</p>
+<p>-------------------------------------------------------------------------------------------------</p>
+<p>wordpress 内置函数 the_excerpt() 是个使用频率较高的函数，它是用来获取当前文章摘要的，以[...]结尾，如果在文章中没有编辑内容摘要字段，则默认截取文章的前55个字的内容，默认截取的字段去掉HTML标签和图形，<span style="color: #ff0000;">并且一定要在循环内使用（!不用循环有时候也能显示，但是有些情况就会紊乱）</span>。</p>
+<p>用法：the_excerpt() 函数使用的方法也非常简单，用法如下:</p>
+<p>这个标签没有任何的参数，直接使用即可，但函数默认的设置有时候并不能满足用户的需要，比如国内用户以 以[...]结尾就很不习惯，另外截取前 55 个字符有时候会太少了，还有文章摘要的结尾是不是我们可以自定义加个更多的链接呢，这些自定义只需要在主题 functions.php 文件中加入相应的代码就可以了。</p>
+<p>控制摘要的字数:</p>
+<src>
+<src id="highlighter_477230" class="syntaxhighlighter php">
+<src class="table-box">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">控制摘要字数</span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> new_excerpt_length(<span style="color: #800080;">$length</span><span style="color: #000000;">) {
+</span><span style="color: #0000ff;">return</span> 150<span style="color: #000000;">;
+}
+add_filter(</span>"excerpt_length", "new_excerpt_length");</code></pre>
+
+<p>return 150 是返回的字符了，两个字符一个汉字，这个可以根据自己的需要进行设置。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+
+
+<p>更改摘要末尾的默认显示样式:</p>
+<src>
+<src id="highlighter_56646" class="syntaxhighlighter php">
+<src class="table-box">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span> new_excerpt_more(<span style="color: #800080;">$excerpt</span><span style="color: #000000;">) {
+</span><span style="color: #0000ff;">return</span> <span style="color: #008080;">str_replace</span>("[...]", "...", <span style="color: #800080;">$excerpt</span><span style="color: #000000;">);
+}
+add_filter(</span>"wp_trim_excerpt", "new_excerpt_more")</code></pre>
+
+<p>the_excerpt() 函数默认是以[...]结尾的，这里我们利用 php 的替换函数 str_replace 将其替换成 ...，也可以改成你自己想要的符号。</p>
+
+
+
+<p>添加自定义结尾:</p>
+<src>
+<src id="highlighter_315784" class="syntaxhighlighter php">
+<src class="table-box">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span> new_excerpt_more(<span style="color: #800080;">$more</span><span style="color: #000000;">) {
+</span><span style="color: #0000ff;">global</span> <span style="color: #800080;">$post</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">return</span> " &lt;a href="". get_permalink(<span style="color: #800080;">$post</span>-&gt;ID) . ""&gt;阅读更多&lt;/a&gt;"<span style="color: #000000;">;
+}
+add_filter(</span>"excerpt_more", "new_excerpt_more");</code></pre>
+
+<p>在文章摘要的未端添加一个 阅读更多 的链接，这样看起来更符合用户的阅读习惯了，阅读更多可以改成自己想要的内容。</p>
+
+
+
+<p>&nbsp;</p>
+<p>上面的代码均添加到主题 functions.php 文件中即可。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

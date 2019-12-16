@@ -1,0 +1,159 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP]实体类基类和序列化__sleep问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP]实体类基类和序列化__sleep问题</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10784277.html</div><br>
+    <p>1.构造函数传参<br />2.__get和__set实现,当调用不存在的属性的时候,可以取值和赋值到data属性数组<br />3.__sleep实现,当序列化对象的时候,只序列化data属性数组和类内初始化定义的字段<br />4.__isset实现,可以判断属性是否存在,通过判断data属性数组<br />5.toArray方法实现,返回data属性数组<br />6.记录了构造初始化后,动态添加的属性字段</p>
+<p>&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+
+class Sina_Data_Object
+{
+    protected $data = array();
+    private $changes = array();
+    private $newFlag = true;
+    public function __construct($data = array()){
+        if (empty($data)) {
+            $this-&gt;newFlag = true;
+        } else {
+            $this-&gt;newFlag = false;
+            foreach ($data as $k =&gt; $v) {
+                    $this-&gt;data[$k] = $v;
+            }
+        }
+    }
+
+    public function __isset($name){
+        return isset($this-&gt;data[$name]);
+    }
+
+    public function __get($name){
+        if(!array_key_exists($name, $this-&gt;data)){
+        	return null;
+        }
+        return $this-&gt;data[$name];
+    }
+
+    public function __set($name, $value){
+        $this-&gt;data[$name] = $value;
+        if (!$this-&gt;newFlag) {
+            $this-&gt;changes[$name] = $value;
+        }
+    }
+
+    public function __sleep(){
+        return array('data');
+    }
+
+    public function toArray(){
+        return $this-&gt;data;
+    }
+
+    public function isNew(){
+        return $this-&gt;newFlag;
+    }
+
+    public function clearNewFlag(){
+        $this-&gt;newFlag = false;
+    }
+
+    public function isModified()
+    {
+        return (!empty($this-&gt;changes));
+    }
+
+    public function getChanges()
+    {
+        return $this-&gt;changes;
+    }
+
+    public function clearChanges()
+    {
+        $this-&gt;changes = array();
+    }      
+}
+class Setting extends Sina_Data_Object{
+	const STATUS=1;
+	public $other='aaa';
+	public function __construct($data=array()){
+		parent::__construct($data);
+	}
+}
+//初始化对象
+$data=array('user'=&gt;'taoshihan');
+$setting=new Setting($data);
+//动态增加属性
+$setting-&gt;age=100;
+var_dump($setting);
+/*
+object(Setting)#1 (4) {
+  ["other"]=&gt;
+  string(3) "aaa"
+  ["data":protected]=&gt;
+  array(2) {
+    ["user"]=&gt;
+    string(9) "taoshihan"
+    ["age"]=&gt;
+    int(100)
+  }
+  ["changes":"Sina_Data_Object":private]=&gt;
+  array(1) {
+    ["age"]=&gt;
+    int(100)
+  }
+  ["newFlag":"Sina_Data_Object":private]=&gt;
+  bool(false)
+}
+
+*/
+
+//动态改变初始化的字段
+$setting-&gt;other='bbbb';
+//序列化对象
+$serializeSetting=serialize($setting);
+//反序列化对象
+$setting2=unserialize($serializeSetting);
+var_dump($setting2);
+/*
+object(Setting)#2 (4) {
+  ["other"]=&gt;
+  string(3) "aaa"   ########反序列化回来这里还是aaa
+  ["data":protected]=&gt;
+  array(3) {
+    ["user"]=&gt;
+    string(9) "taoshihan"
+    ["age"]=&gt;
+    int(100)
+  }
+  ["changes":"Sina_Data_Object":private]=&gt;
+  array(0) {      ##########change属性里面的数据没有序列化进去
+  }
+  ["newFlag":"Sina_Data_Object":private]=&gt;
+  bool(true)      #########反序列化回来这里是true
+}
+
+*/
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

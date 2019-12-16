@@ -1,0 +1,85 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Yii2 框架跑脚本时内存泄漏问题分析' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Yii2 框架跑脚本时内存泄漏问题分析</center></div><div class='banquan'>原文出处:本文由博客园博主LastSun提供。<br/>
+原文连接:https://www.cnblogs.com/wudanyang/p/10917330.html</div><br>
+    <h1 id="现象">现象</h1>
+<p>在跑 edu_ocr_img 表的归档时，每跑几万个数据，都会报一次内存耗尽</p>
+<pre><code><code>PHP Fatal error:  Allowed memory size of 134217728 bytesexhausted (tried toallocate 135168 bytes)</code></code></pre>
+<p>跟踪代码发现，是在插入时以下代码造成的：</p>
+<pre class="php"><code>EduOCRTaskBackup::getDb()-&gt;createCommand()-&gt;batchInsert(EduOCRTaskBackup::tableName(), $fields, $data)-&gt;execute();</code></code></pre>
+<p>execute 之后会造成使用内存涨上去，并且在之后 unset 所有变量内存也会有一部分不会删除，直到内存耗尽。</p>
+<p>于是跟踪到 Yii2中execute的具体代码块发现在记录 log 的时候会将使用很高的内存，分析代码之后得出造成泄漏的代码块如下：</p>
+<h1 id="造成泄漏的代码块">造成泄漏的代码块</h1>
+<pre class="php"><code>/**
+ * Logs a message with the given type and category.
+ * If [[traceLevel]] is greater than 0, additional call stack information about
+ * the application code will be logged as well.
+ * @param string|array $message the message to be logged. This can be a simple string or a more
+ * complex data structure that will be handled by a [[Target|log target]].
+ * @param integer $level the level of the message. This must be one of the following:
+ * `Logger::LEVEL_ERROR`, `Logger::LEVEL_WARNING`, `Logger::LEVEL_INFO`, `Logger::LEVEL_TRACE`,
+ * `Logger::LEVEL_PROFILE_BEGIN`, `Logger::LEVEL_PROFILE_END`.
+ * @param string $category the category of the message.
+ */
+public function log($message, $level, $category = &#39;application&#39;)
+{
+    $time = microtime(true);
+    $traces = [];
+    if ($this-&gt;traceLevel &gt; 0) {
+        $count = 0;
+        $ts = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        array_pop($ts); // remove the last trace since it would be the entry script, not very useful
+        foreach ($ts as $trace) {
+            if (isset($trace[&#39;file&#39;], $trace[&#39;line&#39;]) &amp;&amp; strpos($trace[&#39;file&#39;], YII2_PATH) !== 0) {
+                unset($trace[&#39;object&#39;], $trace[&#39;args&#39;]);
+                $traces[] = $trace;
+                if (++$count &gt;= $this-&gt;traceLevel) {
+                    break;
+                }
+            }
+        }
+    }
+    
+    // 这里是造成内存的罪魁祸首
+    $this-&gt;messages[] = [$message, $level, $category, $time, $traces];
+    if ($this-&gt;flushInterval &gt; 0 &amp;&amp; count($this-&gt;messages) &gt;= $this-&gt;flushInterval) {
+        $this-&gt;flush();
+    }
+}</code></code></pre>
+<h1 id="造成内存泄漏的原因分析">造成内存泄漏的原因分析</h1>
+<p>在 Yii2框架中的 vendor/yiisoft/yii2/log/Logger.php:156 log函数的156行之后会判断 count($this-&gt;messages) &gt;= $this-&gt;flushInterval<br />
+即：内存中存储的 message 的条数要大于等于预设的 $this-&gt;flushInterval 才会将内存中的message 刷到磁盘上去。</p>
+<p>如果在刷新到磁盘之前就已经将 php.ini 设置的 128M 内存打满的话，会直接报错申请内存耗尽。</p>
+<p>很多关于 YII2其他原因的内存泄漏的讨论<br />
+<a href="https://github.com/yiisoft/yii2/issues/13256" class="uri">https://github.com/yiisoft/yii2/issues/13256</a></p>
+<h1 id="解决方案">解决方案</h1>
+<ol>
+<li>在程序开始时，设置 flushInterval 为一个比较小的值</li>
+</ol>
+<pre class="php"><code>\Yii::getLogger()-&gt;flushInterval = 100; // 设置成一个较小的值</code></code></pre>
+<ol>
+<li>在程序执行过程中，每次 execute 之后对内存中的 message 进行 flush</li>
+</ol>
+<pre class="php"><code>\Yii::getLogger()-&gt;flush(true); // 参数传 true 表示每次都会将 message 清理到磁盘中</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

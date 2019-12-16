@@ -1,0 +1,144 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP的垃圾回收机制之引用计数' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP的垃圾回收机制之引用计数</center></div><div class='banquan'>原文出处:本文由博客园博主凌晨两点半12138提供。<br/>
+原文连接:https://www.cnblogs.com/huangzikai/p/11594845.html</div><br>
+    <h1><span style="color: #888888;">1，介绍</span></h1>
+<p><span style="color: #888888;">php的垃圾回收机制(GC)是在PHP5之后出现的，而在PHP5.3版本之前使用的都是&ldquo;引用计数&rdquo;的方式。</span><span style="color: #888888;">实现引用计数的实质就是在每个内存对象中都有一个计数器，当内存对象被变量引用时，计数器+1，当变量取消或更改引用内存时，计数器-1，直到计数器中的值为0时，说明该内存对象没有被变量引用，，就产生了一个无意义的内存对象。php就会销毁释放内存，进行垃圾回收。</span></p>
+<h1><span style="color: #888888;">2，实现</span></h1>
+<p><span style="color: #888888;">每个变量被赋值时就会生<span style="font-size: 14px;">成叫&lsquo;zval&rsquo;的变量容器，&lsquo;zavl&rsquo;容器中除了包含变量名，<span style="color: #808080;">变</span></span></span><span style="font-size: 14px; color: #808080;">量的类</span><span style="color: #888888;"><span style="font-size: 14px;">型和变量的值以外，还包含两个字节的额外信息。第一个是"is_ref"，</span>是个布尔值，用来表示该变量是否被引用，php就是根据这个判断变量是否是普通类型还是引用类型；另一个是&lsquo;refcount&rsquo;，功能类似于计数器，记录指向该变量容器的变量个数。</span></p>
+<p>&nbsp;</p>
+<p><span style="color: #888888;">1，生成并显示一个新的zval容器</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$a</span><span style="color: #000000;">;
+xdebug_debug_zval(</span>'a'<span style="color: #000000;">);//a: no such symbo<br /></span><span style="color: #800080;">$b</span>="new string"<span style="color: #000000;">;
+xdebug_debug_zval(</span>'b');//b: <em>(refcount=1, is_ref=0)</em>,</code></pre>
+
+<p><span style="font-size: 14px; color: #808080;">可以看到：变量赋值后生成的&lsquo;zavl&rsquo;容器中的参数。其中refcount=1表示一个变量指向该变量容器。</span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14px; color: #808080;">2，添加一个&lsquo;zavl&rsquo;的引用计数</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$b</span>="new string"<span style="color: #000000;">;
+xdebug_debug_zval(</span>'b'<span style="color: #000000;">);
+</span><span style="color: #800080;">$c</span>=<span style="color: #800080;">$b</span><span style="color: #000000;">;
+xdebug_debug_zval(</span>'b'<span style="color: #000000;">);//b: <em>(refcount=2, is_ref=0)</em>,<small>string</small> <span style="color: #cc0000;">'new string'</span> <em>(length=10)</em></span><br />$d="new string";<br />xdebug_debug_zval('d');//d: <em>(refcount=1, is_ref=0)</em>,</code></pre>
+
+<p><span style="color: #808080;">这时，引用次数是2，因为同一个变量容器被变量b和变量c关联。当将一个变量赋值给另一个变量时，php不会去复制已生成的变量容器。而将一个值赋值给一个变量时，会重新生成一个新的&lsquo;zavl&rsquo;容器。</span></p>
+<p>&nbsp;</p>
+<p><span style="color: #808080;">3，清空并删除一个引用计数</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$b</span>="new string"<span style="color: #000000;">;
+</span><span style="color: #800080;">$c</span>=<span style="color: #800080;">$b</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$b</span><span style="color: #000000;">);
+xdebug_debug_zval(</span>'c'<span style="color: #000000;">);//c:<em>(refcount=1, is_ref=0)</em>,<small>string</small> <span style="color: #cc0000;">'new string'</span> <em>(length=10)</em><br /></span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$c</span><span style="color: #000000;">);
+xdebug_debug_zval(</span>'c');//c: no such symbol</code></pre>
+
+<p><span style="color: #808080;">当任何关联到某个变量容器的变量离开它的作用域(比如：函数执行结束)，或者对变量调用了函数 unset()时，&rdquo;refcount&ldquo;就会减1。当refcount=0时，<span style="font-family: Verdana, Arial, Helvetica, sans-serif;">包含类型和值的这个变量容器就会</span></span><span style="font-family: Verdana, Arial, Helvetica, sans-serif; color: #808080; font-size: 14px;">从内存中删除。</span></p>
+<p>&nbsp;</p>
+<p><span style="color: #808080; font-size: 14px;"><span style="font-family: Verdana, Arial, Helvetica, sans-serif;">上面的数据类型都是</span><span style="font-family: arial; text-align: justify;">标量数据类型，而</span><span style="font-family: arial; text-align: justify;">复合数据类型（array，object）又有不同。</span></span></p>
+<p><span style="color: #808080; font-size: 14px;"><span style="font-family: arial; text-align: justify;">4，生成一个复合数据的变量容器</span></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$arr</span>=<span style="color: #000000;">[];
+xdebug_debug_zval(</span>'arr'<span style="color: #000000;">);
+</span><span style="color: #800080;">$array</span>=['name'=&gt;'张三','age'=&gt;'18'<span style="color: #000000;">];
+xdebug_debug_zval(</span>'array');</code></pre>
+
+<p>结果如下：</p>
+<p><img src="./images/PHP的垃圾回收机制之引用计数0.jpg" alt="" /></p>
+<p>图示：</p>
+<p>&nbsp;<img src="./images/PHP的垃圾回收机制之引用计数1.jpg" alt="" /></p>
+<p><span style="background-color: #ffffff; color: #808080;">可以看到：数组分配了三个zval容器：array&nbsp; &nbsp;name&nbsp; age</span></p>
+<p>&nbsp;</p>
+<p><span style="color: #999999;">5，添加一个已经存在的元素到数组中</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$array</span> =<span style="color: #000000;"> [
+    </span>'name' =&gt; '张三',
+    'age' =&gt; '18'<span style="color: #000000;">
+];
+</span><span style="color: #800080;">$array</span>['zhangsan'] = <span style="color: #800080;">$array</span>['name'<span style="color: #000000;">];
+xdebug_debug_zval(</span>'array');</code></pre>
+
+<p><img src="./images/PHP的垃圾回收机制之引用计数2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="color: #808080;">6，销毁包含数组名信息的'zavl'变量容器</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$array</span> =<span style="color: #000000;"> [
+    </span>'name' =&gt; '张三',
+    'age' =&gt; '18'<span style="color: #000000;">
+];
+</span><span style="color: #800080;">$array</span>['zhangsan'] = <span style="color: #800080;">$array</span>['name'<span style="color: #000000;">];
+</span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$array</span><span style="color: #000000;">);
+xdebug_debug_zval(</span>'array');</code></pre>
+
+<p><span style="color: #808080;">其结果如下</span></p>
+<p><img src="./images/PHP的垃圾回收机制之引用计数3.jpg" alt="" /></p>
+<p><span style="color: #808080;">删除数组中的一个元素，就是类似于从作用域中删除一个变量. 删除后,数组中的这个元素所在的容器的&ldquo;refcount&rdquo;值减少，同样，当&ldquo;refcount&rdquo;为0时，这个变量容器就从内存中被删除。</span></p>
+<p>&nbsp;</p>
+<p><span style="color: #808080; font-size: 14px;"><span style="font-family: Verdana, Arial, Helvetica, sans-serif;">一般来说，</span><span style="font-family: Verdana, Arial, Helvetica, sans-serif;">'zavl'容器中的refcount=0时，该变量容器就是垃圾，会被php引擎销毁。</span><span style="font-family: Verdana, Arial, Helvetica, sans-serif;">但是有一种情况：'zavl'容器中的refcount不为0，却没有变量指向它，仍然是个垃圾。</span></span></p>
+<p><span style="color: #808080;">&nbsp;环状引用就是一个例子，即把数组作为一个元素添加到自己。</span></p>
+<p><span style="color: #808080;">7，生成一个包含环状引用的&lsquo;zavl&rsquo;容器</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [
+    </span>'name' =&gt; '张三'<span style="color: #000000;">
+];
+</span><span style="color: #800080;">$arr</span>[] = &amp;<span style="color: #800080;">$arr</span><span style="color: #000000;">;
+xdebug_debug_zval(</span>'arr');</code></pre>
+
+<p><span style="color: #808080;">结果如下</span></p>
+<p><img src="./images/PHP的垃圾回收机制之引用计数4.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="color: #808080;">图示：</span></p>
+<p>&nbsp;</p>
+<p>&nbsp;<img src="./images/PHP的垃圾回收机制之引用计数5.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="color: #808080;">&nbsp;8，删除环状引用</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [
+   </span>'张三'<span style="color: #000000;">
+];
+</span><span style="color: #800080;">$arr</span>[] = &amp;<span style="color: #800080;">$arr</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+xdebug_debug_zval(</span>'arr');</code></pre>
+
+<p><span style="color: #808080;">图示：</span></p>
+<p><img src="./images/PHP的垃圾回收机制之引用计数6.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="color: #808080;">现在，虽然没有任何变量指向该&lsquo;zavl&rsquo;,但由于数组元素&ldquo;0&rdquo;仍然指向数组本身，所以该&lsquo;zavl&rsquo;不能被清除 。而又因为没有另外的变量指向它，用户没有办法清除这个结构，结果就会导致内存泄漏。庆幸的是，php脚本运行完毕后会清除这个数据结构。但是在php清除之前，将耗费不少空间的内存。而在一般情况下，php脚本运行完毕因此环状引用内存泄露的问题一般只影响长时间运行的程序脚本。并且<em id="__mceDel">在5.3版本后垃圾处理虽然其基础仍然是引用计数，但是做了一些改良，能够将环状引用导致的内存泄露控制在一定的规模以内。</em></span></p>
+<p><span style="color: #808080;">当然，我们也可以手动的清除环状结构</span></p>
+<p><span style="color: #808080;">9，手动清除环状引用</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [
+   </span>'张三'<span style="color: #000000;">
+];
+</span><span style="color: #800080;">$arr</span>[] = &amp;<span style="color: #800080;">$arr</span><span style="color: #000000;">;
+</span><span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+xdebug_debug_zval(</span>'arr'<span style="color: #000000;">);
+</span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+xdebug_debug_zval(</span>'arr');</code></pre>
+
+<p>结果如下</p>
+<p><img src="./images/PHP的垃圾回收机制之引用计数7.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="color: #808080;">&nbsp;$arr=null后,虽然变量容器&lsquo;zavl&rsquo;还存在，但是之前储存在内存中引用传递的值却是完全删除掉了,最后再使用unset($arr)就可以断开变量名arr和null值之间的联系，令refcount=0就能够释放到内存了。</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: medium;">&nbsp;</span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,88 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP+Mysql统计文件下载次数实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP+Mysql统计文件下载次数实例</center></div><div class='banquan'>原文出处:本文由博客园博主mrlime提供。<br/>
+原文连接:https://www.cnblogs.com/mrlime/p/11703299.html</div><br>
+    <p>PHP+Mysql统计文件下载次数实例，实现的原理也很简单，是通过前台点击链接download.php传参id，来更新点击次数。</p>
+<p><img src="./images/PHP+Mysql统计文件下载次数实例0.jpg" alt="" width="499" height="140" /></p>
+<p><strong>获取文件列表：</strong></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+</span><span style="color: #0000ff;">require</span> 'conn.php'<span style="color: #000000;">; 
+ 
+</span><span style="color: #800080;">$query</span> = <span style="color: #008080;">mysql_query</span>("SELECT * FROM downloads"<span style="color: #000000;">); 
+</span><span style="color: #800080;">$lists</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(); 
+</span><span style="color: #0000ff;">while</span> (<span style="color: #800080;">$row</span> = <span style="color: #008080;">mysql_fetch_assoc</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">)) { 
+    </span><span style="color: #800080;">$lists</span>[] = <span style="color: #800080;">$row</span><span style="color: #000000;">; 
+} 
+</span>?&gt;</code></pre>
+
+<p><br /><strong>读取文件列表，并加上download.php链接和参数id：</strong></p>
+<src class="cnblogs_code">
+<pre><code>&lt;ul <span style="color: #0000ff;">class</span>="filelist"&gt; 
+    &lt;?php <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$lists</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span>) { ?&gt; 
+        &lt;li&gt;&lt;a href="download.php?id=&lt;?php echo <span style="color: #800080;">$v</span>['id'] ?&gt;"&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$v</span>['filename'] ?&gt;&lt;span <span style="color: #0000ff;">class</span>="downcount" title="下载次数"&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$v</span>['downloads'] ?&gt;&lt;/span&gt;&lt;span <span style="color: #0000ff;">class</span>="download"&gt;点击下载&lt;/span&gt;&lt;/a&gt;&lt;/li&gt; 
+                &lt;?php } ?&gt; 
+&lt;/ul&gt;</code></pre>
+
+<p><br /><strong>点击下载按钮，累加文件次数：</strong></p>
+<src class="cnblogs_code">
+<pre><code>$(<span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+        $(</span>'ul.filelist a').live('click', <span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+            </span><span style="color: #0000ff;">var</span> <span style="color: #008080;">count</span> = $('.downcount',<span style="color: #000000;"> this); 
+            </span><span style="color: #008080;">count</span>.text(parseInt(<span style="color: #008080;">count</span>.text()) + 1<span style="color: #000000;">); 
+        }); 
+});</span></code></pre>
+
+<p><br /><strong>download.php文件源码：</strong></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+</span><span style="color: #800080;">$id</span> = (int) <span style="color: #800080;">$_GET</span>['id'<span style="color: #000000;">]; 
+ 
+</span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$id</span>) || <span style="color: #800080;">$id</span> == 0<span style="color: #000000;">) 
+    </span><span style="color: #0000ff;">die</span>('参数错误!'<span style="color: #000000;">); 
+</span><span style="color: #800080;">$query</span> = <span style="color: #008080;">mysql_query</span>("select * from downloads where id='<span style="color: #800080;">$id</span>'"<span style="color: #000000;">); 
+</span><span style="color: #800080;">$row</span> = <span style="color: #008080;">mysql_fetch_array</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">); 
+</span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$row</span><span style="color: #000000;">) 
+    </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">; 
+</span><span style="color: #800080;">$filename</span> = <span style="color: #008080;">iconv</span>('UTF-8', 'GBK', <span style="color: #800080;">$row</span>['filename']); <span style="color: #008000;">//</span><span style="color: #008000;">中文名称注意转换编码 </span>
+<span style="color: #800080;">$savename</span> =  <span style="color: #800080;">$row</span>['savename']; <span style="color: #008000;">//</span><span style="color: #008000;">实际在服务器上的保存名称 </span>
+<span style="color: #800080;">$myfile</span> = 'files/' . <span style="color: #800080;">$savename</span>; <span style="color: #008000;">//</span><span style="color: #008000;">文件 </span>
+ 
+<span style="color: #0000ff;">if</span> (<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$myfile</span><span style="color: #000000;">)) { 
+    </span><span style="color: #008080;">mysql_query</span>("update downloads set downloads=downloads+1 where id='<span style="color: #800080;">$id</span>'"<span style="color: #000000;">); 
+    </span><span style="color: #800080;">$file</span> = @ <span style="color: #008080;">fopen</span>(<span style="color: #800080;">$myfile</span>, "r"<span style="color: #000000;">); 
+    </span><span style="color: #008080;">header</span>("Content-type: application/octet-stream"<span style="color: #000000;">); 
+    </span><span style="color: #008080;">header</span>("Content-Disposition: attachment; filename=" . <span style="color: #800080;">$filename</span><span style="color: #000000;">); 
+    </span><span style="color: #0000ff;">while</span> (!<span style="color: #008080;">feof</span>(<span style="color: #800080;">$file</span><span style="color: #000000;">)) { 
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #008080;">fread</span>(<span style="color: #800080;">$file</span>, 50000<span style="color: #000000;">); 
+    } 
+    </span><span style="color: #008080;">fclose</span>(<span style="color: #800080;">$file</span><span style="color: #000000;">); 
+    </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">; 
+} </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+    </span><span style="color: #0000ff;">echo</span> '文件不存在！'<span style="color: #000000;">; 
+} 
+</span>?&gt;</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/224.html" target="_blank">https://www.sucaihuo.com/php/224.html</a> 转载请注明出处！</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

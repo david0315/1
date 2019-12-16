@@ -1,0 +1,161 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 回调函数call_user_func和 call_user_func_array()的理解' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 回调函数call_user_func和 call_user_func_array()的理解</center></div><div class='banquan'>原文出处:本文由博客园博主林间星光提供。<br/>
+原文连接:https://www.cnblogs.com/dgxblogs/p/10556952.html</div><br>
+    <src class="cnblogs_Highlighter">
+<pre><code>call_user_func(function,param); // 第一个参数是回调函数的函数名，第二个参数是参数
+</code></pre>
+
+<p>　　</p>
+<p>call_user_func函数类似于一种特别的调用函数的方法。其主要有以下的类型：</p>
+<p>1、调用有名函数</p>
+<p>2、调用匿名函数</p>
+<p>2、调用类的方法</p>
+<p>&nbsp;</p>
+<p>1、传入有名函数分两种情况：</p>
+<p>&nbsp; a、传入的是自定义的函数</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">function</span> hasName(<span style="color: #800080;">$a</span>,<span style="color: #800080;">$b</span><span style="color: #000000;">)   
+{   
+    </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$a</span><span style="color: #000000;">;   
+    </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$b</span><span style="color: #000000;">;   
+}   
+</span><span style="color: #008080;">call_user_func</span>('hasName', "111","222");   <span style="color: #008000;">//</span><span style="color: #008000;"> 第一个参数是函数名，后面试回调函数的参数 返回111 222</span>
+<span style="color: #008080;">call_user_func</span>('hasName', "333","444");   <span style="color: #008000;">//</span><span style="color: #008000;"> 返回333 444</span>
+?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>　 b、传入的是PHP系统函数：在调用这些系统函数时，call_user_func传递的参数必须符合系统函数的传参顺序</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$return</span> = <span style="color: #008080;">call_user_func</span>('rtrim','sso;osoo;',';'<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> <span style="color: #800080;">$return2</span> = <span style="color: #008080;">call_user_func</span>('explode',';','sso;osoo;'<span style="color: #000000;">);
+</span><span style="color: #008080;">4</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$return</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">5</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$return2</span>); </code></pre>
+
+<p>&nbsp;</p>
+<p>2、调用匿名函数：调用匿名函数也分为匿名函数传参和不传参两种情况</p>
+<p>　a、传参</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">先增加后引用</span>
+<span style="color: #008080;">call_user_func</span>(<span style="color: #0000ff;">function</span>(<span style="color: #800080;">$call</span><span style="color: #000000;">){
+    </span><span style="color: #0000ff;">echo</span> ++<span style="color: #800080;">$call</span>,'&lt;br/&gt;'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">echo</span> ++<span style="color: #800080;">$call</span>,'&lt;br/&gt;'<span style="color: #000000;">;
+}</span>,1);<span style="color: #008000;">//</span><span style="color: #008000;">传给匿名函数的参数为&middot;&middot;&middot;1&middot;&middot;&middot;，执行的结果为2,3</span></code></pre>
+
+<p>　b、不传参</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$param1</span> = 'first'<span style="color: #000000;">;
+</span><span style="color: #800080;">$param2</span>= 'two'<span style="color: #000000;">;
+</span><span style="color: #800080;">$return</span> = <span style="color: #008080;">call_user_func</span>(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+    </span><span style="color: #800080;">$arg</span> = <span style="color: #008080;">func_get_arg</span>(0); <span style="color: #008000;">//</span><span style="color: #008000;">func_get_arg函数作用：获取函数的第几个参数，必须要有参数，参数必须为函数参数的偏移量，0代表第一个参数</span>
+    <span style="color: #800080;">$args</span> = <span style="color: #008080;">func_get_args</span>();<span style="color: #008000;">//</span><span style="color: #008000;">func_get_args的作用：获取函数所有的参数</span>
+    <span style="color: #0000ff;">if</span>(<span style="color: #008080;">func_num_args</span>() == 1){<span style="color: #008000;">//</span><span style="color: #008000;">func_num_args函数的作用：获取函数参数的个数，注意，假如函数没有传参，该函数返回0</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$args</span>[0<span style="color: #000000;">];
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">用|把函数的参数组织成字符串</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #008080;">implode</span>('|',<span style="color: #800080;">$args</span><span style="color: #000000;">);
+    }
+}</span>,<span style="color: #800080;">$param1</span> ,<span style="color: #800080;">$param2</span><span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$return</span>);</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>3、调用类的方法：分为调用有命名空间的方法和调用没有命名空间的方法，并且类里面又分为静态方法和普通方法</p>
+<ul>
+<li>调用有命名空间的方法</li>
+</ul>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">定义类的命名空间</span>
+<span style="color: #000000;">namespace Home;
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Space{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">静态方法</span>
+    <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> _call(<span style="color: #800080;">$num</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$num</span> +=10<span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">普通方法</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _func(){
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">func_get_args</span>();<span style="color: #008000;">//</span><span style="color: #008000;">返回函数的参数</span>
+<span style="color: #000000;">    }
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">针对静态方法，有两种调用方式
+
+//1.可以用array(__NAMESPACE__.'\类名','方法名')传递类方法，也就是：array('命名空间\类名','方法名')</span>
+<span style="color: #800080;">$return</span> = <span style="color: #008080;">call_user_func</span>(<span style="color: #0000ff;">array</span>(__NAMESPACE__.'\Space','_call'),10<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">2.可以用&middot;&middot;&middot;&middot;    __NAMESPACE__.'\类名::方法名'    &middot;&middot;&middot;传递类方法，也就是：'命名空间\类名::方法名'</span>
+<span style="color: #800080;">$return1</span> = <span style="color: #008080;">call_user_func</span>('Home\Space::_call',100<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$return</span><span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$return1</span><span style="color: #000000;">);<br />
+</span><span style="color: #008000;">//</span><span style="color: #008000;">针对普通方法，不用传入命名空间即可调用，如下</span>
+<span style="color: #800080;">$o</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Space;
+</span><span style="color: #800080;">$return</span> = <span style="color: #008080;">call_user_func</span>(<span style="color: #0000ff;">array</span>(<span style="color: #800080;">$o</span>,'_func'),1,2,3,4,5<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$return</span>);</code></pre>
+
+<p>&nbsp;</p>
+<ul>
+<li>调用没有命名空间的方法</li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Func{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">静态方法</span>
+    <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _func(){
+        </span><span style="color: #800080;">$str</span> =  'THE CLASS NAME IS '.<span style="color: #ff00ff;">__CLASS__</span>.' AND CLASS STATIC METHOD IS '.<span style="color: #ff00ff;">__METHOD__</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">func_num_args</span><span style="color: #000000;">()){
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">获取函数参数，获取参数也可以通过给方法设置形参来获取，这里只是没给方法设置形参获取参数的情况</span>
+            <span style="color: #800080;">$arg</span> = <span style="color: #008080;">func_get_arg</span>(0<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$str</span>.' and argument is '.<span style="color: #800080;">$arg</span><span style="color: #000000;">;
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$str</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">普通方法</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __func(<span style="color: #800080;">$num</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$num</span> ? <span style="color: #800080;">$num</span>+1:<span style="color: #800080;">$num</span><span style="color: #000000;">;
+    }
+}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">传递类的静态方法，有两种方式
+//(1)种，传递&middot;&middot;&middot;&middot;类名::方法名&middot;&middot;&middot;&middot;</span>
+<span style="color: #008080;">var_dump</span>(<span style="color: #008080;">call_user_func</span>("Func::_func",'hell world'));<span style="color: #008000;">//</span><span style="color: #008000;">这里传递参数
+//(2)种，传递类名和方法名的数组</span>
+<span style="color: #008080;">var_dump</span>(<span style="color: #008080;">call_user_func</span>(<span style="color: #0000ff;">array</span>('Func','_func')));<span style="color: #008000;">//</span><span style="color: #008000;">这里没有传参数</span>
+<span style="color: #800080;">$num</span> = 4<span style="color: #000000;">;
+</span><span style="color: #800080;">$o</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Func;<br />
+</span><span style="color: #008000;">//</span><span style="color: #008000;">传递类普通方法必须用&middot;&middot;&middot;数组&middot;&middot;&middot;传递&middot;&middot;&middot;该类的对象&middot;&middot;和&middot;&middot;&middot;方法名&middot;&middot;&middot;</span>
+<span style="color: #800080;">$return</span> = <span style="color: #008080;">call_user_func</span>(<span style="color: #0000ff;">array</span>(<span style="color: #800080;">$o</span>,'__func'),<span style="color: #800080;">$num</span><span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$return</span>);</code></pre>
+
+<p>&nbsp;</p>
+<p>call_user_func_array()和call_user_func_array()类似，只是call_user_func_array函数只能传递两个参数，第一个是回调函数名，或者匿名函数，或者类方法，第二个参数则是数组。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>　</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

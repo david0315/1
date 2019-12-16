@@ -1,0 +1,226 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Gin框架 - 数据绑定和验证' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Gin框架 - 数据绑定和验证</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11863070.html</div><br>
+    <p>概述<br /><br />上篇文章分享了 Gin 框架使用 Logrus 进行日志记录，这篇文章分享 Gin 框架的数据绑定与验证。<br /><br />有读者咨询我一个问题，如何让框架的运行日志不输出控制台？<br /><br />解决方案：<br /><br />&nbsp;&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>engine := gin.Default() //修改成如下    
+    engine := gin.New() 
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />我是怎么知道的？看框架代码。</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Default()：
+
+    func Default() *Engine {    
+        debugPrintWARNINGDefault()    
+        engine := New()    
+        engine.Use(Logger(), Recovery())    
+        return engine    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />New() 代码我就不贴了。<br /><br />我们看到 Default() 使用了两个中间件 Logger(),Recovery()，如果不想使用，那就直接使用 New() 就可以了。<br /><br />开始今天的文章。<br /><br />比如，请求 v1/member/add 新增会员方法， name、 age 为必填，同时 name 不能等于 admin 字符串，10 &lt;= age &lt;= 120。<br /><br />直接看代码吧。<br /><br />首先，先定义一个结构体。<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>entity/member.go
+
+    package entity    
+    // 定义 Member 结构体    
+    type Member struct {    
+        Name string `form:"name" json:"name" binding:"required,NameValid"`    
+        Age  int    `form:"age"  json:"age"  binding:"required,gt=10,lt=120"`    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />binding 中 required，这个是框架自带的， NameValid，这个是自己定义的。<br /><br />问题一：框架自带的 binding 参数还有哪些？<br /><br />问题二：自定义验证方法，怎么写？<br /><br />接下来要说的就是问题二，写一个验证方法。<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>validator/member/member.go
+
+    package member    
+    import (    
+        "gopkg.in/go-playground/validator.v8"    
+        "reflect"    
+    )    
+    func NameValid(    
+        v *validator.Validate, topStruct reflect.Value, currentStructOrField reflect.Value,    
+        field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string,    
+    ) bool {    
+        if s, ok := field.Interface().(string); ok {    
+            if s == "admin" {    
+                return false    
+            }    
+        }    
+        return true    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />接下来，在路由中绑定：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>router/router.go
+
+    package router    
+    import (    
+        "ginDemo/middleware/logger"    
+        "ginDemo/middleware/sign"    
+        "ginDemo/router/v1"    
+        "ginDemo/router/v2"    
+        "ginDemo/validator/member"    
+        "github.com/gin-gonic/gin"    
+        "github.com/gin-gonic/gin/binding"    
+        "gopkg.in/go-playground/validator.v8"    
+    )    
+    func InitRouter(r *gin.Engine)  {    
+        r.Use(logger.LoggerToFile())    
+        // v1 版本    
+        GroupV1 := r.Group("/v1")    
+        {    
+            GroupV1.Any("/product/add", v1.AddProduct)    
+            GroupV1.Any("/member/add", v1.AddMember)    
+        }    
+        // v2 版本    
+        GroupV2 := r.Group("/v2").Use(sign.Sign())    
+        {    
+            GroupV2.Any("/product/add", v2.AddProduct)    
+            GroupV2.Any("/member/add", v2.AddMember)    
+        }    
+        // 绑定验证器    
+        if v, ok := binding.Validator.Engine().(*validator.Validate); ok {    
+            v.RegisterValidation("NameValid", member.NameValid)    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />最后，看一下调用的代码。<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>router/v1/member.go
+
+    package v1    
+    import (    
+        "ginDemo/entity"    
+        "github.com/gin-gonic/gin"    
+        "net/http"    
+    )    
+    func AddMember(c *gin.Context) {    
+        res := entity.Result{}    
+        mem := entity.Member{}    
+        if err := c.ShouldBind(&amp;mem); err != nil {    
+            res.SetCode(entity.CODE_ERROR)    
+            res.SetMessage(err.Error())    
+            c.JSON(http.StatusForbidden, res)    
+            c.Abort()    
+            return    
+        }    
+        // 处理业务(下次再分享)    
+        data := map[string]interface{}{    
+            "name" : mem.Name,    
+            "age"  : mem.Age,    
+        }    
+        res.SetCode(entity.CODE_ERROR)    
+        res.SetData(data)    
+        c.JSON(http.StatusOK, res)    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />访问看看效果吧。<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>访问：http://localhost:8080/v1/member/add
+
+    {    
+        "code": -1,    
+        "msg": "Key: 'Member.Name' Error:Field validation for 'Name' failed on the 'required' tag\nKey: 'Member.Age' Error:Field validation for 'Age' failed on the 'required' tag",    
+        "data": null    
+    }
+
+访问：http://localhost:8080/v1/member/add?name=1
+
+    {    
+        "code": -1,    
+        "msg": "Key: 'Member.Age' Error:Field validation for 'Age' failed on the 'required' tag",    
+        "data": null    
+    }
+
+访问：http://localhost:8080/v1/member/add?age=1
+
+    {    
+        "code": -1,    
+        "msg": "Key: 'Member.Age' Error:Field validation for 'Age' failed on the 'required' tag",    
+        "data": null    
+    }
+
+访问：http://localhost:8080/v1/member/add?name=admin&amp;age=1
+
+    {    
+        "code": -1,    
+        "msg": "Key: 'Member.Name' Error:Field validation for 'Name' failed on the 'NameValid' tag",    
+        "data": null    
+    }
+
+访问：http://localhost:8080/v1/member/add?name=1&amp;age=1
+
+    {    
+        "code": -1,    
+        "msg": "Key: 'Member.Age' Error:Field validation for 'Age' failed on the 'gt' tag",    
+        "data": null    
+    }
+
+访问：http://localhost:8080/v1/member/add?name=1&amp;age=121
+
+    {    
+        "code": -1,    
+        "msg": "Key: 'Member.Age' Error:Field validation for 'Age' failed on the 'lt' tag",    
+        "data": null    
+    }
+
+访问：http://localhost:8080/v1/member/add?name=Tom&amp;age=30
+
+    {    
+        "code": 1,    
+        "msg": "",    
+        "data": {    
+            "age": 30,    
+            "name": "Tom"    
+        }    
+}
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />&nbsp;&nbsp;&nbsp; <br />为避免返回信息过多，错误提示咱们也可以统一。<br /><br />&nbsp;&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>if err := c.ShouldBind(&amp;mem); err != nil {    
+        res.SetCode(entity.CODE_ERROR)    
+        res.SetMessage("参数验证错误")    
+        c.JSON(http.StatusForbidden, res)    
+        c.Abort()    
+        return    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />这一次目录结构调整了一些，在这里说一下：<br /><br />&nbsp;&nbsp;&nbsp; ├─ ginDemo&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ common&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //公共方法&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── common.go&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //配置文件&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── config.go&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ entity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //实体&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ middleware&nbsp;&nbsp;&nbsp; //中间件&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── logger&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── sign&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ router&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //路由&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ validator&nbsp;&nbsp;&nbsp;&nbsp; //验证器&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ vendor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //扩展包&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── github.com&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── golang.org&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── gopkg.in&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ Gopkg.toml&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ Gopkg.lock&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ main.go<br /><br />将 sign 和 logger 调整为中间件，并放到 middleware 中间件 目录。<br /><br />新增了 common 公共方法目录。<br /><br />新增了 validator 验证器目录。<br /><br />新增了 entity 实体目录。<br /><br />具体代码我会放到 GitHub，有感兴趣的可以去看：https://github.com/xinliangnote/Go。<br /><br />上面还遗漏了 问题一 没解决，框架自带的 binding 参数还有哪些？<br /><br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

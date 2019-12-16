@@ -1,0 +1,78 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP5 Nginx通用配置' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP5 Nginx通用配置</center></div><div class='banquan'>原文出处:本文由博客园博主dreams7433提供。<br/>
+原文连接:https://www.cnblogs.com/phperlinxinlan/p/11163693.html</div><br>
+    <p>项目配置内容如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">server {
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">配置监听端口</span>
+    listen 80<span style="color: #000000;">;
+    listen [</span>::]:80<span style="color: #000000;">;
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">设置网站根目录作为变量root</span>
+    set <span style="color: #800080;">$root</span> /<span style="color: #0000ff;">var</span>/www/<span style="color: #000000;">web;
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">设置网站根目录</span>
+    root <span style="color: #800080;">$root</span><span style="color: #000000;">; 
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">设置访问日志存放路径</span>
+    <span style="color: #008000;">#</span><span style="color: #008000;">access_log logs/access.log;</span>
+    <span style="color: #008000;">#</span><span style="color: #008000;">设置错误日志存放路径</span>
+    <span style="color: #008000;">#</span><span style="color: #008000;">error_log  logs/error.log;</span>
+    <span style="color: #008000;">#</span><span style="color: #008000;">设置网站默认首页</span>
+    index index.html index.<span style="color: #000000;">php;
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">设置域名       </span>
+    server_name www.example123.<span style="color: #000000;">com;
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">设置字符集</span>
+    charset utf-8<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">此配置用于静态文件配置</span>
+    <span style="color: #008000;">#</span><span style="color: #008000;">location /static {</span>
+        <span style="color: #008000;">#</span><span style="color: #008000;">try_files $uri $uri/ =404;</span>
+    <span style="color: #008000;">#</span><span style="color: #008000;">}</span>
+
+    <span style="color: #008000;">#</span><span style="color: #008000;">配置PHP的重写规则</span>
+    location /<span style="color: #000000;"> {
+        </span><span style="color: #008000;">#</span><span style="color: #008000;">开启目录浏览功能</span>
+        <span style="color: #008000;">#</span><span style="color: #008000;">autoindex on;</span>
+        <span style="color: #008000;">#</span><span style="color: #008000;">关闭详细文件大小统计，让文件大小显示MB，GB单位，默认为b</span>
+        <span style="color: #008000;">#</span><span style="color: #008000;">autoindex_exact_size on;</span>
+        <span style="color: #008000;">#</span><span style="color: #008000;">开启以服务器本地时区显示文件修改日期</span>
+        <span style="color: #008000;">#</span><span style="color: #008000;">autoindex_localtime on;</span>
+        <span style="color: #0000ff;">if</span> ( !-e <span style="color: #800080;">$request_filename</span><span style="color: #000000;">) {
+            rewrite </span>^/(.*)$ /index.php/$1<span style="color: #000000;"> last;
+            </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        } 
+    }
+
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">配置PHP的pathinfo</span>
+    location ~ .+\.php($|/<span style="color: #000000;">) {
+        fastcgi_pass </span>127.0.0.1:9000<span style="color: #000000;">;
+        fastcgi_index index</span>.<span style="color: #000000;">php;
+        fastcgi_split_path_info </span>^((?U).+.php)(/?.+<span style="color: #000000;">)$;
+        fastcgi_param PATH_INFO </span><span style="color: #800080;">$fastcgi_path_info</span><span style="color: #000000;">;
+        fastcgi_param PATH_TRANSLATED </span><span style="color: #800080;">$document_root$fastcgi_path_info</span><span style="color: #000000;">;
+        fastcgi_param SCRIPT_FILENAME </span><span style="color: #800080;">$root$fastcgi_script_name</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">include</span><span style="color: #000000;"> fastcgi_params;
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

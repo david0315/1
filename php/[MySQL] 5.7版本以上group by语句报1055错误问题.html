@@ -1,0 +1,37 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[MySQL] 5.7版本以上group by语句报1055错误问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[MySQL] 5.7版本以上group by语句报1055错误问题</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10542668.html</div><br>
+    <p>1. 在5.7版本以上mysql中使用group by语句进行分组时, 如果select的字段 , 不是完全对应的group by后面的字段 , 有其他字段 , 那么就会报这个错误</p>
+<p>ERROR 1055 (42000): Expression #1 of SELECT list is not in GROUP BY clause and contains nonaggregated column</p>
+<p>2.这是因为高版本mysql添加了一个sql_mode</p>
+<p>查看sql_mode&nbsp;</p>
+<p>select @@sql_mode;</p>
+<p>mysql&gt; select @@sql_mode;<br />+-------------------------------------------------------------------------------------------------------------------------------------------+<br />| @@sql_mode                                                                                                                                |<br />+-------------------------------------------------------------------------------------------------------------------------------------------+<br />| ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION |<br />+-------------------------------------------------------------------------------------------------------------------------------------------+</p>
+<p>可以看到有一个ONLY_FULL_GROUP_BY , 这个就是严格控制group by 和select 字段的 , 在不改变sql语句的前提下 , 把这个去掉就可以了</p>
+<p>3.我的ubuntu系统下编辑的这个文件&nbsp;/etc/mysql/conf.d/mysql.cnf&nbsp; , 其他系统找到对应的配置文件就可以了 ,在[mysqld]块下 ,把sql_mode配置上 , 并且去掉ONLY_FULL_GROUP_BY</p>
+<p>sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'</p>
+<p>4.此时就正常了</p>
+<p><img src="./images/[MySQL] 5.7版本以上group by语句报1055错误问题0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,121 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修dedecms织梦文章微信分享带缩略图与简介' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>dedecms织梦文章微信分享带缩略图与简介</center></div><div class='banquan'>原文出处:本文由博客园博主早上六点半遇见五月天提供。<br/>
+原文连接:https://www.cnblogs.com/pawn-i/p/10735109.html</div><br>
+    <p>dedecms V5.7二次开发</p>
+<p>php5.6</p>
+<p>mysql5.1</p>
+<p>问题：dedecms文章分享到微信，带缩略图与简介。如下图：</p>
+<p><img src="./images/dedecms织梦文章微信分享带缩略图与简介0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><strong>1.准备工作</strong></p>
+<ul class="aui">
+<li>PHP 5.3+ 并且 curl扩展已经开启</li>
+<li>微信服务号一个，并且已经通过了实名认证；</li>
+<li>一个ICP备案的域名；</li>
+</ul>
+<p><strong>&nbsp;2.具体步骤</strong></p>
+<p><strong>（1）登录微信公众号平台，查看AppId，AppSecret、IP白名单(填你服务器外网IP)、绑定域名</strong></p>
+<p><img src="./images/dedecms织梦文章微信分享带缩略图与简介1.jpg" alt="" width="516" height="333" /></p>
+<p><img src="./images/dedecms织梦文章微信分享带缩略图与简介2.jpg" alt="" width="580" height="430" /></p>
+<p>注：1&gt;基本配置-&gt;同意成为开发者-&gt;开发者密码启用之后才可能设置ip白名单；</p>
+<p>　　2&gt;添加js接口安全域名，会提示你需要做什么，要步骤完成即可；</p>
+<p><strong>（2）文章内容页面微信分享代码：</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;script src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 2</span> &lt;script type="text/javascript"&gt;
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">var</span> url = encodeURIComponent(location.href.split("#")[0<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">$.ajax({
+</span><span style="color: #008080;"> 5</span>     type: "get"<span style="color: #000000;">,
+</span><span style="color: #008080;"> 6</span>     url: "https://www.dedehtml.com/wechat.php?link=" +<span style="color: #000000;"> url,
+</span><span style="color: #008080;"> 7</span>     <span style="color: #008000;">//</span><span style="color: #008000;">url的域名根据自己的实际情况修改,eg.</span>
+<span style="color: #008080;"> 8</span>     <span style="color: #008000;">//</span><span style="color: #008000;">url:"http://www.56nev.com/wechat.php?link="+url,</span>
+<span style="color: #008080;"> 9</span>     dataType: "json"<span style="color: #000000;">,
+</span><span style="color: #008080;">10</span>     contentType: "application/json; charset=utf-8"<span style="color: #000000;">,
+</span><span style="color: #008080;">11</span>     success: <span style="color: #0000ff;">function</span><span style="color: #000000;">(e) {
+</span><span style="color: #008080;">12</span>         <span style="color: #0000ff;">var</span> d =<span style="color: #000000;"> e.appid,
+</span><span style="color: #008080;">13</span>             i =<span style="color: #000000;"> e.timestamp,
+</span><span style="color: #008080;">14</span>             t =<span style="color: #000000;"> e.noncestr,
+</span><span style="color: #008080;">15</span>             n =<span style="color: #000000;"> e.signature;
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        wx.config({
+</span><span style="color: #008080;">17</span>             debug: 0,<span style="color: #008000;">//</span><span style="color: #008000;">如果分享失败，把0改成1开启错误提示看看</span>
+<span style="color: #008080;">18</span> <span style="color: #000000;">            appId: d,
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">            timestamp: i,
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">            nonceStr: t,
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">            signature: n,
+</span><span style="color: #008080;">22</span>             jsApiList: ["onMenuShareTimeline", "onMenuShareAppMessage"<span style="color: #000000;">]
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">        }), 
+</span><span style="color: #008080;">24</span>         wx.ready(<span style="color: #0000ff;">function</span><span style="color: #000000;">() {
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">            wx.onMenuShareTimeline({
+</span><span style="color: #008080;">26</span>                 title: "{dede:field.title/}"<span style="color: #000000;">,
+</span><span style="color: #008080;">27</span>                 desc: "{dede:field.description/}"<span style="color: #000000;">,
+</span><span style="color: #008080;">28</span>                 link: "{dede:global.cfg_basehost/}{dede:field.id runphp='yes'}$result=GetOneArchive(@me);@me=$result['arcurl'];{/dede:field.id}"<span style="color: #000000;">,
+</span><span style="color: #008080;">29</span>                 imgUrl: "{dede:global.cfg_basehost/}{dede:field.litpic/}"
+<span style="color: #008080;">30</span> <span style="color: #000000;">            }), 
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">            wx.onMenuShareAppMessage({
+</span><span style="color: #008080;">32</span>                 title: "{dede:field.title/}"<span style="color: #000000;">,
+</span><span style="color: #008080;">33</span>                 desc: "{dede:field.description/}"<span style="color: #000000;">,
+</span><span style="color: #008080;">34</span>                 link: "{dede:global.cfg_basehost/}{dede:field.id runphp='yes'}$result=GetOneArchive(@me);@me=$result['arcurl'];{/dede:field.id}"<span style="color: #000000;">,
+</span><span style="color: #008080;">35</span>                 imgUrl: "{dede:global.cfg_basehost/}{dede:field.litpic/}"
+<span style="color: #008080;">36</span> <span style="color: #000000;">            })
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">        })
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">});
+</span><span style="color: #008080;">40</span> &lt;/script&gt;</code></pre>
+
+<p><strong>（3）wechat.php文件下载，放在网站根目录</strong></p>
+<p><a href="https://pan.baidu.com/s/1FQejrLWYpY5rOwWLe0xg6A" target="_blank">https://pan.baidu.com/s/1FQejrLWYpY5rOwWLe0xg6A</a></p>
+<p><strong>（4）其他需要注意的地方：</strong></p>
+<p><strong>　　1&gt;不同内容页链接方式写法不一样</strong></p>
+<src class="cnblogs_code">
+<pre><code>1、如果你是手机站内容页，这样的 http:<span style="color: #008000;">//</span><span style="color: #008000;">www.dedehtml.com/m/view.php?aid=123</span>
+<span style="color: #000000;">
+那你应该改成
+
+link: </span>"{dede:global.cfg_basehost/}{dede:field.id/}"<span style="color: #000000;">,
+
+</span>2、如果你是手机站内容页，这样的 http:<span style="color: #008000;">//</span><span style="color: #008000;">m.dedehtml.com/view.php?aid=123</span>
+<span style="color: #000000;">
+那你应该改成
+
+link: </span>"http://m.dedehtml.com/view.php?aid={dede:field.id/}"<span style="color: #000000;">,
+
+</span>3、如果你是手机站内容页，这样的 http:<span style="color: #008000;">//</span><span style="color: #008000;">www.dedehtml.com/m/news/123.html</span>
+<span style="color: #000000;">
+那你应该改成
+
+link: </span>"{dede:global.cfg_basehost/}/m/{dede:field.id runphp='yes'}$result=GetOneArchive(@me);@me=$result['arcurl'];{/dede:field.id}"<span style="color: #000000;">,
+
+</span>4、如果你是手机站内容页，这样的 http:<span style="color: #008000;">//</span><span style="color: #008000;">m.dedehtml.com/news/123.html</span>
+<span style="color: #000000;">
+那你应该改成
+
+link: </span>"http://m.dedehtml.com{dede:field.id runphp='yes'}$result=GetOneArchive(@me);@me=$result['arcurl'];{/dede:field.id}",</code></pre>
+
+<p>操作完成之后，分享显示的是：&nbsp;</p>
+<p><img src="./images/dedecms织梦文章微信分享带缩略图与简介3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>因为项目有这样的需求，上百度搜到的。记录一下，学习。<strong>原文链接&darr;&darr;&darr;</strong></p>
+<p>原文链接：<a href="https://www.dedehtml.com/notes/dede-weixinshare.html" target="_blank">https://www.dedehtml.com/notes/dede-weixinshare.html</a></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

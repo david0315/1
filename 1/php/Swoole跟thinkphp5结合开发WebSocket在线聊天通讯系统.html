@@ -1,0 +1,243 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole跟thinkphp5结合开发WebSocket在线聊天通讯系统' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole跟thinkphp5结合开发WebSocket在线聊天通讯系统</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11794399.html</div><br>
+    <p><br /><br /></p>
+<src>
+<p>ThinkPHP使用Swoole需要安装 think-swoole Composer包，前提系统已经安装好了Swoole PECL 拓展*</p>
+<p>tp5的项目根目录下执行composer命令安装think-swoole：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>composer <span style="color: #0000ff;">require</span> topthink/think-swoole</code></pre>
+
+<p>&nbsp;</p>
+
+<p>话不多说，直接上代码：</p>
+<p>新建WebSocket.php控制器</p>
+<p>（监听端口要确认服务器放行，宝塔环境还需要添加安全组规则）</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #000000;">namespace app\home\controller;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\swoole\Server;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">class</span> WebSocket <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Server
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$host</span> = '0.0.0.0'; <span style="color: #008000;">//</span><span style="color: #008000;">监听所有地址</span>
+<span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$port</span> = 9501; <span style="color: #008000;">//</span><span style="color: #008000;">监听9501端口</span>
+<span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$serverType</span> = 'socket'<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$option</span> =<span style="color: #000000;"> [ 
+</span><span style="color: #008080;">11</span>         'worker_num'=&gt; 4, <span style="color: #008000;">//</span><span style="color: #008000;">设置启动的Worker进程数</span>
+<span style="color: #008080;">12</span>         'daemonize'    =&gt; <span style="color: #0000ff;">false</span>, <span style="color: #008000;">//</span><span style="color: #008000;">守护进程化（上线改为true）</span>
+<span style="color: #008080;">13</span>         'backlog'    =&gt; 128, <span style="color: #008000;">//</span><span style="color: #008000;">Listen队列长度</span>
+<span style="color: #008080;">14</span>         'dispatch_mode' =&gt; 2, <span style="color: #008000;">//</span><span style="color: #008000;">固定模式，保证同一个连接发来的数据只会被同一个worker处理
+</span><span style="color: #008080;">15</span>  
+<span style="color: #008080;">16</span> <span style="color: #008000;">        //心跳检测：每60秒遍历所有连接，强制关闭10分钟内没有向服务器发送任何数据的连接</span>
+<span style="color: #008080;">17</span>         'heartbeat_check_interval' =&gt; 60,
+<span style="color: #008080;">18</span>         'heartbeat_idle_time' =&gt; 600
+<span style="color: #008080;">19</span> <span style="color: #000000;">    ];
+</span><span style="color: #008080;">20</span>  
+<span style="color: #008080;">21</span>     <span style="color: #008000;">//</span><span style="color: #008000;">建立连接时回调函数</span>
+<span style="color: #008080;">22</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onOpen(<span style="color: #800080;">$server</span>,<span style="color: #800080;">$req</span><span style="color: #000000;">)
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">24</span>         <span style="color: #800080;">$fd</span> = <span style="color: #800080;">$req</span>-&gt;fd;<span style="color: #008000;">//</span><span style="color: #008000;">客户端标识</span>
+<span style="color: #008080;">25</span>         <span style="color: #800080;">$uid</span> = <span style="color: #800080;">$req</span>-&gt;get['uid'];<span style="color: #008000;">//</span><span style="color: #008000;">客户端传递的用户id</span>
+<span style="color: #008080;">26</span>         <span style="color: #800080;">$token</span> = <span style="color: #800080;">$req</span>-&gt;get['token'];<span style="color: #008000;">//</span><span style="color: #008000;">客户端传递的用户登录token
+</span><span style="color: #008080;">27</span>         
+<span style="color: #008080;">28</span> <span style="color: #008000;">        //省略token验证逻辑......</span>
+<span style="color: #008080;">29</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$token</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">30</span>             <span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span>('status'=&gt;2,'message'=&gt;'token已过期'<span style="color: #000000;">);
+</span><span style="color: #008080;">31</span>             <span style="color: #800080;">$server</span>-&gt;push(<span style="color: #800080;">$fd</span>, json_encode(<span style="color: #800080;">$arr</span><span style="color: #000000;">));
+</span><span style="color: #008080;">32</span>             <span style="color: #800080;">$server</span>-&gt;close(<span style="color: #800080;">$fd</span><span style="color: #000000;">);
+</span><span style="color: #008080;">33</span>             <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">35</span>         <span style="color: #008000;">//</span><span style="color: #008000;">省略给用户绑定fd逻辑......</span>
+<span style="color: #008080;">36</span>         <span style="color: #0000ff;">echo</span> "用户{<span style="color: #800080;">$uid</span>}建立了连接,标识为{<span style="color: #800080;">$fd</span>}\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">38</span>  
+<span style="color: #008080;">39</span>     <span style="color: #008000;">//</span><span style="color: #008000;">接收数据时回调函数</span>
+<span style="color: #008080;">40</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onMessage(<span style="color: #800080;">$server</span>,<span style="color: #800080;">$frame</span><span style="color: #000000;">)
+</span><span style="color: #008080;">41</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">42</span>         <span style="color: #800080;">$fd</span> = <span style="color: #800080;">$frame</span>-&gt;<span style="color: #000000;">fd;
+</span><span style="color: #008080;">43</span>         <span style="color: #800080;">$message</span> = <span style="color: #800080;">$frame</span>-&gt;<span style="color: #000000;">data;
+</span><span style="color: #008080;">44</span>  
+<span style="color: #008080;">45</span>         <span style="color: #008000;">//</span><span style="color: #008000;">省略通过fd查询用户uid逻辑......</span>
+<span style="color: #008080;">46</span>         <span style="color: #800080;">$uid</span> = 666<span style="color: #000000;">;
+</span><span style="color: #008080;">47</span>         <span style="color: #800080;">$data</span>['uid'] = <span style="color: #800080;">$uid</span><span style="color: #000000;">;
+</span><span style="color: #008080;">48</span>         <span style="color: #800080;">$data</span>['message'] = '用户'.<span style="color: #800080;">$uid</span>.'发送了:'.<span style="color: #800080;">$message</span><span style="color: #000000;">;
+</span><span style="color: #008080;">49</span>         <span style="color: #800080;">$data</span>['post_time'] = <span style="color: #008080;">date</span>("m/d H:i",<span style="color: #008080;">time</span><span style="color: #000000;">());
+</span><span style="color: #008080;">50</span>         <span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span>('status'=&gt;1,'message'=&gt;'success','data'=&gt;<span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #008080;">51</span>  
+<span style="color: #008080;">52</span>         <span style="color: #008000;">//</span><span style="color: #008000;">仅推送给当前连接用户
+</span><span style="color: #008080;">53</span> <span style="color: #008000;">        //$server-&gt;push($fd, json_encode($arr));
+</span><span style="color: #008080;">54</span>         
+<span style="color: #008080;">55</span> <span style="color: #008000;">        //推送给全部连接用户</span>
+<span style="color: #008080;">56</span>         <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$server</span>-&gt;connections <span style="color: #0000ff;">as</span> <span style="color: #800080;">$fd</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">57</span>             <span style="color: #800080;">$server</span>-&gt;push(<span style="color: #800080;">$fd</span>, json_encode(<span style="color: #800080;">$arr</span><span style="color: #000000;">));
+</span><span style="color: #008080;">58</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">59</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">60</span>  
+<span style="color: #008080;">61</span>     <span style="color: #008000;">//</span><span style="color: #008000;">连接关闭时回调函数</span>
+<span style="color: #008080;">62</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onClose(<span style="color: #800080;">$server</span>,<span style="color: #800080;">$fd</span><span style="color: #000000;">)
+</span><span style="color: #008080;">63</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">64</span>         <span style="color: #0000ff;">echo</span> "标识{<span style="color: #800080;">$fd</span>}关闭了连接\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">65</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">66</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>前端演示页面：</p>
+<p>（省略控制器判断登录状态、分配数据逻辑......）</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;!DOCTYPE html&gt;
+<span style="color: #008080;">  2</span> &lt;html lang="en"&gt;
+<span style="color: #008080;">  3</span> &lt;head&gt;
+<span style="color: #008080;">  4</span> &lt;meta charset="UTF-8" /&gt;
+<span style="color: #008080;">  5</span> &lt;meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /&gt;
+<span style="color: #008080;">  6</span> &lt;meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" /&gt;
+<span style="color: #008080;">  7</span> &lt;title&gt;Chat&lt;/title&gt;
+<span style="color: #008080;">  8</span> &lt;link rel="stylesheet" type="text/css" href="/static/liaotian/chat.css" /&gt;
+<span style="color: #008080;">  9</span> &lt;script src="/static/liaotian/js/jquery.min.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 10</span> &lt;script src="/static/liaotian/js/flexible.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 11</span> &lt;/head&gt;
+<span style="color: #008080;"> 12</span> &lt;body&gt;
+<span style="color: #008080;"> 13</span>     &lt;<span style="color: #008080;">header</span> <span style="color: #0000ff;">class</span>="header"&gt;
+<span style="color: #008080;"> 14</span>         &lt;a <span style="color: #0000ff;">class</span>="back" href="javascript:history.back()"&gt;&lt;/a&gt;
+<span style="color: #008080;"> 15</span>         &lt;h5 <span style="color: #0000ff;">class</span>="tit"&gt;在线聊天&lt;/h5&gt;
+<span style="color: #008080;"> 16</span>         &lt;a href=""&gt;&lt;div <span style="color: #0000ff;">class</span>="right"&gt;退出&lt;/div&gt;&lt;/a&gt;
+<span style="color: #008080;"> 17</span>     &lt;/<span style="color: #008080;">header</span>&gt;
+<span style="color: #008080;"> 18</span>  
+<span style="color: #008080;"> 19</span>     &lt;!-- 聊天内容 start--&gt;
+<span style="color: #008080;"> 20</span>     &lt;div <span style="color: #0000ff;">class</span>="message"&gt; &lt;/div&gt;
+<span style="color: #008080;"> 21</span>     &lt;!-- 聊天内容 <span style="color: #008080;">end</span>--&gt;
+<span style="color: #008080;"> 22</span>  
+<span style="color: #008080;"> 23</span>     &lt;!-- 底部 start--&gt;
+<span style="color: #008080;"> 24</span>     &lt;div <span style="color: #0000ff;">class</span>="footer"&gt;
+<span style="color: #008080;"> 25</span>         &lt;img id="setbtn" src="/static/liaotian/images/hua.png" alt="" /&gt;
+<span style="color: #008080;"> 26</span>         &lt;img src="/static/liaotian/images/xiaolian.png" alt="" /&gt;
+<span style="color: #008080;"> 27</span>         &lt;input type="text" id="msg" value="" maxlength="300"&gt;
+<span style="color: #008080;"> 28</span>         &lt;p style="background: rgb(17, 79, 142);" id="sendBtn"&gt;发送&lt;/p&gt;
+<span style="color: #008080;"> 29</span>     &lt;/div&gt;
+<span style="color: #008080;"> 30</span>     &lt;!-- 底部 <span style="color: #008080;">end</span>--&gt;
+<span style="color: #008080;"> 31</span> &lt;/body&gt;
+<span style="color: #008080;"> 32</span> &lt;/html&gt;
+<span style="color: #008080;"> 33</span> &lt;script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 34</span> &lt;script src="https://cdn.bootcss.com/layer/3.1.0/layer.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 35</span> &lt;script type="text/javascript"&gt;
+<span style="color: #008080;"> 36</span> $(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 37</span>     <span style="color: #0000ff;">var</span> uid = 666;<span style="color: #008000;">//</span><span style="color: #008000;">当前用户id</span>
+<span style="color: #008080;"> 38</span>     <span style="color: #0000ff;">var</span> token = 'abcdefg';<span style="color: #008000;">//</span><span style="color: #008000;">用户token
+</span><span style="color: #008080;"> 39</span>  
+<span style="color: #008080;"> 40</span> <span style="color: #008000;">    //判断浏览器是否支持WebSocket</span>
+<span style="color: #008080;"> 41</span>     <span style="color: #0000ff;">var</span> supportsWebSockets = 'WebSocket' in window || 'MozWebSocket'<span style="color: #000000;"> in window;
+</span><span style="color: #008080;"> 42</span>     <span style="color: #0000ff;">if</span><span style="color: #000000;"> (supportsWebSockets) {
+</span><span style="color: #008080;"> 43</span>         <span style="color: #008000;">//</span><span style="color: #008000;">建立WebSocket连接（ip地址换成自己主机ip）</span>
+<span style="color: #008080;"> 44</span>         <span style="color: #0000ff;">var</span> ws = <span style="color: #0000ff;">new</span> WebSocket("ws://127.0.0.1:9501?uid="+uid+"&amp;token="+<span style="color: #000000;">token);
+</span><span style="color: #008080;"> 45</span>         ws.onopen = <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 46</span>             layer.msg('服务器连接成功',{shade:0.1,icon:1,<span style="color: #008080;">time</span>:600<span style="color: #000000;">});
+</span><span style="color: #008080;"> 47</span> <span style="color: #000000;">        };
+</span><span style="color: #008080;"> 48</span>         ws.onerror = <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 49</span>             layer.msg('服务器连接失败',{shade:0.1,icon:2,<span style="color: #008080;">time</span>:600<span style="color: #000000;">});
+</span><span style="color: #008080;"> 50</span> <span style="color: #000000;">        };
+</span><span style="color: #008080;"> 51</span>         ws.onmessage = <span style="color: #0000ff;">function</span><span style="color: #000000;"> (evt) {
+</span><span style="color: #008080;"> 52</span>             <span style="color: #0000ff;">var</span> data = $.parseJSON(evt.<span style="color: #000000;">data);
+</span><span style="color: #008080;"> 53</span>             <span style="color: #008000;">//</span><span style="color: #008000;">错误提示</span>
+<span style="color: #008080;"> 54</span>             <span style="color: #0000ff;">if</span>(data.status != 1<span style="color: #000000;">){
+</span><span style="color: #008080;"> 55</span>                 layer.alert(data.message,{icon:2<span style="color: #000000;">});
+</span><span style="color: #008080;"> 56</span>                 <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 57</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;"> 58</span>             <span style="color: #008000;">//</span><span style="color: #008000;">消息返回</span>
+<span style="color: #008080;"> 59</span>             <span style="color: #0000ff;">if</span> (data.status==1 &amp;&amp; data.data.message!=''<span style="color: #000000;">) {
+</span><span style="color: #008080;"> 60</span>                 <span style="color: #0000ff;">var</span> html = ""<span style="color: #000000;">;
+</span><span style="color: #008080;"> 61</span>                 <span style="color: #0000ff;">if</span> (data.data.uid ==<span style="color: #000000;"> uid) {
+</span><span style="color: #008080;"> 62</span>                     html += "&lt;div style='word-break:break-all' class=\"show\"&gt;&lt;div class=\"time\"&gt;"+data.data.post_time+"&lt;/div&gt;&lt;div class=\"msg\"&gt;&lt;img src=\""+data.data.head_img+"\" alt=\"\" /&gt;&lt;p&gt;&lt;i clas=\"msg_input\"&gt;&lt;/i&gt;"+data.data.message+"&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 63</span>                 }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 64</span>                     html += "&lt;div style='word-break:break-all' class=\"send\"&gt;&lt;div class=\"time\"&gt;"+data.data.post_time+"&lt;/div&gt;&lt;div class=\"msg\"&gt;&lt;img src=\""+data.data.head_img+"\" alt=\"\" /&gt;&lt;p&gt;&lt;i clas=\"msg_input\"&gt;&lt;/i&gt;"+data.data.message+"&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 65</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;"> 66</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;"> 67</span>             $(".message").<span style="color: #000000;">append(html);
+</span><span style="color: #008080;"> 68</span>             setTimeout(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 69</span>                 ($('.message').children("div:last-child")[0]).scrollIntoView();<span style="color: #008000;">//</span><span style="color: #008000;">向上滚动</span>
+<span style="color: #008080;"> 70</span>             },100<span style="color: #000000;">);
+</span><span style="color: #008080;"> 71</span> <span style="color: #000000;">        };
+</span><span style="color: #008080;"> 72</span>         ws.onclose = <span style="color: #0000ff;">function</span><span style="color: #000000;"> (res) {
+</span><span style="color: #008080;"> 73</span>             
+<span style="color: #008080;"> 74</span> <span style="color: #000000;">        };
+</span><span style="color: #008080;"> 75</span>         <span style="color: #008000;">//</span><span style="color: #008000;">按钮发送</span>
+<span style="color: #008080;"> 76</span>         $("#sendBtn").click(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 77</span>             <span style="color: #0000ff;">var</span> contents = $("#msg").val().<span style="color: #008080;">trim</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 78</span>             <span style="color: #0000ff;">if</span>(contents == <span style="color: #0000ff;">null</span> || contents == ""<span style="color: #000000;">){
+</span><span style="color: #008080;"> 79</span>                 layer.msg('内容为空',{shade:0.1,icon:2,<span style="color: #008080;">time</span>:600<span style="color: #000000;">});            
+</span><span style="color: #008080;"> 80</span>                 <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 81</span>             }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 82</span>                 ws.<span style="color: #000000;">send(contents);
+</span><span style="color: #008080;"> 83</span>                 $("#msg").val(""<span style="color: #000000;">);
+</span><span style="color: #008080;"> 84</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;"> 85</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;"> 86</span>         <span style="color: #008000;">//</span><span style="color: #008000;">回车发送</span>
+<span style="color: #008080;"> 87</span>         $("#msg").keydown(<span style="color: #0000ff;">function</span><span style="color: #000000;"> (evel) {
+</span><span style="color: #008080;"> 88</span>             <span style="color: #0000ff;">var</span> that =<span style="color: #000000;"> $(this);
+</span><span style="color: #008080;"> 89</span>             <span style="color: #0000ff;">if</span> (evel.keyCode == 13<span style="color: #000000;">) {
+</span><span style="color: #008080;"> 90</span>                 evel.cancelBubble = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 91</span>                 evel.<span style="color: #000000;">preventDefault();
+</span><span style="color: #008080;"> 92</span>                 evel.<span style="color: #000000;">stopPropagation();
+</span><span style="color: #008080;"> 93</span>                 <span style="color: #0000ff;">var</span> contents = that.val().<span style="color: #008080;">trim</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 94</span>                 <span style="color: #0000ff;">if</span>(contents == <span style="color: #0000ff;">null</span> || contents == ""<span style="color: #000000;">){
+</span><span style="color: #008080;"> 95</span>                     layer.msg('内容为空',{shade:0.1,icon:2,<span style="color: #008080;">time</span>:600<span style="color: #000000;">});              
+</span><span style="color: #008080;"> 96</span>                     <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 97</span>                 }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 98</span>                     ws.<span style="color: #000000;">send(contents);
+</span><span style="color: #008080;"> 99</span>                     that.val(""<span style="color: #000000;">);
+</span><span style="color: #008080;">100</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;">101</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">102</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;">103</span>     }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">104</span>         layer.alert("您的浏览器不支持 WebSocket!"<span style="color: #000000;">);
+</span><span style="color: #008080;">105</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">106</span> <span style="color: #000000;">});
+</span><span style="color: #008080;">107</span> &lt;/script&gt;
+<span style="color: #008080;">108</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<p>服务器移到项目根目录开启服务：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>php <span style="color: #0000ff;">public</span>/index.php Websocket/start</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这里的路径，是因为我绑定了home模块为默认模块，tp5默认情况是：php public/index.php index/Websocket/start）</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>开启成功，查看端口已经被监听：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>lsof -i:9501</code></pre>
+
+<p>&nbsp;</p>
+<p><strong>phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的</strong>（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群677079770</a></p>
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

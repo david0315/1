@@ -1,0 +1,148 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 的 self 关键字用法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 的 self 关键字用法</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11938922.html</div><br>
+    <blockquote>
+<p><br />之前有人询问 <code>self</code> 关键字的用法，答案是比较明显的：静态成员函数内不能用 <code>this</code> 调用非成员函数，但可以用 <code>self</code> 调用静态成员函数/变量/常量；其他成员函数可以用 <code>self</code> 调用静态成员函数以及非静态成员函数。随着讨论的深入，发现 <code>self</code> 并没有那么简单。鉴于此，本文先对几个关键字做对比和区分，再总结 <code>self</code> 的用法。</p>
+
+</blockquote>
+<src>
+<h2>与 <code>parent</code> 、 <code>static</code> 以及 <code>this</code> 的区别</h2>
+<p>要想将彻底搞懂 <code>self</code> ，要与 <code>parent</code> 、 <code>static</code> 以及 <code>this</code> 区分开。以下分别做对比。</p>
+<h3><code>parent</code></h3>
+<p><code>self</code> 与 <code>parent</code> 的区分比较容易： <code>parent</code> 引用父类/基类被隐盖的方法（或变量）， <code>self</code>则引用自身方法（或变量）。例如构造函数中调用父类构造函数：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Base {
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function __construct() {
+        echo </span><span style="color: #800000;">"</span><span style="color: #800000;">Base contructor!</span><span style="color: #800000;">"</span><span style="color: #000000;">, PHP_EOL;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Child {
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function __construct() {
+        parent::__construct();
+        echo </span><span style="color: #800000;">"</span><span style="color: #800000;">Child contructor!</span><span style="color: #800000;">"</span><span style="color: #000000;">, PHP_EOL;
+    }
+}
+
+</span><span style="color: #0000ff;">new</span><span style="color: #000000;"> Child;
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 输出：
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> Base contructor!
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> Child contructor!</span></code></pre>
+
+<p>&nbsp;</p>
+
+<h3><code>static</code></h3>
+<p><code>static</code> 常规用途是修饰函数或变量使其成为类函数和类变量，也可以修饰函数内变量延长其生命周期至整个应用程序的生命周期。但是其与 <code>self</code> 关联上是PHP 5.3以来引入的新用途：静态延迟绑定。</p>
+<p>有了 <code>static</code> 的静态延迟绑定功能，可以在运行时动态确定归属的类。例如：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Base {
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function __construct() {
+        echo </span><span style="color: #800000;">"</span><span style="color: #800000;">Base constructor!</span><span style="color: #800000;">"</span><span style="color: #000000;">, PHP_EOL;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span><span style="color: #000000;"> function getSelf() {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> self();
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span><span style="color: #000000;"> function getInstance() {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">static</span><span style="color: #000000;">();
+    }
+
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function selfFoo() {
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> self::foo();
+    }
+
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function staticFoo() {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">static</span><span style="color: #000000;">::foo();
+    }
+
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function thisFoo() {
+        </span><span style="color: #0000ff;">return</span> $<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">foo();
+    }
+
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function foo() {
+        echo  </span><span style="color: #800000;">"</span><span style="color: #800000;">Base Foo!</span><span style="color: #800000;">"</span><span style="color: #000000;">, PHP_EOL;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Child extends Base {
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function __construct() {
+        echo </span><span style="color: #800000;">"</span><span style="color: #800000;">Child constructor!</span><span style="color: #800000;">"</span><span style="color: #000000;">, PHP_EOL;
+    }
+
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function foo() {
+        echo </span><span style="color: #800000;">"</span><span style="color: #800000;">Child Foo!</span><span style="color: #800000;">"</span><span style="color: #000000;">, PHP_EOL;
+    }
+}
+
+$</span><span style="color: #0000ff;">base</span> =<span style="color: #000000;"> Child::getSelf();
+$child </span>=<span style="color: #000000;"> Child::getInstance();
+
+$child</span>-&gt;<span style="color: #000000;">selfFoo();
+$child</span>-&gt;<span style="color: #000000;">staticFoo();
+$child</span>-&gt;thisFoo();</code></pre>
+
+<p>&nbsp;</p>
+
+<p>程序输出结果如下：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>Base constructor!<span style="color: #000000;">
+Child constructor</span>!<span style="color: #000000;">
+Base Foo</span>!<span style="color: #000000;">
+Child Foo</span>!<span style="color: #000000;">
+Child Foo</span>!</code></pre>
+
+<p>&nbsp;</p>
+
+<p>在函数引用上， <code>self</code> 与 <code>static</code> 的区别是：对于静态成员函数， <code>self</code> 指向代码当前类， <code>static</code> 指向调用类；对于非静态成员函数， <code>self</code> 抑制多态，指向当前类的成员函数， <code>static</code> 等同于 <code>this</code> ，动态指向调用类的函数。</p>
+<p><code>parent</code> 、 <code>self</code> 、 <code>static</code> 三个关键字联合在一起看挺有意思，分别指向父类、当前类、子类，有点&ldquo;过去、现在、未来&rdquo;的味道。</p>
+<h3><code>this</code></h3>
+<p><code>self</code> 与 <code>this</code> 是被讨论最多，也是最容易引起误用的组合。两者的主要区别如下：</p>
+<ol>
+<li><code>this</code> 不能用在静态成员函数中， <code>self</code> 可以；</li>
+<li>对静态成员函数/变量的访问， 建议 用 <code>self</code> ，不要用 <code>$this::</code> 或 <code>$this-&gt;</code> 的形式；</li>
+<li>对非静态成员变量的访问，不能用 <code>self</code> ，只能用 <code>this</code> ;</li>
+<li><code>this</code> 要在对象已经实例化的情况下使用， <code>self</code> 没有此限制；</li>
+<li>在非静态成员函数内使用， <code>self</code> 抑制多态行为，引用当前类的函数；而 <code>this</code> 引用调用类的重写(override)函数（如果有的话）。</li>
+</ol>
+<h2><code>self</code> 的用途</h2>
+<p>看完与上述三个关键字的区别， <code>self</code> 的用途是不是呼之即出？一句话总结，那就是： <code>self</code>总是指向&ldquo;当前类（及类实例）&rdquo;。详细说则是：</p>
+<ol>
+<li>替代类名，引用当前类的静态成员变量和静态函数；</li>
+<li>抑制多态行为，引用当前类的函数而非子类中覆盖的实现；</li>
+</ol>
+<h2>槽点</h2>
+<ol>
+<li>这几个关键字中，只有 <code>this</code> 要加 <code>$</code> 符号且必须加，强迫症表示很难受；</li>
+<li>静态成员函数中不能通过 <code>$this-&gt;</code> 调用非静态成员函数，但是可以通过 <code>self::</code> 调用，且在调用函数中未使用 <code>$this-&gt;</code> 的情况下还能顺畅运行。此行为貌似在不同PHP版本中表现不同，在当前的7.3中ok；</li>
+<li>在静态函数和非静态函数中输出 <code>self</code> ，猜猜结果是什么？都是 <code>string(4) "self"</code> ，迷之输出；</li>
+<li><code>return $this instanceof static::class;</code> 会有语法错误，但是以下两种写法就正常：<br />$class = static::class;<br />return $this instanceof $class;<br />// 或者这样：<br />return $this instanceof static;</li>
+
+
+</ol>
+<p>&nbsp;很多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家<strong>，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c">677079770</a></strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

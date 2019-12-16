@@ -1,0 +1,34 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[Linux] docker 方式安装和使用gitlab-ce' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[Linux] docker 方式安装和使用gitlab-ce</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11749891.html</div><br>
+    <p>gitlab就相当于我们自己内网搭建的git服务，相当于公司内的github。</p>
+<p>拉取镜像<br />docker pull gitlab/gitlab-ce</p>
+<p>创建宿主机的数据目录<br />mkdir -p /mnt/gitlab/etc<br />mkdir -p /mnt/gitlab/log<br />mkdir -p /mnt/gitlab/data</p>
+<p>执行镜像并且把宿主机的端口与目录映射进容器<br />docker run \<br />    --detach \<br />    --publish 8443:443 \<br />    --publish 8090:80 \<br />    --name gitlab \<br />    --restart unless-stopped \<br />    -v /mnt/gitlab/etc:/etc/gitlab \<br />    -v /mnt/gitlab/log:/var/log/gitlab \<br />    -v /mnt/gitlab/data:/var/opt/gitlab \<br />    gitlab/gitlab-ce </p>
+<p>编辑配置文件，把访问url填进去<br />/mnt/gitlab/etc/gitlab.rb<br />external_url 'http://192.168.1.114'</p>
+<p>测试直接使用ip登录，要查看清楚自己的ip<br />ifconfig<br />192.168.1.114<br />编辑配置文件，这个是用于显示在git对外的地址<br />/mnt/gitlab/data/gitlab-rails/etc/gitlab.yml<br />    host: 192.168.1.114<br />    port: 8090<br />    https: false<br />进入容器，重新设置下配置文件<br />docker exec -it gitlab /bin/bash<br />gitlab-ctl reconfigure<br />gitlab-ctl restart<br />gitlab-ctl status</p>
+<p>访问gitlab，有时候会报502，如果不是端口冲突那就稍等几分钟再访问就好了，直接会让重置修改密码，使用root登录<br />http://192.168.1.114:8090</p>
+<p>创建项目进行测试</p>
+<p><img src="./images/[Linux] docker 方式安装和使用gitlab-ce0.jpg" alt="" /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

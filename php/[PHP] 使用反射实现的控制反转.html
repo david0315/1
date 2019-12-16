@@ -1,0 +1,94 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 使用反射实现的控制反转' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 使用反射实现的控制反转</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10773463.html</div><br>
+    <p>搬家进程中反射实现控制反转,样做的好处是可以通过配置项动态的控制下面那个类的属性</p>
+<p><br />1.$this-&gt;getObject($class, $config-&gt;getConfig('param'), array($this), $interfaces);<br />2.$reflection=new ReflectionClass($class);<br />3.$reflection-&gt;implementsInterface($interface)//检测是否实现接口<br />4.$obj=$reflection-&gt;newInstanceArgs()<br />5.$reflection-&gt;hasMethod($method)//检测是否有这个方法<br />6.$obj-&gt;$method($v);</p>
+<p>举例:</p>
+<src class="cnblogs_Highlighter">
+<pre><code>/*
+这样做的好处是可以通过配置项动态的控制下面那个类的属性
+*/
+
+//配置项
+$conf=array(
+        'class'=&gt;'User',
+        'newParams'=&gt;array('name'=&gt;'taoshihan'),
+        'setParams'=&gt;array(
+                'score'=&gt;'100fen',
+                'age'=&gt;'100'
+        )   
+);
+//业务类
+class User {
+    private $name;
+    private $age;
+    private $score;
+    public function __construct($name){
+        $this-&gt;name=$name;
+    }   
+    public function setAge($age){
+        $this-&gt;age=$age;
+    }   
+    public function setScore($score){
+        $this-&gt;score=$score;
+    }   
+}
+//生成对象
+class Application{
+        private $conf;
+        public function __construct($conf){
+                $this-&gt;conf=$conf;
+        }   
+        public function getAction(){
+                $obj=$this-&gt;getObject($this-&gt;conf['class'],$this-&gt;conf['setParams'],$this-&gt;conf['newParams']);
+                return $obj;
+        }   
+        public function getObject($class, $setParams = null, $newParams = array()){
+                if (!$class) {
+                        return null;
+                }            
+                $reflection = new ReflectionClass($class);
+                $obj = $reflection-&gt;newInstanceArgs($newParams);    
+                if (!empty($setParams)) {
+                        foreach ($setParams as $k =&gt; $v) {    
+                        $method = 'set' . ucfirst($k);
+                        if ($reflection-&gt;hasMethod($method)) {    
+                                $obj-&gt;$method($v);    
+                        }}  
+                }   
+                return $obj;
+        }
+}
+
+$app=new Application($conf);
+$obj=$app-&gt;getAction();
+var_dump($obj);
+</code></pre>
+
+<p>各个属性正确赋值:</p>
+<p><img src="./images/[PHP] 使用反射实现的控制反转0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>　　</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

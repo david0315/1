@@ -1,0 +1,169 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中Redis扩展无法加载问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中Redis扩展无法加载问题</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11827804.html</div><br>
+    <p><strong>问题：</strong></p>
+<p>在重启php-fpm的过程中，发生了如下的错误，redis.so无法载入</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">[root@brand009 modules]# /usr/sbin/php-fpm</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">/usr/sbin/php-fpm: /usr/lib64/libssl.so.10: no version information available (required by /usr/sbin/php-fpm)</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">/usr/sbin/php-fpm: /usr/lib64/libcrypto.so.10: no version information available (required by /usr/sbin/php-fpm)</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">/usr/sbin/php-fpm: /usr/lib64/libcrypto.so.10: no version information available (required by /usr/sbin/php-fpm)</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>解决思路：</strong></p>
+<p>1、用php --version查询了一下PHP的版本，是5.6.6</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">php --version</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">PHP 5.6.6 (cli) (built: Mar 9 2015 13:27:38) </code></p>
+<p class="line number3 index2 alt2"><code class="php plain">Copyright (c) 1997-2015 The PHP Group</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">Zend Engine v2.6.0, Copyright (c) 1998-2015 Zend Technologies</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>2、这个php-fpm的版本，发现是5.3.3</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">$/usr/sbin/php-fpm -v</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">PHP 5.3.3 (fpm-fcgi) (built: Oct 30 2014 20:14:56)</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">Copyright (c) 1997-2012 The PHP Group</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">Zend Engine v2.3.0, Copyright (c) 1998-2010 Zend Technologies</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>3、而PHP内部集成的php-fpm版本是5.6.6</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">$ /usr/local/php/sbin/php-fpm -v</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">PHP 5.6.6 (fpm-fcgi) (built: Mar 9 2015 13:27:55)</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">Copyright (c) 1997-2015 The PHP Group</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">Zend Engine v2.6.0, Copyright (c) 1998-2015 Zend Technologies</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>错误原因：</strong></p>
+<p>php -fpm版本与php版本不一致。</p>
+<p>用PHP内部集成的php-fpm重启，成功！</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">root&nbsp;&nbsp; 18442&nbsp;&nbsp; 1 0 17:36 ?&nbsp;&nbsp;&nbsp; 00:00:01 php-fpm: master process (/usr/local/php/etc/php-fpm.conf)</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">nobody&nbsp; 30640 18442 0 18:04 ?&nbsp;&nbsp;&nbsp; 00:00:02 php-fpm: pool www&nbsp;&nbsp;&nbsp;&nbsp; </code></p>
+<p class="line number3 index2 alt2"><code class="php plain">nobody&nbsp; 31156 18442 0 18:05 ?&nbsp;&nbsp;&nbsp; 00:00:02 php-fpm: pool www&nbsp;&nbsp;&nbsp;&nbsp; </code></p>
+<p class="line number4 index3 alt1"><code class="php plain">nobody&nbsp; 32424 18442 0 18:08 ?&nbsp;&nbsp;&nbsp; 00:00:02 php-fpm: pool www</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>注意：</strong></p>
+<p>在php.ini中一定要配置extension_dir和extension，如：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">extension_dir = </code><code class="php string">"/usr/lib64/php/modules/"</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">extension=redis.so</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>phpredis编译出来的redis.so也需要拷贝到"/usr/lib64/php/modules/"中；</p>
+<p>"/etc/php.d/"中也要软连接redis.so，并且要创建一个redis.ini文件，内容如下：</p>
+<p>安装phpredis还可以通过命令：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">pecl install redis</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,307 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole WebSocket 的应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole WebSocket 的应用</center></div><div class='banquan'>原文出处:本文由博客园博主新亮笔记提供。<br/>
+原文连接:https://www.cnblogs.com/xinliangcoder/p/10800910.html</div><br>
+    <src class="toc">
+    <p class="toc-title">目录</p>
+    <src class="toc-list">
+        <ul>
+        <li><a href="#概述">概述</a></li>
+        <li><a href="#代码">代码</a></li>
+        <li><a href="#小结">小结</a></li>
+        </ul>
+    
+
+<h2 id="概述">概述</h2>
+<p>这是关于 Swoole 学习的第三篇文章：Swoole WebSocket 的应用。</p>
+<ul>
+<li><a href="https://www.cnblogs.com/xinliangcoder/p/10792388.html">第二篇：Swoole Task 的应用</a></li>
+<li><a href="https://www.cnblogs.com/xinliangcoder/p/10792370.html">第一篇：Swoole Timer 的应用</a></li>
+</ul>
+<p><strong>什么是 WebSocket ？</strong></p>
+<blockquote>
+<p>WebSocket 是一种在单个TCP连接上进行全双工通信的协议。</p>
+</blockquote>
+<p>WebSocket 使得客户端和服务器之间的数据交换变得更加简单，允许服务端主动向客户端推送数据。</p>
+<p>在 WebSocket API 中，浏览器和服务器只需要完成一次握手，两者之间就直接可以创建持久性的连接，并进行双向数据传输。</p>
+<p>我们利用 WebSocket 进行及时通讯，今天实现一个 <strong>视频弹幕效果</strong>。</p>
+<p>实现弹幕其实就和群聊类似，将消息推送给所有的客户端，只不过前端的展示所有不同。</p>
+<p>本地版本：</p>
+<ul>
+<li>后端 PHP 7.2.6、Swoole 4.3.1。</li>
+<li>前端 HTML5 WebSocket、Canvas。</li>
+</ul>
+<p>废话不多说，先看效果。</p>
+<p>批量版：</p>
+<p><img src="./images/Swoole WebSocket 的应用0.jpg" /></p>
+<p><img src="./images/Swoole WebSocket 的应用1.jpg" /></p>
+<p>手动版：</p>
+<p><img src="./images/Swoole WebSocket 的应用2.jpg" /></p>
+<h2 id="代码">代码</h2>
+<p><strong>server.php</strong></p>
+<pre><code><code>&lt;?php
+
+class Server
+{
+    private $serv;
+
+    public function __construct() {
+        $this-&gt;serv = new swoole_websocket_server(&quot;0.0.0.0&quot;, 9501);
+        $this-&gt;serv-&gt;set([
+            &#39;worker_num&#39;      =&gt; 2, //开启2个worker进程
+            &#39;max_request&#39;     =&gt; 4, //每个worker进程 max_request设置为4次
+            &#39;task_worker_num&#39; =&gt; 4, //开启4个task进程
+            &#39;dispatch_mode&#39;   =&gt; 4, //数据包分发策略 - IP分配
+            &#39;daemonize&#39;       =&gt; false, //守护进程(true/false)
+        ]);
+
+        $this-&gt;serv-&gt;on(&#39;Start&#39;, [$this, &#39;onStart&#39;]);
+        $this-&gt;serv-&gt;on(&#39;Open&#39;, [$this, &#39;onOpen&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Message&quot;, [$this, &#39;onMessage&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Close&quot;, [$this, &#39;onClose&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Task&quot;, [$this, &#39;onTask&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Finish&quot;, [$this, &#39;onFinish&#39;]);
+
+        $this-&gt;serv-&gt;start();
+    }
+
+    public function onStart($serv) {
+        echo &quot;#### onStart ####&quot;.PHP_EOL;
+        echo &quot;SWOOLE &quot;.SWOOLE_VERSION . &quot; 服务已启动&quot;.PHP_EOL;
+        echo &quot;master_pid: {$serv-&gt;master_pid}&quot;.PHP_EOL;
+        echo &quot;manager_pid: {$serv-&gt;manager_pid}&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onOpen($serv, $request) {
+        echo &quot;#### onOpen ####&quot;.PHP_EOL;
+        echo &quot;server: handshake success with fd{$request-&gt;fd}&quot;.PHP_EOL;
+        $serv-&gt;task([
+            &#39;type&#39; =&gt; &#39;login&#39;
+        ]);
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onTask($serv, $task_id, $from_id, $data) {
+        echo &quot;#### onTask ####&quot;.PHP_EOL;
+        echo &quot;#{$serv-&gt;worker_id} onTask: [PID={$serv-&gt;worker_pid}]: task_id={$task_id}&quot;.PHP_EOL;
+        $msg = &#39;&#39;;
+        switch ($data[&#39;type&#39;]) {
+            case &#39;login&#39;:
+                $msg = &#39;我来了...&#39;;
+                break;
+            case &#39;speak&#39;:
+                $msg = $data[&#39;msg&#39;];
+                break;
+        }
+        foreach ($serv-&gt;connections as $fd) {
+            $connectionInfo = $serv-&gt;connection_info($fd);
+            if ($connectionInfo[&#39;websocket_status&#39;] == 3) {
+                $serv-&gt;push($fd, $msg); //长度最大不得超过2M
+            }
+        }
+        $serv-&gt;finish($data);
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onMessage($serv, $frame) {
+        echo &quot;#### onMessage ####&quot;.PHP_EOL;
+        echo &quot;receive from fd{$frame-&gt;fd}:{$frame-&gt;data},opcode:{$frame-&gt;opcode},fin:{$frame-&gt;finish}&quot;.PHP_EOL;
+        $serv-&gt;task([&#39;type&#39; =&gt; &#39;speak&#39;, &#39;msg&#39; =&gt; $frame-&gt;data]);
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onFinish($serv,$task_id, $data) {
+        echo &quot;#### onFinish ####&quot;.PHP_EOL;
+        echo &quot;Task {$task_id} 已完成&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onClose($serv, $fd) {
+        echo &quot;#### onClose ####&quot;.PHP_EOL;
+        echo &quot;client {$fd} closed&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+}
+
+$server = new Server();</code></code></pre>
+<p><strong>index.php</strong></p>
+<pre><code><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;zh-CN&quot;&gt;
+    &lt;head&gt;
+        &lt;meta charset=&quot;utf-8&quot;&gt;
+        &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+        &lt;meta name=&quot;description&quot; content=&quot;&quot;&gt;
+        &lt;meta name=&quot;keywords&quot; content=&quot;&quot;&gt;
+        &lt;script src=&quot;js/canvasBarrage.js?v=17&quot;&gt;&lt;/script&gt;
+        &lt;title&gt;视频弹幕Demo&lt;/title&gt;
+        &lt;style&gt;
+            .canvas-barrage {
+                position: absolute;
+                width: 960px;
+                height: 540px;
+                pointer-events: none;
+                z-index: 1;
+            }
+            .ui-input {
+                height: 20px;
+                width: 856px;
+                line-height: 20px;
+                border: 1px solid #d0d0d5;
+                border-radius: 4px;
+                padding: 9px 8px;
+            }
+            .ui-button {
+                display: inline-block;
+                background-color: #2486ff;
+                line-height: 28px;
+                text-align: center;
+                border-radius: 4px;
+                color: #fff;
+                font-size: 14px;
+            }
+        &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;canvas id=&quot;canvasBarrage&quot; class=&quot;canvas-barrage&quot;&gt;&lt;/canvas&gt;
+        &lt;video id=&quot;videoBarrage&quot; width=&quot;960&quot; height=&quot;540&quot; src=&quot;./video/video.mp4&quot; controls&gt;&lt;/video&gt;
+            &lt;p&gt;
+                &lt;input class=&quot;ui-input&quot; id=&quot;msg&quot; name=&quot;value&quot; value=&quot;发送弹幕&quot; required&gt;
+                &lt;input class=&quot;ui-button&quot; type=&quot;button&quot; id=&quot;sendBtn&quot; value=&quot;发送弹幕&quot;&gt;
+            &lt;/p&gt;
+        &lt;script&gt;
+            if (&quot;WebSocket&quot; in window) {
+                // 弹幕数据
+                var dataBarrage = [{
+                    value: &#39;&#39;,
+                    time: 0, // 单位秒
+                    speed: 0,
+                    fontSize: 0
+                }];
+
+                var itemsColor = [&#39;#FFA54F&#39;,&#39;#FF4040&#39;,&#39;#EE1289&#39;, &#39;#8E8E38&#39;, &#39;#3A5FCD&#39;, &#39;#00EE76&#39;, &#39;#388E8E&#39;, &#39;#76EEC6&#39;, &#39;#87CEFF&#39;, &#39;#7FFFD4&#39;];
+
+                var eleCanvas = document.getElementById(&#39;canvasBarrage&#39;);
+                var eleVideo = document.getElementById(&#39;videoBarrage&#39;);
+
+                var barrage = new CanvasBarrage(eleCanvas, eleVideo, {
+                    data: dataBarrage
+                });
+
+                var wsServer = &#39;ws://10.211.55.3:9501&#39;;
+                var ws = new WebSocket(wsServer);
+
+                ws.onopen = function (evt) {
+                    if (ws.readyState == 1) {
+                        console.log(&#39;WebSocket 连接成功...&#39;);
+                    } else {
+                        console.log(&#39;WebSocket 连接失败...&#39;);
+                    }
+                };
+
+                ws.onmessage = function (evt) {
+
+                    barrage.add({
+                        value: evt.data,
+                        time: eleVideo.currentTime,
+                        speed: 5,
+                        color: itemsColor[Math.floor(Math.random()*itemsColor.length)]
+                        // 其它如 fontSize, opacity等可选
+                    });
+                    console.log(&#39;Retrieved data from server: &#39; + evt.data);
+                };
+
+                ws.onerror = function (evt) {
+                    alert(&#39;WebSocket 发生错误&#39;);
+                    console.log(evt);
+                };
+
+                ws.onclose = function() {
+                    alert(&#39;WebSocket 连接关闭&#39;);
+                    console.log(&#39;WebSocket 连接关闭...&#39;);
+                };
+
+                var msg;
+                var sendBtn = document.getElementById(&#39;sendBtn&#39;);
+                sendBtn.onclick = function(){
+                    if (ws.readyState == 1) {
+                        msg = document.getElementById(&#39;msg&#39;).value;
+                        ws.send(msg);
+                    } else {
+                        alert(&#39;WebSocket 连接失败&#39;);
+                    }
+                };
+            } else {
+                alert(&quot;您的浏览器不支持 WebSocket!&quot;);
+            }
+            &lt;/script&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<h2 id="小结">小结</h2>
+<p><strong>一、单聊提供了方法，群聊提供方法了吗？</strong></p>
+<p>官方没有提供群聊的方法，使用循环实现的。</p>
+<p>单聊：</p>
+<pre><code><code>$serv-&gt;push($fd, $msg);</code></code></pre>
+<p>群聊：</p>
+<pre><code><code>foreach ($serv-&gt;connections as $fd) {
+    $serv-&gt;push($fd, $msg);
+}</code></code></pre>
+<p><strong>二、发送消息为什么要放到Task中，封装一个普通方法不行吗？</strong></p>
+<p>不能封装成一个普通的方法，要放在Task中使用多进程执行。</p>
+<p>如果想了解 Swoole Task 的知识，请看： <a href="https://mp.weixin.qq.com/s/9ek_Ol-mLRQCPOTyl8v9Zg">第二篇：Swoole Timer 的应用</a>。</p>
+<p><strong>三、如何模拟批量弹幕效果？</strong></p>
+<p>可以使用 swoole_timer_tick ，比如：</p>
+<pre><code><code>swoole_timer_tick(50, function () use($serv){
+    $serv-&gt;task([
+        &#39;type&#39; =&gt; &#39;login&#39;
+    ]);
+});</code></code></pre>
+<p><strong>四、前端使用的哪个弹幕插件？还有没有其他的？</strong></p>
+<p>canvasBarrage.js：</p>
+<p><a href="http://www.zhangxinxu.com/wordpress/?p=6386" class="uri">http://www.zhangxinxu.com/wordpress/?p=6386</a></p>
+<p>有其他的，比如：</p>
+<ul>
+<li>Jquery.barrager.js</li>
+<li>Jquery.danmu.js</li>
+<li>DanMuer.js</li>
+</ul>
+<p>根据自己喜欢风格，进行尝试吧。</p>
+<p><strong>五、Demo 中视频全屏后，还显示弹幕吗？</strong></p>
+<p>不显示。</p>
+<p><img src="./images/Swoole WebSocket 的应用3.jpg" /></p>
+<p>当点击如上图中的 “全屏” 时，弹幕就不显示了，因为这时全屏的视频已经脱离了HTML文档，具体能否实现大家可以研究研究（记得考虑 PC、Android、iOS 等兼容性）。</p>
+<p>也可以用“伪全屏”进行实现，自定义一个全屏按钮，点击时让当前页面全屏，同时让视频尺寸变大。</p>
+<p><strong>六、看了这篇文章，单聊和群聊都会了，能实现一个在线IM吗？</strong></p>
+<p>不能。</p>
+<p>真正使用的在线IM系统，需求落地时比我们想象到要复杂的多，自己深入研究没问题，想开发一套生产环境用的IM系统，需要慎重，特别是后端用PHP。</p>
+<p>如果急需在线IM系统，可以使用市面上专业的IM系统。</p>
+<p><strong>七、弹幕有什么应用场景？</strong></p>
+<p>比如，办年会或活动开场时大家可以利用弹幕活跃气氛，使用微信扫码登录后进行发送实时弹幕，还可以应用到直播，只要觉得合理都可以使用。</p>
+<p><strong>八、Swoole WebSocket 入门还可以实现什么案例？</strong></p>
+<p>可以实现聊天室功能、直播功能、扫码登录功能等。</p>
+<p><strong>温馨提示</strong></p>
+<p>本 Demo 仅仅是简单的实现，如需应用到真实场景中还要多做优化。</p>
+<p>需要Demo源码的，关注公众号，回复“<strong>swoole 弹幕</strong>”即可。</p>
+<p>本文欢迎转发，转发请注明作者和出处，谢谢！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

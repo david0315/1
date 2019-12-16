@@ -1,0 +1,48 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] PDO对象与mysql的连接超时' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] PDO对象与mysql的连接超时</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11814258.html</div><br>
+    <p>在php中每一个new的PDO对象,都会去连接mysql,都会创建一条tcp连接.当pdo对象赋予的变量是一个的时候,那么他只会保持一个tcp连接,没有被引用的对象连接会直接断掉.如果不对这个对象进行任何操作,不传输任何数据,这条连接会在10秒后被mysql服务断掉.</p>
+<p>如果使用了长连接参数,那么不管循环执行几次new PDO,只会有一个tcp连接</p>
+<p><strong>关于超时现象,网上的资料大部分说受两个参数interactive_timeout和wait_timeout影响,但是经过我测试,修改了这两个参数,如果10秒没有任何操作,连接仍然会被mysql断掉,不管是使不使用长连接参数.</strong></p>
+<p><strong>如果每隔一秒传输数据,那么这条连接就会一直存在,状态一直是ESTABLISHED.如果是会出现两次执行时间较长,连接会被mysql断掉</strong><br /><strong>对于需要长期执行的数据库操作脚本,比较稳妥的方式是每隔8秒左右重新new PDO对象,或者每隔循环一定次数确保在10秒内重新new PDO对象 </strong></p>
+<p>测试过程如下:</p>
+<p>开一个终端,不停的查看当前的连接情况<br />while true;do clear;date;netstat -altupn|grep 3306;sleep 1;done</p>
+<p>另一个终端执行php脚本,可以暂时把长连接参数去掉,可以看到有很多tcp连接,状态是time_wait,是客户端主动关闭的.<br />而被mysql断掉的连接是close_wait状态,也就是被关闭一方,mysql服务里的连接是FIN_WAIT2</p>
+<p><img src="./images/[PHP] PDO对象与mysql的连接超时0.jpg" alt="" /></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">$option=array(PDO::ATTR_PERSISTENT =&gt; true);</span>
+<span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;10;<span style="color: #800080;">$i</span>++<span style="color: #000000;">){
+        </span><span style="color: #800080;">$pdo</span>=<span style="color: #0000ff;">new</span> PDO("mysql:host=127.0.0.1;dbname=my_test","root","xxx",<span style="color: #800080;">$option</span><span style="color: #000000;">);
+        </span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$pdo</span><span style="color: #000000;">);
+}
+</span><span style="color: #0000ff;">while</span>(1<span style="color: #000000;">){
+</span><span style="color: #008080;">sleep</span>(5<span style="color: #000000;">);
+</span><span style="color: #800080;">$pdo</span>-&gt;query("set names utf8"<span style="color: #000000;">);
+
+</span><span style="color: #008080;">sleep</span>(11<span style="color: #000000;">);
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

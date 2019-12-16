@@ -1,0 +1,44 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修laravels 使用laravel-wechat 组件' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>laravels 使用laravel-wechat 组件</center></div><div class='banquan'>原文出处:本文由博客园博主cshua提供。<br/>
+原文连接:https://www.cnblogs.com/cshua/p/11881448.html</div><br>
+    <h2 id="一.-laravels-5.4使用-laravel-wechat-4.13出现无法登陆的情况显示没有code-错误解决办法">一. laravels (5.4)使用 laravel-wechat (4.13)，出现无法登陆的情况，显示没有code 错误，解决办法</h2>
+<p>前提：已经在laravels.php 的 cleaners 中打开了 SessionCleaner 和 AuthCleaner。</p>
+<ol>
+<li>复制 \vendor\overtrue\laravel-wechat\src\Middleware\OAuthAuthenticate.php 到项目中\app\Http\Middleware 中</li>
+<li>修改代码</li>
+</ol>
+<pre><code><code>$officialAccount = app(\sprintf(&#39;wechat.official_account.%s&#39;, $account)); 
+//解决认证没有code的问题，可以参考官方的 https://github.com/hhxsv5/laravel-s/blob/master/KnownIssues-CN.md 使用wechat包的问题
+$officialAccount[&#39;request&#39;] = $request;     </code></code></pre>
+<ol>
+<li>修改\app\Http\Kernel.php 使用新的中间件，访问可以登陆。</li>
+</ol>
+<h2 id="二.-新的问题">二. 新的问题</h2>
+<p>现在可以登陆了，但是会出现退出之后再次登陆，会提示:code been used。看日志，每次登陆使用的是同一个code, 解决方法如下：</p>
+<ol>
+<li><p>修改config/laravels.php在register_providers 中增加 Overtrue\LaravelWeChat\ServiceProvider::class</p></li>
+<li><p>重启laravels 可以再次登陆。</p></li>
+</ol>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

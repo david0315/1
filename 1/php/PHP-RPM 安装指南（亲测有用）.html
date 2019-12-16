@@ -1,0 +1,387 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP-RPM 安装指南（亲测有用）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP-RPM 安装指南（亲测有用）</center></div><div class='banquan'>原文出处:本文由博客园博主小喵钓鱼提供。<br/>
+原文连接:https://www.cnblogs.com/xmdykf/p/11374497.html</div><br>
+    <src>&nbsp;
+<src>小注：此教程可能有很多弯路，但是最终是肯定安装成功了的，一个问题就是刚开始安装编译的指令版本好像不对，但是后面纠正过来了，但是此教程一共遇到了 十多个问题，也一并解决了，具有一定的借鉴意义，还有(django)开头是因为此刻处在 vir...虚拟环境中，不影响。（提醒：安装这个的或许也在搭建 Django + mysql + uwsgi + nginx，然后百度得到了一大堆需要安装PHP-FPM或者与PHP-FPM相关的，请仔细对比自己的错误信息和提出此解决方案的人的错误信息是否一致，错误信息在日志中查询。。）
+<src>安装php-fpm
+<src>　　(新买的阿里云 默认 没有 php-fpm)
+<src><img src="./images/PHP-RPM 安装指南（亲测有用）0.jpg" alt="" />
+<p>&nbsp;　　下载php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> wget https://www.php.net/distributions/php-7.3.8.tar.gz</code></pre>
+
+<p>　　解压安装</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> tar -xvf php-7.3.8<span style="color: #000000;">.tar.gz
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span>  ./configure --prefix=/usr/local/php --with-config<span style="color: #008080;">-file</span>-path=/etc --enable-inline-optimization --disable-debug --disable-rpath --enable-shared --enable-opcache --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --with-gettext --enable-mbstring --with-iconv --with-mcrypt --with-mhash --with-openssl --enable-bcmath --enable-soap --with-libxml-dir --enable-pcntl --enable-shmop --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-sockets --with-curl --with-zlib --enable-zip --with-bz2 --with-readline --without-sqlite3 --without-pdo-sqlite --with-pear</code></pre>
+
+<src>　　然后可能会出现错误
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjY4MjUtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLnhLYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWQjiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5Y+vIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLog70iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS8miIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5Ye6Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnjrAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IumUmSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6K+vIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）1.jpg" alt="" /></p>
+<p>　　解决办法：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> yum install libxml2-devel</code></pre>
+
+<p>　　查看是否成功</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> find / -name <span style="color: #800000;">"</span><span style="color: #800000;">xml2-config</span><span style="color: #800000;">"</span></code></pre>
+
+<blockquote>
+<p>&nbsp;　然后无限进行解压后的安装步骤，找错误，直到解决所有毛病的说,可能我遇到的，你没有遇到，也说不定，下面的错误解决方案只值得借鉴。。。(适不适合 那就不晓得了)</p>
+</blockquote>
+<p><img src="./images/PHP-RPM 安装指南（亲测有用）2.jpg" alt="" /></p>
+<p>&nbsp;　　解决办法&nbsp; 重新装下 curl</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> yum -y install curl-devel</code></pre>
+
+<p><img src="./images/PHP-RPM 安装指南（亲测有用）3.jpg" alt="" /></p>
+<p>　　解决办法</p>
+<src class="cnblogs_code">
+<pre><code>yum -y install libzip-devel</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）4.jpg" alt="" /></p>
+<src>　　解决办法&nbsp; 这是由于系统的自带的 libzip版本低了，所以先卸载系统自带的libzip
+<src class="cnblogs_code">
+<pre><code>yum  -y remove libzip-devel</code></pre>
+
+<p>&nbsp;　　然后在官网下载并且编译安装</p>
+<src>　　<a href="https://libzip.org/download/">https://libzip.org/download/</a>
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjIxNTYtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLnhLYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWQjiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5ZyoIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlrpgiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iue9kSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LiLIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLovb0iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuW5tiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LiUIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnvJYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuivkSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5a6JIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLoo4UiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19XSwiaXNSaWNoVGV4dCI6dHJ1ZSwia2VlcExpbmVCcmVhayI6dHJ1ZX19LHsiYmxvY2tJZCI6IjEyODItMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiJoIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoidCIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6InQiLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoicyIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6IjoiLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoiLyIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6ImwiLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoiYiIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6InoiLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6Ii4iLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiJvIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoiciIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6ImciLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoiZCIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6Im8iLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiJ3Iiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoibiIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6ImwiLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiJvIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX0seyJjaGFyIjoiYSIsInN0eWxlcyI6eyJ1bmRlcmxpbmUiOnRydWUsImNvbG9yIjoiIzAwMzg4NCIsImhyZWYiOiJodHRwczovL2xpYnppcC5vcmcvZG93bmxvYWQvIn19LHsiY2hhciI6ImQiLCJzdHlsZXMiOnsidW5kZXJsaW5lIjp0cnVlLCJjb2xvciI6IiMwMDM4ODQiLCJocmVmIjoiaHR0cHM6Ly9saWJ6aXAub3JnL2Rvd25sb2FkLyJ9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7InVuZGVybGluZSI6dHJ1ZSwiY29sb3IiOiIjMDAzODg0IiwiaHJlZiI6Imh0dHBzOi8vbGliemlwLm9yZy9kb3dubG9hZC8ifX1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX1d--></p>
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjY1NzAtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLop6MiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWGsyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5YqeIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLms5UiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IiAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IiAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iui/mSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5pivIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnlLEiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS6jiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi57O7Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnu58iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IueahCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6IeqIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLluKYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IueahCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiaSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiYiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoieiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiaSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi54mIIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmnKwiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS9jiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LqGIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLvvIwiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaJgCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LulIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlhYgiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWNuCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6L29Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLns7siLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iue7nyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6IeqIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLluKYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IueahCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiaSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiYiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoieiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiaSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX1d--></p>
+<p>&nbsp;</p>
+<p><img src="./images/PHP-RPM 安装指南（亲测有用）5.jpg" alt="" /></p>
+<src>
+<blockquote><strong>(由于1.5以及以上的安装方式和版本下的不同，所以这里还需要安装个东西)</strong></blockquote>
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjgzNzctMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiIoIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnlLEiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS6jiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiMSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiLiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiNSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LulIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlj4oiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS7pSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LiKIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnmoQiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWuiSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6KOFIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmlrkiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuW8jyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5ZKMIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLniYgiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuacrCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LiLIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnmoQiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS4jSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5ZCMIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLvvIwiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaJgCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LulIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLov5kiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IumHjCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6L+YIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLpnIAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuimgSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5a6JIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLoo4UiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS4qiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LicIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLopb8iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IikiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19XSwiaXNSaWNoVGV4dCI6dHJ1ZSwia2VlcExpbmVCcmVhayI6dHJ1ZX19XQ==--></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>yum -y install cmake</code></pre>
+
+<p>　　然后切回 local目录（版本可能更新了）</p>
+<src class="cnblogs_code">
+<pre><code>wget https://libzip.org/download/libzip-1.5.2.tar.xz</code></pre>
+
+<p>　解压安装</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> tar xvf libzip-1.5.2<span style="color: #000000;">.tar.xz
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> cd libzip-1.5.2
+<span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> <span style="color: #000000;">mkdir build
+</span><span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> <span style="color: #000000;">cd build
+</span><span style="color: #008080;">8</span> 
+<span style="color: #008080;">9</span> cmake ..</code></pre>
+
+<src>　此时，可能会发现 cmake版本低了
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjgxOTYtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLmraQiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaXtiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi77yMIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlj68iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuiDvSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LyaIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlj5EiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IueOsCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiYyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiYSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiayIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiZSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi54mIIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmnKwiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS9jiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LqGIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjcwNjItMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLop6MiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWOiyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5a6JIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLoo4UiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19XSwiaXNSaWNoVGV4dCI6dHJ1ZSwia2VlcExpbmVCcmVhayI6dHJ1ZX19XQ==--></p>
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6Ijg0NTktMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLnhLYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWQjiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5YiHIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlm54iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IiAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6ImwiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Im8iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6ImMiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6ImEiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6ImwiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuebriIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5b2VIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLvvIgiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IueJiCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5pysIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlj68iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuiDvSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5pu0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmlrAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS6hiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi77yJIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）6.jpg" alt="" /></p>
+<src>&nbsp; 所以需要更新 cmake版本 (&epsilon;=(&acute;&omicron;｀*)))唉)
+<src class="cnblogs_code">
+<pre><code>cd /usr/local</code></pre>
+
+<p>&nbsp;首先先，移除 cmake</p>
+<src class="cnblogs_code">
+<pre><code>yum remove cmake</code></pre>
+
+<p><a href="https://cmake.org/download/">https://cmake.org/download/</a></p>
+<p>&nbsp;</p>
+
+<p><img src="./images/PHP-RPM 安装指南（亲测有用）7.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src>　　下载 cmake最新版（自己找官网复制链接）
+<src class="cnblogs_code">
+<pre><code>wget https://github.com/Kitware/CMake/releases/download/v3.15.2/cmake-3.15.2.tar.gz</code></pre>
+
+<p>&nbsp;　　解压</p>
+<src class="cnblogs_code">
+<pre><code>tar -xvf cmake-3.15.2.tar.gz</code></pre>
+
+<p>　　进入cmake3.15.2文件夹，安装</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> cd cmake-3.15.2
+<span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> ./<span style="color: #000000;">configure
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> <span style="color: #000000;">make
+</span><span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> make install</code></pre>
+
+<p>　　安装成功后，</p>
+<src>　　下面添加cmake环境变量，编辑 /etc/profile.d/cmake.sh 文件，写入以下内容：
+<src class="cnblogs_code">
+<pre><code>export CMAKE_HOME=/usr/local/cmake-3.15.2<span style="color: #000000;">
+export PATH</span>=<span style="color: #800080;">$PATH</span>:<span style="color: #800080;">$CMAKE_HOME</span>/bin</code></pre>
+
+<p>&nbsp;　　保存并退出，执行命令让cmake环境文件生效</p>
+<src class="cnblogs_code">
+<pre><code>source /etc/profile</code></pre>
+
+<src>　　此时，你再次查看cmake版本，就已经是3.15.2了
+<src class="cnblogs_code">
+<pre><code>(django) [root@h1 cmake-3.15.2]<span style="color: #008000;">#</span><span style="color: #008000;"> cmake --version</span>
+cmake version 3.15.2</code></pre>
+
+<p>　　再进行 libzip的安装</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> cd /usr/local/libzip-1.5.2
+<span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #000000;">cd build
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> <span style="color: #000000;">cmake ..
+</span><span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> make &amp;&amp; make install</code></pre>
+
+<p>　　安装完成</p>
+
+<src>　　再进行 php 的安装测验
+<src class="cnblogs_code">
+<pre><code>cd /usr/local/php-7.3.8<span style="color: #000000;">
+
+ .</span>/configure --prefix=/usr/local/php --with-config<span style="color: #008080;">-file</span>-path=/etc --enable-inline-optimization --disable-debug --disable-rpath --enable-shared --enable-opcache --enable-fpm --with-fpm-user=www --with-fpm-group=www --with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --with-gettext --enable-mbstring --with-iconv --with-mcrypt --with-mhash --with-openssl --enable-bcmath --enable-soap --with-libxml-dir --enable-pcntl --enable-shmop --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-sockets --with-curl --with-zlib --enable-zip --with-bz2 --with-readline --without-sqlite3 --without-pdo-sqlite --with-pear</code></pre>
+
+<p>&nbsp;　　<img src="./images/PHP-RPM 安装指南（亲测有用）8.jpg" alt="" /></p>
+<p>　　又可能出现问题（一个个接近呗）</p>
+<src>　　　解决方法
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> vim /etc/<span style="color: #000000;">ld.so.conf 
+</span><span style="color: #008080;">2</span> <span style="color: #008000;">#</span><span style="color: #008000;">添加如下几行</span>
+<span style="color: #008080;">3</span> /usr/local/<span style="color: #000000;">lib64
+</span><span style="color: #008080;">4</span> /usr/local/<span style="color: #000000;">lib
+</span><span style="color: #008080;">5</span> /usr/<span style="color: #000000;">lib
+</span><span style="color: #008080;">6</span> /usr/<span style="color: #000000;">lib64 
+</span><span style="color: #008080;">7</span> <span style="color: #008000;">#</span><span style="color: #008000;">保存退出</span>
+<span style="color: #008080;">8</span> <span style="color: #000000;">:wq
+</span><span style="color: #008080;">9</span> ldconfig -v <span style="color: #008000;">#</span><span style="color: #008000;"> 使之生效</span></code></pre>
+
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）9.jpg" alt="" /></p>
+<src>　　编译php后发生warning：configure:WARNING:unrecognizedoptions:--with-mysql 只是php7版本不支持mysql模块
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6Ijc2MTktMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLnvJYifSx7ImNoYXIiOiLor5EifSx7ImNoYXIiOiJwIn0seyJjaGFyIjoiaCJ9LHsiY2hhciI6InAifSx7ImNoYXIiOiLlkI4ifSx7ImNoYXIiOiLlj5EifSx7ImNoYXIiOiLnlJ8ifSx7ImNoYXIiOiJ3In0seyJjaGFyIjoiYSJ9LHsiY2hhciI6InIifSx7ImNoYXIiOiJuIn0seyJjaGFyIjoiaSJ9LHsiY2hhciI6Im4ifSx7ImNoYXIiOiJnIn0seyJjaGFyIjoi77yaIn0seyJjaGFyIjoiYyJ9LHsiY2hhciI6Im8ifSx7ImNoYXIiOiJuIn0seyJjaGFyIjoiZiJ9LHsiY2hhciI6ImkifSx7ImNoYXIiOiJnIn0seyJjaGFyIjoidSJ9LHsiY2hhciI6InIifSx7ImNoYXIiOiJlIn0seyJjaGFyIjoiOiJ9LHsiY2hhciI6IlcifSx7ImNoYXIiOiJBIn0seyJjaGFyIjoiUiJ9LHsiY2hhciI6Ik4ifSx7ImNoYXIiOiJJIn0seyJjaGFyIjoiTiJ9LHsiY2hhciI6IkcifSx7ImNoYXIiOiI6In0seyJjaGFyIjoidSJ9LHsiY2hhciI6Im4ifSx7ImNoYXIiOiJyIn0seyJjaGFyIjoiZSJ9LHsiY2hhciI6ImMifSx7ImNoYXIiOiJvIn0seyJjaGFyIjoiZyJ9LHsiY2hhciI6Im4ifSx7ImNoYXIiOiJpIn0seyJjaGFyIjoieiJ9LHsiY2hhciI6ImUifSx7ImNoYXIiOiJkIn0seyJjaGFyIjoibyJ9LHsiY2hhciI6InAifSx7ImNoYXIiOiJ0In0seyJjaGFyIjoiaSJ9LHsiY2hhciI6Im8ifSx7ImNoYXIiOiJuIn0seyJjaGFyIjoicyJ9LHsiY2hhciI6IjoifSx7ImNoYXIiOiItIn0seyJjaGFyIjoiLSJ9LHsiY2hhciI6IncifSx7ImNoYXIiOiJpIn0seyJjaGFyIjoidCJ9LHsiY2hhciI6ImgifSx7ImNoYXIiOiItIn0seyJjaGFyIjoibSJ9LHsiY2hhciI6InkifSx7ImNoYXIiOiJzIn0seyJjaGFyIjoicSJ9LHsiY2hhciI6ImwifSx7ImNoYXIiOiIgIn0seyJjaGFyIjoi5Y+qIn0seyJjaGFyIjoi5pivIn0seyJjaGFyIjoicCJ9LHsiY2hhciI6ImgifSx7ImNoYXIiOiJwIn0seyJjaGFyIjoiNyJ9LHsiY2hhciI6IueJiCJ9LHsiY2hhciI6IuacrCJ9LHsiY2hhciI6IuS4jSJ9LHsiY2hhciI6IuaUryJ9LHsiY2hhciI6IuaMgSJ9LHsiY2hhciI6Im0ifSx7ImNoYXIiOiJ5In0seyJjaGFyIjoicyJ9LHsiY2hhciI6InEifSx7ImNoYXIiOiJsIn0seyJjaGFyIjoi5qihIn0seyJjaGFyIjoi5Z2XIn1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX1d--></p>
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6Ijk4NzctMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLlj4giLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWPryIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6IO9Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlh7oiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IueOsCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6ZeuIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLpopgiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iu+8iCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LiAIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLkuKoiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS4qiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5o6lIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLov5EiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWRlyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi77yJIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fSx7ImJsb2NrSWQiOiIyMDc2LTE1NjU0MjQxMzgxMjMiLCJibG9ja1R5cGUiOiJwYXJhZ3JhcGgiLCJzdHlsZXMiOnsiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJ0ZXh0LWluZGVudCI6MCwibGluZS1oZWlnaHQiOjEuNzUsImJhY2stY29sb3IiOiIiLCJwYWRkaW5nIjoiIn0sInR5cGUiOiJwYXJhZ3JhcGgiLCJyaWNoVGV4dCI6eyJkYXRhIjpbeyJjaGFyIjoi6KejIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlhrMiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaWuSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5rOVIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjM0NzAtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLlrokiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuijhSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5a6MIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmiJAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19XSwiaXNSaWNoVGV4dCI6dHJ1ZSwia2VlcExpbmVCcmVhayI6dHJ1ZX19LHsiYmxvY2tJZCI6IjEwNTMtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLlho0iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iui/myIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6KGMIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJoIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnmoQiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWuiSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6KOFIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmtYsiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IumqjCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX1d--></p>
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjcyODYtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLkv50iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWtmCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5bm2Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLpgIAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWHuiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi77yMIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmiaciLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuihjCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5ZG9Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLku6QiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuiuqSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiYyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiYSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiayIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiZSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi546vIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlooMiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19XSwiaXNSaWNoVGV4dCI6dHJ1ZSwia2VlcExpbmVCcmVhayI6dHJ1ZX19XQ==--></p>
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjM1MzEtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLlrokiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuijhSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5oiQIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlip8iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWQjiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi77yMIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fSx7ImJsb2NrSWQiOiI0Mzc2LTE1NjU0MjQxMzgxMjMiLCJibG9ja1R5cGUiOiJwYXJhZ3JhcGgiLCJzdHlsZXMiOnsiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJ0ZXh0LWluZGVudCI6MCwibGluZS1oZWlnaHQiOjEuNzUsImJhY2stY29sb3IiOiIiLCJwYWRkaW5nIjoiIn0sInR5cGUiOiJwYXJhZ3JhcGgiLCJyaWNoVGV4dCI6eyJkYXRhIjpbeyJjaGFyIjoi5LiLIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLpnaIiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iua3uyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5YqgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJjIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJtIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJhIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJrIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnjq8iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWigyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5Y+YIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLph48iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iu+8jCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi57yWIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLovpEiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IiAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Ii8iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZSwiaXRhbGljIjp0cnVlfX0seyJjaGFyIjoiZSIsInN0eWxlcyI6eyJib2xkIjp0cnVlLCJpdGFsaWMiOnRydWV9fSx7ImNoYXIiOiJ0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWUsIml0YWxpYyI6dHJ1ZX19LHsiY2hhciI6ImMiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZSwiaXRhbGljIjp0cnVlfX0seyJjaGFyIjoiLyIsInN0eWxlcyI6eyJib2xkIjp0cnVlLCJpdGFsaWMiOnRydWV9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImJvbGQiOnRydWUsIml0YWxpYyI6dHJ1ZX19LHsiY2hhciI6InIiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZSwiaXRhbGljIjp0cnVlfX0seyJjaGFyIjoibyIsInN0eWxlcyI6eyJib2xkIjp0cnVlLCJpdGFsaWMiOnRydWV9fSx7ImNoYXIiOiJmIiwic3R5bGVzIjp7ImJvbGQiOnRydWUsIml0YWxpYyI6dHJ1ZX19LHsiY2hhciI6ImkiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZSwiaXRhbGljIjp0cnVlfX0seyJjaGFyIjoibCIsInN0eWxlcyI6eyJib2xkIjp0cnVlLCJpdGFsaWMiOnRydWV9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImJvbGQiOnRydWUsIml0YWxpYyI6dHJ1ZX19LHsiY2hhciI6Ii4iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZSwiaXRhbGljIjp0cnVlfX0seyJjaGFyIjoiZCIsInN0eWxlcyI6eyJib2xkIjp0cnVlLCJpdGFsaWMiOnRydWV9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7ImJvbGQiOnRydWUsIml0YWxpYyI6dHJ1ZX19LHsiY2hhciI6ImMiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZSwiaXRhbGljIjp0cnVlfX0seyJjaGFyIjoibSIsInN0eWxlcyI6eyJib2xkIjp0cnVlLCJpdGFsaWMiOnRydWV9fSx7ImNoYXIiOiJhIiwic3R5bGVzIjp7ImJvbGQiOnRydWUsIml0YWxpYyI6dHJ1ZX19LHsiY2hhciI6ImsiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZSwiaXRhbGljIjp0cnVlfX0seyJjaGFyIjoiZSIsInN0eWxlcyI6eyJib2xkIjp0cnVlLCJpdGFsaWMiOnRydWV9fSx7ImNoYXIiOiIuIiwic3R5bGVzIjp7ImJvbGQiOnRydWUsIml0YWxpYyI6dHJ1ZX19LHsiY2hhciI6InMiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZSwiaXRhbGljIjp0cnVlfX0seyJjaGFyIjoiaCIsInN0eWxlcyI6eyJib2xkIjp0cnVlLCJpdGFsaWMiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmlociLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS7tiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi77yMIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlhpkiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWFpSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LulIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLkuIsiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWGhSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5a65Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLvvJoiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19XSwiaXNSaWNoVGV4dCI6dHJ1ZSwia2VlcExpbmVCcmVhayI6dHJ1ZX19XQ==--></p>
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6Ijc4MjYtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLkuIsiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iui9vSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiYyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiYSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiayIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiZSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5pyAIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmlrAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IueJiCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi77yIIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLoh6oiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuW3sSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5om+Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlrpgiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iue9kSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5aSNIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLliLYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IumTviIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5o6lIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLvvIkiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19XSwiaXNSaWNoVGV4dCI6dHJ1ZSwia2VlcExpbmVCcmVhayI6dHJ1ZX19XQ==--></p>
+<p>　　&nbsp;./configure --help 查看configure的正确语法，重新编译php支持mysql，改用--with-pdo-mysql</p>
+<src>　　php7版本正确的编译语句是：
+<src class="cnblogs_code">
+<pre><code>./configure --prefix=/usr/local/php --with-config<span style="color: #008080;">-file</span>-path=/usr/local/php/etc --enable-fpm --with-fpm-user=www --with-fpm-group=www --enable-mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --enable-mysqlnd-compression-support --with-iconv-dir --with-freetype-dir --with-jpeg-dir --with-png-dir --with-zlib --with-libxml-dir --enable-xml --disable-rpath --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --with-curl --enable-mbregex --enable-mbstring --enable-intl --with-mcrypt --with-libmbfl --enable-ftp --with-gd --enable-gd-jis-conv --enable-gd-native-ttf --with-openssl --with-mhash --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --with-gettext --disable-fileinfo --enable-opcache --with-pear --enable-maintainer-zts --with-ldap=shared --without-gdbm</code></pre>
+
+<p>&nbsp;</p>
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjU0NDItMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiIuIn0seyJjaGFyIjoiLyJ9LHsiY2hhciI6ImMifSx7ImNoYXIiOiJvIn0seyJjaGFyIjoibiJ9LHsiY2hhciI6ImYifSx7ImNoYXIiOiJpIn0seyJjaGFyIjoiZyJ9LHsiY2hhciI6InUifSx7ImNoYXIiOiJyIn0seyJjaGFyIjoiZSJ9LHsiY2hhciI6IiAifSx7ImNoYXIiOiItIn0seyJjaGFyIjoiLSJ9LHsiY2hhciI6ImgifSx7ImNoYXIiOiJlIn0seyJjaGFyIjoibCJ9LHsiY2hhciI6InAifSx7ImNoYXIiOiIgIn0seyJjaGFyIjoi5p+lIn0seyJjaGFyIjoi55yLIn0seyJjaGFyIjoiYyJ9LHsiY2hhciI6Im8ifSx7ImNoYXIiOiJuIn0seyJjaGFyIjoiZiJ9LHsiY2hhciI6ImkifSx7ImNoYXIiOiJnIn0seyJjaGFyIjoidSJ9LHsiY2hhciI6InIifSx7ImNoYXIiOiJlIn0seyJjaGFyIjoi55qEIn0seyJjaGFyIjoi5q2jIn0seyJjaGFyIjoi56GuIn0seyJjaGFyIjoi6K+tIn0seyJjaGFyIjoi5rOVIn0seyJjaGFyIjoi77yMIn0seyJjaGFyIjoi6YeNIn0seyJjaGFyIjoi5pawIn0seyJjaGFyIjoi57yWIn0seyJjaGFyIjoi6K+RIn0seyJjaGFyIjoicCJ9LHsiY2hhciI6ImgifSx7ImNoYXIiOiJwIn0seyJjaGFyIjoi5pSvIn0seyJjaGFyIjoi5oyBIn0seyJjaGFyIjoibSJ9LHsiY2hhciI6InkifSx7ImNoYXIiOiJzIn0seyJjaGFyIjoicSJ9LHsiY2hhciI6ImwifSx7ImNoYXIiOiLvvIwifSx7ImNoYXIiOiLmlLkifSx7ImNoYXIiOiLnlKgifSx7ImNoYXIiOiItIn0seyJjaGFyIjoiLSJ9LHsiY2hhciI6IncifSx7ImNoYXIiOiJpIn0seyJjaGFyIjoidCJ9LHsiY2hhciI6ImgifSx7ImNoYXIiOiItIn0seyJjaGFyIjoicCJ9LHsiY2hhciI6ImQifSx7ImNoYXIiOiJvIn0seyJjaGFyIjoiLSJ9LHsiY2hhciI6Im0ifSx7ImNoYXIiOiJ5In0seyJjaGFyIjoicyJ9LHsiY2hhciI6InEifSx7ImNoYXIiOiJsIn1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX0seyJibG9ja0lkIjoiNjcyMC0xNTY1NDI0MTM4MTIzIiwiYmxvY2tUeXBlIjoicGFyYWdyYXBoIiwic3R5bGVzIjp7ImFsaWduIjoibGVmdCIsImluZGVudCI6MCwidGV4dC1pbmRlbnQiOjAsImxpbmUtaGVpZ2h0IjoxLjc1LCJiYWNrLWNvbG9yIjoiIiwicGFkZGluZyI6IiJ9LCJ0eXBlIjoicGFyYWdyYXBoIiwicmljaFRleHQiOnsiZGF0YSI6W3siY2hhciI6InAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6ImgiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6InAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IjciLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IueJiCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5pysIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmraMiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuehriIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi55qEIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnvJYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuivkSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6K+tIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlj6UiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaYryIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi77yaIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）10.jpg" alt="" /></p>
+<src>　　解决办法：
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> rpm -qa |<span style="color: #000000;"> grep libjpeg 
+</span><span style="color: #008080;">2</span> yum -y install libjpeg-<span style="color: #000000;">devel
+</span><span style="color: #008080;">3</span> yum list installed |<span style="color: #000000;"> grep libjpeg
+</span><span style="color: #008080;">4</span> 再次编译即可</code></pre>
+
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）11.jpg" alt="" /></p>
+<src>　　解决方法：
+<src class="cnblogs_code">
+<pre><code>yum install -y libicu-devel</code></pre>
+
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）12.jpg" alt="" /></p>
+<src>　　解决方法
+<src>　　　检查下面是不是已经安装，如果没有安装之：
+<src>　　　　检查：
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">yum list openldap
+</span><span style="color: #008080;">2</span> yum list openldap-devel</code></pre>
+
+<p>&nbsp;　　　　安装 ：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">yum install openldap
+</span><span style="color: #008080;">2</span> yum install openldap-devel</code></pre>
+
+<p>　　configure: error: Cannot find ldap libraries in /usr/lib</p>
+
+
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjMwMTAtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiJjIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6Im8iLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoibiIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJmIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6ImkiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiZyIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJ1Iiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6InIiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiZSIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiI6Iiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6IiAiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiZSIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJyIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6InIiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoibyIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJyIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6IjoiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJDIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6ImEiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoibiIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJuIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6Im8iLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoidCIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6ImYiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiaSIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJuIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6ImQiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJsIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6ImQiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiYSIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6IiAiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoibCIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6ImIiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiciIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJhIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6InIiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiaSIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6InMiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6Im4iLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6InUiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoicyIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJyIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6Ii8iLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoibCIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6ImIiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX1d--></p>
+<p>&nbsp;　　解决方法</p>
+<src class="cnblogs_code">
+<pre><code>cp -frp /usr/lib64/libldap* /usr/lib/</code></pre>
+
+<p>&nbsp;</p>
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjcyMDAtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLop6MiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX0seyJjaGFyIjoi5YazIiwic3R5bGVzIjp7ImZvbnQtZmFtaWx5IjoiVmVyZGFuYSIsImNvbG9yIjoiIzMzMzMzMyIsImJhY2stY29sb3IiOiIjZmZmZmZmIn19LHsiY2hhciI6IuaWuSIsInN0eWxlcyI6eyJmb250LWZhbWlseSI6IlZlcmRhbmEiLCJjb2xvciI6IiMzMzMzMzMiLCJiYWNrLWNvbG9yIjoiI2ZmZmZmZiJ9fSx7ImNoYXIiOiLms5UiLCJzdHlsZXMiOnsiZm9udC1mYW1pbHkiOiJWZXJkYW5hIiwiY29sb3IiOiIjMzMzMzMzIiwiYmFjay1jb2xvciI6IiNmZmZmZmYifX1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX1d--></p>
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）13.jpg" alt="" /></p>
+<src>　　此时，发现换成7.3版本的编译指令
+<src class="cnblogs_code">
+<pre><code>./configure --enable-fpm --prefix=/alidata/server/php7.3 --with-config<span style="color: #008080;">-file</span>-path=/alidata/server/php7.3/etc  --with-curl  --with-gd --with-gettext --with-iconv-dir --with-kerberos --with-libdir=lib64 --with-libxml-dir --with-mysqli --with-openssl --with-pcre<span style="color: #008080;">-regex</span> --with-pdo-mysql --with-pdo-sqlite --with-pear --with-png-dir --with-jpeg-dir --with-xmlrpc --with-xsl --enable-zip --with-zlib-dir=DIR --with-pcre-dir --with-libzip=DIR --with-openssl --enable-fpm --enable-bcmath --enable-libxml --enable-inline-optimization --enable-mbregex --enable-mbstring --enable-opcache --enable-pcntl --enable-shmop --enable-soap --enable-sockets --enable-sysvsem --enable-xml --enable-zip</code></pre>
+
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）14.jpg" alt="" /></p>
+<src>　　解决办法
+<src class="cnblogs_code">
+<pre><code>yum -y install libxslt libxslt-devel</code></pre>
+
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）15.jpg" alt="" /></p>
+<src>　　终于成功!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (总共出现了 12个问题)
+<src>　　然后再进入正题
+<src>　　编译
+<src class="cnblogs_code">
+<pre><code>make</code></pre>
+
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>make install </code></pre>
+
+<p>&nbsp;</p>
+
+
+
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）16.jpg" alt="" /></p>
+<src>　　注意这里，可以看出
+<src>　　php添加到环境变量中的应该为&nbsp; /alidata/server/php7.3/bin/
+<src>配置环境变量（添加 PHP 命令到环境变量）
+<src class="cnblogs_code">
+<pre><code>vim /etc/profile</code></pre>
+
+<p>&nbsp;在末尾加入</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> PATH=<span style="color: #800080;">$PATH</span>:/alidata/server/php7.3/bin/
+<span style="color: #008080;">2</span>  
+<span style="color: #008080;">3</span> export PATH</code></pre>
+
+<src>要使改动立即生效
+<src class="cnblogs_code">
+<pre><code>. /etc/profile 或 source /etc/profile</code></pre>
+
+<p>&nbsp;查看环境变量</p>
+<src class="cnblogs_code">
+<pre><code>echo <span style="color: #800080;">$PATH</span></code></pre>
+
+<src>查看php版本
+<src class="cnblogs_code">
+<pre><code>(django) [root@h1 php-7.3.8]<span style="color: #008000;">#</span><span style="color: #008000;"> php -v</span>
+PHP 7.3.8 (cli) (built: Aug  9 2019 21:27:07<span style="color: #000000;">) ( NTS )
+Copyright (c) </span>1997-2018<span style="color: #000000;"> The PHP Group
+Zend Engine v3.</span>3.8, Copyright (c) 1998-2018<span style="color: #000000;"> Zend Technologies
+(django) [root</span>@h1 php-7.3.8]<span style="color: #008000;">#</span> </code></pre>
+
+<p>&nbsp;配置启动 php-fpm</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> Installing shared extensions:     /alidata/server/php7.3/lib/php/extensions/no-debug-non-zts-20180731/
+<span style="color: #008080;"> 2</span> Installing PHP CLI binary:        /alidata/server/php7.3/bin/
+<span style="color: #008080;"> 3</span> Installing PHP CLI man page:      /alidata/server/php7.3/php/man/man1/
+<span style="color: #008080;"> 4</span> Installing PHP FPM binary:        /alidata/server/php7.3/sbin/
+<span style="color: #008080;"> 5</span> Installing PHP FPM defconfig:     /alidata/server/php7.3/etc/
+<span style="color: #008080;"> 6</span> Installing PHP FPM man page:      /alidata/server/php7.3/php/man/man8/
+<span style="color: #008080;"> 7</span> Installing PHP FPM status page:   /alidata/server/php7.3/php/php/fpm/
+<span style="color: #008080;"> 8</span> Installing phpdbg binary:         /alidata/server/php7.3/bin/
+<span style="color: #008080;"> 9</span> Installing phpdbg man page:       /alidata/server/php7.3/php/man/man1/
+<span style="color: #008080;">10</span> Installing PHP CGI binary:        /alidata/server/php7.3/bin/
+<span style="color: #008080;">11</span> Installing PHP CGI man page:      /alidata/server/php7.3/php/man/man1/
+<span style="color: #008080;">12</span> Installing build environment:     /alidata/server/php7.3/lib/php/build/
+<span style="color: #008080;">13</span> Installing header files:          /alidata/server/php7.3/include/php/
+<span style="color: #008080;">14</span> Installing helper programs:       /alidata/server/php7.3/bin/
+<span style="color: #008080;">15</span> <span style="color: #000000;">  program: phpize
+</span><span style="color: #008080;">16</span>   program: php-<span style="color: #000000;">config
+</span><span style="color: #008080;">17</span> Installing man pages:             /alidata/server/php7.3/php/man/man1/
+<span style="color: #008080;">18</span>   page: phpize.1
+<span style="color: #008080;">19</span>   page: php-config.1</code></pre>
+
+<p>由上图的安装信息可知，php-fpm在</p>
+<src class="cnblogs_code">
+<pre><code>cd /alidata/server/php7.3/etc</code></pre>
+
+<p>&nbsp;</p>
+
+
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6Ijc1MTMtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLnlLEiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS4iiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5Zu+Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnmoQiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWuiSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6KOFIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLkv6EiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaBryIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5Y+vIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnn6UiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Iu+8jCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiaCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiLSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiZiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5ZyoIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+<p>然后</p>
+<src class="cnblogs_code">
+<pre><code>cp php-fpm.conf.<span style="color: #0000ff;">default</span> php-fpm.conf</code></pre>
+
+<p>启动 php-fpm</p>
+<src class="cnblogs_code">
+<pre><code>/alidata/server/php7.3/sbin/php-fpm</code></pre>
+
+<src>然后可能会出现问题
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjU3OTQtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLnhLYiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWQjiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5Y+vIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLog70iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuS8miIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5Ye6Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnjrAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IumXriIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6aKYIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjY0NjUtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLlkK8iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWKqCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiaCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiLSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiZiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX1d--></p>
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）17.jpg" alt="" /></p>
+<src>解决办法
+<src class="cnblogs_code">
+<pre><code>(django) [root@h1 etc]<span style="color: #008000;">#</span><span style="color: #008000;"> cd /alidata/server/php7.3/etc/php-fpm.d/</span>
+<span style="color: #000000;">
+(django) [root</span>@h1 php-fpm.d]<span style="color: #008000;">#</span><span style="color: #008000;"> cp www.conf.default www.conf</span>
+<span style="color: #000000;">
+
+(django) [root</span>@h1 php-fpm.d]<span style="color: #008000;">#</span><span style="color: #008000;"> /alidata/server/php7.3/sbin/php-fpm -t</span></code></pre>
+
+<p>&nbsp;[09-Aug-2019 21:45:42] NOTICE: configuration file /alidata/server/php7.3/etc/php-fpm.conf test is successful</p>
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjY0MzUtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiJbIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI5Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiItIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJBIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ1Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJnIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiItIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIyIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIxIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI5Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIyIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIxIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI6Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI1Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI6Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIyIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJdIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJOIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJPIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJUIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJJIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJDIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJFIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI6Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJjIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJvIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJuIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJmIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJnIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ1Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJyIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJhIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJvIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJuIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJmIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJsIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJhIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJsIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJkIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJhIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJhIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJzIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJyIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ2Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJyIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJoIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiI3Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIuIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIzIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJjIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIvIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJoIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiItIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJmIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJtIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIuIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJjIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJvIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJuIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJmIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJzIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ0Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJpIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJzIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJzIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ1Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJjIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJjIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJlIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJzIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJzIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJmIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJ1Iiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiJsIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjE1OTgtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLop6MiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWGsyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5YqeIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLms5UiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19XSwiaXNSaWNoVGV4dCI6dHJ1ZSwia2VlcExpbmVCcmVhayI6dHJ1ZX19XQ==--></p>
+<p>&nbsp;<strong>于是 成功启动</strong></p>
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6Ijg1ODktMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJ0ZXh0LWluZGVudCI6MSwiYWxpZ24iOiJsZWZ0IiwiaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLkuo4iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaYryIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5oiQIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLlip8iLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuWQryIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5YqoIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fV0sImlzUmljaFRleHQiOnRydWUsImtlZXBMaW5lQnJlYWsiOnRydWV9fV0=--></p>
+<p>&nbsp;<img src="./images/PHP-RPM 安装指南（亲测有用）18.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<src><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjU5MjgtMTU2NTQyNDEzODEyMyIsImJsb2NrVHlwZSI6ImltYWdlIiwic3R5bGVzIjp7IndpZHRoIjo2MjAsImhlaWdodCI6MjkxLCJhbGlnbiI6ImxlZnQiLCJmbG9hdCI6Im5vbmUiLCJiYWNrLWNvbG9yIjoiIiwicGFkZGluZyI6IiJ9LCJ0eXBlIjoiaW1hZ2UiLCJzb3VyY2UiOiI2M0M0NkExQTY5NTA0MkFBODE1NzI0RDlEMTZDMDM4QyIsInRpdGxlIjoiIn1d-->
+<p><!--5f39ae17-8c62-4a45-bc43-b32064c9388a:W3siYmxvY2tJZCI6IjM4NjUtMTU2NTQyNDEyNjE3OSIsImJsb2NrVHlwZSI6InBhcmFncmFwaCIsInN0eWxlcyI6eyJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsInRleHQtaW5kZW50IjowLCJsaW5lLWhlaWdodCI6MS43NSwiYmFjay1jb2xvciI6IiIsInBhZGRpbmciOiIifSwidHlwZSI6InBhcmFncmFwaCIsInJpY2hUZXh0Ijp7ImRhdGEiOlt7ImNoYXIiOiLlrokiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuijhSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiaCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiLSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiZiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX0seyJibG9ja0lkIjoiMzAyNC0xNTY1NDI0MTM4MTIzIiwiYmxvY2tUeXBlIjoicGFyYWdyYXBoIiwic3R5bGVzIjp7InRleHQtaW5kZW50IjoxLCJhbGlnbiI6ImxlZnQiLCJpbmRlbnQiOjAsImxpbmUtaGVpZ2h0IjoxLjc1LCJiYWNrLWNvbG9yIjoiIiwicGFkZGluZyI6IiJ9LCJ0eXBlIjoicGFyYWdyYXBoIiwicmljaFRleHQiOnsiZGF0YSI6W3siY2hhciI6IigiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaWsCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi5LmwIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLnmoQiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IumYvyIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6YeMIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLkupEiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IiAiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6Ium7mCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoi6K6kIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiIgIiwic3R5bGVzIjp7ImJvbGQiOnRydWV9fSx7ImNoYXIiOiLmsqEiLCJzdHlsZXMiOnsiYm9sZCI6dHJ1ZX19LHsiY2hhciI6IuaciSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiICIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiaCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiLSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiZiIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoicCIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoibSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX0seyJjaGFyIjoiKSIsInN0eWxlcyI6eyJib2xkIjp0cnVlfX1dLCJpc1JpY2hUZXh0Ijp0cnVlLCJrZWVwTGluZUJyZWFrIjp0cnVlfX1d--></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,70 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel 下配置 Redis 让缓存、Session 各自使用不同的 Redis 数据库' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel 下配置 Redis 让缓存、Session 各自使用不同的 Redis 数据库</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11835819.html</div><br>
+    <h2>为什么要这样做？</h2>
+<p>默认情况下，Redis 服务会提供 16 个数据库，Laravel 使用数据库&nbsp;<code>0</code>&nbsp;（请见&nbsp;<a href="https://learnku.com/docs/laravel/5.1/redis#%E9%85%8D%E7%BD%AE">Redis 文档</a>）作为缓存和 Session 的存储。</p>
+<p>在执行命令&nbsp;<code>php artisan cache:clear</code>&nbsp;清除缓存时，会把 Session 也连带清除了，可以通过以下设置来避免这个问题。</p>
+<src data-unique="7af603">&nbsp;
+<h2>开始配置</h2>
+<p>我们的目的是让缓存，也就是默认的 Redis 存储到 0 号数据库，Session 存储在 1 号数据库。</p>
+<src data-unique="fb874e">&nbsp;
+<h3>1. 配置 Session Redis 数据库</h3>
+<p>修改&nbsp;<code>config/database.php</code>，在&nbsp;<code>redis</code>&nbsp;选项内增加&nbsp;<code>session</code>&nbsp;选项，并把&nbsp;<code>database</code>&nbsp;修改为 1：</p>
+<src class="cnblogs_code">
+<pre><code>'redis' =&gt;<span style="color: #000000;"> [
+
+   </span>'cluster' =&gt; <span style="color: #0000ff;">false</span>,
+
+   'default' =&gt;<span style="color: #000000;"> [
+       </span>'host'     =&gt; env('REDIS_HOST', 'localhost'),
+       'password' =&gt; env('REDIS_PASSWORD', <span style="color: #0000ff;">null</span>),
+       'port'     =&gt; env('REDIS_PORT', 6379),
+       'database' =&gt; 0,<span style="color: #000000;">
+   ]</span>,
+
+   'session' =&gt;<span style="color: #000000;"> [
+         </span>'host'     =&gt; env('REDIS_HOST', 'localhost'),
+         'password' =&gt; env('REDIS_PASSWORD', <span style="color: #0000ff;">null</span>),
+         'port'     =&gt; env('REDIS_PORT', 6379),
+         'database' =&gt; 1,<span style="color: #000000;">
+   ]</span>,<span style="color: #000000;">
+]</span>,</code></pre>
+
+<p>&nbsp;</p>
+<src data-unique="a3ea75">&nbsp;
+<h3>2. 指定 Session 使用数据库</h3>
+<p>修改&nbsp;<code>config/session.php</code>&nbsp;，把下面这一行：</p>
+<pre class=" language-php"><code class="  language-php"><span class="token single-quoted-string string">'connection' <span class="token operator">=<span class="token operator">&gt; <span class="token constant">null<span class="token punctuation">,</span></span></span></span></span></code></code></pre>
+<p>改为：</p>
+<pre class=" language-php"><code class="  language-php"><span class="token single-quoted-string string">'connection' <span class="token operator">=<span class="token operator">&gt; <span class="token single-quoted-string string">'session'<span class="token punctuation">,</span></span></span></span></span></code></code></pre>
+<src data-unique="7857ad">&nbsp;
+<h3>3. 开始使用</h3>
+<p>修改&nbsp;<code>.env</code>&nbsp;文件的&nbsp;<code>SESSION_DRIVER</code>&nbsp;选项为 redis，开始应用上。</p>
+<pre class=" language-php"><code class="  language-php"><span class="token constant">SESSION_DRIVER<span class="token operator">=redis</span></span></code></code></pre>
+<src data-unique="9b32cd">&nbsp;
+<h3>4. 测试一下</h3>
+<p>执行以下命令后检查下是否退出登录：</p>
+<pre class=" language-php"><code class="  language-php">php artisan cache<span class="token punctuation">:clear</span></code></code></pre>
+<p>如果不会就大功告成了。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,73 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP+Ajax手机移动端发红包实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP+Ajax手机移动端发红包实例</center></div><div class='banquan'>原文出处:本文由博客园博主mrlime提供。<br/>
+原文连接:https://www.cnblogs.com/mrlime/p/11577223.html</div><br>
+    <p><img src="./images/PHP+Ajax手机移动端发红包实例0.jpg" alt="" width="256" height="210" /></p>
+<p>基本流程：当输入完红包数量和总金额后，PHP会根据这两个值进行随机分配每个金额，保证每个人都能领取到一个红包，且每个红包金额不等，并且所有红包金额总额等于总金额。</p>
+<p>实现原理：<br />设定总金额为10元，有N个人随机领取：<br />N=1 第一个<br />则红包金额=X元；<br />N=2 第二个<br />为保证第二个红包可以正常发出，第一个红包金额=0.01至9.99之间的某个随机数<br />第二个红包=10-第一个红包金额；<br />N=3 第三个<br />红包1=0.01至9.99之间的某个随机数<br />红包2=0.01至(10-红包1-0.01)的某个随机数<br />红包3=10-红包1-红包2<br />&hellip;&hellip;<br />于是我们得到一个规律，在分配当前红包金额时，先预留剩余红白所需最少金额，然后在0.01至总金额-预留金额间取随机数，得到的随机数就是当前红包分配的金额。<br />实际应用中，程序先将红包金额分配好，即发红包时，红包个数以及每个红包的金额都分配好了，那么用户来抢红包时，我们随机给用户返回一个红包即可。</p>
+<p><strong>js代码：</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> $(<span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;"> 2</span>     $("button").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">        $.ajax({ 
+</span><span style="color: #008080;"> 4</span>             type: 'POST'<span style="color: #000000;">, 
+</span><span style="color: #008080;"> 5</span>             url: 'bao.php'<span style="color: #000000;">, 
+</span><span style="color: #008080;"> 6</span>             dataType: 'json'<span style="color: #000000;">, 
+</span><span style="color: #008080;"> 7</span>             beforeSend: <span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;"> 8</span>                 $("#result").html('正在分配红包'<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">            }, 
+</span><span style="color: #008080;">10</span>             success: <span style="color: #0000ff;">function</span><span style="color: #000000;">(json) { 
+</span><span style="color: #008080;">11</span>                 <span style="color: #0000ff;">if</span> (json.msg == 1<span style="color: #000000;">) { 
+</span><span style="color: #008080;">12</span>                     <span style="color: #0000ff;">var</span> str = ''<span style="color: #000000;">; 
+</span><span style="color: #008080;">13</span>                     <span style="color: #0000ff;">var</span> res =<span style="color: #000000;"> json.res; 
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">                    $.each(res, 
+</span><span style="color: #008080;">15</span>                     <span style="color: #0000ff;">function</span><span style="color: #000000;">(index, array) { 
+</span><span style="color: #008080;">16</span>                         str += '&lt;p&gt;第&lt;span&gt;' + array['i'] + '&lt;/span&gt;个红包，金额&lt;span&gt;' + array['money'] + '&lt;/span&gt;元，余额&lt;span&gt;' + array['total'] + '元&lt;/span&gt;&lt;/p&gt;'<span style="color: #000000;">; 
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">                    }); 
+</span><span style="color: #008080;">18</span>                     $("#result"<span style="color: #000000;">).html(str); 
+</span><span style="color: #008080;">19</span>                 } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">20</span>                     $("#result").html('数据出错！'<span style="color: #000000;">); 
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">                } 
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">        }); 
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">    }); 
+</span><span style="color: #008080;">25</span> });</code></pre>
+
+<p><strong><br />bao.php源码：</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$total</span>=20;<span style="color: #008000;">//</span><span style="color: #008000;">红包总金额    </span>
+<span style="color: #008080;"> 2</span> <span style="color: #800080;">$num</span>=10;<span style="color: #008000;">//</span><span style="color: #008000;"> 分成10个红包，支持10人随机领取    </span>
+<span style="color: #008080;"> 3</span> <span style="color: #800080;">$min</span>=0.01;<span style="color: #008000;">//</span><span style="color: #008000;">每个人最少能收到0.01元    </span>
+<span style="color: #008080;"> 4</span>   
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=1;<span style="color: #800080;">$i</span>&lt;<span style="color: #800080;">$num</span>;<span style="color: #800080;">$i</span>++<span style="color: #000000;">)    
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">{    
+</span><span style="color: #008080;"> 7</span>     <span style="color: #800080;">$safe_total</span>=(<span style="color: #800080;">$total</span>-(<span style="color: #800080;">$num</span>-<span style="color: #800080;">$i</span>)*<span style="color: #800080;">$min</span>)/(<span style="color: #800080;">$num</span>-<span style="color: #800080;">$i</span>);<span style="color: #008000;">//</span><span style="color: #008000;">随机安全上限    </span>
+<span style="color: #008080;"> 8</span>     <span style="color: #800080;">$money</span>=<span style="color: #008080;">mt_rand</span>(<span style="color: #800080;">$min</span>*100,<span style="color: #800080;">$safe_total</span>*100)/100<span style="color: #000000;">;    
+</span><span style="color: #008080;"> 9</span>     <span style="color: #800080;">$total</span>=<span style="color: #800080;">$total</span>-<span style="color: #800080;">$money</span><span style="color: #000000;">;   
+</span><span style="color: #008080;">10</span>       
+<span style="color: #008080;">11</span>     <span style="color: #0000ff;">echo</span> '第'.<span style="color: #800080;">$i</span>.'个红包：'.<span style="color: #800080;">$money</span>.' 元，余额：'.<span style="color: #800080;">$total</span>.' 元 '<span style="color: #000000;">;    
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">}    
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">echo</span> '第'.<span style="color: #800080;">$num</span>.'个红包：'.<span style="color: #800080;">$total</span>.' 元，余额：0 元';</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/322.html" target="_blank">https://www.sucaihuo.com/php/322.html</a> 转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

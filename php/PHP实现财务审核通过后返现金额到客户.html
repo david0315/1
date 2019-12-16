@@ -1,0 +1,331 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现财务审核通过后返现金额到客户' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现财务审核通过后返现金额到客户</center></div><div class='banquan'>原文出处:本文由博客园博主下页、再停留提供。<br/>
+原文连接:https://www.cnblogs.com/zxf100/p/11130320.html</div><br>
+    <p>应用场景：</p>
+<p>有这么一个返现的系统，当前端客户发起提现的时候，后端就要通过审核这笔返现订单，才可以返现到客户的账号里。</p>
+<p><strong>来看看下面的截图</strong></p>
+<p><img src="./images/PHP实现财务审核通过后返现金额到客户0.jpg" alt="" /></p>
+<p>这里的业务场景就是经过两轮审核：销售审核，财务审核都通过后，后端就会付款一笔钱到客户，当然，这里财务审核会有很多种情况，不通过与通过，通过后直接付款又有很多种情况，详细可以查看微信付款到零钱的文档。下面就来看看具体你的代码实现</p>
+<p><strong>微信支付配置</strong></p>
+<p><strong>1，数据表大概如下</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">CREATE</span> <span style="color: #0000ff;">TABLE</span><span style="color: #000000;"> `zmq_weixin_config` (
+  `id` </span><span style="color: #0000ff;">int</span>(<span style="color: #800000; font-weight: bold;">1</span>) unsigned <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span> AUTO_INCREMENT COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">微信公众平台编号，自增id</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `weixin_name` </span><span style="color: #0000ff;">varchar</span>(<span style="color: #800000; font-weight: bold;">10</span>) <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">微信公众平台名称</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `token` </span><span style="color: #0000ff;">varchar</span>(<span style="color: #800000; font-weight: bold;">100</span>) <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span><span style="color: #000000;">,
+  `appid` </span><span style="color: #0000ff;">char</span>(<span style="color: #800000; font-weight: bold;">18</span>) <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span><span style="color: #000000;">,
+  `appsecret` </span><span style="color: #0000ff;">char</span>(<span style="color: #800000; font-weight: bold;">32</span>) <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span><span style="color: #000000;">,
+  `access_token` </span><span style="color: #0000ff;">varchar</span>(<span style="color: #800000; font-weight: bold;">300</span>) <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span><span style="color: #000000;">,
+  `api_ticket` </span><span style="color: #0000ff;">varchar</span>(<span style="color: #800000; font-weight: bold;">300</span>) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">微信卡包api_ticket</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `api_ticket_expired_at` </span><span style="color: #0000ff;">datetime</span> <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">微信卡包api_ticket过期时间</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `mchid` </span><span style="color: #0000ff;">varchar</span>(<span style="color: #800000; font-weight: bold;">20</span>) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">商户号</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `mchkey` </span><span style="color: #0000ff;">varchar</span>(<span style="color: #800000; font-weight: bold;">50</span>) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">支付密钥</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `expired_at` </span><span style="color: #0000ff;">timestamp</span> <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">access_token过期时间，会自动更新</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `updated_at` </span><span style="color: #0000ff;">timestamp</span> <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">记录更新时间</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `created_at` </span><span style="color: #0000ff;">timestamp</span> <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">创建时间</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `sort_order` </span><span style="color: #0000ff;">smallint</span>(<span style="color: #800000; font-weight: bold;">5</span>) <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">0</span><span style="color: #ff0000;">'</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">排序</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `points_url` </span><span style="color: #0000ff;">varchar</span>(<span style="color: #800000; font-weight: bold;">100</span>) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span><span style="color: #000000;">,
+  </span><span style="color: #0000ff;">PRIMARY</span> <span style="color: #0000ff;">KEY</span><span style="color: #000000;"> (`id`)
+) ENGINE</span><span style="color: #808080;">=</span>MyISAM AUTO_INCREMENT<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">11</span> <span style="color: #0000ff;">DEFAULT</span> CHARSET<span style="color: #808080;">=</span>utf8 CHECKSUM<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">1</span> DELAY_KEY_WRITE<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">1</span> ROW_FORMAT<span style="color: #808080;">=</span>DYNAMIC COMMENT<span style="color: #808080;">=</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">微信配置表</span><span style="color: #ff0000;">'</span>;</code></pre>
+
+<p><strong>2 .config的配置方法</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 获取微信支付配置
+ * 这里我是把配置信息存储在数据表里，方便调用
+ * $param是从controller里传值过来：weixin_config_id，notify_url
+ * @return array
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getWechatConfig(<span style="color: #800080;">$param</span><span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$weixin</span> = WeixinConfigBaseModel::find(<span style="color: #800080;">$param</span>['weixin_config_id'<span style="color: #000000;">]);
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$weixin</span><span style="color: #000000;">)) {
+        </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('微信配置ID错误'<span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> [
+        </span>'wechat' =&gt;<span style="color: #000000;">[
+            </span><span style="color: #800080;">$app_id</span> =&gt; <span style="color: #800080;">$weixin</span>-&gt;appid,
+            'mch_id' =&gt; <span style="color: #800080;">$weixin</span>-&gt;mchid,
+            'notify_url' =&gt; <span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$param</span>['notify_url']) ? '' : <span style="color: #800080;">$param</span>['notify_url'],  <span style="color: #008000;">//</span><span style="color: #008000;">回调url</span>
+            'key' =&gt; <span style="color: #800080;">$weixin</span>-&gt;mchkey,
+            'cert_client' =&gt; resource_path().'/wechat/'.<span style="color: #800080;">$weixin</span>-&gt;id.'/apiclient_cert.pem',  <span style="color: #008000;">//</span><span style="color: #008000;">证书与key</span>
+            'cert_key' =&gt; resource_path().'/wechat/'.<span style="color: #800080;">$weixin</span>-&gt;id.'/apiclient_key.pem',<span style="color: #000000;">
+        ]
+    ];
+}</span></code></pre>
+
+<p><strong>企业付款到个人零钱核心代码</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * Function:企业付款到个人零钱
+ * Author:cyw0413
+ * @param $openid
+ * @param $trade_no
+ * @param $money
+ * @param $desc
+ * @return array
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> weixinPay(<span style="color: #800080;">$input</span><span style="color: #000000;">){
+
+    </span><span style="color: #800080;">$config</span> = <span style="color: #800080;">$this</span>-&gt;getWechatConfig(<span style="color: #800080;">$input</span><span style="color: #000000;">);
+
+    </span><span style="color: #800080;">$params</span>["mch_appid"]= <span style="color: #800080;">$config</span>['wechat']['app_id'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$params</span>["mchid"] = <span style="color: #800080;">$config</span>['wechat']['mch_id'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$params</span>["nonce_str"]= <span style="color: #008080;">date</span>("YmdHis").<span style="color: #008080;">mt_rand</span>(100,999<span style="color: #000000;">);
+    </span><span style="color: #800080;">$params</span>["partner_trade_no"] = <span style="color: #800080;">$input</span>['trade_no'];    <span style="color: #008000;">//</span><span style="color: #008000;">商户订单号</span>
+    <span style="color: #800080;">$params</span>["amount"]   = <span style="color: #800080;">$input</span>['amount'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$params</span>["desc"]     = <span style="color: #800080;">$input</span>['desc'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$params</span>["openid"]   = <span style="color: #800080;">$input</span>['openid'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$params</span>["check_name"]= 'NO_CHECK'<span style="color: #000000;">;
+    </span><span style="color: #800080;">$params</span>['spbill_create_ip'] = <span style="color: #800080;">$_SERVER</span>['SERVER_ADDR'<span style="color: #000000;">];
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">生成签名</span>
+    <span style="color: #800080;">$str</span> = 'amount='.<span style="color: #800080;">$params</span>["amount"].'&amp;check_name='.<span style="color: #800080;">$params</span>["check_name"].'&amp;desc='.<span style="color: #800080;">$params</span>["desc"].'&amp;mch_appid='.<span style="color: #800080;">$params</span>["mch_appid"].'&amp;mchid='.<span style="color: #800080;">$params</span>["mchid"].'&amp;nonce_str='.<span style="color: #800080;">$params</span>["nonce_str"].'&amp;openid='.<span style="color: #800080;">$params</span>["openid"].'&amp;partner_trade_no='.<span style="color: #800080;">$params</span>["partner_trade_no"].'&amp;spbill_create_ip='.<span style="color: #800080;">$params</span>['spbill_create_ip'].'&amp;key='.<span style="color: #800080;">$config</span>['wechat']['key'<span style="color: #000000;">];
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">md5加密 转换成大写</span>
+    <span style="color: #800080;">$sign</span> = <span style="color: #008080;">strtoupper</span>(<span style="color: #008080;">md5</span>(<span style="color: #800080;">$str</span><span style="color: #000000;">));
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">生成签名</span>
+    <span style="color: #800080;">$params</span>['sign'] = <span style="color: #800080;">$sign</span><span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">构造XML数据</span>
+    <span style="color: #800080;">$xmldata</span> = <span style="color: #800080;">$this</span>-&gt;array_to_xml(<span style="color: #800080;">$params</span>); <span style="color: #008000;">//</span><span style="color: #008000;">数组转XML</span>
+    <span style="color: #800080;">$url</span>='https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers'<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">发送post请求</span>
+    <span style="color: #800080;">$res</span> = <span style="color: #800080;">$this</span>-&gt;curl_post_ssl(<span style="color: #800080;">$url</span>, <span style="color: #800080;">$xmldata</span>, <span style="color: #800080;">$input</span>['weixin_config_id']); <span style="color: #008000;">//</span><span style="color: #008000;">curl请求</span>
+    <span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$res</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> \<span style="color: #0000ff;">Exception</span>("服务器连接失败"<span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">付款结果分析</span>
+    <span style="color: #800080;">$content</span> = <span style="color: #800080;">$this</span>-&gt;xml_to_array(<span style="color: #800080;">$res</span>); <span style="color: #008000;">//</span><span style="color: #008000;">xml转数组</span>
+    <span style="color: #0000ff;">return</span> <span style="color: #800080;">$content</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * curl请求
+*</span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> curl_post_ssl(<span style="color: #800080;">$url</span>, <span style="color: #800080;">$xmldata</span>, <span style="color: #800080;">$weixin_config_id</span>,<span style="color: #800080;">$second</span>=30,<span style="color: #800080;">$aHeader</span>=<span style="color: #000000;">[]){
+    </span><span style="color: #800080;">$ch</span> =<span style="color: #000000;"> curl_init();
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">超时时间</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_TIMEOUT,<span style="color: #800080;">$second</span><span style="color: #000000;">);
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_RETURNTRANSFER, 1<span style="color: #000000;">);
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_URL,<span style="color: #800080;">$url</span><span style="color: #000000;">);
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_SSL_VERIFYPEER,<span style="color: #0000ff;">false</span><span style="color: #000000;">);
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_SSL_VERIFYHOST,<span style="color: #0000ff;">false</span><span style="color: #000000;">);
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">默认格式为PEM，可以注释</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_SSLCERTTYPE,'PEM'<span style="color: #000000;">);
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">绝对地址可使用 dirname(__DIR__)打印，如果不是绝对地址会报 58 错误</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_SSLCERT, resource_path().'/wechat/'.<span style="color: #800080;">$weixin_config_id</span>.'/apiclient_cert.pem'<span style="color: #000000;">);
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_SSLKEYTYPE,'PEM'<span style="color: #000000;">);
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_SSLKEY,resource_path().'/wechat/'.<span style="color: #800080;">$weixin_config_id</span>.'/apiclient_key.pem'<span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span>( <span style="color: #008080;">count</span>(<span style="color: #800080;">$aHeader</span>) &gt;= 1<span style="color: #000000;"> ){
+        curl_setopt(</span><span style="color: #800080;">$ch</span>, CURLOPT_HTTPHEADER, <span style="color: #800080;">$aHeader</span><span style="color: #000000;">);
+    }
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_POST, 1<span style="color: #000000;">);
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_POSTFIELDS,<span style="color: #800080;">$xmldata</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$data</span> = curl_exec(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">){
+        curl_close(</span><span style="color: #800080;">$ch</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$error</span> = curl_errno(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">echo</span> "call faild, errorCode:<span style="color: #800080;">$error</span>\n"<span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">die();</span>
+        curl_close(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * array 转 xml
+ * 用于生成签名
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> array_to_xml(<span style="color: #800080;">$arr</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$str</span>='&lt;xml&gt;'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$str</span>.='&lt;'.<span style="color: #800080;">$k</span>.'&gt;'.<span style="color: #800080;">$v</span>.'&lt;/'.<span style="color: #800080;">$k</span>.'&gt;'<span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$str</span>.='&lt;/xml&gt;'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$str</span><span style="color: #000000;">;
+
+}
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * xml 转化为array
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> xml_to_array(<span style="color: #800080;">$xml</span><span style="color: #000000;">){
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">禁止引用外部xml实体</span>
+    libxml_disable_entity_loader(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$xmlString</span> = <span style="color: #008080;">simplexml_load_string</span>(<span style="color: #800080;">$xml</span>, 'SimpleXMLElement',<span style="color: #000000;"> LIBXML_NOCDATA);
+    </span><span style="color: #800080;">$val</span> = json_decode(json_encode(<span style="color: #800080;">$xmlString</span>),<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$val</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>财务审核，也就是微信返现到零钱，这个时候会返回成功结果，或者是各种不成功的结果</p>
+<p><strong>这里我用一个方法封装</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">财务审核</span>
+<span style="color: #0000ff;">if</span>(<span style="color: #800080;">$param</span>['status'] == 2<span style="color: #000000;">){
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">判断返现金额与修改后的金额</span>
+    <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$before_rebate_amount</span> != <span style="color: #800080;">$param</span>['rebate_amount'<span style="color: #000000;">]){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">返现金额不相等，则出款金额改变</span>
+        <span style="color: #800080;">$out_amount</span> = <span style="color: #800080;">$param</span>['rebate_amount'] - <span style="color: #800080;">$before_rebate_amount</span><span style="color: #000000;"> ;
+        </span><span style="color: #800080;">$this</span>-&gt;outMount(<span style="color: #800080;">$business</span>-&gt;business_id,<span style="color: #800080;">$out_amount</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$param</span>['rebate_status'] == 9<span style="color: #000000;">){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">财务拒绝通过</span>
+        <span style="color: #800080;">$business</span>-&gt;audit_status = <span style="color: #800080;">$param</span>['rebate_status'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$business</span>-&gt;rebate_amount = <span style="color: #800080;">$param</span>['rebate_amount'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$business</span>-&gt;status = 6<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;<span style="color: #000000;">save();
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">生成日志</span>
+        <span style="color: #800080;">$this</span>-&gt;insertWithdrawLog(<span style="color: #800080;">$param</span>['withdraw_id'], <span style="color: #800080;">$business</span>-&gt;status, <span style="color: #800080;">$business</span>-&gt;audit_status, <span style="color: #800080;">$param</span>['rebate_remark'], <span style="color: #800080;">$param</span>['admin_id'<span style="color: #000000;">]);
+
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">提现的各种返回结果</span>
+        <span style="color: #800080;">$this</span>-&gt;payReturnResult(<span style="color: #800080;">$business</span>,<span style="color: #800080;">$param</span><span style="color: #000000;">);
+    }
+}</span></code></pre>
+
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * Function:微信提现返回的各种结果
+ * Author:cyw0413
+ * @param $res
+ * @param $business
+ * @param $param
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> payReturnResult(<span style="color: #800080;">$business</span>,<span style="color: #800080;">$param</span><span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$input</span> =<span style="color: #000000;"> [
+        </span>'weixin_config_id' =&gt; 20 ,
+        'openid'           =&gt; <span style="color: #800080;">$business</span>-&gt;business-&gt;open_id,
+        'amount'           =&gt; <span style="color: #800080;">$param</span>['rebate_amount'] * 100,
+        'trade_no'         =&gt; <span style="color: #800080;">$business</span>-&gt;order_sn, <span style="color: #008000;">//</span><span style="color: #008000;">商户订单号</span>
+        'desc'             =&gt; "微信提现"<span style="color: #000000;">
+    ];
+
+    </span><span style="color: #800080;">$pay</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> PayLogBaseService();
+    </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$pay</span>-&gt;weixinPay(<span style="color: #800080;">$input</span><span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$res</span>['result_code']=="SUCCESS"<span style="color: #000000;">){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">提现成功</span>
+        <span style="color: #800080;">$business</span>-&gt;audit_status = 4<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 4<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;rebate_amount = <span style="color: #800080;">$param</span>['rebate_amount'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "已付款(".<span style="color: #800080;">$param</span>['rebate_amount'].")"<span style="color: #000000;">;
+
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "MONEY_LIMIT"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，已达到付款给此用户额度上限"<span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">throw new \Exception($param['rebate_remark']);</span>
+<span style="color: #000000;">
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "AMOUNT_LIMIT"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，低于最低付款金额或者高于最高付款金额"<span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">throw new \Exception($param['rebate_remark']);</span>
+<span style="color: #000000;">egdf
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "NOTENOUGH"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，付款帐号余额不足或资金未到账"<span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">throw new \Exception($param['rebate_remark']);</span>
+<span style="color: #000000;">
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "SIGN_ERROR"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，签名错误"<span style="color: #000000;">;
+
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "PARAM_ERROR"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，参数错误"<span style="color: #000000;">;
+
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "OPENID_ERROR"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，Openid错误"<span style="color: #000000;">;
+
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "FATAL_ERROR"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，两次请求参数不一致"<span style="color: #000000;">;
+
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "CA_ERROR"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，商户API证书校验出错"<span style="color: #000000;">;
+
+    }</span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$res</span>['err_code'] == "V2_ACCOUNT_SIMPLE_BAN"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，无法给非实名用户付款"<span style="color: #000000;">;
+
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #800080;">$business</span>-&gt;audit_status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$business</span>-&gt;status = 3<span style="color: #000000;">;
+        </span><span style="color: #800080;">$param</span>['rebate_remark'] = "提现失败，服务器繁忙，请稍后再试"<span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">throw new \Exception($param['rebate_remark']);</span>
+<span style="color: #000000;">    }
+
+    </span><span style="color: #800080;">$business</span>-&gt;<span style="color: #000000;">save();
+
+}</span></code></pre>
+
+<p>当微信平台余额不足或者出现各种错误而提现失败的时候，这里还有支持重新付款的功能：其实就是点击按钮后重新调用付款到零钱的功能，知道成功付款</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * Function:重新付款
+ * Author:cyw0413
+ * @param $param
+ * @throws \Exception
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> repay(<span style="color: #800080;">$param</span><span style="color: #000000;">)
+{
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$param</span><span style="color: #000000;">)){
+        </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> \<span style="color: #0000ff;">Exception</span>("参数错误"<span style="color: #000000;">);
+    }
+
+    </span><span style="color: #800080;">$business</span> = GroupBusinessWithdrawBaseModel::find(<span style="color: #800080;">$param</span>['withdraw_id'<span style="color: #000000;">]);
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$business</span><span style="color: #000000;">)){
+        </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> \<span style="color: #0000ff;">Exception</span>("不存在！"<span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$business</span>-&gt;audit_status != 3<span style="color: #000000;">){
+        </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> \<span style="color: #0000ff;">Exception</span>("状态有错误"<span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">提现的各种返回结果</span>
+    <span style="color: #800080;">$this</span>-&gt;payReturnResult(<span style="color: #800080;">$business</span>,<span style="color: #800080;">$param</span><span style="color: #000000;">);
+
+}</span></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

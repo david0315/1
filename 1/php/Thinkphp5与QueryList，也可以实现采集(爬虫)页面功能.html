@@ -1,0 +1,93 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Thinkphp5与QueryList，也可以实现采集(爬虫)页面功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Thinkphp5与QueryList，也可以实现采集(爬虫)页面功能</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11889458.html</div><br>
+    <h2>QueryList 是什么</h2>
+<p>QueryList是一套用于内容采集的PHP工具，它使用更加现代化的开发思想，语法简洁、优雅，可扩展性强。相比传统的使用晦涩的正则表达式来做采集，QueryList使用了更加强大而优雅的CSS选择器来做采集，大大降低了PHP做采集的门槛，同时也让采集代码易读易维护，让你从此告别晦涩难懂且不易维护的正则表达式😀。</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<h2>QueryList 提供的一整套内容采集解决方案</h2>
+<ul>
+<li>DOM内容选择：CSS选择器</li>
+<li>HTTP客户端：GuzzleHTTP</li>
+<li>内容过滤：CSS选择器</li>
+<li>解决乱码：内置多套乱码解决方案</li>
+<li>额外功能：丰富的扩展插件</li>
+</ul>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>前提</p>
+<p>项目主要用thinkphp5框架，主要会用到`QueryList.php`和`phpQuery.php`这两个文件。我们可以切换到项目目录，extend里新建QL，然后在QL目录执行composer命令安装QueryList:</p>
+<src class="highlight">
+<pre><code><code class="language-text">composer require jaeger/querylist
+</code></code></pre>
+
+<p>然后在需要使用的控制器中加入 use QL\QueryList; 接下来就在控制器里编写代码了，以下是一个实例</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">需要采集的目标页面</span>
+<span style="color: #008080;"> 2</span> <span style="color: #800080;">$page</span> = 'http://cms.querylist.cc/news/566.html'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">//</span><span style="color: #008000;">采集规则</span>
+<span style="color: #008080;"> 4</span> <span style="color: #800080;">$reg</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;"> 5</span>    <span style="color: #008000;">//</span><span style="color: #008000;">采集文章标题</span>
+<span style="color: #008080;"> 6</span>    'title' =&gt; <span style="color: #0000ff;">array</span>('h1','text'),
+<span style="color: #008080;"> 7</span>    <span style="color: #008000;">//</span><span style="color: #008000;">采集文章发布日期,这里用到了QueryList的过滤功能，过滤掉span标签和a标签</span>
+<span style="color: #008080;"> 8</span>    'date' =&gt; <span style="color: #0000ff;">array</span>('.pt_info','text','-span -a',<span style="color: #0000ff;">function</span>(<span style="color: #800080;">$content</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 9</span>        <span style="color: #008000;">//</span><span style="color: #008000;">用回调函数进一步过滤出日期</span>
+<span style="color: #008080;">10</span>        <span style="color: #800080;">$arr</span> = <span style="color: #008080;">explode</span>(' ',<span style="color: #800080;">$content</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$arr</span>[0<span style="color: #000000;">];
+</span><span style="color: #008080;">12</span>    }),
+<span style="color: #008080;">13</span>    <span style="color: #008000;">//</span><span style="color: #008000;">采集文章正文内容,利用过滤功能去掉文章中的超链接，但保留超链接的文字，并去掉版权、JS代码等无用信息</span>
+<span style="color: #008080;">14</span>    'content' =&gt; <span style="color: #0000ff;">array</span>('.post_content','html','a -.content_copyright -script',<span style="color: #0000ff;">function</span>(<span style="color: #800080;">$content</span><span style="color: #000000;">){
+</span><span style="color: #008080;">15</span>        <span style="color: #008000;">//</span><span style="color: #008000;">利用回调函数下载文章中的图片并替换图片路径为本地路径
+</span><span style="color: #008080;">16</span> <span style="color: #008000;">       //使用本例请确保当前目录下有image文件夹，并有写入权限
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">       //由于QueryList是基于phpQuery的，所以可以随时随地使用phpQuery，当然在这里也可以使用正则或者其它方式达到同样的目的</span>
+<span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>        <span style="color: #800080;">$doc</span>=\phpQuery::newDocumentHTML(<span style="color: #800080;">$content</span><span style="color: #000000;">);
+</span><span style="color: #008080;">20</span>        <span style="color: #800080;">$imgs</span> = pq(<span style="color: #800080;">$doc</span>)-&gt;find('img'<span style="color: #000000;">);
+</span><span style="color: #008080;">21</span>        <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$imgs</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$img</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">22</span>            <span style="color: #800080;">$src</span> = 'http://cms.querylist.cc'.pq(<span style="color: #800080;">$img</span>)-&gt;attr('src'<span style="color: #000000;">);
+</span><span style="color: #008080;">23</span>            <span style="color: #800080;">$localSrc</span> = <span style="color: #008080;">md5</span>(<span style="color: #800080;">$src</span>).'.jpg'<span style="color: #000000;">;
+</span><span style="color: #008080;">24</span>            <span style="color: #800080;">$stream</span> = <span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$src</span><span style="color: #000000;">);
+</span><span style="color: #008080;">25</span>            <span style="color: #008080;">file_put_contents</span>(<span style="color: #800080;">$localSrc</span>,<span style="color: #800080;">$stream</span><span style="color: #000000;">);
+</span><span style="color: #008080;">26</span>            pq(<span style="color: #800080;">$img</span>)-&gt;attr('src',<span style="color: #800080;">$localSrc</span><span style="color: #000000;">);
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">       }
+</span><span style="color: #008080;">28</span>        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$doc</span>-&gt;<span style="color: #000000;">htmlOuter();
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">   })
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">31</span> <span style="color: #800080;">$rang</span> = '.content'<span style="color: #000000;">;
+</span><span style="color: #008080;">32</span> <span style="color: #800080;">$ql</span> = QueryList::Query(<span style="color: #800080;">$page</span>,<span style="color: #800080;">$reg</span>,<span style="color: #800080;">$rang</span><span style="color: #000000;">);
+</span><span style="color: #008080;">33</span> <span style="color: #800080;">$data</span> = <span style="color: #800080;">$ql</span>-&gt;<span style="color: #000000;">getData();
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">//</span><span style="color: #008000;">打印结果</span>
+<span style="color: #008080;">35</span> <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$data</span>);</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<src class="highlight">
+<pre><code><code class="language-text">注意：在使用phpQuery类时需要在前面加上\，因为phpQuery.php中没有使用命名空间，因为使用命名空间后，QueryList.php无法使用phpQuery类。</code></code></pre>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>以上是一个简单的例子，已经实现了采集网页数据，更多详细语法与实例可以移步到官网文档，细细查看</p>
+<src class="highlight">
+<pre><code><code class="language-text">QueryList参考文档：https://doc.querylist.cc/</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

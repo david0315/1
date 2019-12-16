@@ -1,0 +1,109 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHPRedis教程之geo' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHPRedis教程之geo</center></div><div class='banquan'>原文出处:本文由博客园博主奔跑的砖头提供。<br/>
+原文连接:https://www.cnblogs.com/l5gw/p/11242223.html</div><br>
+    <h2 id="前言">前言</h2>
+<p>支持 GEO 系列命令的 Redis 版本从 3.2.0 起开始才可以使用，所以之前版本就不要想了。</p>
+<h2 id="函数列表">函数列表</h2>
+<h3 id="geoadd---将指定的地理空间项纬度经度名称添加到指定的键-数据作为有序集存储在-redis-中">geoadd - 将指定的地理空间项（纬度，经度，名称）添加到指定的键， 数据作为有序集存储在 Redis 中。</h3>
+<p><code>GEOADD key longitude latitude member [longitude latitude member …]</code></p>
+<blockquote>
+<p>key - 存储在 Redis 中的指定的键</p>
+<p>longitude - 经度</p>
+<p>latitude - 纬度</p>
+<p>member - 成员名称</p>
+</blockquote>
+<pre><code><code>&lt;?php
+  $redis-&gt;geoadd(&quot;city&quot;, 117.224311, 39.111515, &quot;天津&quot;)
+// 1
+    $redis-&gt;geoadd(&quot;city&quot;, 116.40378, 39.91544, &quot;北京&quot;, 121.473913, 31.222965, &quot;上海&quot;)
+// 2
+?&gt;</code></code></pre>
+<h3 id="geopos---返回由key处的有序集表示的地理空间索引的所有指定成员的位置经度纬度">geopos - 返回由key处的有序集表示的地理空间索引的所有指定成员的位置（经度，纬度）。</h3>
+<p><code>GEOPOS key member [member ...]</code></p>
+<blockquote>
+<p>key - 存储在 Redis 中的指定的键</p>
+<p>member - 成员名称</p>
+</blockquote>
+<pre><code><code>&lt;?php
+  $redis-&gt;geopos(&quot;city&quot;, &quot;天津&quot;) // Array ( [0] =&gt; Array ( [0] =&gt; 117.22431153059005737 [1] =&gt; 39.11151424175071867 ) )
+  $redis-&gt;geopos(&quot;city&quot;, &quot;天津&quot;, &quot;北京&quot;) // Array ( [0] =&gt; Array ( [0] =&gt; 117.22431153059005737 [1] =&gt; 39.11151424175071867 ) [1] =&gt; Array ( [0] =&gt; 116.40378087759017944 [1] =&gt; 39.91543907825245441 ) )
+?&gt;</code></code></pre>
+<h3 id="geodist---返回由有序集合表示的地理空间索引中的两个成员之间的距离">geodist - 返回由有序集合表示的地理空间索引中的两个成员之间的距离。</h3>
+<p><code>GEODIST key member1 member2 [unit]</code></p>
+<blockquote>
+<p>key - 存储在 Redis 中的指定的键</p>
+<p>member - 成员名称</p>
+<p>unit - 单位 m(米),km(千米),mi(英里),ft(英尺)</p>
+</blockquote>
+<pre><code><code>&lt;?php
+  $redis-&gt;geodist(&quot;city&quot;,&quot;天津&quot;, &quot;北京&quot;,&quot;km&quot;) //113.8093
+?&gt;</code></code></pre>
+<h3 id="georadius---使用geoadd返回包含地理空间信息的已排序集合的成员这些信息位于中心位置和与中心的最大距离半径指定区域的边界内">georadius - 使用GEOADD返回包含地理空间信息的已排序集合的成员，这些信息位于中心位置和与中心的最大距离(半径)指定区域的边界内。</h3>
+<p><code>GEORADIUS key longitude latitude radius unit(m|km|ft|mi) [WITHCOORD] [WITHDIST] [WITHHASH][COUNT count] [ASC|DESC] [STORE key][STOREDIST key]</code></p>
+<blockquote>
+<p>key - 存储在 Redis 中的指定的键</p>
+<p>longitude - 经度</p>
+<p>latitude - 纬度</p>
+<p>radius - 半径</p>
+<p>unit - 单位 m(米),km(千米),mi(英里),ft(英尺)</p>
+<p>WITHCOORD 返回目标的经纬度</p>
+<p>WITHDIST 返回距离中心点的距离</p>
+<p>WITHHASH 返回 52位 无符号整数的 geohash 有序集合分数</p>
+<p>COUNT 返回条数<br />
+ASC|DESC 正序排序|倒序排序</p>
+</blockquote>
+<pre><code><code>&lt;?php
+  $redis-&gt;georadius(&quot;city&quot;, 117.224311, 39.111515, 1000, &quot;km&quot;, [&#39;WITHDIST&#39;,&#39;ASC&#39;])
+    // Array ( [0] =&gt; Array ( [0] =&gt; 上海 [1] =&gt; 958.4076 ) [1] =&gt; Array ( [0] =&gt; 北京 [1] =&gt; 113.8092 ) [2] =&gt; Array ( [0] =&gt; 天津 [1] =&gt; 0.0001 ) )
+    $redis-&gt;georadius(&quot;city&quot;, 117.224311, 39.111515, 1000, &quot;km&quot;, [&#39;WITHCOORD&#39;,&#39;WITHDIST&#39;,&#39;ASC&#39;,&#39;COUNT&#39;=&gt;1])
+    // Array ( [0] =&gt; Array ( [0] =&gt; 天津 [1] =&gt; 0.0001 [2] =&gt; Array ( [0] =&gt; 117.22431153059005737 [1] =&gt; 39.11151424175071867 ) ) )
+?&gt;</code></code></pre>
+<h3 id="georadiusbymember---这个命令与georadius完全相同区别在于该命令返回的是成员附近的所有成员">georadiusbymember - 这个命令与GEORADIUS完全相同，区别在于该命令返回的是成员附近的所有成员</h3>
+<p><code>GEORADIUSBYMEMBER key member radius unit(m|km|ft|mi) [WITHCOORD] [WITHDIST] [WITHHASH][COUNT count] [ASC|DESC] [STORE key][STOREDIST key]</code></p>
+<blockquote>
+<p>key - 存储在 Redis 中的指定的键</p>
+<p>member - 成员名称</p>
+<p>radius - 半径</p>
+<p>unit - 单位 m(米),km(千米),mi(英里),ft(英尺)</p>
+<p>WITHCOORD 返回目标的经纬度</p>
+<p>WITHDIST 返回距离中心点的距离</p>
+<p>WITHHASH 返回 52位 无符号整数的 geohash 有序集合分数</p>
+<p>COUNT 返回条数<br />
+ASC|DESC 正序排序|倒序排序</p>
+</blockquote>
+<pre><code><code>&lt;?php
+  $redis-&gt;georadiusbymember(&quot;city&quot;, &quot;天津&quot;, 200, &quot;km&quot;, [&#39;WITHCOORD&#39;, &#39;WITHDIST&#39;, &#39;ASC&#39;])
+  //Array ( [0] =&gt; Array ( [0] =&gt; 天津 [1] =&gt; 0.0000 [2] =&gt; Array ( [0] =&gt; 117.22431153059005737 [1] =&gt; 39.11151424175071867 ) ) [1] =&gt; Array ( [0] =&gt; 北京 [1] =&gt; 113.8093 [2] =&gt; Array ( [0] =&gt; 116.40378087759017944 [1] =&gt; 39.91543907825245441 ) ) )
+?&gt;</code></code></pre>
+<h3 id="geohash---返回有效的geohash字符串">geohash - 返回有效的Geohash字符串</h3>
+<p><code>GEOHASH key member [member …]</code></p>
+<blockquote>
+<p>key - 存储在 Redis 中的指定的键</p>
+<p>member - 成员名称</p>
+</blockquote>
+<pre><code><code>&lt;?php
+  $redis-&gt;geohash(&quot;city&quot;, &quot;天津&quot;, &quot;北京&quot;)
+  // Array ( [0] =&gt; wwgqe801h60 [1] =&gt; wx4g0f6sk90 )</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

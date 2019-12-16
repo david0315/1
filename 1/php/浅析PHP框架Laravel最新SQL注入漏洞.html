@@ -1,0 +1,170 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修浅析PHP框架Laravel最新SQL注入漏洞' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>浅析PHP框架Laravel最新SQL注入漏洞</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11764561.html</div><br>
+    <p>PHP知名开发框架Laravel，之前在官方博客通报了一个高危SQL注入漏洞，这里简单分析下。</p>
+<p><img src="./images/浅析PHP框架Laravel最新SQL注入漏洞0.jpg" alt="" /></p>
+<p>首先，这个漏洞属于网站coding写法不规范，官方给了提示：</p>
+<p><img src="./images/浅析PHP框架Laravel最新SQL注入漏洞1.jpg" alt="" /></p>
+<p>但官方还是做了修补，升级最新版本V5.8.7可修复。</p>
+<p>我们先定位下这里：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Illuminate\Validation\Rule
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>官方推荐的写法是：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Rule::unique('users')-&gt;ignore($id),
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>如果网站coding没有预先对$id的值做处理时，用户可以直接传递恶意数据给ignore函数，就会导致SQL注入。</p>
+<p>我们来跟一下函数：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>\Illuminate\Validation\Rules\Unique.php class Unique {
+
+... public function ignore($id, $idColumn = null) { if ($id instanceof Model) { return $this-&gt;ignoreModel($id, $idColumn);
+
+        } $this-&gt;ignore = $id; $this-&gt;idColumn = $idColumn ?? 'id'; return $this;
+
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>这里我们不考虑把$id写成实例的情况，$id是用户可控的话，$idColumn直接写为空即可，最后赋值情况如下：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>$this-&gt;ignore = $id; $this-&gt;idColumn = 'id';
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./images/浅析PHP框架Laravel最新SQL注入漏洞2.jpg" alt="" /><img src="./images/浅析PHP框架Laravel最新SQL注入漏洞3.jpg" alt="" /><img src="./images/浅析PHP框架Laravel最新SQL注入漏洞4.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p>如果网站代码类似这样构造的话，黑客输入的值就属于可控状态：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>$id = $request-&gt;input('id');
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>最后我们会走到这儿：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Illuminate\Validation\Rules\Unique.php public function __toString() {
+
+        ...
+
+        ...
+
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>我们看下关键的代码变更：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Illuminate\Validation\Rules\Unique.php
+
+V5.8.7【最新版】 public function __toString() { $this-&gt;ignore ? '"'.addslashes($this-&gt;ignore).'"' : 'NULL',
+
+    }
+
+Illuminate\Validation\Rules\Unique.php
+
+V5.8.4 public function __toString() { $this-&gt;ignore ? '"'.$this-&gt;ignore.'"' : 'NULL',
+
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>这里最新的代码v5.8.7，把$this-&gt;ignore直接给addslashes了，以前这里是没有防护的。</p>
+<p>有趣的是，笔者对比了下diff，期间官方还试图对其他引用的地方进行过滤。最后还是在__toString处，进行了统一的过滤。</p>
+<p>最后提一句，后面的代码会进入DatabaseRule，进行后续SQL规则匹配。</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Illuminate\Validation\Rules\DatabaseRule.php
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>这之后就没有再进一步处理，接着形成了SQL注入。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

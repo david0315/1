@@ -1,0 +1,289 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php Swoole实现毫秒级定时任务' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php Swoole实现毫秒级定时任务</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11905592.html</div><br>
+    <p>项目开发中，如果有定时任务的业务要求，我们会使用linux的crontab来解决，但是它的最小粒度是分钟级别，如果要求粒度是秒级别的，甚至毫秒级别的，crontab就无法满足，值得庆幸的是swoole提供的强大的毫秒定时器。<br /><br /><strong>应用场景举例</strong><br />我们可能会遇到这样的场景：</p>
+<ul>
+<li>场景一：每隔30秒获取一次本机内存使用率</li>
+<li>场景二：2分钟后执行报表发送任务</li>
+<li>场景三：每天凌晨2点钟定时请求第三方接口，如果接口有数据返回则停止任务，如果接口由于某种原因没有响应或者没有数据返回则5分钟后继续尝试请求该接口，尝试5次后仍然失败则停止该任务</li>
+
+
+
+</ul>
+<p>以上的三个场景我们都可以归纳为定时任务的范畴。<br /><br /><strong>Swoole毫秒定时器</strong><br />Swoole提供了异步毫秒定时器函数：</p>
+<p><code>swoole_timer_tick(int $msec, callable $callback)</code>：设置一个间隔时钟定时器，每隔$msec毫秒执行一次$callback，类似于javascript中的<code>setInterval()</code>。</p>
+<p><code>swoole_timer_after(int $after_time_ms, mixed $callback_function)</code>：在指定的时间$after_time_ms后执行$callback_function，类似于javascript的<code>setTimeout()</code>。</p>
+<p><code>swoole_timer_clear(int $timer_id)</code>：删除指定id的定时器，类似于javascript的<code>clearInterval()</code>。</p>
+<h3><strong>解决方案</strong></h3>
+<p>对于场景一，经常用在系统检测统计方面，实时性要求比较高，但又能控制好频率，多用于后台服务器性能监控，可以生成可视化图表。可以是30秒获取一次内存使用率，也可以是10秒，而crontab最小粒度只能设置为1分钟。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="9">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> swoole_timer_tick(30000, <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$timer</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$task_id</span>) { <span style="color: #008000;">//</span><span style="color: #008000;"> 启用定时器，每30秒执行一次</span>
+<span style="color: #008080;">2</span>     <span style="color: #800080;">$memPercent</span> = <span style="color: #800080;">$this</span>-&gt;getMemoryUsage(); <span style="color: #008000;">//</span><span style="color: #008000;">计算内存使用率</span>
+<span style="color: #008080;">3</span>     <span style="color: #0000ff;">echo</span> <span style="color: #008080;">date</span>('Y-m-d H:i:s') . '当前内存使用率：'.<span style="color: #800080;">$memPercent</span>."\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p>对于场景二，直接定义xx时间后执行某项任务的话，貌似crontab比较困难，而使用swoole的<code>swoole_timer_after</code>可以实现：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="8">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> swoole_timer_after(120000, <span style="color: #0000ff;">function</span>() <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$str</span>) { <span style="color: #008000;">//</span><span style="color: #008000;">2分钟后执行</span>
+<span style="color: #008080;">2</span>     <span style="color: #800080;">$this</span>-&gt;sendReport(); <span style="color: #008000;">//</span><span style="color: #008000;">发送报表</span>
+<span style="color: #008080;">3</span>     <span style="color: #0000ff;">echo</span> "send report, <span style="color: #800080;">$str</span>\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>对于场景三，用来作尝试请求，请求失败后继续，如果成功则停止请求。用crontab也能解决，但是比较傻，比如设置每隔5分钟请求一次，不管成功会失败都会去执行一次。而用swoole定时器则智能多了。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="7">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> swoole_timer_tick(5*60*1000, <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$timer</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$url</span>) { <span style="color: #008000;">//</span><span style="color: #008000;"> 启用定时器，每5分钟执行一次</span>
+<span style="color: #008080;"> 2</span>     <span style="color: #800080;">$rs</span> = <span style="color: #800080;">$this</span>-&gt;postUrl(<span style="color: #800080;">$url</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$rs</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 5</span>         <span style="color: #008000;">//</span><span style="color: #008000;">业务代码...</span>
+<span style="color: #008080;"> 6</span>         swoole_timer_clear(<span style="color: #800080;">$timer</span>); <span style="color: #008000;">//</span><span style="color: #008000;"> 停止定时器</span>
+<span style="color: #008080;"> 7</span>         <span style="color: #0000ff;">echo</span> <span style="color: #008080;">date</span>('Y-m-d H:i:s'). "请求接口任务执行成功\n"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;"> 9</span>         <span style="color: #0000ff;">echo</span> <span style="color: #008080;">date</span>('Y-m-d H:i:s'). "请求接口失败，5分钟后再次尝试\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">11</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3><strong>示例代码</strong></h3>
+<p>新建文件\src\App\Task.php：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="6">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php 
+</span><span style="color: #008080;">  2</span> <span style="color: #000000;">namespace Helloweba\Swoole;
+</span><span style="color: #008080;">  3</span> 
+<span style="color: #008080;">  4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> swoole_server;
+</span><span style="color: #008080;">  5</span> 
+<span style="color: #008080;">  6</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">  7</span> <span style="color: #008000;">* 任务调度
+</span><span style="color: #008080;">  8</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">  9</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Task
+</span><span style="color: #008080;"> 10</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 11</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$serv</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 12</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$host</span> = '127.0.0.1'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 13</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$port</span> = 9506<span style="color: #000000;">;
+</span><span style="color: #008080;"> 14</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 进程名称</span>
+<span style="color: #008080;"> 15</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$taskName</span> = 'swooleTask'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 16</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> PID路径</span>
+<span style="color: #008080;"> 17</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$pidPath</span> = '/run/swooletask.pid'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 18</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 设置运行时参数</span>
+<span style="color: #008080;"> 19</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$options</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 20</span>         'worker_num' =&gt; 4, <span style="color: #008000;">//</span><span style="color: #008000;">worker进程数,一般设置为CPU数的1-4倍  </span>
+<span style="color: #008080;"> 21</span>         'daemonize' =&gt; <span style="color: #0000ff;">true</span>, <span style="color: #008000;">//</span><span style="color: #008000;">启用守护进程</span>
+<span style="color: #008080;"> 22</span>         'log_file' =&gt; '/data/log/swoole-task.log', <span style="color: #008000;">//</span><span style="color: #008000;">指定swoole错误日志文件</span>
+<span style="color: #008080;"> 23</span>         'log_level' =&gt; 0, <span style="color: #008000;">//</span><span style="color: #008000;">日志级别 范围是0-5，0-DEBUG，1-TRACE，2-INFO，3-NOTICE，4-WARNING，5-ERROR</span>
+<span style="color: #008080;"> 24</span>         'dispatch_mode' =&gt; 1, <span style="color: #008000;">//</span><span style="color: #008000;">数据包分发策略,1-轮询模式</span>
+<span style="color: #008080;"> 25</span>         'task_worker_num' =&gt; 4, <span style="color: #008000;">//</span><span style="color: #008000;">task进程的数量</span>
+<span style="color: #008080;"> 26</span>         'task_ipc_mode' =&gt; 3, <span style="color: #008000;">//</span><span style="color: #008000;">使用消息队列通信，并设置为争抢模式</span>
+<span style="color: #008080;"> 27</span> <span style="color: #000000;">    ];
+</span><span style="color: #008080;"> 28</span> 
+<span style="color: #008080;"> 29</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$options</span> =<span style="color: #000000;"> [])
+</span><span style="color: #008080;"> 30</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 31</span>         date_default_timezone_set('PRC'<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 32</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 构建Server对象，监听127.0.0.1:9506端口</span>
+<span style="color: #008080;"> 33</span>         <span style="color: #800080;">$this</span>-&gt;serv = <span style="color: #0000ff;">new</span> swoole_server(<span style="color: #800080;">$this</span>-&gt;host, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">port);
+</span><span style="color: #008080;"> 34</span> 
+<span style="color: #008080;"> 35</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$options</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 36</span>             <span style="color: #800080;">$this</span>-&gt;options = <span style="color: #008080;">array_merge</span>(<span style="color: #800080;">$this</span>-&gt;options, <span style="color: #800080;">$options</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 37</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 38</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;set(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">options);
+</span><span style="color: #008080;"> 39</span> 
+<span style="color: #008080;"> 40</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 注册事件</span>
+<span style="color: #008080;"> 41</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;on('Start', [<span style="color: #800080;">$this</span>, 'onStart'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 42</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;on('Connect', [<span style="color: #800080;">$this</span>, 'onConnect'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 43</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;on('Receive', [<span style="color: #800080;">$this</span>, 'onReceive'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 44</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;on('Task', [<span style="color: #800080;">$this</span>, 'onTask'<span style="color: #000000;">]);  
+</span><span style="color: #008080;"> 45</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;on('Finish', [<span style="color: #800080;">$this</span>, 'onFinish'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 46</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;on('Close', [<span style="color: #800080;">$this</span>, 'onClose'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 47</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 48</span> 
+<span style="color: #008080;"> 49</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> start()
+</span><span style="color: #008080;"> 50</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 51</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> Run worker</span>
+<span style="color: #008080;"> 52</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;<span style="color: #000000;">start();
+</span><span style="color: #008080;"> 53</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 54</span> 
+<span style="color: #008080;"> 55</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onStart(<span style="color: #800080;">$serv</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 56</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 57</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 设置进程名</span>
+<span style="color: #008080;"> 58</span>         cli_set_process_title(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">taskName);
+</span><span style="color: #008080;"> 59</span>         <span style="color: #008000;">//</span><span style="color: #008000;">记录进程id,脚本实现自动重启</span>
+<span style="color: #008080;"> 60</span>         <span style="color: #800080;">$pid</span> = "{<span style="color: #800080;">$serv</span>-&gt;master_pid}\n{<span style="color: #800080;">$serv</span>-&gt;manager_pid}"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 61</span>         <span style="color: #008080;">file_put_contents</span>(<span style="color: #800080;">$this</span>-&gt;pidPath, <span style="color: #800080;">$pid</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 62</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 63</span> 
+<span style="color: #008080;"> 64</span>     <span style="color: #008000;">//</span><span style="color: #008000;">监听连接进入事件</span>
+<span style="color: #008080;"> 65</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onConnect(<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$from_id</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 66</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 67</span>         <span style="color: #800080;">$serv</span>-&gt;send( <span style="color: #800080;">$fd</span>, "Hello {<span style="color: #800080;">$fd</span>}!"<span style="color: #000000;"> );
+</span><span style="color: #008080;"> 68</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 69</span> 
+<span style="color: #008080;"> 70</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 监听数据接收事件</span>
+<span style="color: #008080;"> 71</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onReceive(swoole_server <span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$from_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 72</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 73</span>         <span style="color: #0000ff;">echo</span> "Get Message From Client {<span style="color: #800080;">$fd</span>}:{<span style="color: #800080;">$data</span>}\n"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 74</span>         <span style="color: #008000;">//</span><span style="color: #008000;">$this-&gt;writeLog('接收客户端参数：'.$fd .'-'.$data);</span>
+<span style="color: #008080;"> 75</span>         <span style="color: #800080;">$res</span>['result'] = 'success'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 76</span>         <span style="color: #800080;">$serv</span>-&gt;send(<span style="color: #800080;">$fd</span>, json_encode(<span style="color: #800080;">$res</span>)); <span style="color: #008000;">//</span><span style="color: #008000;"> 同步返回消息给客户端</span>
+<span style="color: #008080;"> 77</span>         <span style="color: #800080;">$serv</span>-&gt;task(<span style="color: #800080;">$data</span>);  <span style="color: #008000;">//</span><span style="color: #008000;"> 执行异步任务</span>
+<span style="color: #008080;"> 78</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 79</span> 
+<span style="color: #008080;"> 80</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 81</span> <span style="color: #008000;">    * @param $serv swoole_server swoole_server对象
+</span><span style="color: #008080;"> 82</span> <span style="color: #008000;">    * @param $task_id int 任务id
+</span><span style="color: #008080;"> 83</span> <span style="color: #008000;">    * @param $from_id int 投递任务的worker_id
+</span><span style="color: #008080;"> 84</span> <span style="color: #008000;">    * @param $data string 投递的数据
+</span><span style="color: #008080;"> 85</span>     <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 86</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onTask(swoole_server <span style="color: #800080;">$serv</span>, <span style="color: #800080;">$task_id</span>, <span style="color: #800080;">$from_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 87</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 88</span>         swoole_timer_tick(30000, <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$timer</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$task_id</span>) { <span style="color: #008000;">//</span><span style="color: #008000;"> 启用定时器，每30秒执行一次</span>
+<span style="color: #008080;"> 89</span>             <span style="color: #800080;">$memPercent</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getMemoryUsage();
+</span><span style="color: #008080;"> 90</span>             <span style="color: #0000ff;">echo</span> <span style="color: #008080;">date</span>('Y-m-d H:i:s') . '当前内存使用率：'.<span style="color: #800080;">$memPercent</span>."\n"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 91</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;"> 92</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 93</span> 
+<span style="color: #008080;"> 94</span> 
+<span style="color: #008080;"> 95</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 96</span> <span style="color: #008000;">    * @param $serv swoole_server swoole_server对象
+</span><span style="color: #008080;"> 97</span> <span style="color: #008000;">    * @param $task_id int 任务id
+</span><span style="color: #008080;"> 98</span> <span style="color: #008000;">    * @param $data string 任务返回的数据
+</span><span style="color: #008080;"> 99</span>     <span style="color: #008000;">*/</span>
+<span style="color: #008080;">100</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onFinish(swoole_server <span style="color: #800080;">$serv</span>, <span style="color: #800080;">$task_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;">101</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">102</span>         <span style="color: #008000;">//
+</span><span style="color: #008080;">103</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">104</span> 
+<span style="color: #008080;">105</span> 
+<span style="color: #008080;">106</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 监听连接关闭事件</span>
+<span style="color: #008080;">107</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onClose(<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$from_id</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">108</span>         <span style="color: #0000ff;">echo</span> "Client {<span style="color: #800080;">$fd</span>} close connection\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">109</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">110</span> 
+<span style="color: #008080;">111</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> stop()
+</span><span style="color: #008080;">112</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">113</span>         <span style="color: #800080;">$this</span>-&gt;serv-&gt;<span style="color: #000000;">stop();
+</span><span style="color: #008080;">114</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">115</span> 
+<span style="color: #008080;">116</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getMemoryUsage()
+</span><span style="color: #008080;">117</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">118</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> MEMORY</span>
+<span style="color: #008080;">119</span>         <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">false</span> === (<span style="color: #800080;">$str</span> = @<span style="color: #008080;">file</span>("/proc/meminfo"))) <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">120</span>         <span style="color: #800080;">$str</span> = <span style="color: #008080;">implode</span>("", <span style="color: #800080;">$str</span><span style="color: #000000;">);
+</span><span style="color: #008080;">121</span>         <span style="color: #008080;">preg_match_all</span>("/MemTotal\s{0,}\:+\s{0,}([\d\.]+).+?MemFree\s{0,}\:+\s{0,}([\d\.]+).+?Cached\s{0,}\:+\s{0,}([\d\.]+).+?SwapTotal\s{0,}\:+\s{0,}([\d\.]+).+?SwapFree\s{0,}\:+\s{0,}([\d\.]+)/s", <span style="color: #800080;">$str</span>, <span style="color: #800080;">$buf</span><span style="color: #000000;">);
+</span><span style="color: #008080;">122</span>         <span style="color: #008000;">//</span><span style="color: #008000;">preg_match_all("/Buffers\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $buffers);</span>
+<span style="color: #008080;">123</span> 
+<span style="color: #008080;">124</span>         <span style="color: #800080;">$memTotal</span> = <span style="color: #008080;">round</span>(<span style="color: #800080;">$buf</span>[1][0]/1024, 2<span style="color: #000000;">);
+</span><span style="color: #008080;">125</span>         <span style="color: #800080;">$memFree</span> = <span style="color: #008080;">round</span>(<span style="color: #800080;">$buf</span>[2][0]/1024, 2<span style="color: #000000;">);
+</span><span style="color: #008080;">126</span>         <span style="color: #800080;">$memUsed</span> = <span style="color: #800080;">$memTotal</span> - <span style="color: #800080;">$memFree</span><span style="color: #000000;">;
+</span><span style="color: #008080;">127</span>         <span style="color: #800080;">$memPercent</span> = (<span style="color: #008080;">floatval</span>(<span style="color: #800080;">$memTotal</span>)!=0) ? <span style="color: #008080;">round</span>(<span style="color: #800080;">$memUsed</span>/<span style="color: #800080;">$memTotal</span>*100,2):0<span style="color: #000000;">;
+</span><span style="color: #008080;">128</span> 
+<span style="color: #008080;">129</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$memPercent</span><span style="color: #000000;">;
+</span><span style="color: #008080;">130</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">131</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p>我们以场景一为例，在<code>onTask</code>启用定时任务，每隔30秒计算一次内存使用率。实际应用中可以把计算好的内存按时间写入数据库等存储中，然后可以根据前端需求用来渲染成统计图表，如：</p>
+<p><span class="cke_widget_wrapper cke_widget_inline cke_widget_image cke_image_nocaption cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="图像" data-cke-widget-id="5"><img class="has cke_widget_element" src="./images/php Swoole实现毫秒级定时任务4.jpg" alt="" width="655" height="400" data-cke-saved-src="./images/php Swoole实现毫秒级定时任务4.jpg" data-cke-widget-data="{&amp;quot;hasCaption&amp;quot;:false,&amp;quot;src&amp;quot;:&amp;quot;./images/php Swoole实现毫秒级定时任务4.jpg&amp;quot;,&amp;quot;alt&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;width&amp;quot;:&amp;quot;655&amp;quot;,&amp;quot;height&amp;quot;:&amp;quot;400&amp;quot;,&amp;quot;lock&amp;quot;:true,&amp;quot;align&amp;quot;:&amp;quot;none&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="image" /><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /><span class="cke_image_resizer" title="点击并拖拽以改变尺寸">​</span></span></span></p>
+<p><br /><br /></p>
+<p>接着服务端代码 public\taskServer.php ：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="4">
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+</span><span style="color: #0000ff;">require</span> <span style="color: #008080;">dirname</span>(__DIR__) . '/vendor/autoload.php'<span style="color: #000000;">;
+
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> Helloweba\Swoole\Task;
+
+</span><span style="color: #800080;">$opt</span> =<span style="color: #000000;"> [
+    </span>'daemonize' =&gt; <span style="color: #0000ff;">false</span><span style="color: #000000;">
+];
+</span><span style="color: #800080;">$ser</span> = <span style="color: #0000ff;">new</span> Task(<span style="color: #800080;">$opt</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$ser</span>-&gt;start();</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>&nbsp;</p>
+<p>客户端代码 public\taskClient.php :</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="3">
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Client
+{
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$client</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct() {
+        </span><span style="color: #800080;">$this</span>-&gt;client = <span style="color: #0000ff;">new</span><span style="color: #000000;"> swoole_client(SWOOLE_SOCK_TCP);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> connect() {
+        </span><span style="color: #0000ff;">if</span>( !<span style="color: #800080;">$this</span>-&gt;client-&gt;connect("127.0.0.1", 9506 , 1<span style="color: #000000;">) ) {
+            </span><span style="color: #0000ff;">echo</span> "Error: {<span style="color: #800080;">$this</span>-&gt;client-&gt;errMsg}[{<span style="color: #800080;">$this</span>-&gt;client-&gt;errCode}]\n"<span style="color: #000000;">;
+        }
+        </span><span style="color: #008080;">fwrite</span>(STDOUT, "请输入消息 Please input msg："<span style="color: #000000;">);
+        </span><span style="color: #800080;">$msg</span> = <span style="color: #008080;">trim</span>(<span style="color: #008080;">fgets</span><span style="color: #000000;">(STDIN));
+        </span><span style="color: #800080;">$this</span>-&gt;client-&gt;send( <span style="color: #800080;">$msg</span><span style="color: #000000;"> );
+        </span><span style="color: #800080;">$message</span> = <span style="color: #800080;">$this</span>-&gt;client-&gt;<span style="color: #000000;">recv();
+        </span><span style="color: #0000ff;">echo</span> "Get Message From Server:{<span style="color: #800080;">$message</span>}\n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #800080;">$client</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Client();
+</span><span style="color: #800080;">$client</span>-&gt;connect();</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3><strong>验证效果</strong></h3>
+<p>1.启动服务端：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="2">
+<src class="cnblogs_code">
+<pre><code>php taskServer.php</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>2.客户端输入：</p>
+<p>另开命令行窗口，执行</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<src class="cnblogs_code">
+<pre><code>[root@localhost <span style="color: #0000ff;">public</span>]<span style="color: #008000;">#</span><span style="color: #008000;"> php taskClient.php </span>
+<span style="color: #000000;">请输入消息 Please input msg：hello
+Get Message From Server</span>:{"result":"success"<span style="color: #000000;">}
+[root@localhost </span><span style="color: #0000ff;">public</span>]<span style="color: #008000;">#</span> </code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>3.服务端返回：</p>
+<p><span class="cke_widget_wrapper cke_widget_inline cke_widget_image cke_image_nocaption cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="图像" data-cke-widget-id="0"><img class="has cke_widget_element" src="./images/php Swoole实现毫秒级定时任务10.jpg" alt="" width="631" height="217" data-cke-saved-src="./images/php Swoole实现毫秒级定时任务10.jpg" data-cke-widget-data="{&amp;quot;hasCaption&amp;quot;:false,&amp;quot;src&amp;quot;:&amp;quot;./images/php Swoole实现毫秒级定时任务10.jpg&amp;quot;,&amp;quot;alt&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;width&amp;quot;:&amp;quot;631&amp;quot;,&amp;quot;height&amp;quot;:&amp;quot;217&amp;quot;,&amp;quot;lock&amp;quot;:true,&amp;quot;align&amp;quot;:&amp;quot;none&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="image" /><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /><span class="cke_image_resizer" title="点击并拖拽以改变尺寸">​</span></span></span></p>
+<p>如果返回上图中的结果，则定时任务正常运行，我们会发现每隔30秒会输出一条信息。</p>
+<p>&nbsp;</p>
+<p>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

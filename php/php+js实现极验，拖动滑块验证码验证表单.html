@@ -1,0 +1,188 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php+js实现极验，拖动滑块验证码验证表单' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php+js实现极验，拖动滑块验证码验证表单</center></div><div class='banquan'>原文出处:本文由博客园博主下页、再停留提供。<br/>
+原文连接:https://www.cnblogs.com/zxf100/p/11192781.html</div><br>
+    <p>现在很多网站，比如淘宝，京东等都改用使用极验拖动验证码实现登录，这种方式比传统的验证码方式有更好的体验，减少用户输入的错误，也同样能起到防盗刷的功能。现在很多极验都是第三方的，也很多都是收费的。今天在这里给大家分享自己用原生php实现的一个极验的代码。用原生php的好处就是以后你要嵌套到什么框架，可以直接用核心代码，改一改就好了。</p>
+<p>极验拖动动画图</p>
+<p><img src="./images/php+js实现极验，拖动滑块验证码验证表单0.jpg" alt="" /></p>
+<p>代码文件截图</p>
+<p><img src="./images/php+js实现极验，拖动滑块验证码验证表单1.jpg" alt="" /></p>
+<p><strong>代码实现</strong><br /><span style="color: #393939;"><span style="font-size: xx-small;">html文件</span></span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">DOCTYPE html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html </span><span style="color: #ff0000;">lang</span><span style="color: #0000ff;">=""</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">="utf-8"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">http-equiv</span><span style="color: #0000ff;">="x-ua-compatible"</span><span style="color: #ff0000;"> content</span><span style="color: #0000ff;">="ie=edge"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">name</span><span style="color: #0000ff;">="viewport"</span><span style="color: #ff0000;"> content</span><span style="color: #0000ff;">="width=device-width, initial-scale=1"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>极验滑块拖动验证码-码农社区-web视频分享网<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">script </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text/javascript"</span><span style="color: #ff0000;"> src</span><span style="color: #0000ff;">="tn_code.js?v=35"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">link </span><span style="color: #ff0000;">rel</span><span style="color: #0000ff;">="stylesheet"</span><span style="color: #ff0000;"> type</span><span style="color: #0000ff;">="text/css"</span><span style="color: #ff0000;"> href</span><span style="color: #0000ff;">="style.css?v=27"</span> <span style="color: #0000ff;">/&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">style </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text/css"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">style</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body </span><span style="color: #ff0000;">style</span><span style="color: #0000ff;">="text-align:center;"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="tncode"</span><span style="color: #ff0000;"> style</span><span style="color: #0000ff;">="text-align: center;margin: 100px auto;"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">script </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text/javascript"</span><span style="color: #0000ff;">&gt;</span><span style="background-color: #f5f5f5; color: #000000;">
+$TN.onsuccess(</span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;">(){
+</span><span style="background-color: #f5f5f5; color: #008000;">//</span><span style="background-color: #f5f5f5; color: #008000;">验证通过</span>
+<span style="background-color: #f5f5f5; color: #000000;">});
+</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span>  </code></pre>
+
+<p>&nbsp;</p>
+<p><strong>php文件：check.php</strong></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">require_once</span> <span style="color: #008080;">dirname</span>(<span style="color: #ff00ff;">__FILE__</span>).'/TnCode.class.php'<span style="color: #000000;">;
+</span><span style="color: #800080;">$tn</span>  = <span style="color: #0000ff;">new</span><span style="color: #000000;"> TnCode();
+</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$tn</span>-&gt;<span style="color: #000000;">check()){
+        </span><span style="color: #800080;">$_SESSION</span>['tncode_check'] = 'ok'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">echo</span> "ok"<span style="color: #000000;">;
+}</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #800080;">$_SESSION</span>['tncode_check'] = 'error'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">echo</span> "error"<span style="color: #000000;">;
+}
+
+</span>?&gt;</code></pre>
+
+<p><strong>主要核心文件：TnCode.class.php</strong></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> TnCode
+{
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$im</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$im_fullbg</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$im_bg</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$im_slide</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$bg_width</span> = 240<span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$bg_height</span> = 150<span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$mark_width</span> = 50<span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$mark_height</span> = 50<span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$bg_num</span> = 6<span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$_x</span> = 0<span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$_y</span> = 0<span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #008000;">//</span><span style="color: #008000;">容错象素 越大体验越好，越小破解难道越高</span>
+&nbsp; &nbsp; <span style="color: #0000ff;">var</span> <span style="color: #800080;">$_fault</span> = 3<span style="color: #000000;">;
+&nbsp; &nbsp; </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct(){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #008000;">//</span><span style="color: #008000;">ini_set('display_errors','On');
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;//</span>
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<span style="color: #008080;">error_reporting</span>(0<span style="color: #000000;">);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_SESSION</span><span style="color: #000000;">)){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #008080;">session_start</span><span style="color: #000000;">();
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;}
+&nbsp; &nbsp; }
+&nbsp; &nbsp; </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> make(){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_init();
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_createSlide();
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_createBg();
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_merge();
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_imgout();
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_destroy();
+&nbsp; &nbsp; }
+
+&nbsp; &nbsp; </span><span style="color: #0000ff;">function</span> check(<span style="color: #800080;">$offset</span>=''<span style="color: #000000;">){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$_SESSION</span>['tncode_r'<span style="color: #000000;">]){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;}
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$offset</span><span style="color: #000000;">){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #800080;">$offset</span> = <span style="color: #800080;">$_REQUEST</span>['tn_r'<span style="color: #000000;">];
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;}
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$ret</span> = <span style="color: #008080;">abs</span>(<span style="color: #800080;">$_SESSION</span>['tncode_r']-<span style="color: #800080;">$offset</span>)&lt;=<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_fault;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$ret</span><span style="color: #000000;">){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$_SESSION</span>['tncode_r'<span style="color: #000000;">]);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;}</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #800080;">$_SESSION</span>['tncode_err']++<span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$_SESSION</span>['tncode_err']&gt;10){<span style="color: #008000;">//</span><span style="color: #008000;">错误10次必须刷新</span>
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$_SESSION</span>['tncode_r'<span style="color: #000000;">]);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;}
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;}
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$ret</span><span style="color: #000000;">;
+&nbsp; &nbsp; }
+
+&nbsp; &nbsp; </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _init(){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$bg</span> = <span style="color: #008080;">mt_rand</span>(1,<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bg_num);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$file_bg</span> = <span style="color: #008080;">dirname</span>(<span style="color: #ff00ff;">__FILE__</span>).'/bg/'.<span style="color: #800080;">$bg</span>.'.png'<span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;im_fullbg = imagecreatefrompng(<span style="color: #800080;">$file_bg</span><span style="color: #000000;">);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;im_bg = imagecreatetruecolor(<span style="color: #800080;">$this</span>-&gt;bg_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bg_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecopy(</span><span style="color: #800080;">$this</span>-&gt;im_bg,<span style="color: #800080;">$this</span>-&gt;im_fullbg,0,0,0,0,<span style="color: #800080;">$this</span>-&gt;bg_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bg_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;im_slide = imagecreatetruecolor(<span style="color: #800080;">$this</span>-&gt;mark_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bg_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$_SESSION</span>['tncode_r'] = <span style="color: #800080;">$this</span>-&gt;_x = <span style="color: #008080;">mt_rand</span>(50,<span style="color: #800080;">$this</span>-&gt;bg_width-<span style="color: #800080;">$this</span>-&gt;mark_width-1<span style="color: #000000;">);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$_SESSION</span>['tncode_err'] = 0<span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;_y = <span style="color: #008080;">mt_rand</span>(0,<span style="color: #800080;">$this</span>-&gt;bg_height-<span style="color: #800080;">$this</span>-&gt;mark_height-1<span style="color: #000000;">);
+&nbsp; &nbsp; }
+
+&nbsp; &nbsp; </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _destroy(){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagedestroy(</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">im);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagedestroy(</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">im_fullbg);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagedestroy(</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">im_bg);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagedestroy(</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">im_slide);
+&nbsp; &nbsp; }
+&nbsp; &nbsp; </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _imgout(){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$_GET</span>['nowebp']&amp;&amp;<span style="color: #008080;">function_exists</span>('imagewebp')){<span style="color: #008000;">//</span><span style="color: #008000;">优先webp格式，超高压缩率</span>
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;<span style="color: #800080;">$type</span> = 'webp'<span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #800080;">$quality</span> = 40;<span style="color: #008000;">//</span><span style="color: #008000;">图片质量 0-100</span>
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;}<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #800080;">$type</span> = 'png'<span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;</span><span style="color: #800080;">$quality</span> = 7;<span style="color: #008000;">//</span><span style="color: #008000;">图片质量 0-9</span>
+<span style="color: #000000;">&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;}
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #008080;">header</span>('Content-Type: image/'.<span style="color: #800080;">$type</span><span style="color: #000000;">);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$func</span> = "image".<span style="color: #800080;">$type</span><span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$func</span>(<span style="color: #800080;">$this</span>-&gt;im,<span style="color: #0000ff;">null</span>,<span style="color: #800080;">$quality</span><span style="color: #000000;">);
+&nbsp; &nbsp; }
+&nbsp; &nbsp; </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _merge(){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$this</span>-&gt;im = imagecreatetruecolor(<span style="color: #800080;">$this</span>-&gt;bg_width, <span style="color: #800080;">$this</span>-&gt;bg_height*3<span style="color: #000000;">);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecopy(</span><span style="color: #800080;">$this</span>-&gt;im, <span style="color: #800080;">$this</span>-&gt;im_bg,0, 0 , 0, 0, <span style="color: #800080;">$this</span>-&gt;bg_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bg_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecopy(</span><span style="color: #800080;">$this</span>-&gt;im, <span style="color: #800080;">$this</span>-&gt;im_slide,0, <span style="color: #800080;">$this</span>-&gt;bg_height , 0, 0, <span style="color: #800080;">$this</span>-&gt;mark_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bg_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecopy(</span><span style="color: #800080;">$this</span>-&gt;im, <span style="color: #800080;">$this</span>-&gt;im_fullbg,0, <span style="color: #800080;">$this</span>-&gt;bg_height*2 , 0, 0, <span style="color: #800080;">$this</span>-&gt;bg_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bg_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecolortransparent(</span><span style="color: #800080;">$this</span>-&gt;im,0);<span style="color: #008000;">//</span><span style="color: #008000;">16777215</span>
+<span style="color: #000000;">&nbsp; &nbsp; }
+
+&nbsp; &nbsp; </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _createBg(){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$file_mark</span> = <span style="color: #008080;">dirname</span>(<span style="color: #ff00ff;">__FILE__</span>).'/img/mark.png'<span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$im</span> = imagecreatefrompng(<span style="color: #800080;">$file_mark</span><span style="color: #000000;">);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #008080;">header</span>('Content-Type: image/png'<span style="color: #000000;">);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #008000;">//</span><span style="color: #008000;">imagealphablending( $im, true);</span>
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecolortransparent(<span style="color: #800080;">$im</span>,0);<span style="color: #008000;">//</span><span style="color: #008000;">16777215
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;//imagepng($im);exit;</span>
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecopy(<span style="color: #800080;">$this</span>-&gt;im_bg, <span style="color: #800080;">$im</span>, <span style="color: #800080;">$this</span>-&gt;_x, <span style="color: #800080;">$this</span>-&gt;_y&nbsp;&nbsp;, 0&nbsp;&nbsp;, 0 , <span style="color: #800080;">$this</span>-&gt;mark_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">mark_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagedestroy(</span><span style="color: #800080;">$im</span><span style="color: #000000;">);
+&nbsp; &nbsp; }
+
+&nbsp; &nbsp; </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> _createSlide(){
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$file_mark</span> = <span style="color: #008080;">dirname</span>(<span style="color: #ff00ff;">__FILE__</span>).'/img/mark2.png'<span style="color: #000000;">;
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</span><span style="color: #800080;">$img_mark</span> = imagecreatefrompng(<span style="color: #800080;">$file_mark</span><span style="color: #000000;">);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecopy(</span><span style="color: #800080;">$this</span>-&gt;im_slide, <span style="color: #800080;">$this</span>-&gt;im_fullbg,0, <span style="color: #800080;">$this</span>-&gt;_y , <span style="color: #800080;">$this</span>-&gt;_x, <span style="color: #800080;">$this</span>-&gt;_y, <span style="color: #800080;">$this</span>-&gt;mark_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">mark_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecopy(</span><span style="color: #800080;">$this</span>-&gt;im_slide, <span style="color: #800080;">$img_mark</span>,0, <span style="color: #800080;">$this</span>-&gt;_y , 0, 0, <span style="color: #800080;">$this</span>-&gt;mark_width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">mark_height);
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagecolortransparent(</span><span style="color: #800080;">$this</span>-&gt;im_slide,0);<span style="color: #008000;">//</span><span style="color: #008000;">16777215
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;//header('Content-Type: image/png');
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;//imagepng($this-&gt;im_slide);exit;</span>
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;imagedestroy(<span style="color: #800080;">$img_mark</span><span style="color: #000000;">);
+&nbsp; &nbsp; }
+
+}
+</span>?&gt;</code></pre>
+
+<p>代码下载地址</p>
+<p><a href="http://aso.39gs.com/tncode/tncode.rar">http://aso.39gs.com/tncode/tncode.rar</a></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,27 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php生成带自定义logo和带二维码跳转自定义地址的二维码' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php生成带自定义logo和带二维码跳转自定义地址的二维码</center></div><div class='banquan'>原文出处:本文由博客园博主谢其江提供。<br/>
+原文连接:https://www.cnblogs.com/xieqijiang/p/10768099.html</div><br>
+    <pre><code>index.php<br />&lt;?php<br />header('Content-type:text/html;charset=UTF-8');<br />// 指定允许其他域名访问<br />header('Access-Control-Allow-Origin:*');<br />// 响应类型f<br />header('Access-Control-Allow-Methods:POST');<br />// 响应头设置<br />header('Access-Control-Allow-Headers:x-requested-with,content-type');<br />include 'phpqrcode.php';<br />//$uid = "100001";<br />$uid = $_POST["uid"];<br />$qrcodeurl = 'qrcode'.$uid.'.png';<br />$code = $uid.".png";<br />//二维码内容<br />$url = "http://域名/tp3.2/home/Wx2/code?uid=".$uid;//二维码内容<br />//容错级别<br />$errorCorrectionLevel = 'L';<br />//生成图片大小<br />$matrixPointSize = 4;<br />QRcode::png($url, $qrcodeurl, $errorCorrectionLevel, $matrixPointSize, 2);<br />//code【二维码+头像存放地址】、header【头像存放地址】、qrcode【二维码存放地址】<br />//准备好的logo图片,本人放在了根目录下<br />//头像地址[读数据库里面的头像具体到服务器的头像地址save_url]<br />//$logo = 'http://域名/tp3.2/Public/upload/header/header2.png';<br />require_once('file1.php');<br />$logo = func1($uid);<br />//已经生成的原始二维码图,也在根目录下<br />$qrcode = $qrcodeurl;<br />//logo图片存在<br />if ($logo !== FALSE) {<br />    $qrcode = imagecreatefromstring(file_get_contents($qrcode));<br />    $logo = imagecreatefromstring(file_get_contents($logo));<br />    if (imageistruecolor($logo))<br />    {<br />        imagetruecolortopalette($logo, false, 65535);//添加这行代码来解决颜色失真问题<br />    }<br />    $qrcode_width = imagesx($qrcode);   //二维码图片宽度<br />    $qrcode_height = imagesy($qrcode);  //二维码图片高度<br />    $logo_width = imagesx($logo);       //logo图片宽度<br />    $logo_height = imagesy($logo);      //logo图片高度<br />    $logo_qr_width = $qrcode_width / 5;<br />    $scale = $logo_width / $logo_qr_width;<br />    $logo_qr_height = $logo_height / $scale;<br />    $from_width = ($qrcode_width - $logo_qr_width) / 2;<br />    //重新组合图片并调整大小<br />    imagecopyresampled($qrcode, $logo, $from_width, $from_width, 0, 0, $logo_qr_width,<br />        $logo_qr_height, $logo_width, $logo_height);<br />}<br />//输出图片<br />imagepng($qrcode, $code);//保存合成图片，命名logqr.png放在该地址中<br />imagedestroy($qrcode);<br />imagedestroy($logo);<br />if(file_exists($qrcodeurl)){ //存在二维码图片<br />    unlink($qrcodeurl);<br />    //echo '输出code3下面的图片为66存在二维码图片就删除222:'.'&lt;img src="'.$code.'" &gt;';<br />    $showcode = "http://域名/code4/".$code;<br />    $json = json_encode($showcode,JSON_UNESCAPED_UNICODE);<br />    $json = str_replace("\\/","/",$json);//以免url地址被反编译<br />    echo $json;<br />}<br />else { //不存在二维码图片<br />    //echo '输出code3下面的图片为66不存在二维码图片就不管222:'.'&lt;img src="'.$code.'" &gt;';<br />    $showcode = "http://域名/code4/".$code;<br />    $json = json_encode($showcode,JSON_UNESCAPED_UNICODE);<br />    $json = str_replace("\\/","/",$json);//以免url地址被反编译<br />    echo $json;<br />}<br />//echo '输出的图片为66:'.'&lt;img src="'.$code.'" &gt;';<br />?&gt;<br /><br />file.php<br /><br />&lt;?php</code></pre>
+<pre><code><em id="__mceDel">function func1($uid)<br />{<br />    $servername = 'IP';<br />    $username = '用户名';<br />    $password = '密码';<br />    $dbname = '数据库名称';<br />    $port = '端口';<br />    // 创建连接<br />    $conn = new mysqli($servername, $username, $password, $dbname,$port);<br />    // Check connection<br />    if ($conn-&gt;connect_error) {<br />        die("连接失败: " . $conn-&gt;connect_error);<br />    }<br />    //$uid = "100001";<br />    $sql = "SELECT header.save_url FROM header where uid='$uid'";<br />    $result = $conn-&gt;query($sql);<br />    $arr = mysqli_fetch_row($result);<br />    $save_url = $arr[0];<br />    $conn-&gt;close();<br />    return $save_url;<br />}</em></code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,185 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修手机网站支付如何接入支付宝简易版支付功能PHP版' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>手机网站支付如何接入支付宝简易版支付功能PHP版</center></div><div class='banquan'>原文出处:本文由博客园博主胡歌我的最爱提供。<br/>
+原文连接:https://www.cnblogs.com/lbw-share/p/11291669.html</div><br>
+    <p>接入支付宝准备工作：（关于账号可以是个体商户也可以是企业账号但必须有营业执照）</p>
+<p>1.登录蚂蚁金服开放平台&nbsp; 2.创建应用，应用分类网页应用和移动应用。应用提交审核审核通过后得到Appid才能调用相应的接口权限</p>
+<p>3.添加功能：一般有扫码付，电脑网站支付，手机网站支付，APP支付。看你的需求什么。移动应用选择APP支付或者是扫码付，而网页应用分为移动端和PC端。</p>
+<p>4.商户签约 需要提交相关的资料 一般是要求你提供你的网站地址和APP包等要求 按照支付宝要求来签约相关的支付功能</p>
+<p><img src="./images/手机网站支付如何接入支付宝简易版支付功能PHP版0.jpg" alt="" width="987" height="223" /></p>
+<p>5.配置你的应用开发配置 （非常关键一旦配置错误则调不起支付宝支付）</p>
+<p><span style="color: #ff0000;">a.支付宝网关 支付宝已经填写好了不动</span></p>
+<p><span style="color: #ff0000;">b.应用网关&nbsp; 这里填的是你的后台系统的域名如https://www.ios.events.com必须能够访问&nbsp;</span></p>
+<p><span style="color: #ff0000;">c.授权回调地址 是获取用户预授权时使用的回调地址 照此要求填写就可以没有固定的</span></p>
+<p><span style="color: #ff0000;">d.加签方式一般推荐RSA(SHA256) 这里关键点来了&nbsp; 首先通过<a href="https://docs.open.alipay.com/291/105971">https://docs.open.alipay.com/291/105971</a>这个链接下载Windows系统下载window的生成商户应用公钥和商户应用私钥一定要是匹配的</span></p>
+<p><span style="color: #ff0000;">然后复制到<img src="./images/手机网站支付如何接入支付宝简易版支付功能PHP版1.jpg" alt="" />这里那么支付宝公钥会自动生成。请保存在文本中</span></p>
+<p><span style="color: #333333;">6.这样应用配置完成 当然如果<span style="font-size: 14px;">你想测试使用沙箱进行测试则还需要配置沙箱环境当然和线上的是一样只不过支付宝网关是https://openapi.alipaydev.com/gateway.do<span style="color: #ff0000;">但如果是APP支付除非是IOS,安卓语言支付则沙箱环境是没有用的</span></span></span></p>
+<p><span style="font-size: 14px;">签约完成</span>就添加功能，应用配置完成则开始进行前后台的支付功能模块的开发了</p>
+<p><span style="font-size: 18px;"><strong>后台开发</strong></span></p>
+<p><span style="font-size: 14px;"><strong>1.先配置好你的后台支付宝支付环境 并且如果你是使用官方SDK的话最好将其SDK放在扩展类库下面</strong></span></p>
+<src class="cnblogs_code">
+<pre><code> 'Alipay' =&gt;<span style="color: #000000;"> [
+
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">线上app_id    </span>
+
+            'app_id' =&gt; "2016092300576028",
+
+            <span style="color: #008000;">//</span><span style="color: #008000;">线上应用私钥</span>
+
+            'merchant_private_key' =&gt; "en4wG3L",
+
+            <span style="color: #008000;">//</span><span style="color: #008000;">线上异步通知地址</span>
+
+            'notify_url' =&gt; "https://www.ios.events.com/index.php/Order/notify",
+
+            <span style="color: #008000;">//</span><span style="color: #008000;">线上同步通知地址</span>
+
+            'return_url' =&gt; "https://www.ios.events.com/index.php/Order/return_url",
+
+            <span style="color: #008000;">//</span><span style="color: #008000;">编码格式</span>
+
+            'charset' =&gt; "UTF-8",
+
+            <span style="color: #008000;">//</span><span style="color: #008000;">签名方式</span>
+
+            'sign_type'=&gt;"RSA2",
+
+            <span style="color: #008000;">//</span><span style="color: #008000;">线上支付宝网关</span>
+
+            'gatewayUrl' =&gt; "https://openapi.alipay.com/gateway.do",
+
+            <span style="color: #008000;">//</span><span style="color: #008000;">沙箱支付宝网关
+
+            //'gatewayUrl' =&gt; "https://openapi.alipaydev.com/gateway.do",
+
+            //线上支付宝公钥</span>
+
+            'alipay_public_key' =&gt; "",
+
+            <span style="color: #008000;">//</span><span style="color: #008000;">应用公钥</span>
+
+            'wap_public_key'  =&gt; "",<span style="color: #000000;">
+
+        ]</span></code></pre>
+
+<p>2.下载蚂蚁金服开放平台的PHP支付SDK TP框架引入SDK重要的文件放在ThinkPHP/Library/Vendor/Alipay_wap 公共类库Vendor下</p>
+<p>将你所需要的文件改成.class.php 因为我们需要引入并且将他们当成类来使用并且他们的命名空间是Vendor/Alipay_wap</p>
+<p>上面2步好了以后,支付环境已经搭建好了。这里进入实际开发希望不懂的可以参照开放文档。我也是一边看着开发文档(不得不说支付宝开发文档很详细)一边开发</p>
+<p>3.(手机网站支付)步骤一般是前台先创建好订单传给下一个支付页面(上面有支付宝或者是微信支付类型和金额当然还有其他的东西) 点击支付按钮调用后台写好的支付接口比如Pay</p>
+<src class="cnblogs_code">
+<pre><code>1.<span style="color: #000000;"> 调用支付宝支付单接口
+
+</span><span style="color: #800080;">$config</span> = C("Alipay");<span style="color: #008000;">//</span><span style="color: #008000;">支付宝接口配置数据</span>
+
+        <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['WIDout_trade_no']) &amp;&amp; <span style="color: #008080;">trim</span>(<span style="color: #800080;">$_POST</span>['WIDout_trade_no']) != ""<span style="color: #000000;">) {
+
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">商户订单号，商户网站订单系统中唯一订单号，必填</span>
+
+            <span style="color: #800080;">$out_trade_no</span> = <span style="color: #800080;">$_POST</span>['WIDout_trade_no'<span style="color: #000000;">];
+
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">订单名称，必填</span>
+
+            <span style="color: #800080;">$subject</span> = <span style="color: #800080;">$_POST</span>['WIDsubject'<span style="color: #000000;">];
+
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">付款金额，必填</span>
+
+            <span style="color: #800080;">$total_amount</span> = <span style="color: #800080;">$_POST</span>['WIDtotal_amount'<span style="color: #000000;">];
+
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">商品描述，可空</span>
+
+            <span style="color: #800080;">$body</span> = <span style="color: #800080;">$_POST</span>['WIDbody'<span style="color: #000000;">];
+
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">超时时间</span>
+
+            <span style="color: #800080;">$timeout_express</span> = "9m"<span style="color: #000000;">;
+
+            </span><span style="color: #800080;">$payRequestBuilder</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> AlipayWapPay();
+
+            </span><span style="color: #800080;">$payRequestBuilder</span>-&gt;setBody(<span style="color: #800080;">$body</span><span style="color: #000000;">);
+
+            </span><span style="color: #800080;">$payRequestBuilder</span>-&gt;setSubject(<span style="color: #800080;">$subject</span><span style="color: #000000;">);
+
+            </span><span style="color: #800080;">$payRequestBuilder</span>-&gt;setOutTradeNo(<span style="color: #800080;">$out_trade_no</span><span style="color: #000000;">);
+
+            </span><span style="color: #800080;">$payRequestBuilder</span>-&gt;setTotalAmount(<span style="color: #800080;">$total_amount</span><span style="color: #000000;">);
+
+            </span><span style="color: #800080;">$payRequestBuilder</span>-&gt;setTimeExpress(<span style="color: #800080;">$timeout_express</span><span style="color: #000000;">);
+
+            </span><span style="color: #800080;">$payResponse</span> = <span style="color: #0000ff;">new</span> AlipayService(<span style="color: #800080;">$config</span><span style="color: #000000;">);
+
+            </span><span style="color: #800080;">$result</span>=<span style="color: #800080;">$payResponse</span>-&gt;wapPay(<span style="color: #800080;">$payRequestBuilder</span>,<span style="color: #800080;">$config</span>['return_url'],<span style="color: #800080;">$config</span>['notify_url'<span style="color: #000000;">]);
+
+        }</span></code></pre>
+
+<p>当然你可以加入自己的不必要填写的参数进去(这我就管不着了)</p>
+<p>4.调起支付后支付结果会通过异步的方式发送支付结果通知给我们也被称为异步通知</p>
+<src class="cnblogs_code">
+<pre><code> <span style="color: #800080;">$time</span> = <span style="color: #008080;">time</span><span style="color: #000000;">();
+        </span><span style="color: #800080;">$orderModel</span> = M('order'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$config</span> = C("Alipay");<span style="color: #008000;">//</span><span style="color: #008000;">支付宝接口配置数据</span>
+        <span style="color: #800080;">$arr</span>=<span style="color: #800080;">$_POST</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 实际验证过程建议商户添加以下校验。
+        1、商户需要验证该通知数据中的out_trade_no是否为商户系统中创建的订单号，
+        2、判断total_amount是否确实为该订单的实际金额（即商户订单创建时的金额），
+        3、校验通知中的seller_id（或者seller_email) 是否为out_trade_no这笔单据的对应的操作方（有的时候，一个商户可能有多个seller_id/seller_email）
+        4、验证app_id是否为该商户本身。
+        </span><span style="color: #008000;">*/</span>
+        <span style="color: #008000;">//</span><span style="color: #008000;">验签过程</span>
+        <span style="color: #800080;">$alipaySevice</span> = <span style="color: #0000ff;">new</span> AlipayService(<span style="color: #800080;">$config</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$alipaySevice</span>-&gt;writeLog(<span style="color: #008080;">var_export</span>(<span style="color: #800080;">$_POST</span>,<span style="color: #0000ff;">true</span><span style="color: #000000;">));
+        </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$alipaySevice</span>-&gt;check(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span>) {<span style="color: #008000;">//</span><span style="color: #008000;">验证成功
+            //进行校验</span>
+            <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">){
+                </span><span style="color: #800080;">$ordersn</span> = <span style="color: #800080;">$_POST</span>['out_trade_no'];<span style="color: #008000;">//</span><span style="color: #008000;">订单号</span>
+                <span style="color: #800080;">$total_amount</span> = <span style="color: #800080;">$_POST</span>['total_amount'];<span style="color: #008000;">//</span><span style="color: #008000;">订单总金额</span>
+                <span style="color: #800080;">$app_id</span> = <span style="color: #800080;">$_POST</span>['app_id'];<span style="color: #008000;">//</span><span style="color: #008000;">应用id</span>
+                <span style="color: #800080;">$data</span> = M('weiz_order')-&gt;where('ordersn='.<span style="color: #800080;">$ordersn</span>)-&gt;<span style="color: #000000;">find();
+                </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>)||<span style="color: #800080;">$total_amount</span>!==<span style="color: #800080;">$data</span>['total']||<span style="color: #800080;">$app_id</span>!==<span style="color: #800080;">$config</span>['app_id'<span style="color: #000000;">]){
+                    </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+                } 
+
+            }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$_POST</span>['trade_status'] == 'TRADE_SUCCESS'<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$orderModel</span>-&gt;startTrans();<span style="color: #008000;">//</span><span style="color: #008000;">事务开始</span>
+                <span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$ordersn</span><span style="color: #000000;">)){
+                    </span><span style="color: #800080;">$data</span>['paytime'] = <span style="color: #800080;">$time</span>;<span style="color: #008000;">//</span><span style="color: #008000;">支付时间</span>
+                    <span style="color: #800080;">$data</span>['payment'] = 2<span style="color: #000000;">;
+                    </span><span style="color: #800080;">$data</span>['paystatus'] = 1<span style="color: #000000;">;
+                     </span><span style="color: #800080;">$res</span>=<span style="color: #800080;">$orderModel</span>-&gt;where('ordersn='.<span style="color: #800080;">$ordersn</span>)-&gt;save(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+                    </span><span style="color: #800080;">$orderData</span> = M('order')-&gt;where('ordersn='.<span style="color: #800080;">$ordersn</span>)-&gt;<span style="color: #000000;">find();
+                    </span><span style="color: #800080;">$orderId</span> = <span style="color: #800080;">$orderData</span>['id'];</code></pre>
+
+<p>这里就不上传代码这个是百度的代码&nbsp;</p>
+<p>步骤是:先接受支付宝异步通知返回参数 ， 对于返回的签名进行验证签名如果错误则不进行下去，后如果支付成功则验证订单号是否和我们数据库中生成的</p>
+<p>订单号是否一致，订单金额是否一致，app_id是否一致。如果都一致就要去修改订单的支付状态 判断是否已经修改过了则不予处理，如果没有 就要进行数据库的</p>
+<p>事务处理如果不行就要回滚。修改成功则进行提交事务 别忘了最重要的一步echo success 不然支付宝每隔一段时间就会一直发送异步通知。</p>
+<p>当然可能会出现一些极端情况如果异步通知没有修改订单支付状态成功或者异步通知没有接受到咋办但用户支付成功，用户支付失败就不用管了。</p>
+<p>这种就要通过我们数据库中字段来记录我们的异步通知中支付宝交易流水号了 。 通过交易流水号来查询订单是否支付成功如果支付成功那就自己再次</p>
+<p>修改订单支付状态了。</p>
+<p>当然异步通知我们如果收不到的话(这种意外很少发送但是会发生)，所以同步通知就很重要了</p>
+<p>5.同步通知 首先拿到我们后台系统的订单号后面判断这个支付状态是否是未支付的状态如果不是则退出程序 如果是则修改订单支付状态即可。</p>
+<p>好了手机网站支付PHP版接结束了 这里是记录我的个人分享和体会吧 一起努力吧！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

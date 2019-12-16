@@ -1,0 +1,494 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修使用PHP开发HR系统（5）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>使用PHP开发HR系统（5）</center></div><div class='banquan'>原文出处:本文由博客园博主ChristineZ提供。<br/>
+原文连接:https://www.cnblogs.com/zsnzsn/p/11369618.html</div><br>
+    <p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p><span style="color: black;"><span style="font-size: 10pt;"><strong><span style="font-family: 微软雅黑; background-color: white;">本节讲述如何拆分页面以及使用</span><span style="background-color: white;">jquery<span style="font-family: 微软雅黑;">和</span>ajax<span style="font-family: 微软雅黑;">实现局部刷新</span></span></strong></span><span style="font-size: 10pt;"><strong>。</strong></span></span></p>
+<p><span style="color: black; font-size: 10pt;"><strong>==================================================================================================</strong> </span></p>
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;">从我们的页面来看，左边的菜单是不变的，右边的内容区根据不同的菜单来变化，我们就想到是否可以只针对 </span></p>
+<p><span style="color: black; font-size: 10pt;"><span style="font-family: 微软雅黑;">右边做局部刷新呢，可以使用</span>ajax<span style="font-family: 微软雅黑;">技术来完成。 </span></span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;"><strong>1 拆分主页</strong> </span></p>
+<p style="margin-left: 27pt;"><img src="./images/使用PHP开发HR系统（5）0.jpg" alt="" width="948" height="450" /></p>
+<p>&nbsp;</p>
+<p><span style="color: black; font-size: 10pt;"><span style="font-family: 微软雅黑;">我们把页面结构分成四块区域：</span>1<span style="font-family: 微软雅黑;">、页面上端</span>Top<span style="font-family: 微软雅黑;">区域；</span>2<span style="font-family: 微软雅黑;">、页面左侧</span>Menu<span style="font-family: 微软雅黑;">区域；</span>3<span style="font-family: 微软雅黑;">、页面中部区域；</span>4<span style="font-family: 微软雅黑;">、页面底端</span>footer<span style="font-family: 微软雅黑;">区域； </span></span></p>
+<p><span style="color: black; font-size: 10pt;"><span style="font-family: 微软雅黑;">根据这种划分，我们把</span>main<span style="font-family: 微软雅黑;">_list拆分成top，menu，footer，并把页面head也单独出来，具体参见以下步骤： </span></span></p>
+<p><span style="color: black; font-size: 10pt;"><span style="font-family: 微软雅黑;">1） 在</span>view<span style="font-family: 微软雅黑;">目录下创建</span>container.php<span style="font-family: 微软雅黑;">代替</span>main<span style="font-family: 微软雅黑;">_list.php文件 </span></span></p>
+<src style="margin-left: 24pt;">
+<table style="border-collapse: collapse; background: #bdd7ee;" border="0"><colgroup><col style="width: 818px;" /></colgroup>
+<tbody valign="top">
+<tr>
+<td style="border: solid #a3a3a3 1.0pt; padding: 5px;">
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;?php </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">defined('BASEPATH') OR exit('No direct script access allowed'); </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">?&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!DOCTYPE html&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--[if IE 8]&gt; &lt;html lang="en" class="ie8"&gt; &lt;![endif]--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--[if IE 9]&gt; &lt;html lang="en" class="ie9"&gt; &lt;![endif]--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--[if !IE]&gt;&lt;!--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;html lang="en"&gt; &lt;!--&lt;![endif]--&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;?php $this-&gt;load-&gt;view('templates/header'); ?&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;body class="fixed-top"&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;?php $this-&gt;load-&gt;view('templates/top'); ?&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div id="container" class="row-fluid"&gt; </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;?php $this-&gt;load-&gt;view('templates/menu'); ?&gt; </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div id="main-content"&gt; </span></p>
+<p style="margin-left: 81pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;?php $this-&gt;load-&gt;view('main'); ?&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/div&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/div&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;?php $this-&gt;load-&gt;view('templates/footer'); ?&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/body&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/html&gt;</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;">通过改造，我们的主页代码看起来就很简洁了，其中用到了几个文件： </span></p>
+<p><span style="color: black; font-size: 10pt;">i<span style="font-family: 微软雅黑;">)header.php（</span>view<span style="font-family: 微软雅黑;">-&gt;templates目录下），用来存放页面</span>head<span style="font-family: 微软雅黑;">块代码： </span></span></p>
+<src style="margin-left: 24pt;">
+<table style="border-collapse: collapse; background: #bdd7ee;" border="0"><colgroup><col style="width: 818px;" /></colgroup>
+<tbody valign="top">
+<tr>
+<td style="border: solid #a3a3a3 1.0pt; padding: 5px;">
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;head&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;meta charset="utf-8" /&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;title&gt;Software Service Manager System&lt;/title&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;meta content="width=device-width, initial-scale=1.0" name="viewport" /&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;meta content="" name="description" /&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;meta content="Mosaddek" name="author" /&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css"/&gt;--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet"&gt;--&gt; </span></p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;link rel="stylesheet" href="&lt;?php echo base_url('assets/font-awesome/css/font-awesome.min')?&gt;"&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;link rel="stylesheet" href="&lt;?php echo base_url('assets/bootstrap/css/bootstrap.min.css')?&gt;"&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;link rel="stylesheet" href="&lt;?php echo base_url('assets/bootstrap/css/bootstrap-responsive.min.css')?&gt;"&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;link rel="stylesheet" href="&lt;?php echo base_url('assets/bootstrap/css/bootstrap-fileupload.css')?&gt;"&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;link rel="stylesheet" href="&lt;?php echo base_url('assets/css/style.css')?&gt;"&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;link rel="stylesheet" href="&lt;?php echo base_url('assets/css/style-responsive.css')?&gt;"&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;link rel="stylesheet" href="&lt;?php echo base_url('assets/css/style-default.css')?&gt;"&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;link rel="stylesheet" type="text/css" href="&lt;?php echo base_url('assets/uniform/css/uniform.default.css')?&gt;"&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;link rel="stylesheet" href="&lt;?php echo base_url('assets/data-tables/DT_bootstrap.css')?&gt;"&gt; </span></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/head&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--END HEAD--&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p><span style="color: black; font-size: 10pt;">ii<span style="font-family: 微软雅黑;">)</span>top<span style="font-family: 微软雅黑;">.php（</span>view<span style="font-family: 微软雅黑;">-&gt;templates目录下），用来存放页面</span>top<span style="font-family: 微软雅黑;">区域的内容： </span></span></p>
+<src style="margin-left: 24pt;">
+<table style="border-collapse: collapse; background: #bdd7ee;" border="0"><colgroup><col style="width: 818px;" /></colgroup>
+<tbody valign="top">
+<tr>
+<td style="border: solid #a3a3a3 1.0pt; padding: 5px;">
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- BEGIN TOP --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div id="herder" class="navbar navbar-inverse navbar-fixed-top"&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- BEGIN TOP NAVIGATION BAR --&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div class="navbar-inner"&gt; </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div class="sidebar-toggle-box hidden-phone"&gt; </span></p>
+<p style="margin-left: 81pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div class="fa fa-reorder tooltips" data-placement="right" data-original-title="Toggle Navigation"&gt;&lt;/div&gt; </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/div&gt; </span></p>
+<p style="margin-left: 81pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--END SIDEBAR TOGGLE--&gt; </span></p>
+<p style="margin-left: 81pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- BEGIN LOGO --&gt; </span></p>
+<p style="margin-left: 54pt;"><span style="font-size: 10pt;"><span style="font-family: 微软雅黑;">&lt;a class="brand" href="&lt;?php echo site_url('Main/</span>index<span style="font-family: 微软雅黑;">'); ?&gt;"&gt;</span></span></p>
+<p style="margin-left: 81pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;img src="&lt;?php echo base_url('assets/img/logo.png')?&gt;" alt="Metro Lab" /&gt; </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/a&gt; </span></p>
+<p style="margin-left: 54pt;">&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN RESPONSIVE MENU TOGGLER --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- &lt;a class="btn btn-navbar collapsed" id="main_menu_trigger" data-toggle="collapse" data-target=".nav-collapse"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="fa fa-bar"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="fa fa-bar"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="fa fa-bar"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt;--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div id="top_menu" class="nav notify-row"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN NOTIFICATION --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="top-nav "&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;ul class="nav pull-right top-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN SUPPORT --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="dropdown mtop5"&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a class="dropdown-toggle element" data-placement="bottom" data-toggle="tooltip" href="#" data-original-title="Chat"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-comments-o"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="dropdown mtop5"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a class="dropdown-toggle element" data-placement="bottom" data-toggle="tooltip" href="#" data-original-title="Help"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-headphones"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- END SUPPORT --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN USER LOGIN DROPDOWN --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="dropdown"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a href="#" class="dropdown-toggle" data-toggle="dropdown"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;img src="&lt;?php echo base_url('assets/img/avatar1_small.jpg')?&gt;" alt=""&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="username"&gt;Jhon Doe&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;b class="caret"&gt;&lt;/b&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;ul class="dropdown-menu extended logout"&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;a href="#"&gt;Swing&lt;/a&gt;&lt;/li&gt; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-user"&gt;&lt;/i&gt;我的资料&lt;/a&gt;&lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-cog"&gt;&lt;/i&gt;我的设置&lt;/a&gt;&lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt;&lt;a href="login.html"&gt;&lt;i class="fa fa-key"&gt;&lt;/i&gt;退出&lt;/a&gt;&lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/ul&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- END USER LOGIN DROPDOWN --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/ul&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- END TOP NAVIGATION MENU --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- END TOP --&gt;</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p><span style="color: black; font-size: 10pt;">iii<span style="font-family: 微软雅黑;">)</span>menu<span style="font-family: 微软雅黑;">.php（</span>view<span style="font-family: 微软雅黑;">-&gt;templates目录下），用来存放页面</span>menu<span style="font-family: 微软雅黑;">块代码： </span></span></p>
+<src style="margin-left: 24pt;">
+<table style="border-collapse: collapse; background: #bdd7ee;" border="0"><colgroup><col style="width: 818px;" /></colgroup>
+<tbody valign="top">
+<tr>
+<td style="border: solid #a3a3a3 1.0pt; padding: 5px;">
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div class="sidebar-scroll" style="overflow: hidden;" tabindex="5000"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div id="sidebar" class="nav-collapse collapse"&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN RESPONSIVE QUICK SEARCH FORM --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="navbar-inverse"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;form class="navbar-search visible-phone"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;input class="search-query" placeholder="Search" type="text"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/form&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- END RESPONSIVE QUICK SEARCH FORM --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN SIDEBAR MENU --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;ul class="sidebar-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu active"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a class="" href="&lt;?php echo site_url('main/index');?&gt;"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-dashboard"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;控制台&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a href="javascript:;" class=""&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-book"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;人力资源规划&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a href="javascript:;" class=""&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-cogs"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;招聘与配置&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;ul class="sub"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt;&lt;a class="sub1" href="#"&gt;职员信息&lt;/a&gt;&lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/ul&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a href="javascript:;" class=""&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-tasks"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;培训与开发&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a href="javascript:;" class=""&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-th"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;绩效管理&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a href="javascript:;" class=""&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-fire"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;薪酬福利管理&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a class="" href="javascript:;"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-trophy"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;劳动关系管理&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a href="javascript:;" class=""&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-tasks"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;报表分析&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="sub-menu"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a class="" href="javascript:;"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-map-marker"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span&gt;系统设置&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="arrow"&gt;&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;ul class="sub"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt;&lt;a class="" href="calendar.html"&gt;用户管理&lt;/a&gt;&lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt;&lt;a class="" href="calendar.html"&gt;权限管理&lt;/a&gt;&lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/ul&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- END SIDEBAR MENU --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/div&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p><span style="color: black; font-size: 10pt;">iV<span style="font-family: 微软雅黑;">)</span>footer<span style="font-family: 微软雅黑;">.php（</span>view<span style="font-family: 微软雅黑;">-&gt;templates目录下），用来存放页面</span>footer<span style="font-family: 微软雅黑;">块代码： </span></span></p>
+<src style="margin-left: 24pt;">
+<table style="border-collapse: collapse; background: #bdd7ee;" border="0"><colgroup><col style="width: 818px;" /></colgroup>
+<tbody valign="top">
+<tr>
+<td style="border: solid #a3a3a3 1.0pt; padding: 5px;">
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- BEGIN FOOTER --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;div id="footer"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> 2018 &amp;copy; MetroAdmin. </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/div&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- BEGIN JAVASCRIPTS --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- Load javascripts at bottom, this will reduce page load time --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"&gt;&lt;/script&gt;--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/js/jquery-3.2.1.min.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script type="text/javascript" src="&lt;?php echo base_url('assets/js/jquery.nicescroll.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script type="text/javascript" src="&lt;?php echo base_url('assets/jquery-slimscroll/jquery-ui-1.9.2.custom.min.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script type="text/javascript" src="&lt;?php echo base_url('assets/jquery-slimscroll/jquery.slimscroll.min.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/fullcalendar/fullcalendar.min.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/bootstrap/js/bootstrap.min.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/js/jquery.blockui.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/uniform/jquery.uniform.min.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!-- ie8 fixes --&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--[if lt IE 9]&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="js/excanvas.js"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="js/respond.js"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;![endif]--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script type="text/javascript" src="&lt;?php echo base_url('assets/jquery-easy-pie-chart/jquery.easy-pie-chart.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script type="text/javascript" src="&lt;?php echo base_url('assets/js/jquery.sparkline.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/chart-master/Chart.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/js/jquery.scrollTo.min.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--common script for all pages--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/js/common-scripts.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;!--script for this page only--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/js/easy-pie-chart.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/js/sparkline-chart.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/js/home-page-calender.js')?&gt;"&gt;&lt;/script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script src="&lt;?php echo base_url('assets/js/home-chartjs.js')?&gt;"&gt;&lt;/script&gt;</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p><span style="color: black; font-size: 10pt;">V<span style="font-family: 微软雅黑;">)</span>main<span style="font-family: 微软雅黑;">.php（</span>view<span style="font-family: 微软雅黑;">目录下），用来存放页面主页面内容区代码： </span></span></p>
+<src style="margin-left: 24pt;">
+<table style="border-collapse: collapse; background: #bdd7ee;" border="0"><colgroup><col style="width: 818px;" /></colgroup>
+<tbody valign="top">
+<tr>
+<td style="border: solid #a3a3a3 1.0pt; padding: 5px;">
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="container-fluid"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN PAGE HEADER--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="row-fluid"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="span12"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN PAGE TITLE &amp; BREADCRUMB--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;h3 class="page-title"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/h3&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;ul class="breadcrumb"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a href="&lt;?php echo site_url('main/index');?&gt;"&gt;首页&lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;span class="divider"&gt;/&lt;/span&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;li class="pull-right search-wrap"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;form action="search_result.html" class="hidden-phone"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="input-append search-input-area"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;input class="" id="appendedInputButton" type="text"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;button class="btn" type="button"&gt;&lt;i class="fa fa-search"&gt;&lt;/i&gt; &lt;/button&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/form&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/li&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/ul&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- END PAGE TITLE &amp; BREADCRUMB--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- END PAGE HEADER--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- BEGIN PAGE CONTENT--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="row-fluid"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!--BEGIN METRO STATES--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav-block nav-block-orange"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a data-original-title="" href="#"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-user"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="info"&gt;7048&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="status"&gt;在职人员总数&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav-block nav-olive"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a data-original-title="" href="#"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-tags"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="info"&gt;1023&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="status"&gt;待招聘人数&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav-block nav-block-yellow"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a data-original-title="" href="#"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-comments-alt"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="info"&gt;490&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="status"&gt;本月入职人数&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav-block nav-block-green double"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a data-original-title="" href="#"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-eye-open"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="info"&gt;288&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="status"&gt;本月离职人数&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav-block nav-block-red"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a data-original-title="" href="#"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-bar-chart"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="info"&gt;255&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="status"&gt;本月待招聘人数&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav-block nav-light-purple double"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a data-original-title="" href="#"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-shopping-cart"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="info"&gt;$8979322442&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="status"&gt;本年薪酬福利&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="metro-nav-block nav-light-blue double"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;a data-original-title="" href="#"&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;i class="fa fa-tasks"&gt;&lt;/i&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="info"&gt;$37624&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="status"&gt;本月薪酬福利&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/a&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;div class="space10"&gt;&lt;/div&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!--END METRO STATES--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt; </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;!-- END PAGE CONTENT--&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> &lt;/div&gt;</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>&nbsp; &nbsp;</p>
+<p><span style="color: black; font-size: 10pt;">2)<span style="font-family: 微软雅黑;">目前我们的工程结构如下 </span></span></p>
+<p style="margin-left: 27pt;"><img src="./images/使用PHP开发HR系统（5）1.jpg" alt="" /></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;"><strong>2、修改controllers-&gt;Main.php文件</strong> </span></p>
+<src style="margin-left: 24pt;">
+<table style="border-collapse: collapse; background: #bdd7ee;" border="0"><colgroup><col style="width: 818px;" /></colgroup>
+<tbody valign="top">
+<tr>
+<td style="border: solid #a3a3a3 1.0pt; padding: 5px;">
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;?php </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">defined('BASEPATH') OR exit('No direct script access allowed'); </span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">class Main extends CI_Controller { </span></p>
+<p>&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">public function __construct(){ </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> parent::__construct(); </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> $this-&gt;load-&gt;helper('url_helper');&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;"> } </span></p>
+<p>&nbsp;</p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">public function index() </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">{ </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">$this-&gt;load-&gt;view('container'); </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">} </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">}</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p><span style="color: black; font-size: 10pt;"><strong><span style="font-family: 微软雅黑;">3 </span>ajax<span style="font-family: 微软雅黑;">的应用</span></strong> </span></p>
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;">为了实现局部刷新，我们引入了ajax来实现； </span></p>
+<p><span style="color: black; font-size: 10pt;"><span style="font-family: 微软雅黑;">1）在</span>footer<span style="font-family: 微软雅黑;">.php文件中增加以下内容 </span></span></p>
+<src style="margin-left: 24pt;">
+<table style="border-collapse: collapse; background: #bdd7ee;" border="0"><colgroup><col style="width: 818px;" /></colgroup>
+<tbody valign="top">
+<tr>
+<td style="border: solid #a3a3a3 1.0pt; padding: 5px;">
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;script&gt; </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">$(document).ready(function(){ </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">$(".sub1").click(function(){ </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">$.ajax({url:"&lt;?php echo site_url('Employee/index')?&gt;",success:function(result){ </span></p>
+<p style="margin-left: 81pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">$("#main-content").html(result); </span></p>
+<p style="margin-left: 54pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">}}); </span></p>
+<p style="margin-left: 27pt;"><span style="font-family: 微软雅黑; font-size: 10pt;">}); </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">}); </span></p>
+<p><span style="font-family: 微软雅黑; font-size: 10pt;">&lt;/script&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p><span style="color: black; font-size: 10pt;"><span style="font-family: 微软雅黑;">其中，</span>sub<span style="font-family: 微软雅黑;">1是与menu.php中的"职员信息"菜单对应的。 </span></span></p>
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;"><strong>3 运行测试</strong> </span></p>
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;">运行主页如下； </span></p>
+<p style="margin-left: 27pt;"><img src="./images/使用PHP开发HR系统（5）2.jpg" alt="" /></p>
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;">点"职员信息"菜单，页面如下 </span></p>
+<p style="margin-left: 27pt;"><img src="./images/使用PHP开发HR系统（5）3.jpg" alt="" /></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="color: black; font-family: 微软雅黑; font-size: 10pt;"><strong>总结：</strong> </span></p>
+<p><span style="color: black; font-size: 10pt;"> <span style="font-family: 微软雅黑;">本文首先拆分了主页，使得模块更加独立，页面代码也更清晰，同时使用</span>ajax<span style="font-family: 微软雅黑;">技术，实现了页面的局部刷新； </span></span></p>
+<p>&nbsp; &nbsp;</p>
+<p><span style="color: black; font-size: 10pt;"><span style="font-family: 微软雅黑;">====================================The</span> <span style="font-family: 微软雅黑;">End========================== </span></span></p>
+<p>&nbsp; &nbsp;</p>
+<p>&nbsp; &nbsp;</p>
+<p>&nbsp; &nbsp;</p>
+<p>&nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp; &nbsp;</p>
+<p style="margin-left: 27pt;">&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

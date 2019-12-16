@@ -1,0 +1,84 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php mysqli 预处理操作数据库' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php mysqli 预处理操作数据库</center></div><div class='banquan'>原文出处:本文由博客园博主大飞_dafei提供。<br/>
+原文连接:https://www.cnblogs.com/dafei4/p/11227697.html</div><br>
+    <p>&nbsp;用到的SQL表</p>
+<src class="cnblogs_Highlighter">
+<pre><code>CREATE TABLE `student_01` (
+`id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '名字',
+  `kecheng` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `score` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `other_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `aaaa` (`other_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
+</code></pre>
+
+<pre><code>输入变量的数据处理</code></pre>
+<src class="cnblogs_Highlighter">
+<pre><code><code>//输入变量的数据处理
+//输入变量的过程如下:
+// 01) 预备(解析)语句  02) 绑定变量 03) 赋值到绑定变量 04) 执行预备语句
+$conn = mysqli_connect('127.0.0.1', 'afei2', '123456', 'test');
+$conn-&gt;query("set names utf8mb4");
+$stmt = $conn-&gt;prepare("INSERT INTO student_01(name, kecheng, score,other_id) VALUES (?, ?, ?, ?)");
+$stmt-&gt;bind_param('ssdi',$name, $kecheng, $score,$other_id);//第一个参数是指定类型
+
+$name = '大飞';
+$kecheng = '数学';
+$score = 75;
+$other_id = 1;
+$stmt-&gt;execute();
+
+$name = '大飞02';
+$kecheng = '语文';
+$score = 60;
+$other_id = 1;
+$stmt-&gt;execute();
+
+$stmt-&gt;close();
+</code></pre>
+
+<pre><code>绑定变量获取的例子</code></pre>
+<src class="cnblogs_Highlighter">
+<pre><code><code>//绑定变量获取的例子
+//输出变量的过程如下:
+// 01) 预备(解析)语句   02) 执行预备语句   03) 绑定输出变量  04) 把数据提取到输出变量中
+$conn = mysqli_connect('127.0.0.1', 'afei2', '123456', 'test');
+$conn-&gt;query("set names utf8mb4");
+$stmt = $conn-&gt;prepare("SELECT id,name,kecheng,score FROM student_01");
+$stmt-&gt;bind_result($id, $name,$kecheng,$score);//这里定义的变量
+$stmt-&gt;execute();
+print "&lt;table  border='1' &gt;" . PHP_EOL;
+print "&lt;tr&gt;&lt;th&gt;ID&lt;/th&gt;&lt;th&gt;姓名&lt;/th&gt;&lt;th&gt;课程&lt;/th&gt;&lt;th&gt;分数&lt;/th&gt;&lt;/tr&gt;" . PHP_EOL;
+while ($stmt-&gt;fetch()) {
+    print "&lt;tr&gt;&lt;td&gt;$id&lt;/td&gt;&lt;td&gt;$name&lt;/td&gt;&lt;td&gt;$kecheng&lt;/td&gt;&lt;td&gt;$score&lt;/td&gt;&lt;/tr&gt;" . PHP_EOL;
+}
+print "&lt;/table&gt;" . PHP_EOL;
+$stmt-&gt;close();
+</code></pre>
+
+<p>　　</p>
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

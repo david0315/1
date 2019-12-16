@@ -1,0 +1,565 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修laravel5.5源码笔记（八、Eloquent ORM）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>laravel5.5源码笔记（八、Eloquent ORM）</center></div><div class='banquan'>原文出处:本文由博客园博主我也很惆怅提供。<br/>
+原文连接:https://www.cnblogs.com/wyycc/p/10551370.html</div><br>
+    <p>上一篇写到Eloquent ORM的基类Builder类，这次就来看一下这些方便的ORM方法是如何转换成sql语句运行的。</p>
+<p>首先还是进入\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php这个类中，先来看一下最常用的where()方法。</p>
+<p>如下所示，where方法的代码很长，但前面多个if都是用来兼容各种不同调用式的。我们先抛开这些花哨的调用方式，来看一下最简单的调用方法是怎么运行的。</p>
+<src class="cnblogs_code" onclick="cnblogs_code_show('c9fe839c-73eb-4e11-b349-5655c7d487e9')"><img id="code_img_closed_c9fe839c-73eb-4e11-b349-5655c7d487e9" class="code_img_closed" src="./images/laravel5.5源码笔记（八、Eloquent ORM）0.jpg" alt="" /><img id="code_img_opened_c9fe839c-73eb-4e11-b349-5655c7d487e9" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('c9fe839c-73eb-4e11-b349-5655c7d487e9',event)" src="./images/laravel5.5源码笔记（八、Eloquent ORM）1.jpg" alt="" />
+<src id="cnblogs_code_open_c9fe839c-73eb-4e11-b349-5655c7d487e9" class="cnblogs_code_hide">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">     * Add a basic where clause to the query.
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">     * @param  string|array|\Closure  $column
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * @param  mixed   $operator
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">     * @param  mixed   $value
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">     * @param  string  $boolean
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">     * @return $this
+</span><span style="color: #008080;"> 9</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> where(<span style="color: #800080;">$column</span>, <span style="color: #800080;">$operator</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$value</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$boolean</span> = 'and'<span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> If the column is an array, we will assume it is an array of key-value pairs
+</span><span style="color: #008080;">13</span> <span style="color: #008000;">        // and can add them each as a where clause. We will maintain the boolean we
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">        // received when the method was called and pass it into the nested where.</span>
+<span style="color: #008080;">15</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$column</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">16</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;addArrayOfWheres(<span style="color: #800080;">$column</span>, <span style="color: #800080;">$boolean</span><span style="color: #000000;">);
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> Here we will make some assumptions about the operator. If only 2 values are
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">        // passed to the method, we will assume that the operator is an equals sign
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">        // and keep going. Otherwise, we'll require the operator to be passed in.</span>
+<span style="color: #008080;">22</span>         <span style="color: #0000ff;">list</span>(<span style="color: #800080;">$value</span>, <span style="color: #800080;">$operator</span>) = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">prepareValueAndOperator(
+</span><span style="color: #008080;">23</span>             <span style="color: #800080;">$value</span>, <span style="color: #800080;">$operator</span>, <span style="color: #008080;">func_num_args</span>() == 2
+<span style="color: #008080;">24</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> If the columns is actually a Closure instance, we will assume the developer
+</span><span style="color: #008080;">27</span> <span style="color: #008000;">        // wants to begin a nested where statement which is wrapped in parenthesis.
+</span><span style="color: #008080;">28</span> <span style="color: #008000;">        // We'll add that Closure to the query then return back out immediately.</span>
+<span style="color: #008080;">29</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$column</span><span style="color: #000000;"> instanceof Closure) {
+</span><span style="color: #008080;">30</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;whereNested(<span style="color: #800080;">$column</span>, <span style="color: #800080;">$boolean</span><span style="color: #000000;">);
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">32</span> 
+<span style="color: #008080;">33</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> If the given operator is not found in the list of valid operators we will
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">        // assume that the developer is just short-cutting the '=' operators and
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">        // we will set the operators to '=' and set the values appropriately.</span>
+<span style="color: #008080;">36</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;invalidOperator(<span style="color: #800080;">$operator</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">37</span>             <span style="color: #0000ff;">list</span>(<span style="color: #800080;">$value</span>, <span style="color: #800080;">$operator</span>) = [<span style="color: #800080;">$operator</span>, '='<span style="color: #000000;">];
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">39</span> 
+<span style="color: #008080;">40</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> If the value is a Closure, it means the developer is performing an entire
+</span><span style="color: #008080;">41</span> <span style="color: #008000;">        // sub-select within the query and we will need to compile the sub-select
+</span><span style="color: #008080;">42</span> <span style="color: #008000;">        // within the where clause to get the appropriate query record results.</span>
+<span style="color: #008080;">43</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$value</span><span style="color: #000000;"> instanceof Closure) {
+</span><span style="color: #008080;">44</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;whereSub(<span style="color: #800080;">$column</span>, <span style="color: #800080;">$operator</span>, <span style="color: #800080;">$value</span>, <span style="color: #800080;">$boolean</span><span style="color: #000000;">);
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">46</span> 
+<span style="color: #008080;">47</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> If the value is "null", we will just assume the developer wants to add a
+</span><span style="color: #008080;">48</span> <span style="color: #008000;">        // where null clause to the query. So, we will allow a short-cut here to
+</span><span style="color: #008080;">49</span> <span style="color: #008000;">        // that method for convenience so the developer doesn't have to check.</span>
+<span style="color: #008080;">50</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$value</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">51</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;whereNull(<span style="color: #800080;">$column</span>, <span style="color: #800080;">$boolean</span>, <span style="color: #800080;">$operator</span> !== '='<span style="color: #000000;">);
+</span><span style="color: #008080;">52</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">53</span> 
+<span style="color: #008080;">54</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> If the column is making a JSON reference we'll check to see if the value
+</span><span style="color: #008080;">55</span> <span style="color: #008000;">        // is a boolean. If it is, we'll add the raw boolean string as an actual
+</span><span style="color: #008080;">56</span> <span style="color: #008000;">        // value to the query to ensure this is properly handled by the query.</span>
+<span style="color: #008080;">57</span>         <span style="color: #0000ff;">if</span> (Str::contains(<span style="color: #800080;">$column</span>, '-&gt;') &amp;&amp; <span style="color: #008080;">is_bool</span>(<span style="color: #800080;">$value</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">58</span>             <span style="color: #800080;">$value</span> = <span style="color: #0000ff;">new</span> Expression(<span style="color: #800080;">$value</span> ? 'true' : 'false'<span style="color: #000000;">);
+</span><span style="color: #008080;">59</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">60</span> 
+<span style="color: #008080;">61</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> Now that we are working with just a simple query we can put the elements
+</span><span style="color: #008080;">62</span> <span style="color: #008000;">        // in our array and add the query binding to our array of bindings that
+</span><span style="color: #008080;">63</span> <span style="color: #008000;">        // will be bound to each SQL statements when it is finally executed.</span>
+<span style="color: #008080;">64</span>         <span style="color: #800080;">$type</span> = 'Basic'<span style="color: #000000;">;
+</span><span style="color: #008080;">65</span> 
+<span style="color: #008080;">66</span>         <span style="color: #800080;">$this</span>-&gt;wheres[] = <span style="color: #008080;">compact</span><span style="color: #000000;">(
+</span><span style="color: #008080;">67</span>             'type', 'column', 'operator', 'value', 'boolean'
+<span style="color: #008080;">68</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">69</span> 
+<span style="color: #008080;">70</span>         <span style="color: #0000ff;">if</span> (! <span style="color: #800080;">$value</span><span style="color: #000000;"> instanceof Expression) {
+</span><span style="color: #008080;">71</span>             <span style="color: #800080;">$this</span>-&gt;addBinding(<span style="color: #800080;">$value</span>, 'where'<span style="color: #000000;">);
+</span><span style="color: #008080;">72</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">73</span> 
+<span style="color: #008080;">74</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+</span><span style="color: #008080;">75</span>     }</code></pre>
+
+<span class="cnblogs_code_collapse">View Code</span>
+<p>&nbsp;</p>
+<p>先从这个方法的参数开始，它一共有4个形参，分别代表$column字段、$operator操作符、$value值、$boolean = 'and'。</p>
+<p>从字面意思我们可以猜测到，最原始的where方法，一开始是打算像$model-&gt;where('age', '&gt;', 18)-&gt;get()这样来进行基本查询操作的。</p>
+<p>那么让我们先抛开前面那些if代码块，直接跳到方法底部builder类通过compact函数，将基础参数添加到$this-&gt;wheres数组后，在判断$value不是一个表达式后，跳转到了addBinding方法中。</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> addBinding(<span style="color: #800080;">$value</span>, <span style="color: #800080;">$type</span> = 'where'<span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">if</span> (! <span style="color: #008080;">array_key_exists</span>(<span style="color: #800080;">$type</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bindings)) {
+</span><span style="color: #008080;"> 5</span>             <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> InvalidArgumentException("Invalid binding type: {<span style="color: #800080;">$type</span>}."<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$value</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 9</span>             <span style="color: #800080;">$this</span>-&gt;bindings[<span style="color: #800080;">$type</span>] = <span style="color: #008080;">array_values</span>(<span style="color: #008080;">array_merge</span>(<span style="color: #800080;">$this</span>-&gt;bindings[<span style="color: #800080;">$type</span>], <span style="color: #800080;">$value</span><span style="color: #000000;">));
+</span><span style="color: #008080;">10</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">11</span>             <span style="color: #800080;">$this</span>-&gt;bindings[<span style="color: #800080;">$type</span>][] = <span style="color: #800080;">$value</span><span style="color: #000000;">;
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+</span><span style="color: #008080;">15</span>     }</code></pre>
+
+<p>&nbsp;</p>
+<p>接下来看addBinding方法做了什么，首先一次array_key_exists校验确定传入条件正确。然后判断传入的value是否为数组，若非数组，则直接将这个值传入$this-&gt;bindings数组的对应操作中。打印出来如下所示。</p>
+<p><img src="./images/laravel5.5源码笔记（八、Eloquent ORM）2.jpg" alt="" /></p>
+<p>随后便直接返回了$this对象，一个最简单的where方法就执行完毕了。</p>
+<p>那么，按正常操作，接下来就改执行get()方法了。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> get(<span style="color: #800080;">$columns</span> = ['*'<span style="color: #000000;">])
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span>         <span style="color: #800080;">$original</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">columns;
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$original</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 6</span>             <span style="color: #800080;">$this</span>-&gt;columns = <span style="color: #800080;">$columns</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span>         <span style="color: #800080;">$results</span> = <span style="color: #800080;">$this</span>-&gt;processor-&gt;processSelect(<span style="color: #800080;">$this</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">runSelect());
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>         <span style="color: #800080;">$this</span>-&gt;columns = <span style="color: #800080;">$original</span><span style="color: #000000;">;
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>         <span style="color: #0000ff;">return</span> collect(<span style="color: #800080;">$results</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>     }</code></pre>
+
+<p>&nbsp;</p>
+<p>这个方法首先获取了要查询的字段，若为空则使用传入方法的$columns参数。然后通过$this-&gt;runSelect()方法进行查询，通过processor将返回值包装返回。</p>
+<p>让我们来看一下runSelect()方法，这里的$this-&gt;connection其实是获取到pdo的链接对象，select()方法的三个参数分别为sql语句，pdo为了防注入将语句与值给分开了，所以第二个参数为值，第三个参数则是为了通过参数获取只读或读写模式的pdo实例。</p>
+<p>getBindings()直接从对象中获取数据，并通过laravel 的 Arr对象进行包装。</p>
+<p>而toSql()方法想要获得sql语句却没有那么简单，它需要调用多个方法来对sql进行拼接。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> runSelect()
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;connection-&gt;<span style="color: #000000;">select(
+            </span><span style="color: #800080;">$this</span>-&gt;toSql(), <span style="color: #800080;">$this</span>-&gt;getBindings(), ! <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">useWritePdo
+        );
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getBindings()
+    {
+        </span><span style="color: #0000ff;">return</span> Arr::flatten(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">bindings);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> toSql()
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;grammar-&gt;compileSelect(<span style="color: #800080;">$this</span><span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>那么现在来看一下sql语句是如何获取到的吧。compileSelect方法位于\vendor\laravel\framework\src\Illuminate\Database\Query\Grammars\Grammar.php对象中，它会通过Builder对象中的属性数据，来拼接一条sql返回出去。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> compileSelect(Builder <span style="color: #800080;">$query</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> If the query does not have any columns set, we'll set the columns to the
+        // * character to just get all of the columns from the database. Then we
+        // can build the query and concatenate all the pieces together as one.</span>
+        <span style="color: #800080;">$original</span> = <span style="color: #800080;">$query</span>-&gt;<span style="color: #000000;">columns;
+
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$query</span>-&gt;<span style="color: #000000;">columns)) {
+            </span><span style="color: #800080;">$query</span>-&gt;columns = ['*'<span style="color: #000000;">];
+        }
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> To compile the query, we'll spin through each component of the query and
+        // see if that component exists. If it does we'll just call the compiler
+        // function for the component which is responsible for making the SQL.</span>
+        <span style="color: #800080;">$sql</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">concatenate(
+            </span><span style="color: #800080;">$this</span>-&gt;compileComponents(<span style="color: #800080;">$query</span><span style="color: #000000;">))
+        );
+
+        </span><span style="color: #800080;">$query</span>-&gt;columns = <span style="color: #800080;">$original</span><span style="color: #000000;">;
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$sql</span><span style="color: #000000;">;
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>这个方法一开始获取了语句要查询的字段。并做了空值判断，若为空则查询 * 。</p>
+<p>接下来我们看一下$this-&gt;compileComponents($query)这一句代码，它的作用是返回基本的sql语句段，返回值如下所示。</p>
+<p><img src="./images/laravel5.5源码笔记（八、Eloquent ORM）3.jpg" alt="" /></p>
+<p>然后通过$this-&gt;concatenate()方法将其拼接成一条完整的sql语句。为了搞清楚sql语句是怎么来的，我们又得深入compileComponents方法了。</p>
+<p>这个方法位于\vendor\laravel\framework\src\Illuminate\Database\Query\Grammars\Grammar.php对象内部。先来看一下它的代码。</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> compileComponents(Builder <span style="color: #800080;">$query</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$sql</span> =<span style="color: #000000;"> [];
+
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$this</span>-&gt;selectComponents <span style="color: #0000ff;">as</span> <span style="color: #800080;">$component</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> To compile the query, we'll spin through each component of the query and
+            // see if that component exists. If it does we'll just call the compiler
+            // function for the component which is responsible for making the SQL.</span>
+            <span style="color: #0000ff;">if</span> (! <span style="color: #008080;">is_null</span>(<span style="color: #800080;">$query</span>-&gt;<span style="color: #800080;">$component</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$method</span> = 'compile'.<span style="color: #008080;">ucfirst</span>(<span style="color: #800080;">$component</span><span style="color: #000000;">);
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">var_dump($component,$method,$query-&gt;$component,'-------'); //将这些条件打印出来看一下</span>
+                <span style="color: #800080;">$sql</span>[<span style="color: #800080;">$component</span>] = <span style="color: #800080;">$this</span>-&gt;<span style="color: #800080;">$method</span>(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$query</span>-&gt;<span style="color: #800080;">$component</span><span style="color: #000000;">);
+            }
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">dd('over');</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$sql</span><span style="color: #000000;">;
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;这个方法内部，将selectComponents属性，也就是查询语句模板，进行了遍历，并判断出了，在$query对象中所存在的那一部分。通过这些语句，来构建sql语句片段。这个模板如下所示。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$selectComponents</span> =<span style="color: #000000;"> [
+        </span>'aggregate',
+        'columns',
+        'from',
+        'joins',
+        'wheres',
+        'groups',
+        'havings',
+        'orders',
+        'limit',
+        'offset',
+        'unions',
+        'lock',<span style="color: #000000;">
+    ];</span></code></pre>
+
+<p>&nbsp;</p>
+<p>而$query对象中所存在的部分，将它们打印后，结果如下所示。通过我上面代码段中被注释的部分，将其打印了出来，我在下图中对三个属性做了注释。</p>
+<p><img src="./images/laravel5.5源码笔记（八、Eloquent ORM）4.jpg" alt="" /></p>
+<p>总结来讲，这个方法会根据builder对象中所存储的属性，运行模板方法，将其构建成sql字符串部件。而builder对象中的属性则是我们自己通过DB或Model方法添加进去的。</p>
+<p>那么我们刚刚那句简单的sql查询则是运行了compileColumns、compileFrom、compileWheres。这三个方法。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> compileColumns(Builder <span style="color: #800080;">$query</span>, <span style="color: #800080;">$columns</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> If the query is actually performing an aggregating select, we will let that
+        // compiler handle the building of the select clauses, as it will need some
+        // more syntax that is best handled by that function to keep things neat.</span>
+        <span style="color: #0000ff;">if</span> (! <span style="color: #008080;">is_null</span>(<span style="color: #800080;">$query</span>-&gt;<span style="color: #000000;">aggregate)) {
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+        }
+
+        </span><span style="color: #800080;">$select</span> = <span style="color: #800080;">$query</span>-&gt;distinct ? 'select distinct ' : 'select '<span style="color: #000000;">;
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$select</span>.<span style="color: #800080;">$this</span>-&gt;columnize(<span style="color: #800080;">$columns</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> columnize(<span style="color: #0000ff;">array</span> <span style="color: #800080;">$columns</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">implode</span>(', ', <span style="color: #008080;">array_map</span>([<span style="color: #800080;">$this</span>, 'wrap'], <span style="color: #800080;">$columns</span><span style="color: #000000;">));
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;先来看compileColumns，这个方法看上去很简单，判断aggregate不为空后，根据distinct 属性来得出sql语句头，然后将这个字符串与$this-&gt;columnize()方法的返回值进行拼接。就得出了上面'select *'这句字符串。而关键在于columnize方法中的array_map的[$this, 'wrap']。</p>
+<p>array_map这个函数会传入两个参数，第一个参数为函数名，第二个参数为数组。将第二个数组参数中的每个值当成参数，传入第一个参数所代表的函数中循环执行。</p>
+<p><img src="./images/laravel5.5源码笔记（八、Eloquent ORM）5.jpg" alt="" /></p>
+<p>那么现在我们要找到wrap这个方法了。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> wrap(<span style="color: #800080;">$value</span>, <span style="color: #800080;">$prefixAlias</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;isExpression(<span style="color: #800080;">$value</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;getValue(<span style="color: #800080;">$value</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> If the value being wrapped has a column alias we will need to separate out
+        // the pieces so we can wrap each of the segments of the expression on it
+        // own, and then joins them both back together with the "as" connector.</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strpos</span>(<span style="color: #008080;">strtolower</span>(<span style="color: #800080;">$value</span>), ' as ') !== <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;wrapAliasedValue(<span style="color: #800080;">$value</span>, <span style="color: #800080;">$prefixAlias</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;wrapSegments(<span style="color: #008080;">explode</span>('.', <span style="color: #800080;">$value</span><span style="color: #000000;">));
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>这个方法，首先判断了传入参数不是一个表达式，而是一个确定的值。然后strpos(strtolower($value), ' as ') !== false这一句将$value转为小写，并判断了sql语句中没有as字段。然后便返回了$this-&gt;wrapSegments的值。</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> wrapSegments(<span style="color: #800080;">$segments</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> collect(<span style="color: #800080;">$segments</span>)-&gt;map(<span style="color: #0000ff;">function</span> (<span style="color: #800080;">$segment</span>, <span style="color: #800080;">$key</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$segments</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$key</span> == 0 &amp;&amp; <span style="color: #008080;">count</span>(<span style="color: #800080;">$segments</span>) &gt; 1
+                            ? <span style="color: #800080;">$this</span>-&gt;wrapTable(<span style="color: #800080;">$segment</span><span style="color: #000000;">)
+                            </span>: <span style="color: #800080;">$this</span>-&gt;wrapValue(<span style="color: #800080;">$segment</span><span style="color: #000000;">);
+        })</span>-&gt;<span style="color: #008080;">implode</span>('.'<span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;到这里，我们会发现这个方法，只是传入了一个闭包函数，就给返回了，laravel框架实在是难以跟踪。</p>
+<p>事实上collect()方法代表了\vendor\laravel\framework\src\Illuminate\Support\Collection.php对象。</p>
+<p>可以看到在collection类的构造方法中，我们将参数存入了它的属性，而在map方法中，通过array_keys对这些属性做了处理过后，又通过array_map对其进了加工。看下刚刚wrapSegments中的闭包函数是怎么写的，他们调用了wrapTable()和wrapValue这两个方法。根据传入参数的不同，来分别调用。</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$items</span> =<span style="color: #000000;"> [])
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;items = <span style="color: #800080;">$this</span>-&gt;getArrayableItems(<span style="color: #800080;">$items</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> map(callable <span style="color: #800080;">$callback</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$keys</span> = <span style="color: #008080;">array_keys</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">items);
+
+        </span><span style="color: #800080;">$items</span> = <span style="color: #008080;">array_map</span>(<span style="color: #800080;">$callback</span>, <span style="color: #800080;">$this</span>-&gt;items, <span style="color: #800080;">$keys</span><span style="color: #000000;">);
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">static</span>(<span style="color: #008080;">array_combine</span>(<span style="color: #800080;">$keys</span>, <span style="color: #800080;">$items</span><span style="color: #000000;">));
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> wrapValue(<span style="color: #800080;">$value</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$value</span> !== '*'<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> '"'.<span style="color: #008080;">str_replace</span>('"', '""', <span style="color: #800080;">$value</span>).'"'<span style="color: #000000;">;
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$value</span><span style="color: #000000;">;
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>如果参数为*则直接返回了拼接星号的字符串，反之则直接返回了$value数组。然后视线调回collection对象的map方法，返回值在通过array_combine函数加工后，又通过collection本类包装成了对象返回。到这里函数调用就到顶了，依次返回值，返回到Grammars对象的compileColumns方法中，与'select'字符串进行拼接后再次返回。这部分sql语句片段就构建完成了。</p>
+<p>那么接下来就剩compileFrom、compileWheres两个方法了。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> compileFrom(Builder <span style="color: #800080;">$query</span>, <span style="color: #800080;">$table</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> 'from '.<span style="color: #800080;">$this</span>-&gt;wrapTable(<span style="color: #800080;">$table</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> wrapTable(<span style="color: #800080;">$table</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (! <span style="color: #800080;">$this</span>-&gt;isExpression(<span style="color: #800080;">$table</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;wrap(<span style="color: #800080;">$this</span>-&gt;tablePrefix.<span style="color: #800080;">$table</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;getValue(<span style="color: #800080;">$table</span><span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>from语句的构建比较简单，直接from接表名就好。但是wrapTable方法中的代码我们发现有点眼熟，没错，它又调用了wrap方法，还记得我们刚刚构建select时看到的吗？这个方法只是对传入的参数做了解析，并包装成集合返回回来。其实不止select和from其他的语句段构建都要通过wrap方法来进行参数解析。刚刚已经解析过wrap方法，这里我就不多说了。最后，这个方法也是返回了'from'部分的sql语句片段。</p>
+<p>接下来到compileWheres方法了。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> compileWheres(Builder <span style="color: #800080;">$query</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> Each type of where clauses has its own compiler function which is responsible
+        // for actually creating the where clauses SQL. This helps keep the code nice
+        // and maintainable since each clause has a very small method that it uses.</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$query</span>-&gt;<span style="color: #000000;">wheres)) {
+            </span><span style="color: #0000ff;">return</span> ''<span style="color: #000000;">;
+        }
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> If we actually have some where clauses, we will strip off the first boolean
+        // operator, which is added by the query builders for convenience so we can
+        // avoid checking for the first clauses in each of the compilers methods.</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #008080;">count</span>(<span style="color: #800080;">$sql</span> = <span style="color: #800080;">$this</span>-&gt;compileWheresToArray(<span style="color: #800080;">$query</span>)) &gt; 0<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;concatenateWhereClauses(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">return</span> ''<span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> compileWheresToArray(<span style="color: #800080;">$query</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> collect(<span style="color: #800080;">$query</span>-&gt;wheres)-&gt;map(<span style="color: #0000ff;">function</span> (<span style="color: #800080;">$where</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$query</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$where</span>['boolean'].' '.<span style="color: #800080;">$this</span>-&gt;{"where{<span style="color: #800080;">$where</span>['type']}"}(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$where</span><span style="color: #000000;">);
+        })</span>-&gt;<span style="color: #000000;">all();
+    }
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> concatenateWhereClauses(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$sql</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$conjunction</span> = <span style="color: #800080;">$query</span> instanceof JoinClause ? 'on' : 'where'<span style="color: #000000;">;
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$conjunction</span>.' '.<span style="color: #800080;">$this</span>-&gt;removeLeadingBoolean(<span style="color: #008080;">implode</span>(' ', <span style="color: #800080;">$sql</span><span style="color: #000000;">));
+    }
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> removeLeadingBoolean(<span style="color: #800080;">$value</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">preg_replace</span>('/and |or /i', '', <span style="color: #800080;">$value</span>, 1<span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;那么，来看一下。首先compileWheres方法判断where条件是否为空，然后compileWheresToArray方法来判断where参数是否大于0。这个方法用了collect对象的map方法，我们之前已经看过了。重要的是这个闭包函数，来看一下这个闭包函数干了什么。它通过$hwere['type']这个属性中存储的字段作为方法名调用了whereBasic方法，如下所示</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> whereBasic(Builder <span style="color: #800080;">$query</span>, <span style="color: #800080;">$where</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$value</span> = <span style="color: #800080;">$this</span>-&gt;parameter(<span style="color: #800080;">$where</span>['value'<span style="color: #000000;">]);
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;wrap(<span style="color: #800080;">$where</span>['column']).' '.<span style="color: #800080;">$where</span>['operator'].' '.<span style="color: #800080;">$value</span><span style="color: #000000;">;
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> parameter(<span style="color: #800080;">$value</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;isExpression(<span style="color: #800080;">$value</span>) ? <span style="color: #800080;">$this</span>-&gt;getValue(<span style="color: #800080;">$value</span>) : '?'<span style="color: #000000;">;
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>通过parameter方法获取到参数后，依然是通过wrap包装参数。concatenateWhereClauses方法根据之前返回的参数，决定拼接'where'字符串，然后通过removeLeadingBoolean方法决定&lsquo;and&lsquo;等条件的拼接。</p>
+<p>到这里，基础sql语句片段就已经全部构建出来了。</p>
+<p>视线跳回compileSelect方法的concatenate方法。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> concatenate(<span style="color: #800080;">$segments</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">implode</span>(' ', <span style="color: #008080;">array_filter</span>(<span style="color: #800080;">$segments</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> (<span style="color: #0000ff;">string</span>) <span style="color: #800080;">$value</span> !== ''<span style="color: #000000;">;
+        }));
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>通过array_filter与implode函数将sql语句片段合并为了一条完整sql语句。</p>
+<p>sql语句有了，我们视线又要跳回Builder对象的runSelect方法了。这个里面的$this-&gt;connection-&gt;select()方法对sql进行了调用，返回的便是查询结果了。connection则是Illuminate\Database\MySqlConnection对象。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> runSelect()
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;connection-&gt;<span style="color: #000000;">select(
+            </span><span style="color: #800080;">$this</span>-&gt;toSql(), <span style="color: #800080;">$this</span>-&gt;getBindings(), ! <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">useWritePdo
+        );
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>而select方法则是在它的父类\vendor\laravel\framework\src\Illuminate\Database\Connection.php中。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> select(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span> = [], <span style="color: #800080;">$useReadPdo</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;run(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$useReadPdo</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">pretending()) {
+                </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> [];
+            }
+
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> For select statements, we'll simply execute the query and return an array
+            // of the database result set. Each element in the array will be a single
+            // row from the database table, and will either be an array or objects.</span>
+            <span style="color: #800080;">$statement</span> = <span style="color: #800080;">$this</span>-&gt;prepared(<span style="color: #800080;">$this</span>-&gt;getPdoForSelect(<span style="color: #800080;">$useReadPdo</span><span style="color: #000000;">)
+                              </span>-&gt;prepare(<span style="color: #800080;">$query</span><span style="color: #000000;">));
+
+            </span><span style="color: #800080;">$this</span>-&gt;bindValues(<span style="color: #800080;">$statement</span>, <span style="color: #800080;">$this</span>-&gt;prepareBindings(<span style="color: #800080;">$bindings</span><span style="color: #000000;">));
+
+            </span><span style="color: #800080;">$statement</span>-&gt;<span style="color: #000000;">execute();
+
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$statement</span>-&gt;<span style="color: #000000;">fetchAll();
+        });
+    }
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> run(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span>, Closure <span style="color: #800080;">$callback</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">reconnectIfMissingConnection();
+
+        </span><span style="color: #800080;">$start</span> = <span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> Here we will run this query. If an exception occurs we'll determine if it was
+        // caused by a connection that has been lost. If that is the cause, we'll try
+        // to re-establish connection and re-run the query with a fresh connection.</span>
+        <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;runQueryCallback(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span>, <span style="color: #800080;">$callback</span><span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">catch</span> (QueryException <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">handleQueryException(
+                </span><span style="color: #800080;">$e</span>, <span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span>, <span style="color: #800080;">$callback</span><span style="color: #000000;">
+            );
+        }
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> Once we have run the query we will calculate the time that it took to run and
+        // then log the query, bindings, and execution time so we will report them on
+        // the event that the developer needs them. We'll log time in milliseconds.</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">logQuery(
+            </span><span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span>, <span style="color: #800080;">$this</span>-&gt;getElapsedTime(<span style="color: #800080;">$start</span><span style="color: #000000;">)
+        );
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+    }
+
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> runQueryCallback(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span>, Closure <span style="color: #800080;">$callback</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> To execute the statement, we'll simply call the callback, which will actually
+        // run the SQL against the PDO connection. Then we can calculate the time it
+        // took to execute and log the query SQL, bindings and time in our memory.</span>
+        <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$callback</span>(<span style="color: #800080;">$query</span>, <span style="color: #800080;">$bindings</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> If an exception occurs when attempting to run a query, we'll format the error
+        // message to include the bindings with SQL, which will make this exception a
+        // lot more helpful to the developer instead of just the database's errors.</span>
+        <span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> QueryException(
+                </span><span style="color: #800080;">$query</span>, <span style="color: #800080;">$this</span>-&gt;prepareBindings(<span style="color: #800080;">$bindings</span>), <span style="color: #800080;">$e</span><span style="color: #000000;">
+            );
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>这三个方法，看起来很长一段，但是其中的代码是很简单的。我们一个一个来分析，select方法，只做了一件事，调用run方法，把sql语句，bindings参数，以及一个闭包函数传入了其中。</p>
+<p>而run方法，则是获取了pdo链接，记录了开始查询的毫秒时间，通过runQueryCallback运行了查询闭包函数，并记录sql日志，最后返回了查询结果。</p>
+<p>runQueryCallback方法只是简单的调用了闭包函数。现在转回来看闭包函数做了什么。</p>
+<src class="cnblogs_code">
+<pre><code>            <span style="color: #800080;">$statement</span> = <span style="color: #800080;">$this</span>-&gt;prepared(<span style="color: #800080;">$this</span>-&gt;getPdoForSelect(<span style="color: #800080;">$useReadPdo</span><span style="color: #000000;">)
+                              </span>-&gt;prepare(<span style="color: #800080;">$query</span><span style="color: #000000;">));
+
+            </span><span style="color: #800080;">$this</span>-&gt;bindValues(<span style="color: #800080;">$statement</span>, <span style="color: #800080;">$this</span>-&gt;prepareBindings(<span style="color: #800080;">$bindings</span>));</code></pre>
+
+<p>&nbsp;</p>
+<p>关键代码就是这两句了。$this-&gt;getPdoForSelect($useReadPdo)方法通过之前设置的读写方式获取pdo实例。这里做了这么多判断，最终获取到的是provider初始化时存入的实例</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> getPdoForSelect(<span style="color: #800080;">$useReadPdo</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$useReadPdo</span> ? <span style="color: #800080;">$this</span>-&gt;getReadPdo() : <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getPdo();
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getReadPdo()
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;transactions &gt; 0<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getPdo();
+        }
+
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;getConfig('sticky') &amp;&amp; <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">recordsModified) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getPdo();
+        }
+
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">readPdo instanceof Closure) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;readPdo = <span style="color: #008080;">call_user_func</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">readPdo);
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;readPdo ?: <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getPdo();
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>获取到pdo对象后，剩下的都是pdo的原生方法了。fetchAll方法返回sql查询结果集。</p>
+<p>然后一直返回到get()方法。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> get(<span style="color: #800080;">$columns</span> = ['*'<span style="color: #000000;">])
+    {
+        </span><span style="color: #800080;">$original</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">columns;
+
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$original</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$this</span>-&gt;columns = <span style="color: #800080;">$columns</span><span style="color: #000000;">;
+        }
+
+        </span><span style="color: #800080;">$results</span> = <span style="color: #800080;">$this</span>-&gt;processor-&gt;processSelect(<span style="color: #800080;">$this</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">runSelect());
+
+        </span><span style="color: #800080;">$this</span>-&gt;columns = <span style="color: #800080;">$original</span><span style="color: #000000;">;
+
+        </span><span style="color: #0000ff;">return</span> collect(<span style="color: #800080;">$results</span><span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>到这里，通过collect集合进行包装之后，便返回到我们model对象的操作方式了。</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

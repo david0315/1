@@ -1,0 +1,75 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中addslashes()和htmlspecialchars() 函数的区别及应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中addslashes()和htmlspecialchars() 函数的区别及应用</center></div><div class='banquan'>原文出处:本文由博客园博主为什么你那么爱笑啊提供。<br/>
+原文连接:https://www.cnblogs.com/miaolyou/p/11031689.html</div><br>
+    <p><span style="font-size: 18px;"><strong>addslashes()防sql注入：</strong></span></p>
+<p><span style="font-size: 13px;">定义如下：</span></p>
+<p>addslashes() 函数返回在预定义字符之前添加反斜杠的字符串。</p>
+<p>预定义字符是：</p>
+<ul>
+<li>单引号（'）</li>
+<li>双引号（"）</li>
+<li>反斜杠（\）</li>
+<li>NULL</li>
+</ul>
+<p class="tip">提示：该函数可用于为存储在数据库中的字符串以及数据库查询语句准备字符串。</p>
+<p class="tip">用法如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$str</span> = "Who's Peter Griffin?"<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$str</span> . " This is not safe in a database query.&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> <span style="color: #008080;">addslashes</span>(<span style="color: #800080;">$str</span>) . " This is safe in a database query."<span style="color: #000000;">;
+</span>?&gt;  <br />// 输出：<br />Who's Peter Griffin? This is not safe in a database query.<br />Who\'s Peter Griffin? This is safe in a database query.</code></pre>
+
+<p><span style="font-size: 18px;"><strong>htmlspecialchars()过滤XSS问题：</strong></span></p>
+<p><span style="font-size: 13px;">定义如下：</span></p>
+<p>htmlspecialchars() 函数把预定义的字符转换为 HTML 实体。</p>
+<p>预定义的字符是：</p>
+<ul>
+<li>&amp; （和号）成为 &amp;</li>
+<li>" （双引号）成为 "</li>
+<li>' （单引号）成为 '</li>
+<li>&lt; （小于）成为 &lt;</li>
+<li>&gt; （大于）成为 &gt;</li>
+</ul>
+<p class="tip">提示：如需把特殊的 HTML 实体转换回字符，请使用&nbsp;<a title="PHP htmlspecialchars_decode() 函数" href="http://www.w3school.com.cn/php/func_string_htmlspecialchars_decode.asp">htmlspecialchars_decode()</a>&nbsp;函数。</p>
+<p class="tip">用法如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$str</span> = "Bill &amp; 'Steve'"<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> <span style="color: #008080;">htmlspecialchars</span>(<span style="color: #800080;">$str</span>, ENT_COMPAT); <span style="color: #008000;">//</span><span style="color: #008000;"> 只转换双引号</span>
+<span style="color: #0000ff;">echo</span> "&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> <span style="color: #008080;">htmlspecialchars</span>(<span style="color: #800080;">$str</span>, ENT_QUOTES); <span style="color: #008000;">//</span><span style="color: #008000;"> 转换双引号和单引号</span>
+<span style="color: #0000ff;">echo</span> "&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> <span style="color: #008080;">htmlspecialchars</span>(<span style="color: #800080;">$str</span>, ENT_NOQUOTES); <span style="color: #008000;">//</span><span style="color: #008000;"> 不转换任何引号</span>
+?&gt;<br />// 输出<br />Bill &amp; 'Steve'<br />Bill &amp; 'Steve'<br /><em id="__mceDel"><em id="__mceDel">Bill &amp; 'Steve'</em></em></code></pre>
+
+<p><span style="font-size: 18px;"><strong>addslashes()与htmlspecialchars()的区别:</strong></span></p>
+<p>除了两个函数的转义方式不同外，它们的使用也不同。</p>
+<p>addslashes()通过用于防止sql语句注入，在执行sql语句前对通过get、post和cookie传递来的参数中的单引号，双引号，\ 和null进行转义。</p>
+<p>但sql执行成功后，插入到数据库中的数据是不带有转义字符\的。这是如果插入到数据库中的是一些js脚本，当这些脚本被读取出来时还是会被执行。</p>
+<p>这是我们可对读取出来的数据使用htmlspecialchars()进行过滤，避免执行被注入的脚本。</p>
+<p>&nbsp;</p>
+<p>参考文章：</p>
+<p><a href="https://www.cnblogs.com/yingww/p/4290849.html">https://www.cnblogs.com/yingww/p/4290849.html</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

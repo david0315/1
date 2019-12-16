@@ -1,0 +1,77 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10584442.html</div><br>
+    <p>1. php的mail()函数是可以发送邮件的 , 但是一直就没有测试成功过 , 现在总结一下原因 :</p>
+<p>php的mail函数 基于sendmail命令来发送 , sendmail命令需要安装postfix软件&nbsp;</p>
+<p>&nbsp;</p>
+<p>2.查看php的配置项sendmail_path&nbsp; ,这个就是mail函数调用的底层命令 ,&nbsp; &nbsp; php&nbsp; -i|grep sendmail</p>
+<p><img src="./images/[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix0.jpg" alt="" /></p>
+<p>3.安装postfix软件 才可以使用sendmail命令 , apt-get install postfix</p>
+<p>当软件安装完成后 , 在命令行测试一下是否能够发送成功</p>
+<p>建立一个eml的文本文件 ,内容是最主要的几个邮件协议头</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Subject: title-testing
+From: shihan2@sopans.com
+To: 630892807@qq.com
+
+Sorry, I'm testing. ~_~ 
+</code></pre>
+
+<src class="cnblogs_Highlighter">
+<pre><code> /usr/sbin/sendmail -t -i -f shihan2@sopans.com &lt; 2.eml
+</code></pre>
+
+<p>-f参数后面的是和from值对应的 , 如果对应不上会报错 , 可以查看日志文件/var/log/mail.log , 来看错误原因和是否成功</p>
+<p><img src="./images/[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix1.jpg" alt="" /></p>
+<p>如果from值对应不上 , 日志中提示的信息</p>
+<p><img src="./images/[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix2.jpg" alt="" /></p>
+<p>发送成功后对应的信息 , 250ok</p>
+<p><img src="./images/[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>4. 修改php的配置文件 , 使用php函数进行发信&nbsp;</p>
+<p>我修改了这个配置文件 , &nbsp;/etc/php/7.0/cli/php.ini&nbsp; , from参数给写死了, 测试的时候 , 如果不写这个from邮箱 ,发送一直失败 , 提示501 Syntax: MAIL FROM: &lt;address&gt; (in reply to MAIL FROM command))&nbsp; ,mail from和信体的from对应不上</p>
+<p><img src="./images/[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix4.jpg" alt="" /></p>
+<p>查看下配置</p>
+<p><img src="./images/[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix5.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>建立一个php文件</p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>&lt;?php
+
+$to='630892807@qq.com';
+$subject = '测试一下';
+
+$message = '我来测试';
+$headers[] = 'From: shihan2@sopans.com';
+mail($to, $subject, $message, implode("\r\n", $headers));
+</code></pre>
+
+<p>测试成功</p>
+<p><img src="./images/[PHP] 邮件发送mail()函数失败问题 sendmail命令与postfix6.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>　　</p>
+<p>&nbsp;</p>
+<p>　　</p>
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

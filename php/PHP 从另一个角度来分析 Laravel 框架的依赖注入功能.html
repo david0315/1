@@ -1,0 +1,150 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 从另一个角度来分析 Laravel 框架的依赖注入功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 从另一个角度来分析 Laravel 框架的依赖注入功能</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11801070.html</div><br>
+    <blockquote>从根本上说，依赖注入不是让对象创建一个依赖关系，也不是让工厂对象去创建对象，而是将所需的依赖变成一个外部对象，使之成为一个"某些人的问题&rdquo;</blockquote>
+<p>你为"某些人的问题&rdquo;注入了类的依赖关系。在Laravel中，这个"某人&rdquo;是&nbsp;<a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.5/container" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">服务容器</a>&nbsp;。在Laravel中，服务容器负责通过构造函数注入类的依赖关系。</p>
+<p>任何时候，你在一个控制器类中请求一个依赖，这个服务容器负责：</p>
+<ol>
+<li>自动地在构造函数中检测依赖关系</li>
+<li>如果需要构建这个依赖关系</li>
+<li>通过构造函数创建对象形成依赖关系</li>
+</ol>
+<p>来看一个非常简单的例子。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Http\Controllers;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\User;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Repositories\UserRepository;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Http\Controllers\Controller;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">class</span> UserController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$userRepository</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(UserRepository <span style="color: #800080;">$userRepository</span><span style="color: #000000;">)
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">11</span>         <span style="color: #800080;">$this</span>-&gt;userRepository = <span style="color: #800080;">$userRepository</span><span style="color: #000000;">;
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">13</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> show(<span style="color: #800080;">$id</span><span style="color: #000000;">)
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">15</span>         <span style="color: #800080;">$user</span> = <span style="color: #800080;">$this</span>-&gt;userRepository-&gt;find(<span style="color: #800080;">$id</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span>         <span style="color: #0000ff;">return</span> view('user.profile', ['user' =&gt; <span style="color: #800080;">$user</span><span style="color: #000000;">]);
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>假如，你有一个&nbsp;<code>UserController</code>&nbsp;类需要&nbsp;<code>UserRepository</code>&nbsp;作为一个构造函数依赖。</p>
+<ol>
+<li>服务容器使用&nbsp;<code>PHP</code>&nbsp;的&nbsp;<a class=" wrap external" href="https://link.zhihu.com/?target=http%3A//php.net/manual/en/class.reflectionclass.php" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">反射类</a>&nbsp;来检测，事实&nbsp;<code>UserRepository</code>&nbsp;需要被优先解析。</li>
+<li>然后，它构造&nbsp;<code>UserRepository</code>&nbsp;实例。</li>
+<li>然后，它构造&nbsp;<code>UserController</code>&nbsp;类实例。</li>
+</ol>
+<p>依赖关系是如何被解析和注入的，我被很多&nbsp;<code>Laravel</code>&nbsp;开发人员不知道这个简单而强大的技术感到迷惑。 这是一个非常强大的技术，它可以被用来解决复杂对象的依赖关系。</p>
+<p>如果由于某种原因，您不希望Laravel自动构建一个对象，您还可以通过传递一个可用于创建依赖关系的回调来告诉Laravel Service Container如何构造该对象。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$container</span>-&gt;bind('My\Service', <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">3</span>   <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> My\Service(<span style="color: #800080;">$container</span>-&gt;make('My\AnotherService'<span style="color: #000000;">));
+</span><span style="color: #008080;">4</span> });</code></pre>
+
+<p>&nbsp;</p>
+
+<p>您需要创建一个服务提供商来注册上述服务。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Providers;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Support\ServiceProvider;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">class</span> MyServiceProvider <span style="color: #0000ff;">extends</span><span style="color: #000000;"> ServiceProvider
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> register()
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 8</span>         <span style="color: #800080;">$this</span>-&gt;app-&gt;singleton(\My\Service::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$app</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 9</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> \My\Service(<span style="color: #800080;">$app</span>-&gt;make('My\AnotherService'<span style="color: #000000;">));
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">12</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>当&nbsp;<code>My\Service</code>&nbsp;需要被解析的时候，负责返回一个对象的回调函数就会被调用。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Http\Controllers;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\User;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Http\Controllers\Controller;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">class</span> MyController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$myService</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(\My\Service <span style="color: #800080;">$myService</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">10</span>         <span style="color: #800080;">$this</span>-&gt;myService = <span style="color: #800080;">$myService</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">12</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> .. 方法</span>
+<span style="color: #008080;">13</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<h3>真实的例子</h3>
+<p>假设你的应用需要Facebook的PHP SDK来访问Facebook的API，你的控制器就是这样的:</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Http\Controllers;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\User;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Http\Controllers\Controller;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Facebook\Facebook;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">class</span> FacebookApiAccessController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$facebook</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Facebook\Facebook <span style="color: #800080;">$facebook</span><span style="color: #000000;">)
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">11</span>         <span style="color: #800080;">$this</span>-&gt;facebook = <span style="color: #800080;">$facebook</span><span style="color: #000000;">;
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">13</span>     <span style="color: #008000;">//</span><span style="color: #008000;">.. action methods here</span>
+<span style="color: #008080;">14</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>现在，您需要告诉Service Container如何构建&nbsp;<code>Facebook\Facebook</code>的实例.</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$container</span>-&gt;singleton('Facebook\Facebook', <span style="color: #0000ff;">function</span><span style="color: #000000;">() {
+</span><span style="color: #008080;">3</span>   <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> \Facebook\Facebook([
+</span><span style="color: #008080;">4</span>     'app_id' =&gt; config('services.facebook.app_id'),
+<span style="color: #008080;">5</span>     'app_secret' =&gt; config('services.facebook.app_secret'),
+<span style="color: #008080;">6</span>     'default_graph_version' =&gt; 'v2.10',
+<span style="color: #008080;">7</span> <span style="color: #000000;">  ]);
+</span><span style="color: #008080;">8</span> });</code></pre>
+
+<p>&nbsp;</p>
+
+<p>注意，我已经调用了方法<code>singleton</code>而不是<code>bind</code>。 唯一的区别是用<code>singleton</code>注册的服务被缓存，随后的解析服务调用返回缓存的服务。</p>
+<h3>结论</h3>
+<p>依赖注入是一种强大的技术，你可以在&nbsp;<code>Laravel</code>&nbsp;中用来简化对象的创建. 默认情况下,&nbsp;<code>Laravel</code>&nbsp;的服务容器会自动的用反射去检测和解决依赖关系. 但是, 你可以指定回调来解析服务.</p>
+<p><strong>phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的</strong>（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群677079770</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

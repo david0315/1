@@ -1,0 +1,103 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP5.1中数据查询使用field方法数组参数起别名时遇到的问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP5.1中数据查询使用field方法数组参数起别名时遇到的问题</center></div><div class='banquan'>原文出处:本文由博客园博主小friend提供。<br/>
+原文连接:https://www.cnblogs.com/sfriend/p/10649016.html</div><br>
+    <p>首先数据库基本查询是没有问题的</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+
+namespace app\index\controller;
+use think\Db;
+
+class Demo5
+{
+    //1.单条查询
+    public function find()
+    {
+        $res = Db::table('customers')
+            -&gt;field('Name,CustomerID')
+            -&gt;where('CustomerID', '=', 1)
+            -&gt;find();
+        dump(is_null($res) ? '没有找到' : $res);
+    }
+
+}
+</code></pre>
+
+<p>&nbsp;返回结果为：</p>
+<p><img src="./images/ThinkPHP5.1中数据查询使用field方法数组参数起别名时遇到的问题0.jpg" alt="" /></p>
+<p>但是当field参数为数组，需要给字段起别名时：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+
+
+namespace app\index\controller;
+use think\Db;
+
+class Demo5
+{
+    //1.单条查询
+    public function find()
+    {
+        $res = Db::table('customers')
+//            -&gt;field('Name,CustomerID')
+            -&gt;field(['CustomerID'=&gt;'顾客编号'])
+            -&gt;where('CustomerID', '=', 1)
+            -&gt;find();
+        dump(is_null($res) ? '没有找到' : $res);
+    }
+
+}
+</code></pre>
+
+<p>&nbsp;却报了以下错误：</p>
+<p><img src="./images/ThinkPHP5.1中数据查询使用field方法数组参数起别名时遇到的问题1.jpg" alt="" /></p>
+<p>（修改字段为中文时才会出现该错误，小白看不懂报错...）查询手册发现，还有另外一种起别名的方法：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+
+namespace app\index\controller;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Db;
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Demo5
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">1.单条查询</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> find()
+    {
+        </span><span style="color: #800080;">$res</span> = Db::table('customers'<span style="color: #000000;">)
+</span><span style="color: #008000;">//</span><span style="color: #008000;">            -&gt;field('Name,CustomerID')
+//            -&gt;field(['CustomerID'=&gt;'顾客编号'])</span>
+            -&gt;field('CustomerID as 顾客编号'<span style="color: #000000;">)
+            </span>-&gt;where('CustomerID', '=', 1<span style="color: #000000;">)
+            </span>-&gt;<span style="color: #000000;">find();
+        dump(</span><span style="color: #008080;">is_null</span>(<span style="color: #800080;">$res</span>) ? '没有找到' : <span style="color: #800080;">$res</span><span style="color: #000000;">);
+    }
+
+}</span></code></pre>
+
+<p>结果成功运行：</p>
+<p><img src="./images/ThinkPHP5.1中数据查询使用field方法数组参数起别名时遇到的问题2.jpg" alt="" /></p>
+<p>不禁好奇：是不支持数组参数起别名了吗？还是说我哪里配置的不正确？</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

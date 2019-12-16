@@ -1,0 +1,118 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP的简单跳转提示的实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP的简单跳转提示的实现</center></div><div class='banquan'>原文出处:本文由博客园博主kemili提供。<br/>
+原文连接:https://www.cnblogs.com/gitoscc/p/10525154.html</div><br>
+    <p>在PHP开发中，尤其是MVC框架或者项目中，会碰到很多跳转情况，比如：登录成功或失败后的跳转等等。</p>
+<p>以下以MVC框架开发中为基础，示例讲解：</p>
+<p>在基础控制器类中：Conrtoller.class.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> * 基础控制器类
+</span><span style="color: #008080;"> 5</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Controller {
+</span><span style="color: #008080;"> 7</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">     * 跳转
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">     * $url 目标url
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">     * $info 提示信息
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">     * $time 等待时间（单位秒）
+</span><span style="color: #008080;">12</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">13</span>     <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> jump(<span style="color: #800080;">$url</span>,<span style="color: #800080;">$info</span>=<span style="color: #0000ff;">NULL</span>,<span style="color: #800080;">$time</span>=3<span style="color: #000000;">) {
+</span><span style="color: #008080;">14</span>         <span style="color: #008000;">//</span><span style="color: #008000;">判断是立即跳转还是刷新跳转</span>
+<span style="color: #008080;">15</span>         <span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$info</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">16</span>             <span style="color: #008000;">//</span><span style="color: #008000;">立即跳转</span>
+<span style="color: #008080;">17</span>             <span style="color: #008080;">header</span>('location:'. <span style="color: #800080;">$url</span><span style="color: #000000;">);
+</span><span style="color: #008080;">18</span>             <span style="color: #0000ff;">die</span><span style="color: #000000;">;
+</span><span style="color: #008080;">19</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">20</span>             <span style="color: #008000;">//</span><span style="color: #008000;">刷新跳转,给出提示</span>
+<span style="color: #008080;">21</span>             <span style="color: #0000ff;">echo</span> &lt;&lt;&lt;<span style="color: #000000;">TIAOZHUAN
+</span><span style="color: #008080;">22</span> &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+<span style="color: #008080;">23</span> &lt;title&gt;提示信息&lt;/title&gt;
+<span style="color: #008080;">24</span> &lt;style type='text/css'&gt;
+<span style="color: #008080;">25</span>     * {margin:0; padding:0<span style="color: #000000;">;}
+</span><span style="color: #008080;">26</span>     div {width:390px; height:287px; border:1px <span style="color: #008000;">#</span><span style="color: #008000;">09C solid; position:absolute; left:50%; margin-left:-195px; top:10%;}</span>
+<span style="color: #008080;">27</span>     div h2 {width:100%; height:30px; line-height:30px; background-color:<span style="color: #008000;">#</span><span style="color: #008000;">09C; font-size:14px; color:#FFF; text-indent:10px;}</span>
+<span style="color: #008080;">28</span>     div p {height:120px; line-height:120px; text-align:<span style="color: #000000;">center;}
+</span><span style="color: #008080;">29</span>     div p strong {font-size:<span style="color: #000000;">26px;}
+</span><span style="color: #008080;">30</span> &lt;/style&gt;
+<span style="color: #008080;">31</span> &lt;div&gt;
+<span style="color: #008080;">32</span>     &lt;h2&gt;提示信息&lt;/h2&gt;
+<span style="color: #008080;">33</span>     &lt;p&gt;
+<span style="color: #008080;">34</span>         &lt;strong&gt;<span style="color: #800080;">$info</span>&lt;/strong&gt;&lt;br /&gt;
+<span style="color: #008080;">35</span>         页面在&lt;span id="second"&gt;<span style="color: #800080;">$time</span>&lt;/span&gt;秒后会自动跳转，或点击&lt;a id="tiao" href="<span style="color: #800080;">$url</span>"&gt;立即跳转&lt;/a&gt;
+<span style="color: #008080;">36</span>     &lt;/p&gt;
+<span style="color: #008080;">37</span> &lt;/div&gt;
+<span style="color: #008080;">38</span> &lt;script type="text/javascript"&gt;
+<span style="color: #008080;">39</span>     <span style="color: #0000ff;">var</span> url = document.getElementById('tiao').<span style="color: #000000;">href;
+</span><span style="color: #008080;">40</span>     <span style="color: #0000ff;">function</span><span style="color: #000000;"> daoshu(){
+</span><span style="color: #008080;">41</span>         <span style="color: #0000ff;">var</span> scd = document.getElementById('second'<span style="color: #000000;">);
+</span><span style="color: #008080;">42</span>         <span style="color: #0000ff;">var</span> <span style="color: #008080;">time</span> = --scd.<span style="color: #000000;">innerHTML;
+</span><span style="color: #008080;">43</span>         <span style="color: #0000ff;">if</span>(<span style="color: #008080;">time</span>&lt;=0<span style="color: #000000;">){
+</span><span style="color: #008080;">44</span>             window.location.href =<span style="color: #000000;"> url;
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">            clearInterval(mytime);
+</span><span style="color: #008080;">46</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">47</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">48</span>     <span style="color: #0000ff;">var</span> mytime = setInterval("daoshu()",1000<span style="color: #000000;">);
+</span><span style="color: #008080;">49</span> &lt;/script&gt;
+<span style="color: #008080;">50</span> <span style="color: #000000;">TIAOZHUAN;
+</span><span style="color: #008080;">51</span>         <span style="color: #0000ff;">die</span><span style="color: #000000;">;
+</span><span style="color: #008080;">52</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">53</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">54</span> 
+<span style="color: #008080;">55</span> }</code></pre>
+
+<p>在MVC的自动加载中，将Controller.class.php进行自动加载注册</p>
+<p>通过不同控制器类继承上面的Controller.class.php基础控制器类后，就可以调用定义的跳转提示。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> * 后台管理员控制器(登录、注销、管理员的增删改查等)
+</span><span style="color: #008080;"> 5</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">class</span> AdminController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller {
+</span><span style="color: #008080;"> 7</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">     * 展示登录表单动作
+</span><span style="color: #008080;"> 9</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> loginAction() {
+</span><span style="color: #008080;">11</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 载入当前的视图文件</span>
+<span style="color: #008080;">12</span>         <span style="color: #800080;">$this</span>-&gt;display('login.html'<span style="color: #000000;">);
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">14</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">15</span> <span style="color: #008000;">     * 后台注销功能
+</span><span style="color: #008080;">16</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">17</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> logoutAction() {
+</span><span style="color: #008080;">18</span>         @<span style="color: #008080;">session_start</span><span style="color: #000000;">();
+</span><span style="color: #008080;">19</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 删除相关会话数据</span>
+<span style="color: #008080;">20</span>         <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$_SESSION</span>['adminInfo'<span style="color: #000000;">]);
+</span><span style="color: #008080;">21</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 删除会话数据区</span>
+<span style="color: #008080;">22</span>         <span style="color: #008080;">session_destroy</span><span style="color: #000000;">();
+</span><span style="color: #008080;">23</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 立即跳转到登录页面</span>
+<span style="color: #008080;">24</span>         <span style="color: #800080;">$this</span>-&gt;jump('index.php?c=Admin&amp;a=login','您已退出后台登录！'<span style="color: #000000;">);
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">26</span> }</code></pre>
+
+<p>当然，这里是在MVC中实现的，你也可以把jump()单独提出来进行使用。</p>
+<p>附上一个效果图：</p>
+<p><img src="./images/PHP的简单跳转提示的实现0.jpg" alt="" /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

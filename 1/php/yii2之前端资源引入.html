@@ -1,0 +1,176 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修yii2之前端资源引入' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>yii2之前端资源引入</center></div><div class='banquan'>原文出处:本文由博客园博主link_xjxj提供。<br/>
+原文连接:https://www.cnblogs.com/jjq-exchange/p/10538655.html</div><br>
+    <p><span style="font-size: 16px; font-family: 黑体;"><strong>&nbsp;PS：因新项目后端使用yii2框架，不在使用纯html模板的方式搭建页面（前后端不分离模式）使用yii2的内置boostart封装模板，遂研究了一番yii2</strong></span></p>
+<p><span style="font-size: 16px; font-family: 黑体;"><strong>　　通过yii2官方下载的基础文件结构</strong></span></p>
+<p><span style="font-size: 16px; font-family: 黑体;"><strong>　　　　<img src="./images/yii2之前端资源引入0.jpg" alt="" /></strong></span></p>
+<p>　　　　　　其中frontend 为放置前端文件的文件夹，</p>
+<p>　　　　　　/frontend/views是放置前端页面（即单页面模块的文件夹）</p>
+<p>　　　　　　/frontend/web是放置前端资源的文件夹</p>
+<p>　　　　　　/frontend/web/assets 是放置前端js资源的文件夹</p>
+<p>　　　　　　/frontend/web/css 是放置前端css资源的文件夹</p>
+<p>　　　　　　layout为存放的公共布局（例如我这文件是/frontend/views/layouts/main.php）基本这块是放置公共头尾部分所有页面都会引入至main.php 再输出至对应的路由显示页面内容</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 16px; font-family: 黑体;"><strong>　　1.在yii2中如何引入css文件至头部</strong></span></p>
+<p><span style="font-size: 16px; font-family: 黑体;"><strong>　　　</strong><span style="font-size: 15px;">　1）.引入全局css：例如base.css</span></span></p>
+<p>　　　　　　　　首先我们找到frontend/assets/AppAsset.php&nbsp; 该文件用于配置主前端应用程序资产包</p>
+<p>　　　　　　　　在里面我们可以清晰看到如下代码</p>
+<p>　　　　　　　　<img src="./images/yii2之前端资源引入1.jpg" alt="" /></p>
+<p>　　　　　　　　其中 :&nbsp;</p>
+<p>　　　　　　　　　　　piblic $basePath&nbsp; 指定包含资源包中资源文件并可Web访问的目录 例如：<span style="background-color: #ffffff; color: #ff0000;">@webroot 指向的就是 <span style="color: #000000;">文件名为web的根目录</span></span></p>
+<p><span style="background-color: #ffffff; color: #ff0000;"><span style="color: #000000;">　　　　　　　　　　　public $baseUrl&nbsp; &nbsp;指定对应到&nbsp;<a href="https://www.yiichina.com/doc/api/2.0/yii-web-assetbundle#$basePath-detail">basePath</a>&nbsp;目录的 URL &nbsp;<span style="color: #ff0000;">@web</span> 文件名为web的目录</span></span></p>
+<p>　　　　　　　　　　　public $css 列出此包中包含的 CSS 文件的数组。 请注意，只应使用正斜杠&ldquo;/&rdquo;作为目录分隔符。每个文件都可以单独指定为字符串， 也可以与属性标记及其值一起指定在数组中&nbsp; 是我们需要配置的公共css文件 由图上可以看出是数组格式&nbsp; 路径为css/xxx.css&nbsp; 在执行时文件会自动匹配到frontend/web/css文件下的指定css文件</p>
+<p>　　　　　　　　　　　public $depends 一个列出该资源包依赖的 其他资源包</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>　　　　　　2).引入单页面css</p>
+<p>　　　　　　　　1.需要从页面指定到head标签呢</p>
+<p>　　　　　　　　　　&lt;?php $this-&gt;registerCssFile('site2.css');?&gt;&nbsp; &nbsp; 在需要将css指定到head内的页面写入还函数&nbsp; 即可将文件引入head中，该文件指向的的文件路径默认为</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>　　　　　　　　2.按需在页面指定位置添加css</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+      </span><span style="color: #008000;">/*</span><span style="color: #008000;"> @var $this yii\web\View </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">//</span><span style="color: #008000;">必须文件</span>
+    <span style="color: #0000ff;">use</span><span style="color: #000000;"> yii\helpers\Html; 
+    </span><span style="color: #0000ff;">use</span><span style="color: #000000;"> frontend\assets\AppAsset;
+    
+
+</span>?&gt;
+ <span style="color: #008000;">//</span><span style="color: #008000;">需放在beginBody之外,将会在body之前出现  test.css文件</span>
+ &lt;?= Html::cssFile('@web/css/test.css') ?&gt;
+ <span style="color: #008000;">//</span><span style="color: #008000;">可以指定参数，例如在conditon内指定ie5下才执行</span>
+ &lt;?= Html::cssFile('@web/css/test.css', ['condition' =&gt; 'IE 5']) ?&gt;
+    
+&lt;?php <span style="color: #800080;">$this</span>-&gt;beginBody() ?&gt;<span style="color: #000000;">
+     BODY内容
+</span>&lt;?php <span style="color: #800080;">$this</span>-&gt;endBody() ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;　　　　　　　　<span class="hljs-preprocessor"><span class="hljs-meta">&lt;?= Html::cssFile(<span class="hljs-string">'@web/css/ie5.css', [<span class="hljs-string">'condition' =&gt; <span class="hljs-string">'IE 5']) <span class="hljs-preprocessor"><span class="hljs-meta">?&gt;</span></span></span></span></span></span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>　　2.在yii2中如何引入js文件或者插入内联js</strong></p>
+<p><strong>　　　　1</strong>).单页面内引入JS ，该例子不适用在公共布局有依赖源文件情况下使用（在那些会在哪生成）</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span>     <span style="color: #008000;">/*</span><span style="color: #008000;"> @var $this yii\web\View </span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> 
+<span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> yii\helpers\Html;
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> frontend\assets\AppAsset;
+</span><span style="color: #008080;"> 8</span>     
+<span style="color: #008080;"> 9</span>     AppAsset::register(<span style="color: #800080;">$this</span><span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>     <span style="color: #800080;">$this</span>-&gt;context-&gt;layout = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span> ?&gt;
+<span style="color: #008080;">13</span> &lt;?php <span style="color: #800080;">$this</span>-&gt;beginBody() ?&gt;
+<span style="color: #008080;">14</span>     
+<span style="color: #008080;">15</span> <span style="color: #000000;">     BODY内容
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span> &lt;?php <span style="color: #800080;">$this</span>-&gt;endBody() ?&gt;<br />
+<span style="color: #008080;">18</span> <span style="color: #000000;">    必须在endBody之外引入否则将报html  类不存在
+</span><span style="color: #008080;">19</span>     &lt;?=Html::jsFile('@web/assets/util.lin.js')?&gt;
+<span style="color: #008080;">20</span>     &lt;?=Html::jsFile('@web/assets/core-min.js')?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>　　　2).单页面内引入JS ，该例子不适用在公共布局有依赖源文件情况下使用（在beginBody内引入js文件情况，引入后会加会全局js之后）</p>
+<p>　　　　　</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+      </span><span style="color: #008000;">/*</span><span style="color: #008000;"> @var $this yii\web\View </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">use</span><span style="color: #000000;"> yii\helpers\Html;
+    </span><span style="color: #0000ff;">use</span><span style="color: #000000;"> frontend\assets\AppAsset;
+    
+    AppAsset</span>::register(<span style="color: #800080;">$this</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$this</span>-&gt;context-&gt;layout = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+
+</span>?&gt;
+&lt;?php <span style="color: #800080;">$this</span>-&gt;beginBody() ?&gt;
+    &lt;?<span style="color: #000000;">php
+        </span><span style="color: #0000ff;">use</span><span style="color: #000000;"> yii\helpers\Html;
+    </span>?&gt;<span style="color: #000000;">
+     BODY内容
+       如须在endBody之内引入，必须在beginBody之内重新引入 Html类
+    </span>&lt;?=Html::jsFile('@web/assets/util.lin.js')?&gt;
+    &lt;?=Html::jsFile('@web/assets/core-min.js')?&gt;
+&lt;?php <span style="color: #800080;">$this</span>-&gt;endBody() ?&gt;</code></pre>
+
+<p>　　　　&nbsp;</p>
+<p>　　　　3).单页面内引入JS ，该例子适合有依赖源文件情况下使用（引入之后会加载在依赖源之后）</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+      </span><span style="color: #008000;">/*</span><span style="color: #008000;"> @var $this yii\web\View </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">use</span><span style="color: #000000;"> yii\helpers\Html;
+    </span><span style="color: #0000ff;">use</span><span style="color: #000000;"> frontend\assets\AppAsset;
+    
+    AppAsset</span>::register(<span style="color: #800080;">$this</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$this</span>-&gt;context-&gt;layout = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+
+</span>?&gt;
+&lt;?php <span style="color: #800080;">$this</span>-&gt;beginBody() ?&gt;<span style="color: #000000;">
+     BODY内容
+</span>&lt;?php <span style="color: #800080;">$this</span>-&gt;endBody() ?&gt;<br />//该方法是将registerJsFile方法注册（将文件按需加载到指定的位置去）
+&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$this</span>-&gt;registerJsFile('/assets/jquery-ui.min.js',['depends'=&gt;['backend\assets\AppAsset'<span style="color: #000000;">]]);
+    </span><span style="color: #800080;">$this</span>-&gt;registerJsFile('/assets/jquery-ui-timepicker-addon.min.js',['depends'=&gt;['backend\assets\AppAsset'<span style="color: #000000;">]]);
+    </span><span style="color: #800080;">$this</span>-&gt;registerJsFile('/assets/jquery-ui-timepicker-zh-CN.js',['depends'=&gt;['backend\assets\AppAsset'<span style="color: #000000;">]]);
+    </span><span style="color: #800080;">$this</span>-&gt;registerJsFile('/assets/admin/good.js',['depends'=&gt;['backend\assets\AppAsset'<span style="color: #000000;">]]);
+</span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;　　4).单页内联JS ，因为在文件中若直接使用有依赖全局的js所以在页面直接写入&lt;script&gt;&lt;/script&gt;将会出现，xx 未定义问题</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">使用该方法后  将会将定义的js代码加入到页面最后面
+</span>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$js</span> = &lt;&lt;&lt;<span style="color: #000000;">JS
+        $(</span>".flow_conter li").hover(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+              </span>......<span style="color: #000000;">
+        });
+    JS;
+    </span><span style="color: #800080;">$this</span>-&gt;registerJs(<span style="color: #800080;">$js</span><span style="color: #000000;">);
+</span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp;　　5).单页内联JS ，该方法可将js插入引入文件之后，但是会在yii2动态生成的内联代码之前（例如使用了验证，就可在源代码处看着该段代码插入在表单验证的源代码之前了）</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php <span style="color: #800080;">$this</span>-&gt;beginBlock('alert')?&gt;<span style="color: #000000;">
+       
+    $(</span>".btn-getcode").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+        $</span>.<span style="color: #000000;">post(
+        　　</span>'&lt;?= Url::to(["user/sms_secret"])?&gt;',<span style="color: #000000;">
+            {mob</span>:$('[name="BankAddForm[mob]"]').val()},
+            <span style="color: #0000ff;">function</span><span style="color: #000000;">(data){
+            　　alert(data</span>.<span style="color: #000000;">msg);
+        }</span>,'json'<span style="color: #000000;">)
+     })
+ </span>&lt;?php <span style="color: #800080;">$this</span>-&gt;endBlock()?&gt;
+ &lt;?php <span style="color: #800080;">$this</span>-&gt;registerJs(<span style="color: #800080;">$this</span>-&gt;blocks['alert'],yii\web\View::POS_END)?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 16px; font-family: 黑体;"><span style="font-size: 15px;">　　　　　　</span></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

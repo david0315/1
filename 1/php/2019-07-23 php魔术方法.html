@@ -1,0 +1,90 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修2019-07-23 php魔术方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>2019-07-23 php魔术方法</center></div><div class='banquan'>原文出处:本文由博客园博主筏愫提供。<br/>
+原文连接:https://www.cnblogs.com/zhangxu-fasu/p/11230535.html</div><br>
+    <p>本文对一些php中的魔术方法进行总结，魔术方法顾名思义就是具备神奇功能的方法（function）。魔术方法通常在某些特定情况下自动触发，不能用实例化变量名-&gt;方法名（）来主动触发。不同的魔术方法有不同的触发情况，魔术方法都以&rdquo;__&rdquo;两个下划线开头，一定要注意是&ldquo;两个下划线&rdquo;，如果写成一个下划线，不报错，但也不会被触发。</p>
+<p><strong>1.构造方法&nbsp; &nbsp;__construct(参数){ }</strong></p>
+<p>该魔术方法，在实例化类时自动触发，不能主动触发。一般用于执行某些初始化任务，在一个类中，只能声明一个构造方法，下面我们用构造方法赋初始值。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Person{
+    </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$age</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">var</span> <span style="color: #800080;">$sex</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">构造方法</span>
+    <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$name</span>,<span style="color: #800080;">$age</span>,<span style="color: #800080;">$sex</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">赋值</span>
+        <span style="color: #800080;">$this</span>-&gt;name = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;age = <span style="color: #800080;">$age</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;sex = <span style="color: #800080;">$sex</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> say()
+    {
+        </span><span style="color: #0000ff;">echo</span> "My name is ".<span style="color: #800080;">$this</span>-&gt;name.". I am ".<span style="color: #800080;">$this</span>-&gt;age." years old.".<span style="color: #800080;">$this</span>-&gt;sex." in sex."<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">在实例化时传入参数 执行构造方法</span>
+<span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span> Person("ZhangSan","20","male"<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">再调用say()方法</span>
+<span style="color: #800080;">$obj</span>-&gt;say();</code></pre>
+
+<p>最后的输出结果是：My name is ZhangSan. I am 20 years old.male in sex.</p>
+<p>从上面的例子可以看出，构造方法在类被实例化时主动触发，并可以传入参数。</p>
+<p><strong>以下几种情况适合放在构造方法内：</strong></p>
+<p>①数据库类</p>
+<p>使用数据库之前，必须先连接数据库。我们可以将<code>连接数据库</code>的代码放在构造方法里。</p>
+<p>②分页类</p>
+<p>每次计算分页之前，必须获取<code>当前页数、计算总页数</code>，就可以放在构造方法里。</p>
+<p>③上传类</p>
+<p>必须先获取上传的文件&nbsp;<code>$file = $_FILES['form_name']</code>，它就可以放在构造方法里。</p>
+<p>④绘图类</p>
+<p>必须先创造一个画板，这个过程也可以放在构造方法。</p>
+<p>&nbsp;</p>
+<p><strong>2.析构方法&nbsp; &nbsp;__destruct( ){ }</strong></p>
+<p><span style="font-family: 微软雅黑;">析构函数允许在销毁一个类之前执行的一些操作或完成一些功能，比如说关闭文件，</span> <span style="font-family: 微软雅黑;">释放结果集等，析构函数会在到某个对象的所有引用都被删除或者当对象被显示销毁时执行，也就是对象在内存中被销毁前调用析构函数。与构造函数的名称类似，</span> <span style="font-family: 微软雅黑;">一个类的析构函数名称必须是</span>__destruct( )。<span style="font-family: 微软雅黑; color: #ff0000;">析构函数不能带有任何参数<span style="color: #000000;">。</span></span></p>
+<p><span style="font-family: 微软雅黑; color: #ff0000;"><span style="color: #000000;">下面我们来看一下析构函数的具体应用：</span></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Student{
+
+    </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> say()
+    {
+        </span><span style="color: #0000ff;">echo</span> "I am a student. "<span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">析构方法</span>
+    <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct()
+    {
+        </span><span style="color: #0000ff;">echo</span> "I am so happy."<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">实例化类</span>
+<span style="color: #800080;">$obj_s</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Student();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">调用say()方法</span>
+<span style="color: #800080;">$obj_s</span>-&gt;say();</code></pre>
+
+<p>最后的输出结果是：I am a student. I am so happy.</p>
+<p>可以看到，我们并没有主动去调用析构方法，但却输出了析构方法的结果。是因为在调用类方法结束后会自动释放内存。在释放内存前，主动触发了析构函数。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

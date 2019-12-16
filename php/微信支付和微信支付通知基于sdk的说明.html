@@ -1,0 +1,229 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修微信支付和微信支付通知基于sdk的说明' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>微信支付和微信支付通知基于sdk的说明</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/11236163.html</div><br>
+    <p><strong><span style="font-size: 16px;">做微信支付，需要的条件是：1、开通微信服务号，2、开通微信商户后台申请支付方式（公众号支付、H5支付、APP支付、小程序支付）</span></strong></p>
+<p>(注意<span style="color: #ff0000;"><strong>微信服务号里面</strong></span>的配置以及<span style="color: #ff0000;"><strong>商户后台 安全目录</strong></span> 的设置,不然即使你写的没错误,也调用不成功)</p>
+<p>公众号h5页面写法: &nbsp;(购物车提交--我们上一步已经生成了订单,订单表里面已经有记录了)</p>
+<p>order.php?act=wxpay&amp;order_sn=888888 ($user_id可以从session获取到)</p>
+<src class="cnblogs_code">
+<src class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a title="复制代码"><img src="./images/微信支付和微信支付通知基于sdk的说明0.jpg" alt="复制代码" /></a></span>
+<pre><code>        //查询订单详情
+        $orderInfo = orderDetailInfo($order_sn,$user_id);
+        var_dump($orderInfo);
+
+        //测试支付金额
+        if($user_id=="24") $orderInfo['total_fee']=0.01;
+
+        //调用统一下单api的请求参数
+        $jsApiParameters = wxUnifiedOrder($orderInfo['order_sn'],$orderInfo['total_fee']*100);
+
+        $smarty-&gt;assign('jsapiparameters',$jsApiParameters);
+        $smarty-&gt;display('wxpay.html');
+
+
+//调用微信统一下单api的js参数
+function wxUnifiedOrder($order_sn,$total_fee)
+{
+    require_once ROOT_PATH . "wxpay/lib/WxPay.Api.php";
+    require_once ROOT_PATH . "wxpay/example/WxPay.JsApiPay.php";
+    //require_once 'log.php';
+
+    //①、获取用户openid
+    $tools = new JsApiPay();
+    $openId = $tools-&gt;GetOpenid();
+
+    //②、统一下单
+    $input = new WxPayUnifiedOrder();
+    $input-&gt;SetOpenid($openId);
+    $input-&gt;SetBody("XXX公众号购买");
+    $input-&gt;SetAttach("XXX公众号购买产品$order_sn");
+    $input-&gt;SetOut_trade_no($order_sn);
+    $input-&gt;SetTotal_fee($total_fee);
+    $input-&gt;SetTime_start(date("YmdHis"));
+    $input-&gt;SetTime_expire(date("YmdHis", time() + 600));
+    $input-&gt;SetGoods_tag("XXX公众号购买");
+    $input-&gt;SetNotify_url("http://XXX.com/wxshop/wxnotify.php");
+    $input-&gt;SetTrade_type("JSAPI");
+
+    $order = WxPayApi::unifiedOrder($input);
+
+    //printf_info($order);
+
+    $jsApiParameters = $tools-&gt;GetJsApiParameters($order);
+
+    //③、在支持成功回调通知中处理成功之后的事宜，见 notify.php
+    /**
+     * 注意：
+     * 1、当你的回调地址不可访问的时候，回调通知会失败，可以通过查询订单来确认支付是否成功
+     * 2、jsapi支付时需要填入用户openid，WxPay.JsApiPay.php中有获取openid流程 （文档可以参考微信公众平台&ldquo;网页授权接口&rdquo;，
+     * 参考http://mp.weixin.qq.com/wiki/17/c0f37d5704f0b64713d5d2c37b468d75.html）
+     */
+    return $jsApiParameters;
+}</code></pre>
+<src class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a title="复制代码"><img src="./images/微信支付和微信支付通知基于sdk的说明0.jpg" alt="复制代码" /></a></span>
+
+<p>html页面(怎么调用jsapi,上一个页面的$jsApiParameters参数赋值到那块了)</p>
+<src class="cnblogs_code">
+<src class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a title="复制代码"><img src="./images/微信支付和微信支付通知基于sdk的说明0.jpg" alt="复制代码" /></a></span>
+<pre><code>&lt;a class="next btn SEND_PAY" onclick="callpay()" &gt;立即支付&lt;/a&gt;
+
+&lt;script type="text/javascript"&gt;
+    //调用微信JS api 支付
+    function jsApiCall()
+    {
+        WeixinJSBridge.invoke(
+            'getBrandWCPayRequest',
+            {$jsapiparameters},
+        function(res){
+            if(res.err_msg == "get_brand_wcpay_request:ok" ){
+                layer.open({
+                    content: '支付成功'
+                    ,skin: 'msg'
+                    ,time: 2 //2秒后自动关闭
+                });
+            }
+        }
+    );
+    }
+
+    function callpay()
+    {
+        if (typeof WeixinJSBridge == "undefined"){
+            if( document.addEventListener ){
+                document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+            }else if (document.attachEvent){
+                document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+                document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+            }
+        }else{
+            jsApiCall();
+        }
+    }
+&lt;/script&gt;</code></pre>
+<src class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a title="复制代码"><img src="./images/微信支付和微信支付通知基于sdk的说明0.jpg" alt="复制代码" /></a></span>
+
+<p>&nbsp;</p>
+<p>付款后通知地址:</p>
+<src class="cnblogs_code">
+<src class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a title="复制代码"><img src="./images/微信支付和微信支付通知基于sdk的说明0.jpg" alt="复制代码" /></a></span>
+<pre><code>&lt;?php
+define('IN_ECS', true);
+require(dirname(__FILE__) . '/../../includes/init.php');
+ini_set('date.timezone','Asia/Shanghai');
+error_reporting(E_ERROR);
+
+require_once "../lib/WxPay.Api.php";//sdk有这个文件
+require_once '../lib/WxPay.Notify.php';//sdk有这个文件
+require_once 'log.php';//sdk有这个文件
+
+//初始化日志
+$logHandler= new CLogFileHandler("../logs/".date('Y-m-d').'.log');
+$log = Log::Init($logHandler, 15);
+
+class PayNotifyCallBack extends WxPayNotify
+{
+    //查询订单
+    public function Queryorder($transaction_id)
+    {
+        $input = new WxPayOrderQuery();
+        $input-&gt;SetTransaction_id($transaction_id);
+        $result = WxPayApi::orderQuery($input);
+        Log::DEBUG("query:" . json_encode($result));
+        if(array_key_exists("return_code", $result)
+            &amp;&amp; array_key_exists("result_code", $result)
+            &amp;&amp; $result["return_code"] == "SUCCESS"
+            &amp;&amp; $result["result_code"] == "SUCCESS")
+        {
+            return true;
+        }
+        return false;
+    }
+
+    //重写回调处理函数
+    public function NotifyProcess($data, &amp;$msg)
+    {
+        Log::DEBUG("1");
+        Log::DEBUG("call back:" . json_encode($data));
+        $notfiyOutput = array();
+        Log::DEBUG("2");
+        if(!array_key_exists("transaction_id", $data)){
+            $msg = "输入参数不正确";
+            return false;
+        }
+        //查询订单，判断订单真实性
+        if(!$this-&gt;Queryorder($data["transaction_id"])){
+            $msg = "订单查询失败";
+            return false;
+        }
+
+        //如果成功,那么就更改订单状态
+        $res = $this-&gt;updateOrder($data["out_trade_no"],$data["transaction_id"]);
+        if($res)
+        {
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+
+    public function updateOrder($order_sn,$trade_no)
+    {//更改订单状态--设置已付款
+        /* 取得订单信息 */
+        $sql = 'SELECT order_id, user_id, order_sn, trade_no, consignee, address, tel, shipping_id, extension_code, extension_id, goods_amount ' .
+            'FROM t_order_info '  .
+            " WHERE order_sn = '$order_sn'";
+        $order    = $GLOBALS['db']-&gt;getRow($sql);
+        $sql = 'UPDATE t_order_info '  .
+            " SET order_status = '1', " .
+            " confirm_time = '" . gmtime() . "', " .
+            " pay_status = '2', " .
+            " pay_id = '7', " .
+            " pay_name = '微信支付', " .
+            " pay_time = '".gmtime()."', " .
+            " money_paid = order_amount," .
+            " group_buy_status = group_buy_status+1," .
+            " trade_no = '$trade_no' ".
+            "WHERE order_sn = '$order_sn'";
+        $res = $GLOBALS['db']-&gt;query($sql);
+        if($res)
+        {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
+}
+
+$notify = new PayNotifyCallBack();//实例化
+$notify-&gt;Handle(false);//调用这个方法,将来就可以执行上面那个回调方法,并且,获取xml数据,验证签名,和最后的给微信输出xml,都可以完成
+
+//$resXml = "&lt;xml&gt;&lt;return_code&gt;&lt;![CDATA[SUCCESS]]&gt;&lt;/return_code&gt;&lt;return_msg&gt;&lt;![CDATA[OK]]&gt;&lt;/return_msg&gt;&lt;/xml&gt; ";
+//echo $resXml;
+//Log::DEBUG($resXml);</code></pre>
+<src class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a title="复制代码"><img src="./images/微信支付和微信支付通知基于sdk的说明0.jpg" alt="复制代码" /></a></span>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

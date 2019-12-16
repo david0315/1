@@ -1,0 +1,402 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中的服务容器与依赖注入的思想' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中的服务容器与依赖注入的思想</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11812180.html</div><br>
+    <p><strong>依赖注入</strong></p>
+<p>&nbsp;</p>
+<p>当A类需要依赖于B类，也就是说需要在A类中实例化B类的对象来使用时候，如果B类中的功能发生改变，也会导致A类中使用B类的地方也要跟着修改，导致A类与B类高耦合。这个时候解决方式是，A类应该去依赖B类的接口，把具体的类的实例化交给外部。</p>
+<p>就拿我们业务中常用的通知模块来说。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+<p class="line number17 index16 alt2">17</p>
+<p class="line number18 index17 alt1">18</p>
+<p class="line number19 index18 alt2">19</p>
+<p class="line number20 index19 alt1">20</p>
+<p class="line number21 index20 alt2">21</p>
+<p class="line number22 index21 alt1">22</p>
+<p class="line number23 index22 alt2">23</p>
+<p class="line number24 index23 alt1">24</p>
+<p class="line number25 index24 alt2">25</p>
+<p class="line number26 index25 alt1">26</p>
+<p class="line number27 index26 alt2">27</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php comments">/**</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* 定义了一个消息类</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* Class Message </code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number6 index5 alt1"><code class="php keyword">class</code>&nbsp; <code class="php plain">Message{</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed()</code></p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php string">'seed email'</code><code class="php plain">;</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number11 index10 alt2"><code class="php plain">}</code></p>
+<p class="line number12 index11 alt1"><code class="php comments">/*</code></p>
+<p class="line number13 index12 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* 订单产生的时候 需要发送消息</code></p>
+<p class="line number14 index13 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number15 index14 alt2"><code class="php keyword">class</code> <code class="php plain">Order{</code></p>
+<p class="line number16 index15 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">protected</code> <code class="php variable">$messager</code> <code class="php plain">= </code><code class="php string">''</code><code class="php plain">;</code></p>
+<p class="line number17 index16 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">function</code> <code class="php plain">__construct()</code></p>
+<p class="line number18 index17 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number19 index18 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$this</code><code class="php plain">-&gt;messager = </code><code class="php keyword">new</code> <code class="php plain">Message();</code></p>
+<p class="line number20 index19 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number21 index20 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed_msg()</code></p>
+<p class="line number22 index21 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number23 index22 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php variable">$this</code><code class="php plain">-&gt;messager-&gt;seed();</code></p>
+<p class="line number24 index23 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number25 index24 alt2"><code class="php plain">}</code></p>
+<p class="line number26 index25 alt1"><code class="php variable">$Order</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">Order();</code></p>
+<p class="line number27 index26 alt2"><code class="php variable">$Order</code><code class="php plain">-&gt;seed_msg();</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>上面的代码是我们传统的写法。首先由个消息发送的类。然后在我们需要发送消息的地方，调用发送消息的接口。有一天你需要添加一个发送短信的接口以满足不同的需求。那么你会发现你要再Message类里面做修改。同样也要再Order类里面做修改。这样就显得很麻烦。这个时候就有了依赖注入的思路。下面把代码做一个调整</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+<p class="line number17 index16 alt2">17</p>
+<p class="line number18 index17 alt1">18</p>
+<p class="line number19 index18 alt2">19</p>
+<p class="line number20 index19 alt1">20</p>
+<p class="line number21 index20 alt2">21</p>
+<p class="line number22 index21 alt1">22</p>
+<p class="line number23 index22 alt2">23</p>
+<p class="line number24 index23 alt1">24</p>
+<p class="line number25 index24 alt2">25</p>
+<p class="line number26 index25 alt1">26</p>
+<p class="line number27 index26 alt2">27</p>
+<p class="line number28 index27 alt1">28</p>
+<p class="line number29 index28 alt2">29</p>
+<p class="line number30 index29 alt1">30</p>
+<p class="line number31 index30 alt2">31</p>
+<p class="line number32 index31 alt1">32</p>
+<p class="line number33 index32 alt2">33</p>
+<p class="line number34 index33 alt1">34</p>
+<p class="line number35 index34 alt2">35</p>
+<p class="line number36 index35 alt1">36</p>
+<p class="line number37 index36 alt2">37</p>
+<p class="line number38 index37 alt1">38</p>
+<p class="line number39 index38 alt2">39</p>
+<p class="line number40 index39 alt1">40</p>
+<p class="line number41 index40 alt2">41</p>
+<p class="line number42 index41 alt1">42</p>
+<p class="line number43 index42 alt2">43</p>
+<p class="line number44 index43 alt1">44</p>
+<p class="line number45 index44 alt2">45</p>
+<p class="line number46 index45 alt1">46</p>
+<p class="line number47 index46 alt2">47</p>
+<p class="line number48 index47 alt1">48</p>
+<p class="line number49 index48 alt2">49</p>
+<p class="line number50 index49 alt1">50</p>
+<p class="line number51 index50 alt2">51</p>
+<p class="line number52 index51 alt1">52</p>
+<p class="line number53 index52 alt2">53</p>
+<p class="line number54 index53 alt1">54</p>
+<p class="line number55 index54 alt2">55</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php comments">/**</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* 为了约束我们先定义一个消息接口</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* Interface Message</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number6 index5 alt1"><code class="php keyword">interface</code>&nbsp; <code class="php plain">Message{</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed();</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">}</code></p>
+<p class="line number9 index8 alt2"><code class="php comments">/**</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* 有一个发送邮件的类</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* Class SeedEmail</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number13 index12 alt2"><code class="php keyword">class</code> <code class="php plain">SeedEmail </code><code class="php keyword">implements</code> <code class="php plain">Message</code></p>
+<p class="line number14 index13 alt1"><code class="php plain">{</code></p>
+<p class="line number15 index14 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed()</code></p>
+<p class="line number16 index15 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number17 index16 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code>&nbsp; <code class="php string">'seed email'</code><code class="php plain">;</code></p>
+<p class="line number18 index17 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">// TODO: Implement seed() method.</code></p>
+<p class="line number19 index18 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number20 index19 alt1"><code class="php plain">}</code></p>
+<p class="line number21 index20 alt2"><code class="php comments">/** </code></p>
+<p class="line number22 index21 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">*新增一个发送短信的类</code></p>
+<p class="line number23 index22 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* Class SeedSMS</code></p>
+<p class="line number24 index23 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number25 index24 alt2"><code class="php keyword">class</code> <code class="php plain">SeedSMS </code><code class="php keyword">implements</code> <code class="php plain">Message</code></p>
+<p class="line number26 index25 alt1"><code class="php plain">{</code></p>
+<p class="line number27 index26 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed()</code></p>
+<p class="line number28 index27 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number29 index28 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php string">'seed sms'</code><code class="php plain">;</code></p>
+<p class="line number30 index29 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">// TODO: Implement seed() method.</code></p>
+<p class="line number31 index30 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number32 index31 alt1"><code class="php plain">}</code></p>
+<p class="line number33 index32 alt2"><code class="php comments">/*</code></p>
+<p class="line number34 index33 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* 订单产生的时候 需要发送消息</code></p>
+<p class="line number35 index34 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number36 index35 alt1"><code class="php keyword">class</code> <code class="php plain">Order{</code></p>
+<p class="line number37 index36 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">protected</code> <code class="php variable">$messager</code> <code class="php plain">= </code><code class="php string">''</code><code class="php plain">;</code></p>
+<p class="line number38 index37 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">function</code> <code class="php plain">__construct(Message </code><code class="php variable">$message</code><code class="php plain">)</code></p>
+<p class="line number39 index38 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number40 index39 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$this</code><code class="php plain">-&gt;messager = </code><code class="php variable">$message</code><code class="php plain">;</code></p>
+<p class="line number41 index40 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number42 index41 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed_msg()</code></p>
+<p class="line number43 index42 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number44 index43 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php variable">$this</code><code class="php plain">-&gt;messager-&gt;seed();</code></p>
+<p class="line number45 index44 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number46 index45 alt1"><code class="php plain">}</code></p>
+<p class="line number47 index46 alt2"><code class="php comments">//我们需要发送邮件的时候</code></p>
+<p class="line number48 index47 alt1"><code class="php variable">$message</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">SeedEmail();</code></p>
+<p class="line number49 index48 alt2"><code class="php comments">//将邮件发送对象作为参数传递给Order</code></p>
+<p class="line number50 index49 alt1"><code class="php variable">$Order</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">Order(</code><code class="php variable">$message</code><code class="php plain">);</code></p>
+<p class="line number51 index50 alt2"><code class="php variable">$Order</code><code class="php plain">-&gt;seed_msg();</code></p>
+<p class="line number52 index51 alt1"><code class="php comments">//我们需要发送短信的时候</code></p>
+<p class="line number53 index52 alt2"><code class="php variable">$message</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">SeedSMS();</code></p>
+<p class="line number54 index53 alt1"><code class="php variable">$Order</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">Order(</code><code class="php variable">$message</code><code class="php plain">);</code></p>
+<p class="line number55 index54 alt2"><code class="php variable">$Order</code><code class="php plain">-&gt;seed_msg();</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>这样我们就实现了依赖注入的思路,是不是很方便扩展了。</p>
+<p><strong>服务容器</strong></p>
+<p>我理解的服务容器就是一个自动产生类的工厂。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+<p class="line number17 index16 alt2">17</p>
+<p class="line number18 index17 alt1">18</p>
+<p class="line number19 index18 alt2">19</p>
+<p class="line number20 index19 alt1">20</p>
+<p class="line number21 index20 alt2">21</p>
+<p class="line number22 index21 alt1">22</p>
+<p class="line number23 index22 alt2">23</p>
+<p class="line number24 index23 alt1">24</p>
+<p class="line number25 index24 alt2">25</p>
+<p class="line number26 index25 alt1">26</p>
+<p class="line number27 index26 alt2">27</p>
+<p class="line number28 index27 alt1">28</p>
+<p class="line number29 index28 alt2">29</p>
+<p class="line number30 index29 alt1">30</p>
+<p class="line number31 index30 alt2">31</p>
+<p class="line number32 index31 alt1">32</p>
+<p class="line number33 index32 alt2">33</p>
+<p class="line number34 index33 alt1">34</p>
+<p class="line number35 index34 alt2">35</p>
+<p class="line number36 index35 alt1">36</p>
+<p class="line number37 index36 alt2">37</p>
+<p class="line number38 index37 alt1">38</p>
+<p class="line number39 index38 alt2">39</p>
+<p class="line number40 index39 alt1">40</p>
+<p class="line number41 index40 alt2">41</p>
+<p class="line number42 index41 alt1">42</p>
+<p class="line number43 index42 alt2">43</p>
+<p class="line number44 index43 alt1">44</p>
+<p class="line number45 index44 alt2">45</p>
+<p class="line number46 index45 alt1">46</p>
+<p class="line number47 index46 alt2">47</p>
+<p class="line number48 index47 alt1">48</p>
+<p class="line number49 index48 alt2">49</p>
+<p class="line number50 index49 alt1">50</p>
+<p class="line number51 index50 alt2">51</p>
+<p class="line number52 index51 alt1">52</p>
+<p class="line number53 index52 alt2">53</p>
+<p class="line number54 index53 alt1">54</p>
+<p class="line number55 index54 alt2">55</p>
+<p class="line number56 index55 alt1">56</p>
+<p class="line number57 index56 alt2">57</p>
+<p class="line number58 index57 alt1">58</p>
+<p class="line number59 index58 alt2">59</p>
+<p class="line number60 index59 alt1">60</p>
+<p class="line number61 index60 alt2">61</p>
+<p class="line number62 index61 alt1">62</p>
+<p class="line number63 index62 alt2">63</p>
+<p class="line number64 index63 alt1">64</p>
+<p class="line number65 index64 alt2">65</p>
+<p class="line number66 index65 alt1">66</p>
+<p class="line number67 index66 alt2">67</p>
+<p class="line number68 index67 alt1">68</p>
+<p class="line number69 index68 alt2">69</p>
+<p class="line number70 index69 alt1">70</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php comments">/**</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* 为了约束我们先定义一个消息接口</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* Interface Message</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number6 index5 alt1"><code class="php keyword">interface</code>&nbsp; <code class="php plain">Message{</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed();</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">}</code></p>
+<p class="line number9 index8 alt2"><code class="php comments">/**</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* 有一个发送邮件的类</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* Class SeedEmail</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number13 index12 alt2"><code class="php keyword">class</code> <code class="php plain">SeedEmail </code><code class="php keyword">implements</code> <code class="php plain">Message</code></p>
+<p class="line number14 index13 alt1"><code class="php plain">{</code></p>
+<p class="line number15 index14 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed()</code></p>
+<p class="line number16 index15 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number17 index16 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code>&nbsp; <code class="php string">'seed email'</code><code class="php plain">;</code></p>
+<p class="line number18 index17 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">// TODO: Implement seed() method.</code></p>
+<p class="line number19 index18 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number20 index19 alt1"><code class="php plain">}</code></p>
+<p class="line number21 index20 alt2"><code class="php comments">/**</code></p>
+<p class="line number22 index21 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">*新增一个发送短信的类</code></p>
+<p class="line number23 index22 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* Class SeedSMS</code></p>
+<p class="line number24 index23 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number25 index24 alt2"><code class="php keyword">class</code> <code class="php plain">SeedSMS </code><code class="php keyword">implements</code> <code class="php plain">Message</code></p>
+<p class="line number26 index25 alt1"><code class="php plain">{</code></p>
+<p class="line number27 index26 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">seed()</code></p>
+<p class="line number28 index27 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number29 index28 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php string">'seed sms'</code><code class="php plain">;</code></p>
+<p class="line number30 index29 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">// TODO: Implement seed() method.</code></p>
+<p class="line number31 index30 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number32 index31 alt1"><code class="php plain">}</code></p>
+<p class="line number33 index32 alt2"><code class="php comments">/**</code></p>
+<p class="line number34 index33 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* 这是一个简单的服务容器</code></p>
+<p class="line number35 index34 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* Class Container</code></p>
+<p class="line number36 index35 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number37 index36 alt2"><code class="php keyword">class</code> <code class="php plain">Container</code></p>
+<p class="line number38 index37 alt1"><code class="php plain">{</code></p>
+<p class="line number39 index38 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">protected</code> <code class="php variable">$binds</code><code class="php plain">;</code></p>
+<p class="line number40 index39 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">protected</code> <code class="php variable">$instances</code><code class="php plain">;</code></p>
+<p class="line number41 index40 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">bind(</code><code class="php variable">$abstract</code><code class="php plain">, </code><code class="php variable">$concrete</code><code class="php plain">)</code></p>
+<p class="line number42 index41 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number43 index42 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">if</code> <code class="php plain">(</code><code class="php variable">$concrete</code> <code class="php keyword">instanceof</code> <code class="php plain">Closure) {</code></p>
+<p class="line number44 index43 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$this</code><code class="php plain">-&gt;binds[</code><code class="php variable">$abstract</code><code class="php plain">] = </code><code class="php variable">$concrete</code><code class="php plain">;</code></p>
+<p class="line number45 index44 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">} </code><code class="php keyword">else</code> <code class="php plain">{</code></p>
+<p class="line number46 index45 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$this</code><code class="php plain">-&gt;instances[</code><code class="php variable">$abstract</code><code class="php plain">] = </code><code class="php variable">$concrete</code><code class="php plain">;</code></p>
+<p class="line number47 index46 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number48 index47 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number49 index48 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">make(</code><code class="php variable">$abstract</code><code class="php plain">, </code><code class="php variable">$parameters</code> <code class="php plain">= [])</code></p>
+<p class="line number50 index49 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number51 index50 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">if</code> <code class="php plain">(isset(</code><code class="php variable">$this</code><code class="php plain">-&gt;instances[</code><code class="php variable">$abstract</code><code class="php plain">])) {</code></p>
+<p class="line number52 index51 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php variable">$this</code><code class="php plain">-&gt;instances[</code><code class="php variable">$abstract</code><code class="php plain">];</code></p>
+<p class="line number53 index52 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number54 index53 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">array_unshift</code><code class="php plain">(</code><code class="php variable">$parameters</code><code class="php plain">, </code><code class="php variable">$this</code><code class="php plain">);</code></p>
+<p class="line number55 index54 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">call_user_func_array(</code><code class="php variable">$this</code><code class="php plain">-&gt;binds[</code><code class="php variable">$abstract</code><code class="php plain">], </code><code class="php variable">$parameters</code><code class="php plain">);</code></p>
+<p class="line number56 index55 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number57 index56 alt2"><code class="php plain">}</code></p>
+<p class="line number58 index57 alt1"><code class="php comments">//创建一个消息工厂</code></p>
+<p class="line number59 index58 alt2"><code class="php variable">$message</code> <code class="php plain">= </code><code class="php keyword">new</code>&nbsp; <code class="php plain">Container();</code></p>
+<p class="line number60 index59 alt1"><code class="php comments">//将发送短信注册绑定到工厂里面</code></p>
+<p class="line number61 index60 alt2"><code class="php variable">$message</code><code class="php plain">-&gt;bind(</code><code class="php string">'SMS'</code><code class="php plain">,</code><code class="php keyword">function</code> <code class="php plain">(){</code></p>
+<p class="line number62 index61 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code>&nbsp;&nbsp; <code class="php keyword">new</code>&nbsp; <code class="php plain">SeedSMS();</code></p>
+<p class="line number63 index62 alt2"><code class="php plain">});</code></p>
+<p class="line number64 index63 alt1"><code class="php comments">//将发送邮件注册绑定到工厂</code></p>
+<p class="line number65 index64 alt2"><code class="php variable">$message</code><code class="php plain">-&gt;bind(</code><code class="php string">'EMAIL'</code><code class="php plain">,</code><code class="php keyword">function</code> <code class="php plain">(){</code></p>
+<p class="line number66 index65 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php keyword">new</code>&nbsp; <code class="php plain">SeedEmail();</code></p>
+<p class="line number67 index66 alt2"><code class="php plain">});</code></p>
+<p class="line number68 index67 alt1"><code class="php comments">//需要发送短信的时候</code></p>
+<p class="line number69 index68 alt2"><code class="php variable">$SMS</code>&nbsp; <code class="php plain">= </code><code class="php variable">$message</code><code class="php plain">-&gt;make(</code><code class="php string">'SMS'</code><code class="php plain">);</code></p>
+<p class="line number70 index69 alt1"><code class="php variable">$SMS</code><code class="php plain">-&gt;seed();</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>container是一个简单的服务容器里面有bind,make两个方法</p>
+<p>bind是向容器中绑定服务对象。make则是从容器中取出对象。</p>
+<p><strong>bind</strong></p>
+<p>在bind方法中需要传入一个 concrete 我们可以传入一个实例对象或者是一个闭包函数。</p>
+<p>可以看到我这全使用的是闭包函数，其实也可以这样写</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php variable">$sms</code> <code class="php plain">= </code><code class="php keyword">new</code>&nbsp; <code class="php plain">SeedSMS();</code></p>
+<p class="line number2 index1 alt1"><code class="php variable">$message</code><code class="php plain">-&gt;bind(</code><code class="php string">'SMS'</code><code class="php plain">,</code><code class="php variable">$sms</code><code class="php plain">);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>后面这种写法与闭包相比的区别就是我们需要先实例化对象才能往容易中绑定服务。而闭包则是我们使用这个服务的时候才去实例化对象。可以看出闭包是有很多的优势的。</p>
+<p><strong>make</strong></p>
+<p>make方法就从容器中出去方法。里面首先判断了instances变量中是否有当前以及存在的服务对象，如果有直接返回。如果没有那么会通过 call_user_func_array返回一个对象.</p>
+<p><img src="./images/PHP中的服务容器与依赖注入的思想0.jpg" alt="" /></p>
+<p><strong>&nbsp; 明确的学习思路能更高效化的学习</strong></p>
+<p><strong><img src="./images/PHP中的服务容器与依赖注入的思想1.jpg" alt="" /></strong></p>
+<p>&nbsp;</p>
+<p><a href="https://jq.qq.com/?_wv=1027&amp;k=5Spo1ah" target="_blank"><strong>点此加入该群学习</strong></a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

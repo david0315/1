@@ -1,0 +1,211 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修非对称加密openssl协议在php7实践' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>非对称加密openssl协议在php7实践</center></div><div class='banquan'>原文出处:本文由博客园博主自由TK提供。<br/>
+原文连接:https://www.cnblogs.com/wscsq789/p/11620733.html</div><br>
+    <p>&nbsp; &nbsp; &nbsp; 据网上资料，RSA加密算法是一种非对称加密算法。在公开密钥加密和电子商务中RSA被广泛使用。RSA是1977年由<a href="https://baike.baidu.com/ITEM/%E7%BD%97%E7%BA%B3%E5%BE%B7%C2%B7%E6%9D%8E%E7%BB%B4%E6%96%AF%E7%89%B9/700199" target="_BLANK">罗纳德&middot;李维斯特</a>（RON RIVEST）、<a href="https://baike.baidu.com/ITEM/%E9%98%BF%E8%BF%AA%C2%B7%E8%90%A8%E8%8E%AB%E5%B0%94" target="_BLANK">阿迪&middot;萨莫尔</a>（ADI SHAMIR）和<a href="https://baike.baidu.com/ITEM/%E4%BC%A6%E7%BA%B3%E5%BE%B7%C2%B7%E9%98%BF%E5%BE%B7%E6%9B%BC/12575612" target="_BLANK">伦纳德&middot;阿德曼</a>（LEONARD ADLEMAN）一起提出的。当时他们三人都在麻省理工学院工作。RSA就是他们三人姓氏开头字母拼在一起组成的。</p>
+<p>&nbsp; &nbsp; 工作中经常会出现对敏感数据加解密的需要，比如自己当前金融公司涉及到的用户交易数据，用户身份识别验证等。这里有关用户身份识别的用到了RSA加密算法。php这里用到了openss协议。</p>
+<p>&nbsp; &nbsp; 非对称加密即是私钥加密需用公钥解密；公钥加密的需用私钥解密；公钥和私钥是成对出现，公钥可以派发给所用人，私钥只可服务端保留。</p>
+<p>&nbsp; &nbsp; 下面是php实现的openssl加解密部分示例代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="font-size: 15px;"><span style="color: #000000;">##服务器是centos7<br />##首先确定服务器是否安装openssl协议(未安装的请执行命令yum install -y openssl-devel):
+[root@iz2vcf47jzvf8dxrapolf7z test]# openssl version
+OpenSSL </span><span style="color: #800080;">1.0</span>.2k-fips  <span style="color: #800080;">26</span> Jan <span style="color: #800080;">2017</span><span style="color: #000000;">
+[root@iz2vcf47jzvf8dxrapolf7z test]#
+
+#生成私钥文件rsa_private_key.pem文件
+[root@iz2vcf47jzvf8dxrapolf7z test]# openssl genrsa </span>-out rsa_private_key.pem <span style="color: #800080;">1024</span><span style="color: #000000;">
+Generating RSA private key, </span><span style="color: #800080;">1024</span> bit <span style="color: #0000ff;">long</span><span style="color: #000000;"> modulus
+..................................................</span>++++++<span style="color: #000000;">
+........................................................................</span>++++++<span style="color: #000000;">
+e is </span><span style="color: #800080;">65537</span> (<span style="color: #800080;">0x10001</span><span style="color: #000000;">)<br />##私钥转成pkcs8模式(文末附各模式说明)<br />[root@iz2vcf47jzvf8dxrapolf7z test]# openssl pkcs8 -topk8 -inform PEM -in rsa_private_key.pem -outform PEM -nocrypt -out private_key.pem<br />##打印私钥文件
+[root@iz2vcf47jzvf8dxrapolf7z test]# </span><span style="color: #0000ff;">cat</span><span style="color: #000000;"> rsa_private_key.pem
+</span>-----BEGIN RSA PRIVATE KEY-----<span style="color: #000000;">
+MIICXQIBAAKBgQCh13gUKZWQlx7cuYQvY1A6JuJjArMax8yHcTrtcL</span>+<span style="color: #000000;">kpa5Cg6mD
+609QNiTacuJxmh7Q</span>/<span style="color: #0000ff;">w</span>+1Lw/cuWN0Q7s3s4WzJET6YCi3fH4zqVmpqWIcKWC/<span style="color: #000000;">hE3p
+VV3lJsBvMpoz2bFn1eRwVtmSp4dVAqe542YvbZ13VGheEvkKi5uqWyhY1wIDAQAB
+AoGAIYSjjOFz5Wc28BXH55yU8AY</span>/mqvjdidtF5v+<span style="color: #000000;">zVAtkKbzqTjlcbnZSk58YXWr
+qkV2HmjE0wx1J4yJqXmhm46loLkIpWdQfzRyFFnK3xmo9Lc6jXbIrKmFYyN7FTqT
+5cADvrTJ2jO9BlDG0ddTp7pl6dRi00jkrTRU3mgxZZ1kOWkCQQDRZZl9LKs</span>+<span style="color: #000000;">lz0v
+kOEKGuhjfHpFYpjce</span>/mg0XfOZuFIqYXdm/nO1nx/KAr+<span style="color: #000000;">xtUhiqkRzdxADOA0Nrxg
+alCtT1NbAkEAxdxotvcFYKOFES1aOAg35mv7Inlnjelbj1Jx0wtGRVUV</span>/<span style="color: #000000;">0nvMVKf
+TLInECD2mUaE00OWjuXanAI2FQQWbML1NQJBAL</span>/AGDRGaXJhsIgUVd+<span style="color: #000000;">ZEGG6JYXQ
+akbNyKR57Qo3r</span>+mIQ6vSH4pHY65VjuwMTDPw9C33o8+LeuyVix+He+<span style="color: #000000;">WZFK0CQQDA
+Gb</span>+9LFYXPou6Yqr+<span style="color: #000000;">TdRgLiSUkwScfp27qBMFESQ3umVyB8lovMwXPby5ZxelNxdM
+uolZ0gaOg4MYonBXRm2lAkAEOjH32XMSTB</span>+HI+<span style="color: #000000;">lQrLCFiumyRjHpgbRgTcyUQolY
+fjR63M0E</span>/rzVIneKPqLP+<span style="color: #000000;">ySOYLFcO3bjuMa75CQic8PF
+</span>-----END RSA PRIVATE KEY-----</span><br /><br /></code></pre>
+<span style="font-size: 15px;">&nbsp;##根据私钥得到相应的公钥</span><br /><span style="font-size: 15px;">&nbsp;[root@iz2vcf47jzvf8dxrapolf7z test]# openssl rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem</span><br /><span style="font-size: 15px;">&nbsp;writing RSA key</span><br /><span style="font-size: 15px;">&nbsp;[root@iz2vcf47jzvf8dxrapolf7z test]# cat rsa_public_key.pem</span><br /><span style="font-size: 15px;">&nbsp;-----BEGIN PUBLIC KEY-----</span><br /><span style="font-size: 15px;">&nbsp;MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCh13gUKZWQlx7cuYQvY1A6JuJj</span><br /><span style="font-size: 15px;">&nbsp;ArMax8yHcTrtcL+kpa5Cg6mD609QNiTacuJxmh7Q/w+1Lw/cuWN0Q7s3s4WzJET6</span><br /><span style="font-size: 15px;">&nbsp;YCi3fH4zqVmpqWIcKWC/hE3pVV3lJsBvMpoz2bFn1eRwVtmSp4dVAqe542YvbZ13</span><br /><span style="font-size: 15px;">&nbsp;VGheEvkKi5uqWyhY1wIDAQAB</span><br /><span style="font-size: 15px;">&nbsp;-----END PUBLIC KEY-----</span>
+<src class="cnblogs_code"><span style="font-size: 15px;">##新建openssl.php</span><br /><span style="font-size: 15px;">[root@iz2vcf47jzvf8dxrapolf7z test]# cat openssl.php</span>
+<p><span style="font-size: 15px;"><em id="__mceDel">&lt;?php<br />/**<br />&nbsp;* 私钥加密/公钥解密<br />&nbsp;*<br />&nbsp;* @param $str string 待加解密字符串<br />&nbsp;* @param $isEncrypt boolean<br />&nbsp;* return string|null<br />&nbsp;*/<br />&nbsp;function opensslPrivateEncrypt($str, $isEncrypt = true)<br />&nbsp;{</em></span></p>
+<p><span style="font-size: 15px;">    　　if($isEncrypt){</span><br /><span style="font-size: 15px;">  	　　　　$privateKey = file_get_contents('./rsa_private_key.pem');</span><br /><span style="font-size: 15px;">    	　　　　$privateKey = openssl_pkey_get_private($privateKey);</span></p>
+<p><span style="font-size: 15px;">	　　　　return openssl_private_encrypt($str, $encryptedStr, $privateKey)</span><br /><span style="font-size: 15px;">		　　　　　　? base64_encode($encryptedStr) : null;</span><br /><span style="font-size: 15px;">    　　}else{</span><br /><span style="font-size: 15px;">  	　　　　$publicKey = file_get_contents('./rsa_public_key.pem');</span><br /><span style="font-size: 15px;">    	　　　　$publicKey = openssl_pkey_get_public($publicKey);</span></p>
+<p><span style="font-size: 15px;">	　　　　return (openssl_public_decrypt(base64_decode($str), $decryptedStr, $publicKey))</span><br /><span style="font-size: 15px;">		　　　　? $decryptedStr : null;</span><br /><span style="font-size: 15px;">    　　}</span><br /><span style="font-size: 15px;">}</span></p>
+<p><span style="font-size: 15px;">/**</span><br /><span style="font-size: 15px;">&nbsp;* 公钥加密/私钥解密</span><br /><span style="font-size: 15px;">&nbsp;*</span><br /><span style="font-size: 15px;">&nbsp;* @param $str string 待加解密字符串</span><br /><span style="font-size: 15px;">&nbsp;* @param $isEncrypt boolean</span><br /><span style="font-size: 15px;">&nbsp;* return string|null</span><br /><span style="font-size: 15px;">&nbsp;*/</span><br /><span style="font-size: 15px;">function opensslPublicEncrypt($str , $isEncrypt = true)</span><br /><span style="font-size: 15px;">{</span></p>
+<p><span style="font-size: 15px;">    　　if($isEncrypt){</span><br /><span style="font-size: 15px;">    	　　　　$publicKey = file_get_contents('./rsa_public_key.pem');</span><br /><span style="font-size: 15px;">    	　　　　$publicKey = openssl_pkey_get_public($publicKey);</span></p>
+<p><span style="font-size: 15px;">	　　　　return openssl_public_encrypt($str, $encryptedStr, $publicKey)</span><br /><span style="font-size: 15px;">		　　　　　　? base64_encode($encryptedStr) : null;</span><br /><span style="font-size: 15px;">    　　}else{</span><br /><span style="font-size: 15px;">    	　　　　$privateKey = file_get_contents('./rsa_private_key.pem');</span><br /><span style="font-size: 15px;">    	　　　　$privateKey = openssl_pkey_get_private($privateKey);</span></p>
+<p><span style="font-size: 15px;">	　　　　return (openssl_private_decrypt(base64_decode($str), $decryptedStr, $privateKey))</span><br /><span style="font-size: 15px;">		　　　　　　? $decryptedStr : null;</span><br /><span style="font-size: 15px;">    　　}</span><br /><span style="font-size: 15px;">}</span></p>
+<p><span style="font-size: 15px;">$config = array();</span><br /><span style="font-size: 15px;">$config['title'] = 'PHP is the best program language.';</span><br /><span style="font-size: 15px;">$config['comment'] = 'PHPERS are great people.';</span></p>
+<p><span style="font-size: 15px;">$privateEncrypt = opensslPrivateEncrypt(json_encode($config));</span><br /><span style="font-size: 15px;">echo("##privateEncrypt is:" . PHP_EOL);</span><br /><span style="font-size: 15px;">echo($privateEncrypt . PHP_EOL);</span><br /><span style="font-size: 15px;">$privateDecrypt = opensslPrivateEncrypt($privateEncrypt, false);</span><br /><span style="font-size: 15px;">echo("##privateDecrypt is:" . PHP_EOL);</span><br /><span style="font-size: 15px;">echo($privateDecrypt . PHP_EOL);</span></p>
+<p><span style="font-size: 15px;">$publicEncrypt = opensslPublicEncrypt(json_encode($config));</span><br /><span style="font-size: 15px;">echo("##publicEncrypt is:" . PHP_EOL);</span><br /><span style="font-size: 15px;">echo($publicEncrypt . PHP_EOL);</span><br /><span style="font-size: 15px;">$publicDecrypt = opensslPublicEncrypt($publicEncrypt, false);</span><br /><span style="font-size: 15px;">echo("##publicDecrypt is:" . PHP_EOL);</span><br /><span style="font-size: 15px;">echo($publicDecrypt . PHP_EOL);</span></p>
+<p><span style="font-size: 15px;">##执行脚本<br />[root@iz2vcf47jzvf8dxrapolf7z test]# php openssl.php</span><br /><span style="font-size: 15px;">##privateEncrypt is:</span><br /><span style="font-size: 15px;">mLrLIAwbwlE69Yj5/lnNw1t8qSjhnFa+96s/kSMYweAn/HEsV7jfVAJ6mn/FY2DRRWkKeOnguUYsRcFTBcS1ieG7UtqbUAASXA5dwVgtTrFoDcDhHMl7p90+dIO8n+vMoBx1kkUegpvtH03y3MgUVSj/BLkLE8jrFXyjGufIcv0=</span><br /><span style="font-size: 15px;">##privateDecrypt is:</span><br /><span style="font-size: 15px;">{"title":"PHP is the best program language.","comment":"PHPERS are great people."}</span><br /><span style="font-size: 15px;">##publicEncrypt is:</span><br /><span style="font-size: 15px;">NW2k5m2pKrZmEMSHXiK7mfyC+yDjH1+b6TrEMPv+ywBfsUlo2P8eWwcXOQxvsV4UG87a1S4Xa2QySntdEwhpYoim97457ODVVCb6jx+cqqdWJ1wlLS+gx7FJxw7Z0kMPmCm5iMcQwWPK+UzF+dpc/gJFa9uGAAmYczUumOauAx0=</span><br /><span style="font-size: 15px;">##publicDecrypt is:</span><br /><span style="font-size: 15px;">{"title":"PHP is the best program language.","comment":"PHPERS are great people."}</span></p>
+
+
+
+
+<p>pkcs标准：</p>
+<table style="height: 912px; width: 879px;" data-sort="sortDisabled">
+<tbody>
+<tr><th rowspan="1" colspan="4">PKCS标准汇总</th></tr>
+<tr><th width="58">&nbsp;</th><th width="69">版本</th><th width="178">名称</th><th width="306">简介</th></tr>
+<tr><th width="48">PKCS #1</th>
+<td align="center" width="69">2.1</td>
+<td align="left" valign="top" width="178">RSA密码编译标准（RSA Cryptography Standard）</td>
+<td align="left" valign="top" width="306">定义了RSA的数理基础、公/私钥格式，以及加/解密、签/验章的流程。1.5版本曾经遭到攻击。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #2</th>
+<td align="center" width="69">-</td>
+<td align="left" valign="top" width="178"><em>撤销</em></td>
+<td align="left" valign="top" width="306">原本是用以规范RSA加密摘要的转换方式，现已被纳入PKCS#1之中。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #3</th>
+<td align="center" width="69">1.4</td>
+<td align="left" valign="top" width="178">DH密钥协议标准（Diffie-Hellman key agreement Standard）</td>
+<td align="left" valign="top" width="306">规范以DH密钥协议为基础的密钥协议标准。其功能，可以让两方通过金议协议，拟定一把会议密钥(Session key)。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #4</th>
+<td align="center" width="69">-</td>
+<td align="left" valign="top" width="178"><em>撤销</em></td>
+<td align="left" valign="top" width="306">原本用以规范转换RSA密钥的流程。已被纳入PKCS#1之中。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #5</th>
+<td align="center" width="69">2.0</td>
+<td align="left" valign="top" width="178">密码基植加密标准（Password-based Encryption Standard）</td>
+<td align="left" valign="top" width="306">参见RFC 2898与<a href="https://baike.baidu.com/item/PBKDF2" target="_blank">PBKDF2</a>。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #6</th>
+<td align="center" width="69">1.5</td>
+<td align="left" valign="top" width="178">证书扩展语法标准（Extended-Certificate Syntax Standard）</td>
+<td align="left" valign="top" width="306">将原本X.509的证书格式标准加以扩充。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #7</th>
+<td align="center" width="69">1.5</td>
+<td align="left" valign="top" width="178">密码消息语法标准（Cryptographic Message Syntax Standard）</td>
+<td align="left" valign="top" width="306">参见RFC 2315。规范了以<a href="https://baike.baidu.com/item/%E5%85%AC%E5%BC%80%E5%AF%86%E9%92%A5%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD" target="_blank">公开密钥基础设施</a>（PKI）所产生之签名/密文之格式。其目的一样是为了拓展数字证书的应用。其中，包含了<a href="https://baike.baidu.com/item/S%2FMIME" target="_blank">S/MIME</a>与<a href="https://baike.baidu.com/item/CMS" target="_blank">CMS</a>。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #8</th>
+<td align="center" width="69">1.2</td>
+<td align="left" valign="top" width="178">私钥消息表示标准（Private-Key Information Syntax Standard）.</td>
+<td align="left" valign="top" width="306">Apache读取证书私钥的标准。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #9</th>
+<td align="center" width="69">2.0</td>
+<td align="left" valign="top" width="178">选择属性格式（Selected Attribute Types）</td>
+<td align="left" valign="top" width="306">定义PKCS#6、7、8、10的选择属性格式。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #10</th>
+<td align="center" width="69">1.7</td>
+<td align="left" valign="top" width="178">证书申请标准（Certification Request Standard）</td>
+<td align="left" valign="top" width="306">参见RFC 2986。规范了向证书中心申请证书之CSR（certificate signing request）的格式。</td>
+
+
+
+</tr>
+<tr><th width="48"><a href="https://baike.baidu.com/item/PKCS%20%2311" target="_blank">PKCS #11</a></th>
+<td align="center" width="69">2.20</td>
+<td align="left" valign="top" width="178">密码设备标准接口（Cryptographic Token Interface (Cryptoki)）</td>
+<td align="left" valign="top" width="306">定义了密码设备的应用程序接口（API）之规格。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #12</th>
+<td align="center" width="69">1.0</td>
+<td align="left" valign="top" width="178">个人消息交换标准（Personal Information Exchange Syntax Standard）</td>
+<td align="left" valign="top" width="306">定义了包含私钥与公钥证书（public key certificate）的文件格式。私钥采密码(password)保护。常见的PFX就履行了PKCS#12。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #13</th>
+<td align="center" width="69">&ndash;</td>
+<td align="left" valign="top" width="178"><a href="https://baike.baidu.com/item/%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%AF%86%E7%A0%81%E5%AD%A6/2249951" target="_blank" data-lemmaid="2249951">椭圆曲线密码学</a>标准（Elliptic curve cryptography Standard）</td>
+<td align="left" valign="top" width="306">制定中。规范以椭圆曲线密码学为基础所发展之密码技术应用。椭圆曲线密码学是新的密码学技术，其强度与效率皆比现行以指数运算为基础之密码学算法来的优秀。然而，该算法的应用尚不普及。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #14</th>
+<td align="center" width="69">&ndash;</td>
+<td align="left" valign="top" width="178">拟随机数产生器标准（Pseudo-random Number Generation）</td>
+<td align="left" valign="top" width="306">制定中。规范拟随机数产生器的使用与设计。</td>
+
+
+
+</tr>
+<tr><th width="48">PKCS #15</th>
+<td align="center" width="69">1.1</td>
+<td align="left" valign="top" width="178">密码设备消息格式标准（Cryptographic Token Information Format Standard）</td>
+<td align="left" valign="top" width="306">定义了密码设备内部数据的组织结构。</td>
+
+
+
+</tr>
+
+
+
+</tbody>
+
+
+
+</table>
+<p>&nbsp;</p>
+<src class="para-title level-2">&nbsp;
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,293 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Gin 框架 - 安装和路由配置' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Gin 框架 - 安装和路由配置</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11867176.html</div><br>
+    <p>概述<br /><br />看下 Gin 框架的官方介绍：<br /><br />&nbsp;&nbsp;&nbsp; Gin 是一个用 Go (Golang) 编写的 web 框架。它是一个类似于 martini 但拥有更好性能的 API 框架, 由于 httprouter，速度提高了近 40 倍。如果你是性能和高效的追求者, 你会爱上 Gin。<br /><br />是的，就是用 Gin 来写 API 接口。<br /><br />这篇文章分享 Gin 的安装和Gin 的路由配置。<br /><br />路由配置包含的功能点如下：<br /><br />&nbsp;&nbsp;&nbsp; 实现了，路由分组 v1版本、v2版本。<br /><br />&nbsp;&nbsp;&nbsp; 实现了，生成签名和验证验证。<br /><br />&nbsp;&nbsp;&nbsp; 实现了，在配置文件中读取配置。<br /><br />Gin 安装<br /><br />必须要先安装 Go，Go 的安装可以参考：Go - 环境安装。<br /><br />框架安装可以参考官网：<br /><br />https://gin-gonic.com/zh-cn/docs/quickstart/<br /><br />我在安装时，用的是 dep 安装，给大家分享下。<br /><br />dep 是啥 ？<br /><br />它是 Golang 官方依赖管理工具，可以认为它与 PHP 中的 composer 类似。<br /><br />在这就不多做介绍了，可以自己去了解，安装也比较简单。<br /><br />我本机是 Mac，安装只需一个命令：<br /><br />brew install dep<br /><br />咱们接下来创建一个新项目：ginDemo。<br /><br />在 ginDemo 目录下执行：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>dep init
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />执行完毕，会生成如下三个文件：<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> ├─ ginDemo    
+    │  ├─ vendor    
+    │  ├─ Gopkg.toml    
+    │  ├─ Gopkg.lock
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />依赖包都会下载到 vendor 目录。<br /><br />需要的依赖配置写在 Gopkg.toml 文件。<br /><br />Gopkg.lock 暂时可以不用管。<br /><br />在 Gopkg.toml 文件中增加依赖：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   [[constraint]]    
+      name = "github.com/gin-gonic/gin"    
+      version = "1.4.0"
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />新增一个 main.go 文件：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   // 官方 Demo    
+    package main    
+    import "github.com/gin-gonic/gin"    
+    func main() {    
+        r := gin.Default()    
+        r.GET("/ping", func(c *gin.Context) {    
+            c.JSON(200, gin.H{    
+                "message": "pong",    
+            })    
+        })    
+        r.Run() // listen and serve on 0.0.0.0:8080    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />ginDemo 目录下执行：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>dep ensure
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />执行完毕， vendor 目录会存在安装包，这时整体目录结构如下：<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> ├─ ginDemo    
+    │  ├─ vendor    
+    │     ├── github.com    
+    │         ├── ...    
+    │     ├── golang.org    
+    │         ├── ...    
+    │     ├── gopkg.in    
+    │         ├── ...    
+    │  ├─ Gopkg.toml    
+    │  ├─ Gopkg.lock    
+    │  ├─ main.go
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />ginDemo 目录下执行：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>go run main.go
+
+浏览器访问：http://localhost:8080/ping
+</code></pre>
+
+<p>&nbsp;<img src="./images/Gin 框架 - 安装和路由配置0.jpg" alt="" width="652" height="300" /></p>
+<p><br /><br /><br />大功告成！<br /><br />路由配置<br /><br />比如，我们的接口地址是这样的：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   /v1/product/add
+
+    /v1/member/add
+
+    /v2/product/add
+
+    /v2/member/add
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />假设需求是这样的，接口支持多种请求方式，v1 不需签名验证，v2 需要签名验证，路由文件应该这样写：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  package router    
+    import (    
+        "ginDemo/common"    
+        "ginDemo/controller/v1"    
+        "ginDemo/controller/v2"    
+        "github.com/gin-gonic/gin"    
+        "net/url"    
+        "strconv"    
+    )    
+    func InitRouter(r *gin.Engine)  {    
+        r.GET("/sn", SignDemo)    
+        // v1 版本    
+        GroupV1 := r.Group("/v1")    
+        {    
+            GroupV1.Any("/product/add", v1.AddProduct)    
+            GroupV1.Any("/member/add", v1.AddMember)    
+        }    
+        // v2 版本    
+        GroupV2 := r.Group("/v2", common.VerifySign)    
+        {    
+            GroupV2.Any("/product/add", v2.AddProduct)    
+            GroupV2.Any("/member/add", v2.AddMember)    
+        }    
+    }    
+    func SignDemo(c *gin.Context) {    
+        ts := strconv.FormatInt(common.GetTimeUnix(), 10)    
+        res := map[string]interface{}{}    
+        params := url.Values{    
+            "name"  : []string{"a"},    
+            "price" : []string{"10"},    
+            "ts"    : []string{ts},    
+        }    
+        res["sn"] = common.CreateSign(params)    
+        res["ts"] = ts    
+        common.RetJson("200", "", res, c)    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />.Any 表示支持多种请求方式。<br /><br />controller/v1 表示 v1 版本的文件。<br /><br />controller/v2 表示 v2 版本的文件。<br /><br />SignDemo 表示生成签名的Demo。<br /><br />接下来，给出一些代码片段：<br /><br />验证签名方法：<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> // 验证签名    
+    func VerifySign(c *gin.Context) {    
+        var method = c.Request.Method    
+        var ts int64    
+        var sn string    
+        var req url.Values    
+        if method == "GET" {    
+            req = c.Request.URL.Query()    
+            sn = c.Query("sn")    
+            ts, _  = strconv.ParseInt(c.Query("ts"), 10, 64)    
+        } else if method == "POST" {    
+            req = c.Request.PostForm    
+            sn = c.PostForm("sn")    
+            ts, _  = strconv.ParseInt(c.PostForm("ts"), 10, 64)    
+        } else {    
+            RetJson("500", "Illegal requests", "", c)    
+            return    
+        }    
+        exp, _ := strconv.ParseInt(config.API_EXPIRY, 10, 64)    
+        // 验证过期时间    
+        if ts &gt; GetTimeUnix() || GetTimeUnix() - ts &gt;= exp {    
+            RetJson("500", "Ts Error", "", c)    
+            return    
+        }    
+        // 验证签名    
+        if sn == "" || sn != CreateSign(req) {    
+            RetJson("500", "Sn Error", "", c)    
+            return    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />生成签名的方法：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  // 生成签名    
+    func CreateSign(params url.Values) string {    
+        var key []string    
+        var str = ""    
+        for k := range params {    
+            if k != "sn" {    
+                key = append(key, k)    
+            }    
+        }    
+        sort.Strings(key)    
+        for i := 0; i &lt; len(key); i++ {    
+            if i == 0 {    
+                str = fmt.Sprintf("%v=%v", key[i], params.Get(key[i]))    
+            } else {    
+                str = str + fmt.Sprintf("&amp;%v=%v", key[i], params.Get(key[i]))    
+            }    
+        }    
+        // 自定义签名算法    
+        sign := MD5(MD5(str) + MD5(config.APP_NAME + config.APP_SECRET))    
+        return sign    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />获取参数的方法：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>    // 获取 Get 参数    
+    name := c.Query("name")    
+    price := c.DefaultQuery("price", "100")    
+    // 获取 Post 参数    
+    name := c.PostForm("name")    
+    price := c.DefaultPostForm("price", "100")    
+    // 获取 Get 所有参数    
+    ReqGet = c.Request.URL.Query()    
+    // 获取 Post 所有参数    
+    ReqPost = c.Request.PostForm
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />v1 业务代码：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   package v1    
+    import "github.com/gin-gonic/gin"    
+    func AddProduct(c *gin.Context)  {    
+        // 获取 Get 参数    
+        name  := c.Query("name")    
+        price := c.DefaultQuery("price", "100")    
+        c.JSON(200, gin.H{    
+            "v1"    : "AddProduct",    
+            "name"  : name,    
+            "price" : price,    
+        })    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />v2 业务代码：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   package v2    
+    import (    
+        "github.com/gin-gonic/gin"    
+    )    
+    func AddProduct(c *gin.Context)  {    
+        // 获取 Get 参数    
+        name  := c.Query("name")    
+        price := c.DefaultQuery("price", "100")    
+        c.JSON(200, gin.H{    
+            "v2"    : "AddProduct",    
+            "name"  : name,    
+            "price" : price,    
+        })    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />接下来，直接看效果吧。<br /><br />访问 v1 接口：<br /><img src="./images/Gin 框架 - 安装和路由配置1.jpg" alt="" width="986" height="312" /><br /><br />访问后，直接返回数据，不走签名验证。<br /><br />访问 v2 接口：<br /><img src="./images/Gin 框架 - 安装和路由配置2.jpg" alt="" width="980" height="338" /><br /><br />进入了这段验证：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    // 验证过期时间    
+    if ts &gt; GetTimeUnix() || GetTimeUnix() - ts &gt;= exp {    
+        RetJson("500", "Ts Error", "", c)    
+        return    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />修改为合法的时间戳后：<br /><br /><img src="./images/Gin 框架 - 安装和路由配置3.jpg" alt="" width="1080" height="283" /><br /><br />进入了这段验证：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    // 验证签名    
+    if sn == "" || sn != CreateSign(req) {    
+        RetJson("500", "Sn Error", "", c)    
+        return    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />修改为合法的签名后：<br /><br /><img src="./images/Gin 框架 - 安装和路由配置4.jpg" alt="" width="1080" height="223" /><br /><br />至此，简单的路由配置已经实现了。<br /><br />对了，还有一个点没说，就是如何读取配置文件中的配置，我是这样做的：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    package config    
+    const (    
+        PORT       = ":8080"    
+        APP_NAME   = "ginDemo"    
+        APP_SECRET = "6YJSuc50uJ18zj45"    
+        API_EXPIRY = "120"    
+    )
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />引入 config 包，直接 config.xx 即可。<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

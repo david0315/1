@@ -1,0 +1,116 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP访问数缓存处理' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP访问数缓存处理</center></div><div class='banquan'>原文出处:本文由博客园博主高级生命体提供。<br/>
+原文连接:https://www.cnblogs.com/geniusrun/p/10634658.html</div><br>
+    <p>利用Redis或Memcache作为MySQL的缓存，采用是ThinkPHP框架。</p>
+<h2 id="方法一">方法一</h2>
+<ul>
+<li>采用ThinkPHP的S方法：</li>
+</ul>
+<pre><code><code>$savedata[&#39;uid&#39;]=session(&#39;uid&#39;);
+$savedata[&#39;ip&#39;]=$_SERVER[&#39;REMOTE_ADDR&#39;];    
+$savedata[&#39;url&#39;]=$_SERVER[&#39;REQUEST_URI&#39;];         
+$savedata[&#39;created_time&#39;]=time();
+$savedata[&#39;created_by&#39;]=session(&#39;uid&#39;);
+
+$cache = S(array(&#39;type&#39;=&gt;&#39;redis&#39;,&#39;host&#39;=&gt;&#39;127.0.0.1&#39;,&#39;port&#39;=&gt;&#39;6379&#39;,&#39;prefix&#39;=&gt;&#39;think&#39;,&#39;expire&#39;=&gt;600000));
+// 获取缓存
+$visitor_data = $cache-&gt;visitor_data;
+if(empty($visitor_data)){
+    $visitor_data=array();
+}
+array_push($visitor_data, $savedata);
+
+// 设置缓存
+$cache-&gt;visitor_data = $visitor_data;
+
+if(count($visitor_data)&gt;3){
+    foreach ($visitor_data as $key =&gt; $value) {
+      　$m = M(&quot;VisitorLog&quot;);
+        $m-&gt;add($value);
+    }
+    // 删除缓存
+    unset($cache-&gt;visitor_data);
+}
+</code></code></pre>
+<hr />
+<h2 id="方法二">方法二</h2>
+<ul>
+<li>采用Redis</li>
+</ul>
+<pre><code><code>$savedata[&#39;uid&#39;]=session(&#39;uid&#39;);
+$savedata[&#39;ip&#39;]=$_SERVER[&#39;REMOTE_ADDR&#39;];    
+$savedata[&#39;url&#39;]=$_SERVER[&#39;REQUEST_URI&#39;];         
+$savedata[&#39;created_time&#39;]=time();
+$savedata[&#39;created_by&#39;]=session(&#39;uid&#39;);
+
+// 连接本地的 Redis 服务
+$redis = new \Redis();
+$redis-&gt;connect(&#39;127.0.0.1&#39;, 6379);
+
+//查看服务是否运行
+if(empty($redis)){
+    return dataResult(null,&#39;&#39;,0);            
+}
+//存储数据到列表中
+$redis-&gt;lpush(&quot;visitor_data&quot;,json_encode($savedata));
+// 获取存储的数据并输出
+$len=$redis-&gt;llen(&quot;visitor_data&quot;);
+if($len&gt;2){
+    $visitor_data = $redis-&gt;lrange(&quot;visitor_data&quot;,0,$len);
+    foreach ($visitor_data as $key =&gt; $value) {
+        $m = M(&quot;VisitorLog&quot;);
+        $m-&gt;add(json_decode($value,true));
+    }
+    $redis-&gt;del(&quot;visitor_data&quot;);
+}
+</code></code></pre>
+<h2 id="方法三">方法三</h2>
+<ul>
+<li>采用Memcache：</li>
+</ul>
+<pre><code><code>$savedata[&#39;uid&#39;]=session(&#39;uid&#39;);
+$savedata[&#39;ip&#39;]=$_SERVER[&#39;REMOTE_ADDR&#39;];    
+$savedata[&#39;url&#39;]=$_SERVER[&#39;REQUEST_URI&#39;];         
+$savedata[&#39;created_time&#39;]=time();
+$savedata[&#39;created_by&#39;]=session(&#39;uid&#39;);
+
+$memcache = new \Memcache;             //创建一个memcache对象
+$memcache-&gt;connect(&#39;127.0.0.1&#39;, 11211) or die (&quot;Could not connect&quot;); //连接Memcached服务器
+$visitor_data = $memcache-&gt;get(&#39;visitor_data&#39;);   //从内存中取出key的值
+if(empty($visitor_data)){
+    $visitor_data=array();
+}
+if(count($visitor_data)&gt;2){
+    foreach ($visitor_data as $key =&gt; $value) {
+        $m = M(&quot;VisitorLog&quot;);
+        $m-&gt;add($value);
+    }
+    unset($visitor_data);
+    $visitor_data=array();
+}
+array_push($visitor_data,$savedata);
+$memcache-&gt;set(&#39;visitor_data&#39;, $visitor_data);        //设置一个变量到内存中，名称是key 值是test
+</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

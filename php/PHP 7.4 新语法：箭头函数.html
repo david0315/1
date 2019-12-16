@@ -1,0 +1,103 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 7.4 新语法：箭头函数' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 7.4 新语法：箭头函数</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11869542.html</div><br>
+    <p>短闭包，也叫做箭头函数，是一种用 php 编写的短函数。当向函数中传递闭包时，这个功能是非常有用的，比如使用&nbsp;<code>array_map</code>&nbsp;或是&nbsp;<code>array_filter</code>&nbsp;函数时.</p>
+<blockquote>
+<p>译者注：PHP7.4 计划于今年底发布，请见&nbsp;<a href="https://learnku.com/php/wikis/27066" target="_blank">Wiki：PHP 基础信息：发行计划</a></p>
+</blockquote>
+<p>这就是它们看起来的样子:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Post 对象的集合</span>
+<span style="color: #008080;">2</span> <span style="color: #800080;">$posts</span> = [<span style="color: #008000;">/*</span><span style="color: #008000;"> &hellip; </span><span style="color: #008000;">*/</span><span style="color: #000000;">];
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span> <span style="color: #800080;">$ids</span> = <span style="color: #008080;">array_map</span>(fn(<span style="color: #800080;">$post</span>) =&gt; <span style="color: #800080;">$post</span>-&gt;id, <span style="color: #800080;">$posts</span><span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> 而以前，你必须这样写:
+<span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> <span style="color: #800080;">$ids</span> = <span style="color: #008080;">array_map</span>(<span style="color: #0000ff;">function</span> (<span style="color: #800080;">$post</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">8</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$post</span>-&gt;<span style="color: #000000;">id;
+</span><span style="color: #008080;">9</span> }, <span style="color: #800080;">$posts</span>);</code></pre>
+
+<p>&nbsp;</p>
+<p>我们来总结一下短闭包函数如何使用.</p>
+<ul>
+<li>在 PHP 7.4 里可用</li>
+<li>以&nbsp;<code>fn</code>&nbsp;关键字开头</li>
+<li>只能包含&nbsp;<em>一个</em>&nbsp;表达式，即返回表达式</li>
+<li><code>return</code>&nbsp;关键字可忽略</li>
+<li>参数和返回类型均可做类型暗示</li>
+</ul>
+<p>上面示例更严格的类型限定写法可写作:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$ids</span> = <span style="color: #008080;">array_map</span>(fn(Post <span style="color: #800080;">$post</span>): int =&gt; <span style="color: #800080;">$post</span>-&gt;id, <span style="color: #800080;">$posts</span>);</code></pre>
+
+<p>&nbsp;</p>
+<pre class=" language-php"><span style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;">有两点需要提及:</span></code></pre>
+<ul>
+<li>还允许使用扩展操作符</li>
+<li>允许引用，两个参数都可以作为返回值</li>
+</ul>
+<p>假如你想要通过引用的方式返回结果，应该使用以下语法：</p>
+<src class="cnblogs_code">
+<pre><code>fn&amp;(<span style="color: #800080;">$x</span>) =&gt; <span style="color: #800080;">$x</span></code></pre>
+
+<p>&nbsp;</p>
+<p>简而言之，除了只允许一个表达式以外，简短的闭包和普通闭包的功能是一样的。</p>
+<src data-unique="8afea7">&nbsp;
+<h2>单行</h2>
+<p>你应该正确的理解它：短闭包只能有一个表达式。这意味着闭包体中不能有多行。</p>
+<p>原因如下：短闭包的目的是为了减少冗余。当然，在任何情况下，&nbsp;<code>fn</code>&nbsp;都比&nbsp;<code>function</code>&nbsp;短。然而， RFC 的创建者 Nikita Popov 认为，如果你要处理的是多行表达式的函数，那么使用闭包获得的益处就更少了。</p>
+<p>毕竟，多行闭包的定义已经很冗余了，所以，有和没有这 2 个关键字（&nbsp;<code>function</code>&nbsp;和&nbsp;<code>return</code>&nbsp;）将不会有太大区别。</p>
+<p>你是否同意这个观点取决于你自己。虽然我可以在我的项目中想到很多单行闭包的场景，但也有很多多行闭包的情况，从个人角度，我会喜欢这些情况下的简短语法。</p>
+<p>不过还是有希望的：未来可能会添加多行短闭包，但那也是一个单独的 RFC 。</p>
+<src data-unique="42bdd6">&nbsp;
+<h2>外部作用域的值</h2>
+<p>短闭包和普通闭包的另一个显著特征是，短闭包不需要用&nbsp;<code>use</code>&nbsp;关键字就能访问外部作用域的数据。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$modifier</span> = 5<span style="color: #000000;">;
+
+</span><span style="color: #008080;">array_map</span>(fn(<span style="color: #800080;">$x</span>) =&gt; <span style="color: #800080;">$x</span> * <span style="color: #800080;">$modifier</span>, <span style="color: #800080;">$numbers</span>);</code></pre>
+
+<p>&nbsp;</p>
+<p>需要注意的是，不能修改外部范围中的变量。因为它属于值传递而不是引用传递。这意味着你可以改变短闭包内的&nbsp;<code>$modifier</code>&nbsp;变量，但它不会对外部作用域中的&nbsp;<code>$modifier</code>&nbsp;变量产生影响。</p>
+<p>当然，有一个例外，那就是&nbsp;<code>$this</code>&nbsp;关键字，它的作用与普通闭包中的作用完全相同：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">array_map</span>(fn(<span style="color: #800080;">$x</span>) =&gt; <span style="color: #800080;">$x</span> * <span style="color: #800080;">$this</span>-&gt;modifier, <span style="color: #800080;">$numbers</span>);</code></pre>
+
+<p>&nbsp;</p>
+<src data-unique="ce33b1">&nbsp;
+<h2>发展前景</h2>
+<p>我已经提到过的多行闭包仍然是将来的一个发展可能。另外一个在我脑海中的想法就是在允许在类中使用短闭包，比如&nbsp;<code>getters</code>&nbsp;和&nbsp;<code>setters</code>&nbsp;函数.</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Post {
+</span><span style="color: #008080;">2</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$title</span><span style="color: #000000;">;
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span>     fn getTitle() =&gt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">title;
+</span><span style="color: #008080;">5</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>总而言之，短闭包是一个很受欢迎的特性，尽管有很多地方需要提高。其中最有可能就是多行闭包了.</p>
+<ul>
+<li>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></li>
+</ul>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

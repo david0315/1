@@ -1,0 +1,143 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修thinkphp6.0 集成Alipay 手机和电脑端支付的方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>thinkphp6.0 集成Alipay 手机和电脑端支付的方法</center></div><div class='banquan'>原文出处:本文由博客园博主BI8EJM提供。<br/>
+原文连接:https://www.cnblogs.com/ckoo/p/11556258.html</div><br>
+    <p>本文由 BI8EJM 原创，转载请注明出处！</p>
+<p>第一步</p>
+<p>　　下载 Alipay 的PHP SDK&nbsp; ：<a href="https://docs.open.alipay.com/54/103419/">https://docs.open.alipay.com/54/103419/</a></p>
+<p>第二步</p>
+<p>　　解压下载都到的压缩包：</p>
+<p>　　解压后得到的文件内容如图</p>
+<p>　　&nbsp;<img src="./images/thinkphp6.0 集成Alipay 手机和电脑端支付的方法0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>第三步、上传得到的目录中的 <span style="background-color: #ffffff; color: #ff0000;"><strong>aop</strong></span>&nbsp;文件夹到&nbsp;thinkphp 6.0&nbsp;的&nbsp;<strong><span style="color: #ff0000;">extend</span></strong>&nbsp;目录，如下图：</p>
+<p>　　<img src="./images/thinkphp6.0 集成Alipay 手机和电脑端支付的方法1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;第四步、修改&nbsp;AopClient.php&nbsp;文件，加入命名空间&nbsp;<span style="color: #ff0000;"><strong>aop&nbsp;</strong></span><span style="color: #000000;">具体修改如下图<strong><br /></strong></span></p>
+<p>&nbsp;</p>
+<p><span style="color: #000000;">　　在第二行位置，也就是最开始的位置，加入代码：</span></p>
+<src class="cnblogs_code">
+<pre><code>namespace aop;</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>　　<img src="./images/thinkphp6.0 集成Alipay 手机和电脑端支付的方法2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;第五步、修改 PC&nbsp;支付文件&nbsp;<span style="color: #ff0000;"><strong>AlipayTradePagePayRequest.php</strong></span>&nbsp;同样是加入命名空间 <span style="color: #ff0000;"><strong>namespace aop\request</strong> </span>，具体如下：</p>
+<p>&nbsp;</p>
+<p>　　在第二行位置，也就是最开始的位置，加入代码：</p>
+<src class="cnblogs_code">
+<pre><code>namespace aop\request;</code></pre>
+
+<p>&nbsp;</p>
+<p>　　<img src="./images/thinkphp6.0 集成Alipay 手机和电脑端支付的方法3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;第六步、使用PC支付接口，生成支付链接</p>
+<p>　　PS:接口方法这不是统一定义、而是在购买控制器中直接定义的，如要统一可以创建公共控制器或其他方法统一。</p>
+<p>　　1.在&nbsp;确认订单的控制器 ，我这里是 Buy&nbsp;中引入支付方法。</p>
+<p>　　</p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>use aop\AopClient;
+use aop\request\AlipayTradePagePayRequest;
+</code></pre>
+
+<p>　　</p>
+<p>　　<img src="./images/thinkphp6.0 集成Alipay 手机和电脑端支付的方法4.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>　　2.创建私有方法 $alipay_config ，替换下面红色的内容部分，为你的信息，具体信息在你的支付宝开发者平台获取，地址：<a href="https://openhome.alipay.com/platform/appManage.htm#/apps">https://openhome.alipay.com/platform/appManage.htm#/apps</a></p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>    private $alipay_config = array(
+        'app_id' =&gt; '<span style="color: #ff0000;">你的app_id</span>',
+        'notify_url'=&gt;"<span style="color: #ff0000;">https://xxx.com/xxx/ 这是你的异步通知地址</span>",
+        'merchant_private_key' =&gt; '<span style="color: #ff0000;">你的私钥</span>',
+        'gatewayUrl' =&gt; "https://openapi.alipay.com/gateway.do",
+        'public_key' =&gt; "<span style="color: #ff0000;">你的公钥</span>",
+    );
+</code></pre>
+
+<p>　　</p>
+<p>&nbsp;　　3.配置、引入 aop</p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>        $aop = new AopClient();
+        $aop-&gt;gatewayUrl = "https://openapi.alipay.com/gateway.do";
+        $aop-&gt;appId = $this-&gt;alipay_config['appid'];
+        $aop-&gt;method = 'alipayTradePagePay';
+        $aop-&gt;charset = 'utf-8';
+        $aop-&gt;signType = 'RSA2';
+
+        $aop-&gt;alipayrsaPublicKey = $this-&gt;alipay_config['public_key'];
+        $aop-&gt;rsaPrivateKey      = $this-&gt;alipay_config['private_key'];
+</code></pre>
+
+<p>　　4.生成&nbsp; biz_content&nbsp;内容，具体内容可根据自己需求增删，具体文档参考：<a href="https://docs.open.alipay.com/api_1/alipay.trade.page.pay/">https://docs.open.alipay.com/api_1/alipay.trade.page.pay/</a>&nbsp;</p>
+<p>　　　　参数解释：</p>
+<p>　　　　　　out_trade_no ：订单号，阿里要求是唯一的。</p>
+<p>　　　　　　product_code&nbsp;：销售产品码，与支付宝签约的产品码名称。注：<span style="color: #ff0000;">目前仅支持 <strong>FAST_INSTANT_TRADE_PAY</strong></span></p>
+<p>　　　　　　total_amount ：支付金额</p>
+<p>　　　　　　subject ：订单名称</p>
+<p>　　　　　　timeout_express ：&nbsp;支付过期时间，订单创建后多久过期，这里&nbsp;设置 30m&nbsp;意思是，订单创建后 30&nbsp;分钟后过期，过期了这个就不能支付了，这里只是alipay这里不能支付，不要搞晕了。</p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>        $biz_content = json_encode([
+            'out_trade_no'=&gt; rand(11111111,99999999),
+            'product_code'=&gt; 'FAST_INSTANT_TRADE_PAY',
+            'total_amount'=&gt; 99.9,
+            'subject'=&gt; 'BI8EJM Alipay 测试',
+            'timeout_express'=&gt;'30m',
+        ]);
+</code></pre>
+
+<p>　　</p>
+<p>　　5.&nbsp;引入 PC&nbsp;支付&nbsp;并显示&nbsp;支付链接</p>
+<p>　　</p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>        $payRequest= new AlipayTradePagePayRequest();
+
+        $payRequest-&gt;setReturnUrl(url('index/index'));
+        $payRequest-&gt;setNotifyUrl($this-&gt;alipay_config['notify_url']);
+        $payRequest-&gt;setBizContent($biz_content);
+        $response = $aop-&gt;sdkExecute($payRequest);<br />
+        echo '&lt;a href="'.'https://openapi.alipay.com/gateway.do?'.$response.'"&gt;
+</code></pre>
+
+<p>　　</p>
+<p>　　至此，支付链接生成就完毕了。</p>
+<p>&nbsp;</p>
+<p>第七步、测试打开支付链接</p>
+<p>　　<img src="./images/thinkphp6.0 集成Alipay 手机和电脑端支付的方法5.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>　　点击：<span style="color: #ff0000;">立即支付&nbsp;<span style="color: #000000;">成功跳转到支付页面</span></span></p>
+<p>&nbsp;</p>
+<p><img src="./images/thinkphp6.0 集成Alipay 手机和电脑端支付的方法6.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>第八步、异曲同工。</p>
+<p>　　这里仅仅展示了 PC&nbsp;的支付，说好的手机支付呢？手机支付一样，你只需要在手机支付接口文件中，指定命名空间，然后引入手机支付方法即可，希望你能顺利完成。</p>
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

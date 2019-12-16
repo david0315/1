@@ -1,0 +1,26 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php中static self区别与总结' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php中static self区别与总结</center></div><div class='banquan'>原文出处:本文由博客园博主浮梦云烟提供。<br/>
+原文连接:https://www.cnblogs.com/dreamofprovence/p/11743435.html</div><br>
+    <pre><code>&lt;?php<br /><br />/**<br /> * static self 区别与总结<br /> * 总结：<br /> *  1.在 PHP 里，在没有继承时候，你用self::class 和 static::class是一样的，都是获取当前类名。<br /> *  2.如果用到了继承，并且这个方法写在了父类里，你想要分别获取当前父类名和未知的子类名，就要按照下面的方法进行获取。<br /> *  在 PHP 类中，self指向的是当前方法存在的这个类，也就是父类。static指向的是最终那个子类。<br /> *<br /> *  1.在一个类A中，self::who() 等同于 static::who()<br /> *  2.当子类B继承父类A，子类B::test(),调用的时候，区别:<br /> *      test()方法调用 self::who() 调用父类的who()方法<br /> *      test()方法调用 static::who()调用的是子类的who()方法<br /> */<br /><br />/**<br /> * Class A<br /> * 1.在同一个类中使用 self static 获取的都是获取当前类名<br /> */<br />class A<br />{<br />    public static function who()<br />    {<br />        echo __CLASS__;<br />    }<br /><br />    public static function test()<br />    {<br />        self::who();   echo '&lt;br&gt;';   // A<br />        static::who(); echo '&lt;br&gt;';   // A<br />    }<br />}<br /><br />A::test(); echo '&lt;br&gt;'; // A A<br /><br />/**<br /> * class B extends A<br /> *   B::test();<br /> *   self::who();  调用 A 父类  的 who 方法<br /> *   static::who(); 调用子类 B 的 who 方法<br /> */<br />class B extends A<br />{<br />    public static function who()<br />    {<br />        echo __CLASS__;<br />    }<br />}<br /><br />echo B::test(); echo '&lt;br&gt;'; // A B<br /><br />/**<br /> * 父类P中 获取子类C的类名<br /> */<br />class P<br />{<br />    public static function getParent()<br />    {<br />        return self::class;<br />    }<br /><br />    public static function getChild()<br />    {<br />        return static::class;<br />    }<br />}<br /><br />class C extends P<br />{<br /><br />}<br /><br />echo C::getParent();         // P<br />echo C::getChild(), PHP_EOL; // C</code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

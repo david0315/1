@@ -1,0 +1,212 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修系统的讲解 - PHP WEB 安全防御' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>系统的讲解 - PHP WEB 安全防御</center></div><div class='banquan'>原文出处:本文由博客园博主新亮笔记提供。<br/>
+原文连接:https://www.cnblogs.com/xinliangcoder/p/10790715.html</div><br>
+    <src class="toc">
+    <p class="toc-title">目录</p>
+    <src class="toc-list">
+        <ul>
+        <li><a href="#常见漏洞">常见漏洞</a></li>
+        <li><a href="#sql注入攻击">SQL注入攻击</a></li>
+        <li><a href="#xss攻击">XSS攻击</a></li>
+        <li><a href="#ssrf攻击">SSRF攻击</a></li>
+        <li><a href="#csrf攻击">CSRF攻击</a></li>
+        <li><a href="#文件上传漏洞">文件上传漏洞</a></li>
+        <li><a href="#信息泄露">信息泄露</a></li>
+        <li><a href="#越权">越权</a></li>
+        <li><a href="#设计缺陷">设计缺陷</a></li>
+        <li><a href="#小结">小结</a></li>
+        </ul>
+    
+
+<h2 id="常见漏洞">常见漏洞</h2>
+<p><img src="./images/系统的讲解 - PHP WEB 安全防御0.jpg" width = "380" align=center /></p>
+<p>看到上图的漏洞是不是特别熟悉，如果不进行及时防御，就会产生蝴蝶效应。</p>
+<p>往下看，可能会找到你要的答案。</p>
+<h2 id="sql注入攻击">SQL注入攻击</h2>
+<h4 id="定义">定义</h4>
+<p>SQL注入攻击是通过WEB表单提交，在URL参数提交或Cookie参数提交，将怀有恶意的“字符串”，提交给后台数据库，欺骗服务器执行恶意的SQL语句。</p>
+<h4 id="案例">案例</h4>
+<pre><code><code>//以用户登录为例，当验证用户名和密码是否正确时
+$sql = &quot;SELECT * FROM user WHERE 
+        username = &#39;&quot;.$_GET[&#39;username&#39;].&quot;&#39; AND 
+        password = &#39;&quot;.$_GET[&#39;password&#39;].&quot;&#39;&quot;;</code></code></pre>
+<p>用户恶意输入：</p>
+<pre><code><code>$_GET[&#39;username&#39;] = &quot;&#39; or 1=1 -- &#39;&quot;;
+$_GET[&#39;password&#39;] = &quot;123456&quot;;</code></code></pre>
+<p>注入后的Sql语句：</p>
+<pre><code><code>$sql = &quot;SELECT * FROM user WHERE username = &#39;&#39; 
+        or 1=1 -- &#39;&#39;AND password = &#39;123456&#39;&quot;;</code></code></pre>
+<p>执行注入后的Sql语句，可以返回 user 表的全部数据。</p>
+<p>平时我们可以进行自测，比如使用单引号、双引号，如果是数字进行+1或-1。</p>
+<p>SQL注入的危害很大，利用SQL注入可以进行，<strong>拖库</strong>、<strong>删库</strong>、<strong>删表</strong>、<strong>UDF提权</strong>、<strong>读取文件</strong>、<em>...</em></p>
+<p>推荐一个开源的自动化的SQL注入工具。</p>
+<p><strong>SQLmap</strong>：<a href="http://sqlmap.org/" class="uri">http://sqlmap.org/</a></p>
+<ul>
+<li>支持各种数据库管理系统（MySql、Oracle、SQL Server、SQLite ... ）。</li>
+<li>支持自动识别密码哈希格式并通过字典破解密码哈希。</li>
+<li>支持枚举用户、密码、哈希、权限、角色、数据库、数据表和列。</li>
+<li>支持完全地下载某个数据库中的某个表、某个列。</li>
+<li>支持在数据库管理系统中搜索指定的数据库名、表名或列名。</li>
+<li>支持下载或上传文件。</li>
+<li>支持执行任意命令并回现标准输出。</li>
+<li>支持布尔型盲注、时间型盲注、基于错误信息的注入、联合查询注入和堆查询注入。</li>
+</ul>
+<p>尝试着利用工具，注入自己的项目，发现问题，然后解决问题。</p>
+<p>SQL注入的危害，远比我们想象的要大！</p>
+<h4 id="防御">防御</h4>
+<p>推荐解决方案是使用 <strong>PDO</strong> 或 <strong>MySQLi</strong> 的数据库扩展。</p>
+<p>PHP官方文档中介绍，MySQL扩展自PHP 5.5.0起已废弃，并在自PHP7.0.0开始被移除。</p>
+<p>如果已经在用MySQL扩展了，可以对传入的每个参数做验证，并使用框架的ORM进行查询。</p>
+<p>另外：addslashes 和 mysql_real_escape_string 这种转义是不安全的！</p>
+<h2 id="xss攻击">XSS攻击</h2>
+<h4 id="定义-1">定义</h4>
+<p>XSS攻击是一种经常出现在WEB应用中的计算机安全漏洞，通过WEB表单提交或在URL参数提交将代码植入在用户的使用页面上。</p>
+<h4 id="分类">分类</h4>
+<p><strong>存储型</strong></p>
+<p>注入的恶意代码存储在服务器上（常用于留言板、论坛帖子、CRM），受害者请求服务器获取信息的时候，这些恶意代码就被浏览器成功执行。</p>
+<p><strong>反射型</strong></p>
+<p>注入的恶意代码没有存储在服务器上，通过引诱用户点击一个链接到目标网站进行实施攻击。</p>
+<p><strong>DOM型</strong></p>
+<p>注入的恶意代码并未显式的包含在web服务器的响应页面中，但会被页面中的js脚本以变量的形式来访问到的方式来进行实施攻击。</p>
+<h4 id="案例-1">案例</h4>
+<p>存储型：论坛帖子界面input输入框中，输入 <code>/&gt;&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</code> 进行提交。</p>
+<p>反射型：在浏览器输入框中，输入 <code>/xxx.php?name=&lt;script&gt;alert(/xss/)&lt;/script&gt;</code></p>
+<pre><code><code>//DOM型，代码举例
+&lt;script&gt;
+var temp = document.URL;
+var temp_new = temp+&#39;test&#39;
+document.write(decodeURI(temp_new));
+&lt;/script&gt;</code></code></pre>
+<p>XSS的危害有很多，包括盗号，挂马，控制受害者机器想其他网站发起攻击 ...</p>
+<p>自测的方法，看见输入框就输入：<code>/&gt;&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</code> 进行提交。</p>
+<p>推荐一个专门针对浏览器攻击的框架。</p>
+<p><strong>BeEF</strong> ：<a href="https://beefproject.com/" class="uri">https://beefproject.com/</a></p>
+<h4 id="防御-1">防御</h4>
+<p>简单的防御可以对style、script、image、src、a等等不安全的因素进行过滤或转义。</p>
+<p>可以自己封装一个方法，也可以使用框架的自带方法，比如 xss_clean 。</p>
+<p>可以利用一些模板引擎避免XSS攻击，比如Laravel框架使用的Blade，还有twig，Smarty等。</p>
+<p>可以利用HTTP-only，将cookie设置成HTTP-only防止XSS攻击。</p>
+<pre><code><code>//设置Cookie
+setcookie($name, $value, $expire, $path, $domain, $secure, $httponly); 
+
+//然后服务端通过使用 $_COOKIE 进行验证。</code></code></pre>
+<p>可以使用Content Security Policy，它的实质就是白名单制度。</p>
+<p>入门教程请参考：<a href="http://www.ruanyifeng.com/blog/2016/09/csp.html" class="uri">http://www.ruanyifeng.com/blog/2016/09/csp.html</a></p>
+<h2 id="ssrf攻击">SSRF攻击</h2>
+<h4 id="定义-2">定义</h4>
+<p>SSRF（Server-Side Request Forgery：服务器端请求伪造） 是攻击者伪造服务器端发起的请求，虽然攻击者无法从外网访问内网的系统，但是它通过注入恶意代码从服务端发起，通过服务端就再访问内网的系统，然后获取不该获取的数据。</p>
+<p><img src="./images/系统的讲解 - PHP WEB 安全防御1.jpg" /></p>
+<h4 id="案例-2">案例</h4>
+<p>漏洞主要产生在包含这些方法的代码中，比如 curl、file_get_contents、fsockopen。</p>
+<pre><code><code>//代码片段
+&lt;?php
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $_GET[&#39;url&#39;]);
+curl_setopt($ch, CURLOPT_HEADER, false);
+curl_exec($ch);
+curl_close($ch);</code></code></pre>
+<p>请求地址：<a href="http://www.xxx.com/demo.php?url=xxx" class="uri">http://www.xxx.com/demo.php?url=xxx</a></p>
+<p>将url参数修改成，<a href="file:///etc/passwd，可以获取敏感文件的信息" class="uri">file:///etc/passwd，可以获取敏感文件的信息</a>。</p>
+<p>将url参数修改成，<a href="dict://127.0.0.1:3306/info，可以获取目标主机3306端口运行的应用" class="uri">dict://127.0.0.1:3306/info，可以获取目标主机3306端口运行的应用</a>。</p>
+<p>除了 file协议，dict协议，还可以利用gopher协议 和 http/https 协议进行攻击。</p>
+<p>可以攻击redis，memcache，内网应用，还可以查看一下敏感文件的信息 等等。</p>
+<h4 id="防御-2">防御</h4>
+<p>对 curl、file_get_contents、fsockopen 这些方法中的参数进行严格验证！</p>
+<p>限制协议只能为HTTP或HTTPS，禁止进行跳转。</p>
+<p>如果有白名单，解析参数中的URL，判断是否在白名单内。</p>
+<p>如果没有白名单，解析参数中的URL，判断是否为内网IP。</p>
+<h2 id="csrf攻击">CSRF攻击</h2>
+<h4 id="定义-3">定义</h4>
+<p>CSRF（Cross-site request forgery：跨站请求伪造）是攻击者通过伪装成受信任的用户，盗用受信任用户的身份，用受信任用户的身份发送恶意请求。</p>
+<p><img src="./images/系统的讲解 - PHP WEB 安全防御2.jpg" /></p>
+<p>从上图看出，完成一次CSRF攻击，需要完成两个步骤：</p>
+<p>1.登录受信任网站A，本地生成网站A的Cookie。</p>
+<p>2.未退出网站A的情况下，访问危险网站B。</p>
+<h4 id="危害">危害</h4>
+<p>具体危害要看受信任网站是做什么的，如果是社交网站可以操控发广告，如果是电商网站可以操控购物，如果是银行网站甚至还可以操控转账，......</p>
+<p>这样危害会造成个人信息的泄露和财产的损失。</p>
+<h4 id="防御-3">防御</h4>
+<p>Cookie Hashing，表单提交或Ajax提交，必须使用csrf token。</p>
+<p>对于不确定是否有csrf风险的请求，可以使用验证码（尽管体验会变差）。</p>
+<p>对于一些重要的操作（修改密码、修改邮箱），必须使用二次验证。</p>
+<h2 id="文件上传漏洞">文件上传漏洞</h2>
+<h4 id="定义-4">定义</h4>
+<p>文件上传漏洞是攻击者上传了一个可执行的文件到服务器上执行。</p>
+<p>可执行文件包括有病毒、木马、恶意脚本等。</p>
+<h4 id="危害-1">危害</h4>
+<p>文件上传漏洞与SQL注入或XSS相比，其风险更大，如果存在上传漏洞攻击者甚至可以直接上传一个webshell脚本到服务器上。</p>
+<h4 id="防御-4">防御</h4>
+<ul>
+<li>文件扩展名检测</li>
+<li>文件 MIME 验证</li>
+<li>文件重命名</li>
+<li>文件目录设置不可执行权限</li>
+<li>设置单独域名的文件服务器</li>
+</ul>
+<h2 id="信息泄露">信息泄露</h2>
+<h4 id="定义-5">定义</h4>
+<p>信息泄露主要指用户的手机号、邮箱、密码、身份证、地址等敏感数据泄露，还有服务器上的文件和环境变量等敏感数据泄露，还包括将直接将企业源码上传到开发平台。</p>
+<h4 id="案例-3">案例</h4>
+<p>比如开发接口时，接口返回明文的手机号。</p>
+<p>比如调试代码时，代码中提交了一些调试信息，未进行删除。</p>
+<p>......</p>
+<h4 id="防御-5">防御</h4>
+<ul>
+<li>敏感数据脱敏（比如手机号、身份证、邮箱、地址）。</li>
+<li>服务器上不允许提交包含打印 phpinfo 、$_SERVER 和 调试信息等代码。</li>
+<li>定期从开发平台扫描关于企业相关的源码项目。</li>
+</ul>
+<h2 id="越权">越权</h2>
+<h4 id="定义-6">定义</h4>
+<p>“超出了你自己所拥有的权限，干了你本来不可能干的事情。”</p>
+<p><strong>水平越权</strong>：用户A未授权可以访问用户B的数据。</p>
+<p><strong>垂直越权</strong>：未登录用户可以访问需要授权的应用。</p>
+<p>举例，本来用户A只能查看自己的订单数据，但是他通过修改URL参数就能查看到用户B的订单数据。</p>
+<p>未登录的用户，可以访问到后台模块并进行操作。</p>
+<h4 id="防御-6">防御</h4>
+<p>对于所有涉及到用户数据的操作，必须严格判断当前用户的身份。</p>
+<p>对于所有需要权限控制的位置，必须严格检验用户权限级别。</p>
+<h2 id="设计缺陷">设计缺陷</h2>
+<h4 id="返回信息过多">返回信息过多</h4>
+<p>举例，登录时进行验证，当用户不存在时，返回“用户不存在”，当用户被禁用时，返回“用户已被禁用”。</p>
+<p>避免攻击者进行恶意尝试，不应该返回过多的信息，可以统一返回“用户名或密码错误”。</p>
+<h4 id="短信接口被恶意攻击">短信接口被恶意攻击</h4>
+<p>举例，注册或登录时用户输入手机号码就可直接触发短信接口，这块最容易被攻击者进行短信轰炸。</p>
+<p>应该进行增加接口调用限制：</p>
+<ul>
+<li>设置同一手机号短信发送间隔</li>
+<li>设置每个IP地址每日最大发送量</li>
+<li>设置每个手机号每日最大发送量</li>
+<li>升级验证码，采用滑动拼图、文字点选、图表点选...</li>
+<li>升级短信接口的验证方法</li>
+</ul>
+<h2 id="小结">小结</h2>
+<p>文章主要讲解了 SQL注入攻击、XSS攻击、SSRF攻击、CSRF攻击、文件上传漏洞、信息泄露、越权、设计缺陷等八大方面，通过这次的梳理，也使我自己对PHP WEB安全防御有了一个全面了解。</p>
+<p>同时还要时刻保持警惕，所有用户输入的数据都是不值得信任的，接收到的数据必须经过校验和过滤。</p>
+<p>也不要轻易相信从网络上发现的代码，在使用第三方类库或代码时抱有怀疑的态度，要多进行调试和验证，看起来没问题的代码可能隐藏了很多的安全隐患。</p>
+<p>最后，推荐一款开源的漏洞演示平台，包含了100多个漏洞。</p>
+<p>这个是安装在本地的，大家尝试注入恶意代码，同时也警醒自己不要犯这样的错误。</p>
+<p><strong>bWAPP</strong>：<a href="http://www.itsecgames.com/" class="uri">http://www.itsecgames.com/</a></p>
+<p>本文欢迎转发，转发请注明作者和出处，谢谢！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,171 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修 使用 Casbin 作为 ThinkPHP 的权限控制中间件' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center> 使用 Casbin 作为 ThinkPHP 的权限控制中间件</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11892360.html</div><br>
+    <p><a href="https://github.com/php-casbin/php-casbin">PHP-Casbin</a>&nbsp;是一个强大的、高效的开源访问控制框架，它支持基于各种访问控制模型的权限管理。</p>
+<p><a href="https://github.com/php-casbin/think-casbin">Think-Casbin</a>&nbsp;是一个专为 ThinkPHP5.1 定制的 Casbin 的扩展包，使开发者更便捷的在 thinkphp 项目中使用 Casbin。</p>
+<src data-unique="e655a4">&nbsp;
+<h3>安装</h3>
+<ol>
+<li>创建 thinkphp 项目（如果没有）：</li>
+</ol>
+<src class="cnblogs_code">
+<pre><code>composer create-project topthink/think=5.1.* tp5</code></pre>
+
+<p>&nbsp;</p>
+<ol start="2">
+<li>在&nbsp;<code>ThinkPHP</code>&nbsp;项目里，安装&nbsp;<code>Think-Casbin</code>&nbsp;扩展：</li>
+</ol>
+<src class="cnblogs_code">
+<pre><code>composer <span style="color: #0000ff;">require</span> casbin/think-adapter</code></pre>
+
+<p>&nbsp;</p>
+<ol start="3">
+<li>发布资源:</li>
+</ol>
+<src class="cnblogs_code">
+<pre><code>php think casbin:publish</code></pre>
+
+<p>&nbsp;</p>
+<p>这将自动创建 model 配置文件&nbsp;<code>config/casbin-basic-model.conf</code>，和 Casbin 的配置文件&nbsp;<code>config/casbin.php</code>。</p>
+<ol start="4">
+<li>数据迁移:</li>
+</ol>
+<p>由于 Think-Casbin 默认将 Casbin 的策略（Policy）存储在数据库中，所以需要初始化数据库表信息。</p>
+<p>执行前，请确保数据库连接信息配置正确，如需单独修改&nbsp;<code>Casbin</code>&nbsp;的数据库连接信息或表名，可以修改&nbsp;<code>config/casbin.php</code>&nbsp;里的配置。</p>
+<src class="cnblogs_code">
+<pre><code>php think casbin:migrate</code></pre>
+
+<p>&nbsp;</p>
+<p>这将会自动创建 Casbin 的策略（Policy）表&nbsp;<code>casbin_rule</code>。</p>
+<src data-unique="3cbfec">&nbsp;
+<h3>中间件</h3>
+<p>ThinkPHP 从&nbsp;<code>5.1.6+</code>&nbsp;版本开始，正式引入中间件的支持。</p>
+<p>可以通过命令行指令快速生成中间件</p>
+<src class="cnblogs_code">
+<pre><code>php think make:middleware Authorization</code></pre>
+
+<p>&nbsp;</p>
+<p>这个指令会&nbsp;<code>application/http/middleware</code>&nbsp;目录下面生成一个&nbsp;<code>Authorization</code>&nbsp;中间件。</p>
+<p>在中间件中，获取当前用户名、URI、请求方法，通过&nbsp;<code>Casbin</code>&nbsp;验证权限：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #000000;">namespace app\http\middleware;
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Casbin;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\facade\Session;
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Authorization
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> handle(<span style="color: #800080;">$request</span>, \Closure <span style="color: #800080;">$next</span><span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 当前登录用户名，这里以session为例
+</span><span style="color: #008080;">13</span> <span style="color: #008000;">        // $user = Session::get('user_name') ?: 'test_user';</span>
+<span style="color: #008080;">14</span>         <span style="color: #800080;">$user</span> = Session::get('user_name'<span style="color: #000000;">);
+</span><span style="color: #008080;">15</span> 
+<span style="color: #008080;">16</span>         <span style="color: #800080;">$url</span> = <span style="color: #800080;">$request</span>-&gt;<span style="color: #000000;">url();
+</span><span style="color: #008080;">17</span>         <span style="color: #800080;">$action</span> = <span style="color: #800080;">$request</span>-&gt;<span style="color: #000000;">method();
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$user</span><span style="color: #000000;">){
+</span><span style="color: #008080;">20</span>             <span style="color: #0000ff;">return</span> response()-&gt;data('Unauthenticated.')-&gt;code(401<span style="color: #000000;">);
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span>         <span style="color: #0000ff;">if</span> (!Casbin::enforce(<span style="color: #800080;">$user</span>, <span style="color: #800080;">$url</span>, <span style="color: #800080;">$action</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">24</span>             <span style="color: #0000ff;">return</span> response()-&gt;data('Unauthorized.')-&gt;code(403<span style="color: #000000;">);
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">26</span> 
+<span style="color: #008080;">27</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$next</span>(<span style="color: #800080;">$request</span><span style="color: #000000;">);
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">29</span> }</code></pre>
+
+<p>&nbsp;</p>
+<src data-unique="2c19ef">&nbsp;
+<h3>Casbin Model 配置</h3>
+<p><code>config\casbin-basic-model.conf</code>&nbsp;配置文件:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">[request_definition]
+</span><span style="color: #008080;"> 2</span> r = sub, obj,<span style="color: #000000;"> act
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span> <span style="color: #000000;">[policy_definition]
+</span><span style="color: #008080;"> 5</span> p = sub, obj,<span style="color: #000000;"> act
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> <span style="color: #000000;">[policy_effect]
+</span><span style="color: #008080;"> 8</span> e = some(where (p.eft ==<span style="color: #000000;"> allow))
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span> <span style="color: #000000;">[matchers]
+</span><span style="color: #008080;">11</span> m = r.sub == p.sub &amp;&amp; keyMatch2(r.obj, p.obj) &amp;&amp; r.act == p.act</code></pre>
+
+<p>&nbsp;</p>
+<src data-unique="cd8992">&nbsp;
+<h3>验证</h3>
+<p>在执行授权之前，先在数据库&nbsp;<code>casbin_rule</code>&nbsp;表中添加一些默认的策略:</p>
+<table>
+<thead>
+<tr><th>id</th><th>ptype</th><th>v0</th><th>v1</th><th>v2</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>p</td>
+<td>test_user</td>
+<td>/users</td>
+<td>GET</td>
+</tr>
+<tr>
+<td>2</td>
+<td>p</td>
+<td>test_user</td>
+<td>/users/:id</td>
+<td>GET</td>
+</tr>
+</tbody>
+</table>
+<p>添加路由及其中间件：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> Route::group('users', <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span>     Route::get('', <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">return</span> 'Users data.'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">    });
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>     Route::get('/:id', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$id</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 8</span>         <span style="color: #0000ff;">return</span> 'User: '.<span style="color: #800080;">$id</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    });
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> })-&gt;middleware(\app\http\middleware\Authorization::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<p>先登录用户保存用户名到&nbsp;<code>SESSION</code>&nbsp;，可以访问&nbsp;<code>/users</code>、<code>/users/1</code>&nbsp;验证一下权限。</p>
+<src data-unique="7c38e2">&nbsp;
+<h3>更多 API 参考</h3>
+<ul>
+<li><a href="https://casbin.org/docs/en/management-api">Management API</a></li>
+<li><a href="https://casbin.org/docs/en/rbac-api">RBAC API</a></li>
+<li>
+<ul>
+<li>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></li>
+</ul>
+</li>
+</ul>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

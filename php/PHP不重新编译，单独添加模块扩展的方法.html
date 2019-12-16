@@ -1,0 +1,79 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP不重新编译，单独添加模块扩展的方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP不重新编译，单独添加模块扩展的方法</center></div><div class='banquan'>原文出处:本文由博客园博主Cecil-1995提供。<br/>
+原文连接:https://www.cnblogs.com/Cecil_1995/p/10922127.html</div><br>
+    <p>php自身提供了很多扩展，比如curl，gmp, mbstring等。我们在编译安装php时未必安装了所有扩展。那么在安装完php后，如果想单独安装某个php自身的扩展怎么办呢？</p>
+<p>我们以curl扩展模块的安装为例说明如何单独添加扩展。</p>
+<p>步骤：<br />1.进入php源码的扩展目录。本例中我的源码对应目录如下：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>/search/src/php-7.0.14/ext</code></pre>
+
+<p>2.进入模块目录，我们安装的是curl扩展，所以进入curl目录。此时，我们所在的目录是</p>
+<src class="cnblogs_Highlighter">
+<pre><code>/search/src/php-7.0.14/ext/curl</code></pre>
+
+<p>3.执行phpize。注意，如果你的机器上有多个php版本，一定要执行你准备安装扩展的php版本对应的phpize。比如，我的机器上同时有php7和php5.3.3。我当前准备为php7安装curl扩展。所以执行php7对应的phpize</p>
+<src class="cnblogs_Highlighter">
+<pre><code>/usr/local/php7.0/bin/phpize</code></pre>
+
+<p>结果类似：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Configuring for:
+PHP Api Version: 20151012
+Zend Module Api No: 20151012
+Zend Extension Api No: 320151012</code></pre>
+
+<p>4.执行</p>
+<src class="cnblogs_Highlighter">
+<pre><code>./configure --with-php-config=/usr/local/php7.0/bin/php-config</code></pre>
+
+<p>说明：如果你的机器上只有一个php版本，大多时候不需要特别使用&ndash;with-php-config指明相应的php-config所在位置。</p>
+<p>5.执行make，之后会在./modules/目录下生成curl.so文件</p>
+<p>6.执行make install</p>
+<p>结果类似：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Installing shared extensions: /usr/local/php7.0/lib/php/20151012/</code></pre>
+
+<p>执行结果告诉你将curl.so安装到了哪个目录。</p>
+<p>一般情况，如果你正确的指定了php-config或者你的机器只有一个php版本，so都会被正确安装到相应php的extension_dir。如果执行make install后，extension_dir目录下没有相应的so，可以手动将第5步中生成的so文件cp过去。</p>
+<p>要查看具体extension_dir，可以执行如下命令。</p>
+<src class="cnblogs_Highlighter">
+<pre><code>php -i| grep extension_dir
+结果类似
+extension_dir =&gt; /usr/local/php7.0/lib/php/20151012/ =&gt; /usr/local/php7.0/lib/php/20151012/</code></pre>
+
+<p>7.在php.ini中增加</p>
+<src class="cnblogs_Highlighter">
+<pre><code>extension=curl.so</code></pre>
+
+<p>如果不知道php.ini的具体位置，可以通过如下命令查看</p>
+<src class="cnblogs_Highlighter">
+<pre><code>php --ini</code></pre>
+
+<p>8.执行如下命令，查看是否安装成功</p>
+<src class="cnblogs_Highlighter">
+<pre><code>php -m | grep curl</code></pre>
+
+<p>如果你看到了curl， 恭喜你，安装成功！</p>
+<p>注意：如果你是使用fpm，apache等方式执行php。在修改相应的php.ini后，还需要重新启动fpm或apache，新的扩展才会生效。<br /><br />原文：<a href="https://blog.csdn.net/qmhball/article/details/79015888" target="_blank">https://blog.csdn.net/qmhball/article/details/79015888</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

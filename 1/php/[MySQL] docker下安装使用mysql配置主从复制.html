@@ -1,0 +1,46 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[MySQL] docker下安装使用mysql配置主从复制' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[MySQL] docker下安装使用mysql配置主从复制</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11783703.html</div><br>
+    <p>拉取mysql的镜像<br />docker search mysql<br />docker pull mysql</p>
+<p>通过镜像创建容器，这里先创建第一个容器作为master mysql<br />-v /etc/mysql:/etc/mysql/conf.d 表示目录共享，目录提前创建好，第二个容器要目录不一样</p>
+<p>docker run -d --name one_mysql -v /etc/mysql:/etc/mysql/conf.d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql</p>
+<p>进入容器<br />docker exec -it one_mysql bash</p>
+<p>宿主机的配置文件<br />/etc/mysql/mysql.cnf</p>
+<p>[mysqld]<br />server-id = 1<br />log-bin = mysql-bin</p>
+<p>进入容器后<br />show master status<br />查看下当前的状态，如果看到binlog日志是我们配置的文件名就说明我们配置成功了</p>
+<p><img src="./images/[MySQL] docker下安装使用mysql配置主从复制0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>创建第二个容器作为我们的slave mysql</p>
+<p>docker run -d --name two_mysql -v /etc/mysql2:/etc/mysql/conf.d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql<br />宿主机的配置文件<br />/etc/mysql2/mysql.cnf</p>
+<p>[mysqld]<br />server-id = 2</p>
+<p>进入容器看看变量变了没有，如果已经是我们配置的就说明配置文件是成功的<br />docker exec -it two_mysql bash<br />show variables like 'server_id';</p>
+<p>开启主从复制<br />change master to master_host='172.17.0.3',master_user='root',master_password='123456',master_log_file='mysql-bin.000001',master_log_pos=155;</p>
+<p>start slave<br />show slave status</p>
+<p><img src="./images/[MySQL] docker下安装使用mysql配置主从复制1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;看到Slave_Io_Running:yes Slave_SQL_Running:yes 就可以了</p>
+<p><br />修改密码的加密方式，因为默认的加密方式，主从复制的时候，从数据库连接不上<br />USE mysql;<br />ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '123456';<br />FLUSH PRIVILEGES;</p>
+<p>&nbsp;</p>
+<p>docker inspect 容器ID 查看该容器的IP</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

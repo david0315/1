@@ -1,0 +1,259 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel 中使用 swoole 项目实战开发案例一 (建立 swoole 和前端通信)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel 中使用 swoole 项目实战开发案例一 (建立 swoole 和前端通信)</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/12003294.html</div><br>
+    <h2>1 开发需要环境</h2>
+<p>工欲善其事，必先利其器。在正式开发之前我们检查好需要安装的拓展，不要开发中发现这些问题，打断思路影响我们的开发效率。</p>
+<ul>
+<li>安装 swoole 拓展包</li>
+<li>安装 redis 拓展包</li>
+<li>安装 laravel5.5 版本以上</li>
+</ul>
+<p>如果你还不会用swoole就out了</p>
+<p>&nbsp;</p>
+<h2>2 Laravel 生成命令行</h2>
+<ol>
+<li>php artisan make:command SwooleDemo</li>
+</ol>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> SwooleDemo extends Command
+{
+
+</span><span style="color: #0000ff;">protected</span> $signature = <span style="color: #800000;">'</span><span style="color: #800000;">swoole:demo</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+
+</span><span style="color: #0000ff;">protected</span> $description = <span style="color: #800000;">'</span><span style="color: #800000;">这是关于swoole的一个测试demo</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+
+</span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function __construct()
+{
+    parent::__construct();
+}
+
+</span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function handle()
+{
+    $</span><span style="color: #0000ff;">this</span>-&gt;line(<span style="color: #800000;">"</span><span style="color: #800000;">hello world</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+}
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>我们分别运行 php artisan 指令和 php artisan swoole:demo 会看到关于这个命令的说明，和输出 hello world。(<a class=" wrap external" href="http://link.zhihu.com/?target=https%3A//learnku.com/docs/laravel/5.5/artisan/1314%23generating-commands" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">laravel 命令行用法详解</a>)</p>
+<h2>3 命令行逻辑代码</h2>
+<ul>
+<li>编写一个最基础的 swoole 命令行逻辑代码</li>
+</ul>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #0000ff;">namespace</span><span style="color: #000000;"> App\Console\Commands;
+
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Redis;
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> SwooleDemo extends Command
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 命令名称</span>
+    <span style="color: #0000ff;">protected</span> $signature = <span style="color: #800000;">'</span><span style="color: #800000;">swoole:demo</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 命令说明</span>
+    <span style="color: #0000ff;">protected</span> $description = <span style="color: #800000;">'</span><span style="color: #800000;">这是关于swoole websocket的一个测试demo</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> swoole websocket服务</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> $server = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function __construct()
+    {
+        parent::__construct();
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 入口</span>
+    <span style="color: #0000ff;">public</span><span style="color: #000000;"> function handle()
+    {
+        $</span><span style="color: #0000ff;">this</span>-&gt;redis = Redis::connection(<span style="color: #800000;">'</span><span style="color: #800000;">websocket</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+        $server </span>=<span style="color: #000000;"> self::getWebSocketServer();
+        $server</span>-&gt;on(<span style="color: #800000;">'</span><span style="color: #800000;">open</span><span style="color: #800000;">'</span>,[$<span style="color: #0000ff;">this</span>,<span style="color: #800000;">'</span><span style="color: #800000;">onOpen</span><span style="color: #800000;">'</span><span style="color: #000000;">]);
+        $server</span>-&gt;on(<span style="color: #800000;">'</span><span style="color: #800000;">message</span><span style="color: #800000;">'</span>, [$<span style="color: #0000ff;">this</span>, <span style="color: #800000;">'</span><span style="color: #800000;">onMessage</span><span style="color: #800000;">'</span><span style="color: #000000;">]);
+        $server</span>-&gt;on(<span style="color: #800000;">'</span><span style="color: #800000;">close</span><span style="color: #800000;">'</span>, [$<span style="color: #0000ff;">this</span>, <span style="color: #800000;">'</span><span style="color: #800000;">onClose</span><span style="color: #800000;">'</span><span style="color: #000000;">]);
+        $server</span>-&gt;on(<span style="color: #800000;">'</span><span style="color: #800000;">request</span><span style="color: #800000;">'</span>, [$<span style="color: #0000ff;">this</span>, <span style="color: #800000;">'</span><span style="color: #800000;">onRequest</span><span style="color: #800000;">'</span><span style="color: #000000;">]);
+        $</span><span style="color: #0000ff;">this</span>-&gt;line(<span style="color: #800000;">"</span><span style="color: #800000;">swoole服务启动成功 ...</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+        $server</span>-&gt;<span style="color: #000000;">start();
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 获取服务</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span><span style="color: #000000;"> function getWebSocketServer()
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">(self::$server instanceof \swoole_websocket_server)) {
+            self::setWebSocketServer();
+        }
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> self::$server;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 服务处始设置</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">static</span>  function setWebSocketServer():<span style="color: #0000ff;">void</span><span style="color: #000000;">
+    {
+        self::$server  </span>= <span style="color: #0000ff;">new</span> \swoole_websocket_server(<span style="color: #800000;">"</span><span style="color: #800000;">0.0.0.0</span><span style="color: #800000;">"</span>, <span style="color: #800080;">9502</span><span style="color: #000000;">);
+        self::$server</span>-&gt;<span style="color: #0000ff;">set</span><span style="color: #000000;">([
+            </span><span style="color: #800000;">'</span><span style="color: #800000;">worker_num</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800080;">1</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">'</span><span style="color: #800000;">heartbeat_check_interval</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800080;">60</span>,    <span style="color: #008000;">//</span><span style="color: #008000;"> 60秒检测一次</span>
+            <span style="color: #800000;">'</span><span style="color: #800000;">heartbeat_idle_time</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800080;">121</span>,        <span style="color: #008000;">//</span><span style="color: #008000;"> 121秒没活动的</span>
+<span style="color: #000000;">        ]);
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 打开swoole websocket服务回调代码</span>
+    <span style="color: #0000ff;">public</span><span style="color: #000000;"> function onOpen($server, $request)
+    {
+        </span><span style="color: #0000ff;">if</span> ($<span style="color: #0000ff;">this</span>-&gt;<span style="color: #000000;">checkAccess($server, $request)) {\
+            self::$server</span>-&gt;push($request-&gt;fd,<span style="color: #800000;">"</span><span style="color: #800000;">打开swoole服务成功！</span><span style="color: #800000;">"</span><span style="color: #000000;">);\
+        }
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 给swoole websocket 发送消息回调代码</span>
+    <span style="color: #0000ff;">public</span><span style="color: #000000;"> function onMessage($server, $frame)
+    {
+
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> http请求swoole websocket 回调代码</span>
+    <span style="color: #0000ff;">public</span><span style="color: #000000;"> function onRequest($request,$response)
+    {
+
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> websocket 关闭回调代码</span>
+    <span style="color: #0000ff;">public</span><span style="color: #000000;"> function onClose($serv,$fd)
+    {
+        $</span><span style="color: #0000ff;">this</span>-&gt;line(<span style="color: #800000;">"</span><span style="color: #800000;">客户端 {$fd} 关闭</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 校验客户端连接的合法性,无效的连接不允许连接</span>
+    <span style="color: #0000ff;">public</span> function checkAccess($server, $request):<span style="color: #0000ff;">bool</span><span style="color: #000000;">
+    {
+        $bRes </span>= <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span> (!isset($request-&gt;<span style="color: #0000ff;">get</span>) || !isset($request-&gt;<span style="color: #0000ff;">get</span>[<span style="color: #800000;">'</span><span style="color: #800000;">token</span><span style="color: #800000;">'</span><span style="color: #000000;">])) {
+            self::$server</span>-&gt;close($request-&gt;<span style="color: #000000;">fd);
+            $</span><span style="color: #0000ff;">this</span>-&gt;line(<span style="color: #800000;">"</span><span style="color: #800000;">接口验证字段不全</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+            $bRes </span>= <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> ($request-&gt;<span style="color: #0000ff;">get</span>[<span style="color: #800000;">'</span><span style="color: #800000;">token</span><span style="color: #800000;">'</span>] !== <span style="color: #800000;">"</span><span style="color: #800000;">123456</span><span style="color: #800000;">"</span><span style="color: #000000;">) {
+            $</span><span style="color: #0000ff;">this</span>-&gt;line(<span style="color: #800000;">"</span><span style="color: #800000;">接口验证错误</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+            $bRes </span>= <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> $bRes;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 启动websocket服务</span>
+    <span style="color: #0000ff;">public</span><span style="color: #000000;"> function start()
+    {
+        self::$server</span>-&gt;<span style="color: #000000;">start();
+    }
+
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>编写 websoket js 代码</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=<span style="color: #800000;">"</span><span style="color: #800000;">en</span><span style="color: #800000;">"</span>&gt;
+&lt;head&gt;
+    &lt;meta charset=<span style="color: #800000;">"</span><span style="color: #800000;">UTF-8</span><span style="color: #800000;">"</span>&gt;
+    &lt;title&gt;swoole测试&lt;/title&gt;
+    &lt;meta name=viewport content=<span style="color: #800000;">"</span><span style="color: #800000;">width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no</span><span style="color: #800000;">"</span>&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;这是一个测试&lt;/h1&gt;
+&lt;/body&gt;
+&lt;script&gt;
+    <span style="color: #0000ff;">var</span> ws;<span style="color: #008000;">//</span><span style="color: #008000;">websocket实例</span>
+    <span style="color: #0000ff;">var</span> lockReconnect = <span style="color: #0000ff;">false</span>;<span style="color: #008000;">//</span><span style="color: #008000;">避免重复连接</span>
+    <span style="color: #0000ff;">var</span> wsUrl = <span style="color: #800000;">'</span><span style="color: #800000;">ws://{{$_SERVER["HTTP_HOST"]}}:9502?page=home&amp;token=123456</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+
+    function initEventHandle() {
+        ws.onclose </span>=<span style="color: #000000;"> function () {
+            reconnect(wsUrl);
+        };
+        ws.onerror </span>=<span style="color: #000000;"> function () {
+            reconnect(wsUrl);
+        };
+        ws.onopen </span>=<span style="color: #000000;"> function () {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">心跳检测重置</span>
+<span style="color: #000000;">            heartCheck.reset().start();
+        };
+        ws.onmessage </span>= function (<span style="color: #0000ff;">event</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">如果获取到消息，心跳检测重置
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">拿到任何消息都说明当前连接是正常的</span>
+            <span style="color: #0000ff;">var</span> data = JSON.parse(<span style="color: #0000ff;">event</span><span style="color: #000000;">.data);
+            heartCheck.reset().start();
+        }
+    }
+    createWebSocket(wsUrl);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 创建链接
+     * @param url
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    function createWebSocket(url) {
+        </span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            ws </span>= <span style="color: #0000ff;">new</span><span style="color: #000000;"> WebSocket(url);
+            initEventHandle();
+        } </span><span style="color: #0000ff;">catch</span><span style="color: #000000;"> (e) {
+            reconnect(url);
+        }
+    }
+    function reconnect(url) {
+        </span><span style="color: #0000ff;">if</span>(lockReconnect) <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+        lockReconnect </span>= <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">没连接上会一直重连，设置延迟避免请求过多</span>
+<span style="color: #000000;">        setTimeout(function () {
+            createWebSocket(url);
+            lockReconnect </span>= <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }, </span><span style="color: #800080;">2000</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">心跳检测</span>
+    <span style="color: #0000ff;">var</span> heartCheck =<span style="color: #000000;"> {
+        timeout: </span><span style="color: #800080;">60000</span>,<span style="color: #008000;">//</span><span style="color: #008000;">60秒</span>
+        timeoutObj: <span style="color: #0000ff;">null</span><span style="color: #000000;">,
+        serverTimeoutObj: </span><span style="color: #0000ff;">null</span><span style="color: #000000;">,
+        reset: function(){
+            clearTimeout(</span><span style="color: #0000ff;">this</span><span style="color: #000000;">.timeoutObj);
+            clearTimeout(</span><span style="color: #0000ff;">this</span><span style="color: #000000;">.serverTimeoutObj);
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">this</span><span style="color: #000000;">;
+        },
+        start: function(){
+            </span><span style="color: #0000ff;">var</span> self = <span style="color: #0000ff;">this</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">this</span>.timeoutObj =<span style="color: #000000;"> setTimeout(function(){
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">这里发送一个心跳，后端收到后，返回一个心跳消息，
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">onmessage拿到返回的心跳就说明连接正常</span>
+                ws.send(<span style="color: #800000;">"</span><span style="color: #800000;">heartbeat</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                self.serverTimeoutObj </span>= setTimeout(function(){<span style="color: #008000;">//</span><span style="color: #008000;">如果超过一定时间还没重置，说明后端主动断开了</span>
+                    ws.close();<span style="color: #008000;">//</span><span style="color: #008000;">如果onclose会执行reconnect，我们执行ws.close()就行了.如果直接执行reconnect 会触发onclose导致重连两次</span>
+<span style="color: #000000;">                }, self.timeout);
+            }, </span><span style="color: #0000ff;">this</span><span style="color: #000000;">.timeout);
+        },
+        header:function(url) {
+            window.location.href</span>=<span style="color: #000000;">url
+        }
+
+    }
+</span>&lt;/script&gt;
+&lt;/html&gt;<span style="color: #000000;">
+访问前端页面 (显示如下说明前后端链接成功)</span></code></pre>
+
+<p><img src="./images/Laravel 中使用 swoole 项目实战开发案例一 (建立 swoole 和前端通信)0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

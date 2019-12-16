@@ -1,0 +1,130 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修身份证校验-----15位，18位后端' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>身份证校验-----15位，18位后端</center></div><div class='banquan'>原文出处:本文由博客园博主糖粿提供。<br/>
+原文连接:https://www.cnblogs.com/silen0119/p/11430942.html</div><br>
+    <p><span style="color: #0000ff; font-size: 14pt;">用的是thinkphp5 + layui</span></p>
+<p>代码：</p>
+<src class="cnblogs_Highlighter">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>     <span style="color: #008000;">//</span><span style="color: #008000;">添加志愿者</span>
+<span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> add()
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;request-&gt;<span style="color: #000000;">isAjax())
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;"> 6</span>             <span style="color: #800080;">$request</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Request();     
+</span><span style="color: #008080;"> 7</span>             <span style="color: #800080;">$params</span> = <span style="color: #800080;">$this</span>-&gt;request-&gt;<span style="color: #000000;">param();   
+</span><span style="color: #008080;"> 8</span>             <span style="color: #800080;">$title</span> = <span style="color: #800080;">$params</span>['title'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 9</span>             <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$title</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">10</span>                 <span style="color: #800080;">$this</span>-&gt;error('请输入志愿者名称！'<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">12</span>             <span style="color: #800080;">$volun</span> = <span style="color: #800080;">$params</span>['volun_no'<span style="color: #000000;">];
+</span><span style="color: #008080;">13</span>             <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$volun</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">14</span>                 <span style="color: #800080;">$this</span>-&gt;error('请输入志愿者编号！'<span style="color: #000000;">);
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">            }   
+</span><span style="color: #008080;">16</span>             <span style="color: #800080;">$identity</span> = <span style="color: #800080;">$params</span>['identity'<span style="color: #000000;">];
+</span><span style="color: #008080;">17</span>             <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$identity</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">18</span>                 <span style="color: #800080;">$this</span>-&gt;error('请输入您的身份证号或护照号！'<span style="color: #000000;">);
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">20</span>             <span style="color: #800080;">$type</span> = <span style="color: #800080;">$params</span>['identity_type'<span style="color: #000000;">];
+</span><span style="color: #008080;">21</span>             <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$identity</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">22</span>                 <span style="color: #800080;">$this</span>-&gt;error('请选择您的证件类型！'<span style="color: #000000;">);
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">24</span>             <span style="color: #008000;">//</span><span style="color: #008000;">类型type=1身份证，type=2护照            </span>
+<span style="color: #008080;">25</span>             <span style="color: #0000ff;">if</span>(15==<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$identity</span>)){ <span style="color: #008000;">//</span><span style="color: #008000;">检查15位                </span>
+<span style="color: #008080;">26</span>                 <span style="color: #800080;">$regx</span> = "/^(\d{6})+(\d{2})+(\d{2})+(\d{2})+(\d{3})$/"<span style="color: #000000;">;
+</span><span style="color: #008080;">27</span>                 <span style="color: #800080;">$arr_split</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">28</span>                 @<span style="color: #008080;">preg_match</span>(<span style="color: #800080;">$regx</span>, <span style="color: #800080;">$identity</span>, <span style="color: #800080;">$arr_split</span><span style="color: #000000;">);
+</span><span style="color: #008080;">29</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">检查生日日期是否正确</span>
+<span style="color: #008080;">30</span>                 <span style="color: #800080;">$dtm_birth</span> = "19".<span style="color: #800080;">$arr_split</span>[2] . '/' . <span style="color: #800080;">$arr_split</span>[3]. '/' .<span style="color: #800080;">$arr_split</span>[4<span style="color: #000000;">];
+</span><span style="color: #008080;">31</span>                 <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$dtm_birth</span><span style="color: #000000;">))
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">                {
+</span><span style="color: #008080;">33</span>                     <span style="color: #800080;">$this</span>-&gt;error('您输入的身份证号码有误！'<span style="color: #000000;">);
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">                } 
+</span><span style="color: #008080;">35</span>                 <span style="color: #800080;">$result</span> = Db::name('volunteers')-&gt;where(['identity'=&gt;<span style="color: #800080;">$identity</span>])-&gt;<span style="color: #000000;">find();
+</span><span style="color: #008080;">36</span>                 <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">){
+</span><span style="color: #008080;">37</span>                     <span style="color: #800080;">$this</span>-&gt;error('该志愿者身份证号已存在，请勿重复添加！'<span style="color: #000000;">);
+</span><span style="color: #008080;">38</span>                 }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">39</span>                     <span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;">40</span>                         'title'          =&gt; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$params</span>['title']) ? <span style="color: #800080;">$params</span>['title'] : '',
+<span style="color: #008080;">41</span>                         'volun_no'       =&gt; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$params</span>['volun_no']) ? <span style="color: #800080;">$params</span>['volun_no'] : '',
+<span style="color: #008080;">42</span>                         'userid'         =&gt; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$params</span>['userid']) ? <span style="color: #800080;">$params</span>['userid'] : 0,
+<span style="color: #008080;">43</span>                         'createtime'     =&gt; <span style="color: #008080;">time</span>(),
+<span style="color: #008080;">44</span>                         'updatetime'     =&gt; <span style="color: #008080;">time</span>(),
+<span style="color: #008080;">45</span>                         'identity'       =&gt; <span style="color: #800080;">$params</span>['identity'],
+<span style="color: #008080;">46</span>                         'identity_type'  =&gt; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$params</span>['identity_type']) ? <span style="color: #800080;">$params</span>['identity_type'] : 1,
+<span style="color: #008080;">47</span> <span style="color: #000000;">                    ]; 
+</span><span style="color: #008080;">48</span>                     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span> = Db::name('volunteers')-&gt;insert(<span style="color: #800080;">$data</span><span style="color: #000000;">))
+</span><span style="color: #008080;">49</span> <span style="color: #000000;">                    {
+</span><span style="color: #008080;">50</span>                         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;success('志愿者添加成功！'<span style="color: #000000;">);
+</span><span style="color: #008080;">51</span>                     }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">52</span>                         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;error('志愿者添加失败！'<span style="color: #000000;">);
+</span><span style="color: #008080;">53</span> <span style="color: #000000;">                    } 
+</span><span style="color: #008080;">54</span>                     <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;">55</span> <span style="color: #000000;">                }  
+</span><span style="color: #008080;">56</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">57</span>             <span style="color: #0000ff;">if</span>( <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$identity</span> ) != 18<span style="color: #000000;">) {
+</span><span style="color: #008080;">58</span>                 <span style="color: #800080;">$this</span>-&gt;error('您输入的身份证号码有误！'<span style="color: #000000;">);
+</span><span style="color: #008080;">59</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">60</span>             <span style="color: #800080;">$crad_id_base</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$identity</span> , 0, 17<span style="color: #000000;">);
+</span><span style="color: #008080;">61</span>             <span style="color: #800080;">$crad_id_verify</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$identity</span> , -1<span style="color: #000000;">);
+</span><span style="color: #008080;">62</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> 加权因子 </span>
+<span style="color: #008080;">63</span>             <span style="color: #800080;">$factor</span> = <span style="color: #0000ff;">array</span>(7, 9, 10, 5, 8, 4, 2, 1, 6, 3<span style="color: #000000;">);
+</span><span style="color: #008080;">64</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> 校验码对应值 </span>
+<span style="color: #008080;">65</span>             <span style="color: #800080;">$verify_number_list</span> = <span style="color: #0000ff;">array</span>('1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'<span style="color: #000000;">);
+</span><span style="color: #008080;">66</span>             <span style="color: #800080;">$checksum</span> = 0<span style="color: #000000;">;
+</span><span style="color: #008080;">67</span>             <span style="color: #0000ff;">for</span>( <span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$crad_id_base</span>); <span style="color: #800080;">$i</span>++<span style="color: #000000;"> ) {
+</span><span style="color: #008080;">68</span>                 <span style="color: #800080;">$checksum</span> += <span style="color: #008080;">substr</span>(<span style="color: #800080;">$crad_id_base</span>, <span style="color: #800080;">$i</span>, 1) * <span style="color: #800080;">$factor</span>[<span style="color: #800080;">$i</span> % 10<span style="color: #000000;">];
+</span><span style="color: #008080;">69</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">70</span>             <span style="color: #800080;">$mod</span> = <span style="color: #800080;">$checksum</span> % 11<span style="color: #000000;">;
+</span><span style="color: #008080;">71</span>             <span style="color: #0000ff;">if</span>( <span style="color: #800080;">$crad_id_verify</span> == <span style="color: #800080;">$verify_number_list</span>[<span style="color: #800080;">$mod</span><span style="color: #000000;">] ) {
+</span><span style="color: #008080;">72</span>                 <span style="color: #800080;">$result</span> = Db::name('volunteers')-&gt;where(['identity'=&gt;<span style="color: #800080;">$identity</span>])-&gt;<span style="color: #000000;">find();
+</span><span style="color: #008080;">73</span>                 <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">){
+</span><span style="color: #008080;">74</span>                     <span style="color: #800080;">$this</span>-&gt;error('该志愿者身份证号已存在，请勿重复添加！'<span style="color: #000000;">);
+</span><span style="color: #008080;">75</span>                 }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">76</span>                     <span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;">77</span>                         'title'          =&gt; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$params</span>['title']) ? <span style="color: #800080;">$params</span>['title'] : '',
+<span style="color: #008080;">78</span>                         'volun_no'       =&gt; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$params</span>['volun_no']) ? <span style="color: #800080;">$params</span>['volun_no'] : '',
+<span style="color: #008080;">79</span>                         'userid'         =&gt; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$params</span>['userid']) ? <span style="color: #800080;">$params</span>['userid'] : 0,
+<span style="color: #008080;">80</span>                         'createtime'     =&gt; <span style="color: #008080;">time</span>(),
+<span style="color: #008080;">81</span>                         'updatetime'     =&gt; <span style="color: #008080;">time</span>(),
+<span style="color: #008080;">82</span>                         'identity'       =&gt; <span style="color: #800080;">$params</span>['identity'],
+<span style="color: #008080;">83</span>                         'identity_type'  =&gt; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$params</span>['identity_type']) ? <span style="color: #800080;">$params</span>['identity_type'] : 1,
+<span style="color: #008080;">84</span> <span style="color: #000000;">                    ]; 
+</span><span style="color: #008080;">85</span>                     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span> = Db::name('volunteers')-&gt;insert(<span style="color: #800080;">$data</span><span style="color: #000000;">))
+</span><span style="color: #008080;">86</span> <span style="color: #000000;">                    {
+</span><span style="color: #008080;">87</span>                         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;success('志愿者添加成功！'<span style="color: #000000;">);
+</span><span style="color: #008080;">88</span>                     }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">89</span>                         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;error('志愿者添加失败！'<span style="color: #000000;">);
+</span><span style="color: #008080;">90</span> <span style="color: #000000;">                    } 
+</span><span style="color: #008080;">91</span>                     <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;">92</span> <span style="color: #000000;">                }  
+</span><span style="color: #008080;">93</span>                 <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;">94</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">95</span> <span style="color: #000000;">        }                                                    
+</span><span style="color: #008080;">96</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">fetch();
+</span><span style="color: #008080;">97</span>     }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,97 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【php设计模式】建造者模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【php设计模式】建造者模式</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10912719.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+*建造者模式特点：
+*    1.客户端不必知道产品内部组成的细节，将产品本身与产品的创建过程解耦，使得相同的创建过程可以创建不同的产品对象。
+*    2.每一个具体建造者都相对独立，而与其他的具体建造者无关，因此可以很方便地替换具体建造者或增加新的具体建造者， *用户使用不同的具体建造者即可得到不同的产品对象 
+*    3.建造者模式所创建的产品一般具有较多的共同点，其组成部分相似，如果产品之间的差异性很大，则不适合使用建造者模式
+*
+*角色：
+*    Product（产品角色）：一个具体的产品对象。 
+*    Builder（抽象建造者）：创建一个Product对象的各个部件指定的抽象接口。 
+*    ConcreteBuilder（具体建造者）：实现抽象接口，构建和装配各个部件。 
+*    Director（指挥者）：构建一个使用Builder接口的对象。它主要是用于创建一个复杂的对象。它主要有两个作用，一是：隔离了客户与对象的生产过程，
+*                        二是：负责控制产品对象的生产过程。
+*
+*示例：
+*    通过建造者模式来创建不同配置的手机，用户购买手机时不需要知道手机是怎么生产出来的只要说自己要低配手机（低配建造者）还是高配手机（高配建造者）然后手机商（指挥者）去获取
+*
+</span><span style="color: #008000;">*/</span>
+
+
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Phone{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$ram</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$rom</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Builder{
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #800080;">$phone</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct(){
+        </span><span style="color: #800080;">$this</span>-&gt;phone = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Phone;
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> addRom();
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> addRam();
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getResult(){
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">phone;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span> LowBuilder <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Builder{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> addRom(){
+        </span><span style="color: #800080;">$this</span>-&gt;phone-&gt;rom = "4G"<span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> addRam(){
+        </span><span style="color: #800080;">$this</span>-&gt;phone-&gt;ram = "3G"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span> HightBuilder <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Builder{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> addRom(){
+        </span><span style="color: #800080;">$this</span>-&gt;phone-&gt;rom = "6G"<span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> addRam(){
+        </span><span style="color: #800080;">$this</span>-&gt;phone-&gt;ram = "4G"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Shoper{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Builder <span style="color: #800080;">$builder</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$builder</span>-&gt;<span style="color: #000000;">addRom();
+        </span><span style="color: #800080;">$builder</span>-&gt;<span style="color: #000000;">addRam();
+    }
+}
+
+</span><span style="color: #800080;">$builder</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> HightBuilder();
+</span><span style="color: #0000ff;">new</span> Shoper(<span style="color: #800080;">$builder</span><span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$builder</span>);</code></pre>
+
+<p>&nbsp;</p>
+<p>我的博客即将同步至腾讯云+社区，邀请大家一同入驻：https://cloud.tencent.com/developer/support-plan?invite_code=c33kfpax3kel</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

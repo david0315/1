@@ -1,0 +1,73 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php json_encode()函数返回对象和数组问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php json_encode()函数返回对象和数组问题</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/11433231.html</div><br>
+    <p>php json_encode() 函数格式化数据时会根据不同的数组类型格式化不同类型的json数据</p>
+<p><span style="background-color: #ff6600;">&nbsp;</span>&nbsp;索引数组时</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$arr</span> = [1,2,3,4,5<span style="color: #000000;">];
+</span><span style="color: #008080;">print_r</span>(json_encode(<span style="color: #800080;">$arr</span><span style="color: #000000;">));
+</span><span style="color: #008000;">//</span><span style="color: #008000;">输出 [1,2,3,4,5]</span></code></pre>
+
+<p><span style="background-color: #ff6600;">&nbsp;</span> 关联数组时</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [
+    </span>"name"=&gt;"Bob",
+    "job"=&gt;"IT"<span style="color: #000000;">
+];
+</span><span style="color: #008080;">print_r</span>(json_encode(<span style="color: #800080;">$arr</span><span style="color: #000000;">));
+</span><span style="color: #008000;">//</span><span style="color: #008000;">输出  {"name":"Bob","job":"IT"}</span></code></pre>
+
+<p><span style="background-color: #ff6600;">&nbsp;</span> 空数组</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;">print_r</span>(json_encode(<span style="color: #800080;">$arr</span><span style="color: #000000;">));
+</span><span style="color: #008000;">//</span><span style="color: #008000;">输出 []</span></code></pre>
+
+<p>索引数组时生成的是数组类型数据，关联数组时生成的是对象类型的数据，空数组返回的是数组类型。但是当碰到同一个字段返回的数组可能是关联数组也可能是空数组时，就会在app端出现数据类型不一致的问题，解决方式有两种：</p>
+<p>一，使用 json_encode的&nbsp;JSON_FORCE_OBJECT 模式</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;">print_r</span>(json_encode(<span style="color: #800080;">$arr</span>,<span style="color: #000000;">JSON_FORCE_OBJECT));
+</span><span style="color: #008000;">//</span><span style="color: #008000;">输出 {}</span></code></pre>
+
+<p>但是这种存在一个问题，它会把所有的数据都以对象的方式返回，包括索引数组：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$arr</span> = [1,2,3,4,5,6<span style="color: #000000;">];
+</span><span style="color: #008080;">print_r</span>(json_encode(<span style="color: #800080;">$arr</span>,<span style="color: #000000;">JSON_FORCE_OBJECT));
+</span><span style="color: #008000;">//</span><span style="color: #008000;">输出  {"0":1,"1":2,"2":3,"3":4,"4":5,"5":6}</span></code></pre>
+
+<p>二，定义空数据时使用 ArrayObject 定义而不适用&nbsp;&nbsp;<span class="cnblogs_code"><span style="color: #0000ff;">Array</span>()</span>&nbsp;或者&nbsp;&nbsp;<span class="cnblogs_code">[]</span>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> ArrayObject();
+</span><span style="color: #008080;">print_r</span>(json_encode(<span style="color: #800080;">$arr</span><span style="color: #000000;">));
+</span><span style="color: #008000;">//</span><span style="color: #008000;">输出 {}</span></code></pre>
+
+<p>到这里我们可以随意的控制返回的json数据中数据的类型啦！！！！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

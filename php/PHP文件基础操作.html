@@ -1,0 +1,86 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP文件基础操作' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP文件基础操作</center></div><div class='banquan'>原文出处:本文由博客园博主王宇阳提供。<br/>
+原文连接:https://www.cnblogs.com/wangyuyang1016/p/11470584.html</div><br>
+    <h4 id="文件的基本操作更多">文件的基本操作:（<a href="https://www.w3school.com.cn/php/php_ref_filesystem.asp">更多</a>）</h4>
+<h5 id="fopen文件打开">fopen():文件打开</h5>
+<pre><code><code>$file = fopen(&quot;file.txt&quot;,&quot;r+&quot;); </code></code></pre>
+<p><em>fopen()函数的参数是目标文件的路径和文件的读写模式；同时fopen函数也会在打开文件时候发现没有文件会自动创建一个文件但是模式必须是读写或写入的模式</em></p>
+<h5 id="fread文件读取">fread():文件读取</h5>
+<pre><code><code>fread($file,filesize(&quot;file.txt&quot;));</code></code></pre>
+<p><em>fread()函数的参数是需要读取的文件和文件读取的最大字节数</em></p>
+<h5 id="fgets读取单行文件">fgets():读取单行文件</h5>
+<pre><code><code>fgets($file);</code></code></pre>
+<p><em>读取文件中的单行文字，没读取一次就会将文件指针指向下一行的首部</em></p>
+<h5 id="fgetc读取单个字符">fgetc():读取单个字符</h5>
+<pre><code><code>fgetc($file);</code></code></pre>
+<p><em>fgetc()函数将会逐个字符的读取内容输出；常见的是结合while循环输出，利用EOF检查函数feof()来控制循环</em></p>
+<h5 id="fclose文件关闭">fclose():文件关闭</h5>
+<pre><code><code>fclose($file);</code></code></pre>
+<p><em>文件一旦被打开在原则上一定要在使用后关闭它</em></p>
+<blockquote>
+<p>fopen()函数打开的文件赋值给一个变量file，相当于file就是文件的地址指针，fread()函数依据file的地址指针可以找到自己需要读取的文件（同理，在fread()函数中可以直接使用fopen()函数，直接打开文件，告诉fread()文件地址，然后函数执行自己的人物）</p>
+</blockquote>
+<h5 id="php文件检查eof">PHP文件检查(EOF)：</h5>
+<h6 id="feof检查是否达到文件尾部">feof():检查是否达到文件尾部</h6>
+<pre><code><code>feof($file);</code></code></pre>
+<p><em>feof()函数的主要功能是检查文件中的指针是否到达文件末尾，可以借此来解决未知大小的文件读写防止越界的问题</em></p>
+<h5 id="fwrite写入文件">fwrite():写入文件</h5>
+<pre><code><code>    &lt;?php
+        $file = fopen(&quot;/File.txt&quot;,&quot;w&quot;);// w:文件写入模式；如果没有该文件就会自动创建文件
+        $txt = &quot;Chinawangyuyang\r\nGMAIL.com&quot;;//以String类写入，并运用转义转义字符实现简单排版
+        fwrite($file, $txt);//参数：写入路径，写入的内容
+        fclose($file);
+    ?&gt;</code></code></pre>
+<p><em>fwrite()函数参数主要是写入的文件地址和需要写入的字符串或字符类型的变量</em></p>
+<p><strong>注意：</strong> 文件写入和文件的操作（读写）模式有着非常重要的关系；fwrite()函数只负责向文件写入数据，而fopen()函数每次打开文件的时候就会将指针指向文件首部或是直接将新的数据覆盖原有的所有数据或部分数据；所以我们在对现有文件不覆盖进行文件数据增删的时候需要注意fopen()函数选择的读写模式为<u>追加</u>或者是指定文件指针的位置，从指针位置开始写入数据信息；</p>
+<h4 id="其它文件函数">其它文件函数：</h4>
+<h5 id="file_exists文件是否存在">file_exists():文件是否存在</h5>
+<pre><code><code>file_exists(&quot;file.txt&quot;);</code></code></pre>
+<p><em>（不打开文件）检测文件是否存在；参数是文件的相对或绝对地址路径；返回布尔值</em></p>
+<h5 id="filesize文件字节大小">filesize():文件字节大小</h5>
+<pre><code><code>filesize(&quot;file.txt&quot;)；</code></code></pre>
+<p><em>检测文件的字节大小，参数是文件的相对或绝对地址路径；</em></p>
+<h5 id="unlink删除文件">unlink():删除文件</h5>
+<pre><code><code>unlink(&quot;file.txt&quot;);</code></code></pre>
+<p><em>删除指定的文件；参数是文件的相对或绝对地址路径；返回布尔值</em></p>
+<h5 id="文件指针定位">文件指针定位：</h5>
+<h6 id="rewind首部">rewind():首部</h6>
+<ul>
+<li>将文件指针复位到文件的首部</li>
+</ul>
+<h6 id="ftell返回位置">ftell():返回位置</h6>
+<ul>
+<li>将文件指针的当前位置返回</li>
+</ul>
+<h6 id="fseek指定位置">fseek():指定位置</h6>
+<ul>
+<li><p>将指针移动到指定的位置</p>
+<pre><code><code>int fseek( resource fp , int offset [, int whence]);</code></code></pre>
+<p><em>fseek()函数主要的功能是将文件指针fp从whence位置移动offset字节；（whence默认是文件首部 [SEEK_SET]；当前指针位置[SEEK_CUR]；文件尾部 [SEEK_END]）</em></p></li>
+</ul>
+<h5 id="flock文件锁定">flock():文件锁定</h5>
+<pre><code><code>bool flock( resource fp , int operation [, int &amp;wouldblock]);</code></code></pre>
+<p>*通过flock()函数来完成对文件锁定；主要参数有：指定文件指针，以及一个需要锁定类型的常数；返回布尔值（是否成功锁定文件）；</p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

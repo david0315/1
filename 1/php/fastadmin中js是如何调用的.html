@@ -1,0 +1,99 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修fastadmin中js是如何调用的' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>fastadmin中js是如何调用的</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/10861135.html</div><br>
+    <p>想要了解fastadmin中的js是怎么调用的，就应该先了解RequireJs。</p>
+<p>RequireJs是模块化工具，每一个我们自己的js文件或者库都可以看成是一个模块，按需引入。写法如下：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;script data-main="js/main" src="js/require.js"&gt;&lt;/script&gt;</code></pre>
+
+<p>src是引入requrejs框架文件，data-main是我们自己的js的总入口。js/main对应的js文件是js/main.js（可自行命名）&nbsp;</p>
+<p>&nbsp;我们在写项目的时候肯定会用到一些js和js类库，那RequireJs是怎么引用的，下面来介绍一下，</p>
+<p>引入第三方库：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">require</span>.<span style="color: #000000;">config({
+　　paths</span>:<span style="color: #000000;"> {
+　　　　</span>'lang': "empty:",
+　　　　'form': 'require-form',
+　　　　'table': 'require-table',
+　　　　'upload': 'require-upload',
+　　　　'validator': 'require-validator',
+　　　　'drag': 'jquery.drag.min',
+　　　　'drop': 'jquery.drop.min',
+　　　　'echarts': 'echarts.min',
+　　　　'echarts-theme': 'echarts-theme',
+　　　　'jquery': '../libs/jquery/dist/jquery.min',<span style="color: #000000;">
+
+　　}</span>,
+　　<span style="color: #008000;">//</span><span style="color: #008000;"> shim依赖配置</span>
+　　shim:<span style="color: #000000;"> {
+　　　　</span>'addons': ['backend'],
+　　　　'bootstrap': ['jquery'],
+　　　　'bootstrap-table':<span style="color: #000000;"> {
+　　　　　　deps</span>:<span style="color: #000000;"> [
+　　　　　　　　</span>'bootstrap',
+　　　　　　　　<span style="color: #008000;">//</span><span style="color: #008000;"> 'css!../libs/bootstrap-table/dist/bootstrap-table.min.css'</span>
+　　　　　　],<span style="color: #000000;">
+　　　　exports</span>: '$.fn.bootstrapTable'<span style="color: #000000;">
+　　　　}</span>,
+　　　　'bootstrap-table-lang':<span style="color: #000000;"> {
+　　　　　　deps</span>: ['bootstrap-table'],<span style="color: #000000;">
+　　　　　　exports</span>: '$.fn.bootstrapTable.defaults'<span style="color: #000000;">
+　　　　}</span>,<span style="color: #000000;">
+
+　　}</span>,<span style="color: #000000;">
+　　map</span>:<span style="color: #000000;"> {
+　　　　</span>'*':<span style="color: #000000;"> {
+　　　　　　</span>'css': '../libs/require-css/css.min'<span style="color: #000000;">
+　　　　}
+　　}</span>,<span style="color: #000000;">
+　　waitSeconds</span>: 30,<span style="color: #000000;">
+　　charset</span>: 'utf-8' <span style="color: #008000;">//</span><span style="color: #008000;"> 文件编码</span>
+});</code></pre>
+
+<p>&nbsp;config中paths用来配置支持AMD规范的库和js文件，shim是用来配不支持AMD规范的js。配好之后，假设现在要使用jquery和bootstrap，只要用require方法：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>require(['jquery', 'bootstrap'], function ($, undefined) {
+    //该function将在引入jquery和bootstrap完成之后执行。
+});</code></pre>
+
+<p>&nbsp;要使用我们自己定义的js，首先得用模块化的方式编写我们的js，使用define定义一个模块：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>define('modelname',['jquery','xxx'], function ($,xxx) {
+
+    var hehe = {
+        function1: function () {
+
+        },
+        function2: function () {
+
+        },
+        function3: function () {
+
+        }
+    };
+    return hehe;
+});                </code></pre>
+
+<p>&nbsp;define有三个参数，第一个是模块名（可以不写，默认与模块名与文件名同名），第二个是当前模块依赖的其他模块，第三个是一个function，模块体，要求必须return一个数据。<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

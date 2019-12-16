@@ -1,0 +1,106 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中Session ID的实现原理分析' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中Session ID的实现原理分析</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11827821.html</div><br>
+    <p><strong>ession 的工作机制：</strong></p>
+<p>为每个访问者创建一个唯一的 id (UID)，并基于这个 UID 来存储变量。UID 存储在 cookie 中，亦或通过 URL 进行传导。</p>
+<p><strong>PHPSESSIONID的生产算法原理：</strong></p>
+<p>1、hash_func = md5 / sha1 #可由php.ini配置</p>
+<p>2、PHPSESSIONID = hash_func(客户端IP + 当前时间（秒）+ 当前时间（微妙）+ PHP自带的随机数生产器)</p>
+<p>从以上hash_func(*)中的数据采样值的内容分析，多个用户在同一台服务器时所生产的PHPSESSIONID重复的概率极低。</p>
+<p>另外，黑客如果要猜出某一用户的PHPSESSIONID，则他也必须知道&ldquo;客户端IP、当前时间（秒、微妙）、随机数&rdquo;等数据方可模拟。</p>
+<p><strong>php.ini配置如下：</strong></p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">; Select a hash </code><code class="php keyword">function</code> <code class="php keyword">for</code> <code class="php keyword">use</code> <code class="php plain">in generating session ids.</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">; Possible Values</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">;&nbsp; 0 (MD5 128 bits)</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">;&nbsp; 1 (SHA-1 160 bits)</code></p>
+<p class="line number5 index4 alt2"><code class="php plain">; This option may also be set to the name of any hash </code><code class="php keyword">function</code> <code class="php plain">supported by</code></p>
+<p class="line number6 index5 alt1"><code class="php plain">; the hash extension. A list of available hashes is returned by the hash_algos()</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">; </code><code class="php keyword">function</code><code class="php plain">.</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">; http:</code><code class="php comments">//php.net/session.hash-function</code></p>
+<p class="line number9 index8 alt2"><code class="php plain">session.hash_function=0</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>PHP Session工作原理</strong></p>
+<p>以下以cookie传输PHPSESSID描述。</p>
+<p>1、客户端请求一个php的服务端地址。</p>
+<p>2、服务端收到请求，此次php脚本中包含<code>session_start()</code>。</p>
+<p>3、服务端会生成一个<code>PHPSESSID</code>。（默认session存储方式为<code>session.save_handler=files</code>，文件形式存储。生成的session文件名规则即为<code>sess_PHPSESSID</code>，session文件存在<code>session.save_path</code>中。）</p>
+<p>4、服务端响应首部<code>Response Headers：Set-Cookie:PHPSESSID=37vjjasgjdv2ouk1uomhgqkv50; path=/</code>。在客户端生成一个cookie保存此<code>PHPSESSID</code>。</p>
+<p>5、此时，客户端的cookie里面包含了<code>PHPSESSID</code>，之后客户端的每次请求首部<code>Request Headers</code>：<code>Cookie:PHPSESSID=37vjjasgjdv2ouk1uomhgqkv50</code>。服务端之后每次接收到客户端的请求就都能根据这个<code>PHPSESSID</code>来找到服务端的session文件，通过对这个session文件的读写操作即实现了session的超全局变量属性。</p>
+<p>如果客户端禁用了cookie，由于无法使用cookie传递<code>PHPSESSID</code>，那么客户端每次请求，服务端都会重新建立一个session文件，而无法通过通过<code>PHPSESSID</code>来重用session文件，所以session也就失效了。</p>
+<p>这种情况可以设置<code>session.use_trans_sid</code>来传输<code>PHPSESSID</code>，具体实现方式与cookie的区别就是将<code>PHPSESSID</code>通过HTTP的<code>GET</code>传输。每次请求的地址里面都会补全PHPSESSID参数&rdquo;<code>url?PHPSESSID=37vjjasgjdv2ouk1uomhgqkv50</code>&rdquo;来实现。</p>
+<p><strong>PHPcli模式通过session_id()使用session</strong></p>
+<p>可以通过它来获取当前会话的PHPSESSID，也可以通过它来设置当前的会话PHPSESSID。</p>
+<p>PHPcli模式下可以通过设置这个，达到使用session的目的，非常方便。</p>
+<p>例如：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php comments">// session_id('vingbrv8m64asth0nhplu9gmb7');</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">session_start();</code></p>
+<p class="line number4 index3 alt1"><code class="php variable">$_SESSION</code><code class="php plain">[md5(rand(100,999))] = rand(100,999);</code></p>
+<p class="line number5 index4 alt2"><code class="php plain">var_dump(</code><code class="php variable">$_SESSION</code><code class="php plain">);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./images/PHP中Session ID的实现原理分析0.jpg" alt="" /></p>
+<p><strong>明确的学习思路能更高效的学习</strong></p>
+<p><strong><img src="./images/PHP中Session ID的实现原理分析1.jpg" alt="" /></strong></p>
+<p>&nbsp;</p>
+<p><a href="https://jq.qq.com/?_wv=1027&amp;k=51uS3kJ" target="_blank"><strong>点击加入该群学习</strong></a></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

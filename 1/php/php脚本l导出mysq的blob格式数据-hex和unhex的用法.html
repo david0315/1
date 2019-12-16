@@ -1,0 +1,97 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php脚本l导出mysq的blob格式数据-hex和unhex的用法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php脚本l导出mysq的blob格式数据-hex和unhex的用法</center></div><div class='banquan'>原文出处:本文由博客园博主大佬要争气提供。<br/>
+原文连接:https://www.cnblogs.com/yaozhengqi/p/11006995.html</div><br>
+    <h3 id="">前言</h3>
+<p>之前我们介绍过使用<strong>PHP脚本导出sql语句</strong>到测试服中的流程和注意点， 之前有个问题还没有解决的，就是mysql中blob类型数据是导不成功的。 这次找到了解决方法，这里记录一下。</p>
+<p><strong>什么是blob类型？</strong></p>
+<p>我们在【<a href="http://mp.weixin.qq.com/s?__biz=MjM5NDk5MDY3Nw==&amp;mid=500937778&amp;idx=1&amp;sn=4e465b3d50a3eb61848214e19aab8e34&amp;chksm=3ed04b0809a7c21eefb28994d6d9bc5a8068b974ae3e66da78ebece89cbfafbc79078564a903#rd" target="_blank">mysql常用数据类型中</a>】介绍过了blob类型，这里也说一下： 在MySQL中,<strong>Blob</strong>是一个二进制的对象，它是一个可以存储大量数据的容器(如图片，音乐等等)，且能容纳不同大小的数据。 在MySQL中有四种Blob类型，他们的区别就是可以容纳的信息量不容分别是以下四种:</p>
+<blockquote>
+<p>①TinyBlob类型 最大能容纳255B的数据</p>
+<p>②Blob类型 最大能容纳65KB的</p>
+<p>③MediumBlob类型 最大能容纳16MB的数据</p>
+<p>④LongBlob类型 最大能容纳4GB的数据</p>
+</blockquote>
+<h3 id="-1">场景</h3>
+<p>我们的一个表有个字段的数据是存储了一些会员信息，这些信息是由几个字段组成，然后json_encode 并且压缩后存储在字段类型为blob的字段中，这些信息以blob格式存储在数据库中，直接用sql查询出来都是乱码，无法显示，不信你可以尝试查询下。</p>
+<p>当我们导出成sql语句时，如果不做特殊处理，这些字段也会是乱码，会导致sql结构破坏掉，不能完整执行。</p>
+<p><strong>解决方案</strong> 找了下资料，发现mysql有两个函数，是可以格式化这些二进制数据的。 下面是两个函数的介绍</p>
+<p><strong>HEX 和UNHEX</strong> 建议先看一下官方免费手册中的说明。</p>
+<blockquote>
+<p><strong>HEX(NorS)</strong></p>
+<p>If NorS is a number, returns a string representation of the hexadecimal value of N, where N is a longlong (BIGINT) number. This is equivalent to CONV(N,10,16).</p>
+<p>翻译：如果NorS是数字，则返回十六进制值N的字符串表示，其中N是longlong（BIGINT）数字。 这相当于CONV（N，10,16）。</p>
+<p>If NorS is a string, returns a hexadecimal string representation of NorS where each character in NorS is converted to two hexadecimal digits. The inverse of this operation is performed by the UNHEX() function.</p>
+<p>翻译：如果NorS是字符串，则返回NorS的十六进制字符串表示形式，其中NorS中的每个字符都转换为两个十六进制数字。 此操作的反转由UNHEX（）函数执行。</p>
+</blockquote>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">mysql<span class="pun">&gt;<span class="pln"> SELECT HEX<span class="pun">(<span class="lit">255<span class="pun">);</span></span></span></span></span></span></code></li>
+<li class="L1"><code><span class="pln"> <span class="pun">-&gt;<span class="pln"> <span class="str">'FF'</span></span></span></span></code></li>
+<li class="L2"><code><span class="pln">mysql<span class="pun">&gt;<span class="pln"> SELECT <span class="lit">0x616263<span class="pun">;</span></span></span></span></span></code></li>
+<li class="L3"><code><span class="pln"> <span class="pun">-&gt;<span class="pln"> <span class="str">'abc'</span></span></span></span></code></li>
+<li class="L4"><code><span class="pln">mysql<span class="pun">&gt;<span class="pln"> SELECT HEX<span class="pun">(<span class="str">'abc'<span class="pun">);</span></span></span></span></span></span></code></li>
+<li class="L5"><code><span class="pln"> <span class="pun">-&gt;<span class="pln"> <span class="lit">616263</span></span></span></span></code></li>
+</ol>
+<blockquote>
+<p><strong>UNHEX(str)</strong></p>
+<p>Performs the inverse operation of HEX(str). That is, it interprets each pair of hexadecimal digits in the argument as a number and converts it to the character represented by the number. The resulting characters are returned as a binary string.</p>
+<p>翻译：执行HEX（str）的逆操作。 也就是说，它将参数中的每对十六进制数字解释为数字，并将其转换为数字表示的字符。 结果字符作为二进制字符串返回。</p>
+</blockquote>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">mysql<span class="pun">&gt;<span class="pln"> SELECT UNHEX<span class="pun">(<span class="str">'4D7953514C'<span class="pun">);</span></span></span></span></span></span></code></li>
+<li class="L1"><code><span class="pln"> <span class="pun">-&gt;<span class="pln"> <span class="str">'MySQL'</span></span></span></span></code></li>
+<li class="L2"><code><span class="pln">mysql<span class="pun">&gt;<span class="pln"> SELECT <span class="lit">0x4D7953514C<span class="pun">;</span></span></span></span></span></code></li>
+<li class="L3"><code><span class="pln"> <span class="pun">-&gt;<span class="pln"> <span class="str">'MySQL'</span></span></span></span></code></li>
+<li class="L4"><code><span class="pln">mysql<span class="pun">&gt;<span class="pln"> SELECT UNHEX<span class="pun">(<span class="pln">HEX<span class="pun">(<span class="str">'string'<span class="pun">));</span></span></span></span></span></span></span></span></code></li>
+<li class="L5"><code><span class="pln"> <span class="pun">-&gt;<span class="pln"> <span class="str">'string'</span></span></span></span></code></li>
+<li class="L6"><code><span class="pln">mysql<span class="pun">&gt;<span class="pln"> SELECT HEX<span class="pun">(<span class="pln">UNHEX<span class="pun">(<span class="str">'1267'<span class="pun">));</span></span></span></span></span></span></span></span></code></li>
+<li class="L7"><code><span class="pln"> <span class="pun">-&gt;<span class="pln"> <span class="str">'1267'</span></span></span></span></code></li>
+</ol>
+<blockquote>
+<p>The characters in the argument string must be legal hexadecimal digits: '0' .. '9', 'A' .. 'F', 'a' .. 'f'. If UNHEX() encounters any nonhexadecimal digits in the argument, it returns NULL:</p>
+<p>翻译：参数字符串中的字符必须是合法的十六进制数字：'0'..'9'，'A'..'F'，'a'..'f'。 如果UNHEX（）在参数中遇到任何非十六进制数字，则返回NULL：</p>
+</blockquote>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">mysql<span class="pun">&gt;<span class="pln"> SELECT UNHEX<span class="pun">(<span class="str">'GG'<span class="pun">);</span></span></span></span></span></span></code></li>
+<li class="L1"><code><span class="pun">+-------------+</span></code></li>
+<li class="L2"><code><span class="pun">|<span class="pln"> UNHEX<span class="pun">(<span class="str">'GG'<span class="pun">)<span class="pln"> <span class="pun">|</span></span></span></span></span></span></span></code></li>
+<li class="L3"><code><span class="pun">+-------------+</span></code></li>
+<li class="L4"><code><span class="pun">|<span class="pln"> NULL <span class="pun">|</span></span></span></code></li>
+<li class="L5"><code><span class="pun">+-------------+</span></code></li>
+</ol>
+<blockquote>
+<p>A NULL result can occur if the argument to UNHEX() is a BINARY column, because values are padded with 0x00 bytes when stored but those bytes are not stripped on retrieval. For example 'aa' is stored into a CHAR(3) column as 'aa ' and retrieved as 'aa' (with the trailing pad space stripped), so UNHEX() for the column value returns 'A'. By contrast 'aa' is stored into a BINARY(3) column as 'aa\0' and retrieved as 'aa\0' (with the trailing pad 0x00 byte not stripped). '\0' is not a legal hexadecimal digit, so UNHEX() for the column value returns NULL.</p>
+<p>翻译：如果UNHEX（）的参数是BINARY列，则可能会出现NULL结果，因为在存储时会使用0x00字节填充值，但这些字节在检索时不会被剥离。 例如，'aa'作为'aa'存储在CHAR（3）列中，并作为'aa'检索（尾随填充空间被剥离），因此列值的UNHEX（）返回'A'。 相比之下，'aa'作为'aa \ 0'存储在BINARY（3）列中，并作为'aa \ 0'检索（尾随填充0x00字节未被剥离）。 '\ 0'不是合法的十六进制数字，因此列值的UNHEX（）返回NULL。</p>
+</blockquote>
+<p><strong>综上，简单点理解就是</strong></p>
+<p>导出时采用HEX函数读取数据，把二进制的数据转为16进制的字符串；</p>
+<ol class="linenums">
+<li class="L0"><code><span class="kwd">select<span class="pln"> HEX<span class="pun">(<span class="pln">binField<span class="pun">)<span class="pln"> <span class="kwd">from<span class="pln"> testTable<span class="pun">;</span></span></span></span></span></span></span></span></span></code></li>
+<li class="L1"><code><span class="com">//查询出来的数据是一串可以展示的字符串，可以导出为sql语句，</span></code></li>
+<li class="L2"><code><span class="com">//但是要恢复，要是用其逆转函数UNHEX将数据格式化导入</span></code></li>
+</ol><hr /><ol class="linenums">
+<li class="L0"><code><span class="com">//导入时采用UNHEX函数，把16进制的字符串转为二进制的数据导入库中；</span></code></li>
+<li class="L1"><code><span class="pln">insert <span class="kwd">into<span class="pln"> testTable binField values<span class="pun">(<span class="pln">UNHEX<span class="pun">(<span class="lit">@hexstr<span class="pun">));</span></span></span></span></span></span></span></span></code></li>
+<li class="L2"><code><span class="com">//这样格式化后，可以完整的将数据导进去。</span></code></li>
+</ol>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

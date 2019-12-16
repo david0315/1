@@ -1,0 +1,457 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP文件上传和下载' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP文件上传和下载</center></div><div class='banquan'>原文出处:本文由博客园博主宸宇PHP提供。<br/>
+原文连接:https://www.cnblogs.com/chenyuphp/p/11915519.html</div><br>
+    <p><strong>第 1 章 文件上传</strong></p>
+<p><strong>1.1 客户端上传设置</strong></p>
+<p>在 B/S 程序中文件上传已经成为一个常用功能。其目的是客户可以通过浏览器 (Browser) 将文件上传到服务器（Server）上的指定目录。</p>
+<p>网络上常见的支持文件上传的网站：</p>
+<blockquote>
+<p>各种网盘</p>
+<p>头像</p>
+<p>网络相册</p>
+<p>实名认证</p>
+<p>邮件附件</p>
+</blockquote>
+<p>简单来说就是，Web 开发需要用户传递给服务器文件的都属于 PHP 的上传范畴。而服务器端只能接受的份，除非不做这个功能。</p>
+<p>就像 10086 客服，你只要打过去，它就要接受，不接受只能是服务器繁忙。</p>
+<p><strong>PHP 中文件上传的基础知识：</strong></p>
+<p>1）客户端 form 表单设置</p>
+<p>2） 服务器对上传文件进行操作处理</p>
+<p>必须设置的 form 表单项：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>文件上传<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>         <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="./upload.php"</span><span style="color: #ff0000;">  method</span><span style="color: #0000ff;">="post"</span><span style="color: #ff0000;"> enctype</span><span style="color: #0000ff;">="multipart/form-data"</span><span style="color: #0000ff;">&gt;</span><span style="color: #008000;">&lt;!--</span><span style="color: #008000;">必须要写</span><span style="color: #008000;">--&gt;</span>
+<span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span>             <span style="color: #008000;">&lt;!--</span><span style="color: #008000;">typle写file类型，name必须要写，名字随便</span><span style="color: #008000;">--&gt;</span>
+<span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>             选择文件：<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="myfile"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>             <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="上传文件"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span>         <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span>     <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>注意几个特征属性：</p>
+<p>1. 一定是 post 方式上传文件，不可用 get 方式。</p>
+<p>2. form 表单中一定要写 enctype="multipart/form-data"。</p>
+<p>3. input 表单一定要写 name 名。</p>
+<p>1.2 在服务器端通过 PHP 处理上传</p>
+<p>上传文件的接收和处理是通过 PHP 脚本来处理的，具体需要通过以下三个方面信息：</p>
+<p>1）设置 PH 配置文件中的指令：用于精细地调节 PHP 的文件上传功能。</p>
+<p>2）$FILES 多维数组：用于存储各种与上传文件有关的信息，其他数据还是使用 $_POST 获取。</p>
+<p>3）PHP 的文件上传处理函数：用于上传文件的后续处理。</p>
+<p>1）PHP 配置文件中与文件上传有关的选项。</p>
+<p><span class="cke_widget_wrapper cke_widget_inline cke_widget_image cke_image_nocaption cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="图像" data-cke-widget-id="10"><img id="img15744742741882" class="cke_widget_element" src="./images/PHP文件上传和下载0.jpg" alt="" data-fail="0" data-ratio="0.4011049723756906" data-src="https://mmbiz.qpic.cn/mmbiz_png/Lhm5kkN9JXNibYMibuImUTEia95ZgKaVk3gnJQPungLia9PrWvWZDtEpHf8nOiauiaALfx429oNJsUqIuIXzhk07Jnyg/640?wx_fmt=png" data-type="png" data-w="905" data-cke-saved-src="./images/PHP文件上传和下载0.jpg" data-cke-widget-data="%7B%22hasCaption%22%3Afalse%2C%22src%22%3A%22file%3A%2F%2F%2FC%3A%2FUsers%2FAdministrator%2FAppData%2FRoaming%2Fxiangxuema%2Fxxm%2F19%2Fimg15744742741882.webp%22%2C%22alt%22%3A%22%22%2C%22width%22%3A%22%22%2C%22height%22%3A%22%22%2C%22lock%22%3Atrue%2C%22align%22%3A%22none%22%2C%22classes%22%3Anull%7D" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="image" /><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /><span class="cke_image_resizer" title="点击并拖拽以改变尺寸">​<img src="./images/PHP文件上传和下载2.jpg" alt="" /></span></span></span></p>
+<p>2）$_FILES 多维数组。</p>
+<p>超级全局数组 $_FILES</p>
+<p>1、$_FILES["myfile"]["name"]中的值是:客户端文件系统的文件的名称。</p>
+<p>2、$FILES["myfile"]["type"]中的值是:客户端传递的文件的类型。</p>
+<p>3、$_FILES["myfile"]["size"]中的值是:文件的字节的大小。</p>
+<p>4、$_FILES["myfile"]["tmp_name"]中的值是：文件被上传后在服务器存储的临时全路径。</p>
+<p>5、$_FILES["myfile"]["error"]中的值是:文件上传的错误代码－php 4.2以后增加的功能。</p>
+<p>关于 error 文件上传的错误代码：</p>
+<blockquote>
+<p>UPLOAD_ERR_OK</p>
+<p>其值为 0，没有错误发生，文件上传成功。</p>
+<p>UPLOAD_ERR_INI_SIZE</p>
+<p>其值为 1，上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值。</p>
+<p>UPLOAD_ERR_FORM_SIZE</p>
+<p>其值为 2，上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值。</p>
+<p>UPLOAD_ERR_PARTIAL</p>
+<p>其值为 3，文件只有部分被上传。</p>
+<p>UPLOAD_ERR_NO_FILE</p>
+<p>其值为 4，没有文件被上传。</p>
+<p>UPLOAD_ERR_NO_TMP_DIR</p>
+<p>其值为 6，找不到临时文件夹。PHP 4.3.10 和 PHP 5.0.3 引进。</p>
+<p>UPLOAD_ERR_CANT_WRITE</p>
+<p>其值为 7，文件写入失败。PHP 5.1.0 引进。</p>
+</blockquote>
+<p>注意: 以上值在 PHP 4.3.0 之后变成了 PHP 常量。</p>
+<p><strong>常见数据格式（MIME）</strong></p>
+<p><span class="cke_widget_wrapper cke_widget_inline cke_widget_image cke_image_nocaption cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="图像" data-cke-widget-id="9"><img id="img15744742741984" class="cke_widget_element" src="./images/PHP文件上传和下载3.jpg" alt="" data-fail="0" data-ratio="0.3281767955801105" data-src="https://mmbiz.qpic.cn/mmbiz_png/Lhm5kkN9JXNibYMibuImUTEia95ZgKaVk3g95WUAjxrzibUEurMoGicVvG40VKKgNnKlfWFsUgkqLlOMnt7WcAKRE6A/640?wx_fmt=png" data-type="png" data-w="905" data-cke-saved-src="./images/PHP文件上传和下载3.jpg" data-cke-widget-data="%7B%22hasCaption%22%3Afalse%2C%22src%22%3A%22file%3A%2F%2F%2FC%3A%2FUsers%2FAdministrator%2FAppData%2FRoaming%2Fxiangxuema%2Fxxm%2F19%2Fimg15744742741984.webp%22%2C%22alt%22%3A%22%22%2C%22width%22%3A%22%22%2C%22height%22%3A%22%22%2C%22lock%22%3Atrue%2C%22align%22%3A%22none%22%2C%22classes%22%3Anull%7D" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="image" /><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /><span class="cke_image_resizer" title="点击并拖拽以改变尺寸">​<img src="./images/PHP文件上传和下载5.jpg" alt="" /></span></span></span></p>
+<p><strong>3) PHP 的文件上传处理函数</strong></p>
+<p>上传成功的文件会被放置到服务器端临时目录下，文件名是随机生成的临时文件名。</p>
+<p>注：该文件在程序执行完后将自动被删除掉。</p>
+<p>在删除前可以像本地文件一样操作。</p>
+<p>文件上传处理函数：</p>
+<blockquote>
+<p>is_uploaded_file &mdash; 判断文件是否是通过 HTTP POST 上传的。</p>
+<p>格式：bool is_uploaded_file (string $filename)</p>
+<p>move_uploaded_file &mdash; 将上传的文件移动到新位置。</p>
+<p>格式：bool move_uploaded_file (string $filename , string $destination)</p>
+</blockquote>
+<p>注意：如果目标文件已经存在，将会被覆盖。</p>
+<p>参数说明：文件临时目录，要移动到的位置目录</p>
+<p>案例：</p>
+<p>1） 设置前端上传界面</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">DOCTYPE html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">="UTF-8"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>Document<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="doup.php"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="post"</span><span style="color: #ff0000;"> enctype</span><span style="color: #0000ff;">="multipart/form-data"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span>         <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="pic"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>         <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="上传"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span>     <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">24</span> 
+<span style="color: #008080;">25</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>2） doup.php 处理上传到临时目录的文件</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> 　　<span style="color: #008000;">//</span><span style="color: #008000;">专业搬运工具
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">  //move_uploaded_file()
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #008000;">  //参数1：文件临时目录  参数2: 要移动到的位置
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> <span style="color: #008000;">  //is_uploaded_file() 判断文件是否是http post提交过来的
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #008000;">  //参数1：文件临时目录
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #008000;">  //1.我们保存的路径按照时间来创建
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> <span style="color: #008000;">  //var_dump($_GET);
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span> <span style="color: #008000;">  //1.1保存的路径</span>
+<span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span>   <span style="color: #800080;">$dir</span>='./biran/'.<span style="color: #008080;">date</span>('Y/m/d/'<span style="color: #000000;">);
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>   <span style="color: #008000;">//</span><span style="color: #008000;">echo $dir;exit;
+</span><span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span> <span style="color: #008000;">  //1.2 判断文件上传的路径是否存在 如果不存在就创建</span>
+<span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span>   <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$dir</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">24</span> 
+<span style="color: #008080;">25</span>       <span style="color: #008080;">mkdir</span>(<span style="color: #800080;">$dir</span>,777,<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">26</span> 
+<span style="color: #008080;">27</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">28</span> 
+<span style="color: #008080;">29</span>   <span style="color: #008000;">//</span><span style="color: #008000;">2.要有个好的文件名 唯一的文件名
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span> <span style="color: #008000;">  //2.1获取文件的后缀名
+</span><span style="color: #008080;">32</span> 
+<span style="color: #008080;">33</span> <span style="color: #008000;">  //2.jpg  jpg </span>
+<span style="color: #008080;">34</span> 
+<span style="color: #008080;">35</span>   <span style="color: #800080;">$suffix</span> = <span style="color: #008080;">pathinfo</span>(<span style="color: #800080;">$_FILES</span>['pic']['name'],<span style="color: #000000;">PATHINFO_EXTENSION);
+</span><span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span>   <span style="color: #008000;">//</span><span style="color: #008000;">echo $suffix;
+</span><span style="color: #008080;">38</span> 
+<span style="color: #008080;">39</span> <span style="color: #008000;">  //2.2重新起名</span>
+<span style="color: #008080;">40</span> 
+<span style="color: #008080;">41</span>   <span style="color: #800080;">$filename</span> = <span style="color: #008080;">date</span>('Ymd').<span style="color: #008080;">uniqid</span>().<span style="color: #008080;">mt_rand</span>(0,9999).'.'.<span style="color: #800080;">$suffix</span><span style="color: #000000;">;
+</span><span style="color: #008080;">42</span> 
+<span style="color: #008080;">43</span>   <span style="color: #008000;">//</span><span style="color: #008000;">echo $filename;
+</span><span style="color: #008080;">44</span> 
+<span style="color: #008080;">45</span> <span style="color: #008000;">  //开始搬运
+</span><span style="color: #008080;">46</span> 
+<span style="color: #008080;">47</span> <span style="color: #008000;">  //判断是否是http post 传递的文件</span>
+<span style="color: #008080;">48</span> 
+<span style="color: #008080;">49</span>   <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>['pic']['tmp_name'<span style="color: #000000;">])){
+</span><span style="color: #008080;">50</span> 
+<span style="color: #008080;">51</span>       <span style="color: #008000;">//</span><span style="color: #008000;">不是http post上传文件</span>
+<span style="color: #008080;">52</span> 
+<span style="color: #008080;">53</span>       <span style="color: #0000ff;">echo</span> '别整没用的！！';<span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+</span><span style="color: #008080;">54</span> 
+<span style="color: #008080;">55</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">56</span> 
+<span style="color: #008080;">57</span>   <span style="color: #008000;">//</span><span style="color: #008000;">开始真正的搬运</span>
+<span style="color: #008080;">58</span> 
+<span style="color: #008080;">59</span>   <span style="color: #0000ff;">if</span>(<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>['pic']['tmp_name'],<span style="color: #800080;">$dir</span>.<span style="color: #800080;">$filename</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">60</span> 
+<span style="color: #008080;">61</span>       <span style="color: #0000ff;">echo</span> '11111111111'<span style="color: #000000;">;
+</span><span style="color: #008080;">62</span> 
+<span style="color: #008080;">63</span>   }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">64</span> 
+<span style="color: #008080;">65</span>       <span style="color: #0000ff;">echo</span> '22222222222'<span style="color: #000000;">;
+</span><span style="color: #008080;">66</span> 
+<span style="color: #008080;">67</span>   }</code></pre>
+
+<p><strong>封装成函数：</strong></p>
+<p>思路：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> upload(){
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span>       <span style="color: #008000;">//</span><span style="color: #008000;">1.判断文件上传错误
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #008000;">      //2.判断你文件上传的类型是否是你想要的类型
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> <span style="color: #008000;">      //3.起名字
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #008000;">      //4.判断保存路径是否存在
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #008000;">      //5.判断是否是http post方式上传
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> <span style="color: #008000;">      //6.移动图片
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span> <span style="color: #008000;">      //7.返回移动成功的图片名</span>
+<span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span>   }</code></pre>
+
+<p>开始封装函数：新建 function.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span> 
+<span style="color: #008080;">  3</span> 
+<span style="color: #008080;">  4</span>     <span style="color: #008000;">/*</span>
+<span style="color: #008080;">  5</span> 
+<span style="color: #008080;">  6</span> <span style="color: #008000;">        文件上传函数
+</span><span style="color: #008080;">  7</span> 
+<span style="color: #008080;">  8</span> <span style="color: #008000;">        @param  string  $name  文件上传文件域的name值
+</span><span style="color: #008080;">  9</span> 
+<span style="color: #008080;"> 10</span> <span style="color: #008000;">        @param  string  $dir   文件保存路径
+</span><span style="color: #008080;"> 11</span> 
+<span style="color: #008080;"> 12</span> <span style="color: #008000;">        @param  array   $allow 文件允许上传的类型
+</span><span style="color: #008080;"> 13</span> 
+<span style="color: #008080;"> 14</span> <span style="color: #008000;">        return  string  $filename 文件名  如果失败 返回false
+</span><span style="color: #008080;"> 15</span> 
+<span style="color: #008080;"> 16</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 17</span> 
+<span style="color: #008080;"> 18</span>     <span style="color: #0000ff;">function</span> upload(<span style="color: #800080;">$name</span>,<span style="color: #800080;">$dir</span>='./upload/',<span style="color: #800080;">$allow</span>=<span style="color: #0000ff;">array</span>('jpg','gif','jpeg','png'<span style="color: #000000;">)){
+</span><span style="color: #008080;"> 19</span> 
+<span style="color: #008080;"> 20</span>         <span style="color: #008000;">//</span><span style="color: #008000;">echo $name;exit;
+</span><span style="color: #008080;"> 21</span> 
+<span style="color: #008080;"> 22</span> <span style="color: #008000;">        //var_dump($_FILES);exit;
+</span><span style="color: #008080;"> 23</span> 
+<span style="color: #008080;"> 24</span> <span style="color: #008000;">        //1.判断文件上传错误</span>
+<span style="color: #008080;"> 25</span> 
+<span style="color: #008080;"> 26</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$name</span>]['error']&gt;0<span style="color: #000000;">){
+</span><span style="color: #008080;"> 27</span> 
+<span style="color: #008080;"> 28</span>             <span style="color: #008000;">//</span><span style="color: #008000;">echo '上传错误';</span>
+<span style="color: #008080;"> 29</span> 
+<span style="color: #008080;"> 30</span>             <span style="color: #0000ff;">switch</span>(<span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$name</span>]['error'<span style="color: #000000;">]){
+</span><span style="color: #008080;"> 31</span> 
+<span style="color: #008080;"> 32</span>                 <span style="color: #0000ff;">case</span> 1:
+<span style="color: #008080;"> 33</span> 
+<span style="color: #008080;"> 34</span>                     <span style="color: #0000ff;">echo</span> '上传的文件超过了 php.ini 中upload_max_filesize 选项限制的值.'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 35</span> 
+<span style="color: #008080;"> 36</span>                     <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 37</span> 
+<span style="color: #008080;"> 38</span>                 <span style="color: #0000ff;">case</span> 2:
+<span style="color: #008080;"> 39</span> 
+<span style="color: #008080;"> 40</span>                     <span style="color: #0000ff;">echo</span> '上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 41</span> 
+<span style="color: #008080;"> 42</span>                     <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 43</span> 
+<span style="color: #008080;"> 44</span>                 <span style="color: #0000ff;">case</span> 3:
+<span style="color: #008080;"> 45</span> 
+<span style="color: #008080;"> 46</span>                     <span style="color: #0000ff;">echo</span> '文件只有部分被上传.'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 47</span> 
+<span style="color: #008080;"> 48</span>                     <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 49</span> 
+<span style="color: #008080;"> 50</span>                 <span style="color: #0000ff;">case</span> 4:
+<span style="color: #008080;"> 51</span> 
+<span style="color: #008080;"> 52</span>                     <span style="color: #0000ff;">echo</span> '没有文件被上传.'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 53</span> 
+<span style="color: #008080;"> 54</span>                     <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 55</span> 
+<span style="color: #008080;"> 56</span>                 <span style="color: #0000ff;">case</span> 6:
+<span style="color: #008080;"> 57</span> 
+<span style="color: #008080;"> 58</span>                     <span style="color: #0000ff;">echo</span> '找不到临时文件夹.'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 59</span> 
+<span style="color: #008080;"> 60</span>                     <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 61</span> 
+<span style="color: #008080;"> 62</span>                 <span style="color: #0000ff;">case</span> 7:
+<span style="color: #008080;"> 63</span> 
+<span style="color: #008080;"> 64</span>                     <span style="color: #0000ff;">echo</span> '文件写入失败.'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 65</span> 
+<span style="color: #008080;"> 66</span>                     <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 67</span> 
+<span style="color: #008080;"> 68</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;"> 69</span> 
+<span style="color: #008080;"> 70</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 71</span> 
+<span style="color: #008080;"> 72</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 73</span> 
+<span style="color: #008080;"> 74</span>         <span style="color: #008000;">//</span><span style="color: #008000;">2.判断你文件上传的类型是否是你想要的类型
+</span><span style="color: #008080;"> 75</span> 
+<span style="color: #008080;"> 76</span> <span style="color: #008000;">        //2.1允许上传的类型
+</span><span style="color: #008080;"> 77</span> 
+<span style="color: #008080;"> 78</span> <span style="color: #008000;">        //2.2 获取后缀名</span>
+<span style="color: #008080;"> 79</span> 
+<span style="color: #008080;"> 80</span>         <span style="color: #800080;">$suffix</span> = <span style="color: #008080;">pathinfo</span>(<span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$name</span>]['name'],<span style="color: #000000;">PATHINFO_EXTENSION);
+</span><span style="color: #008080;"> 81</span> 
+<span style="color: #008080;"> 82</span>         <span style="color: #008000;">//</span><span style="color: #008000;">echo $suffix;exit;
+</span><span style="color: #008080;"> 83</span> 
+<span style="color: #008080;"> 84</span> <span style="color: #008000;">        //2.3 判断是否是我们允许上传的类型
+</span><span style="color: #008080;"> 85</span> 
+<span style="color: #008080;"> 86</span> <span style="color: #008000;">        //var_dump(in_array($suffix,$allow));exit;</span>
+<span style="color: #008080;"> 87</span> 
+<span style="color: #008080;"> 88</span>         <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$suffix</span>,<span style="color: #800080;">$allow</span><span style="color: #000000;">)){
+</span><span style="color: #008080;"> 89</span> 
+<span style="color: #008080;"> 90</span>             <span style="color: #008000;">//</span><span style="color: #008000;">不允许上传的类型</span>
+<span style="color: #008080;"> 91</span> 
+<span style="color: #008080;"> 92</span>             <span style="color: #0000ff;">echo</span>  '大哥你的上传类型不符合'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 93</span> 
+<span style="color: #008080;"> 94</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 95</span> 
+<span style="color: #008080;"> 96</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 97</span> 
+<span style="color: #008080;"> 98</span>         <span style="color: #008000;">//</span><span style="color: #008000;">3.起名字</span>
+<span style="color: #008080;"> 99</span> 
+<span style="color: #008080;">100</span>         <span style="color: #800080;">$filename</span> = <span style="color: #008080;">date</span>('Ymd').<span style="color: #008080;">uniqid</span>().<span style="color: #008080;">mt_rand</span>(0,9999).'.'.<span style="color: #800080;">$suffix</span><span style="color: #000000;">;
+</span><span style="color: #008080;">101</span> 
+<span style="color: #008080;">102</span>         <span style="color: #008000;">//</span><span style="color: #008000;">echo $filename;exit;
+</span><span style="color: #008080;">103</span> 
+<span style="color: #008080;">104</span> <span style="color: #008000;">        //4.判断保存路径是否存在
+</span><span style="color: #008080;">105</span> 
+<span style="color: #008080;">106</span> <span style="color: #008000;">        //4.1 得到保存路径
+</span><span style="color: #008080;">107</span> 
+<span style="color: #008080;">108</span> <span style="color: #008000;">        //4.2 处理保存路径和后面的斜杠</span>
+<span style="color: #008080;">109</span> 
+<span style="color: #008080;">110</span>         <span style="color: #800080;">$save_path</span> = <span style="color: #008080;">rtrim</span>(<span style="color: #800080;">$dir</span>,'/'<span style="color: #000000;">);
+</span><span style="color: #008080;">111</span> 
+<span style="color: #008080;">112</span>         <span style="color: #800080;">$save_path</span> .='/'<span style="color: #000000;">;
+</span><span style="color: #008080;">113</span> 
+<span style="color: #008080;">114</span>         <span style="color: #008000;">//</span><span style="color: #008000;">4.3 保存路径中的时间文件夹处理</span>
+<span style="color: #008080;">115</span> 
+<span style="color: #008080;">116</span>         <span style="color: #800080;">$save_path</span> .=<span style="color: #008080;">date</span>('Y/m/d/'<span style="color: #000000;">);
+</span><span style="color: #008080;">117</span> 
+<span style="color: #008080;">118</span>         <span style="color: #008000;">//</span><span style="color: #008000;">4.4 判断保存的路径是否存在</span>
+<span style="color: #008080;">119</span> 
+<span style="color: #008080;">120</span>         <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$save_path</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">121</span> 
+<span style="color: #008080;">122</span>             <span style="color: #008080;">mkdir</span>(<span style="color: #800080;">$save_path</span>,777,<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">123</span> 
+<span style="color: #008080;">124</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">125</span> 
+<span style="color: #008080;">126</span>         <span style="color: #008000;">//</span><span style="color: #008000;">4.5 拼接一个完整的保存路径</span>
+<span style="color: #008080;">127</span> 
+<span style="color: #008080;">128</span>         <span style="color: #800080;">$path</span> = <span style="color: #800080;">$save_path</span>.<span style="color: #800080;">$filename</span><span style="color: #000000;">;
+</span><span style="color: #008080;">129</span> 
+<span style="color: #008080;">130</span>         <span style="color: #008000;">//</span><span style="color: #008000;">echo $path;exit;
+</span><span style="color: #008080;">131</span> 
+<span style="color: #008080;">132</span> <span style="color: #008000;">        //5.判断是否是httppost方式上传</span>
+<span style="color: #008080;">133</span> 
+<span style="color: #008080;">134</span>         <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$name</span>]['tmp_name'<span style="color: #000000;">])){
+</span><span style="color: #008080;">135</span> 
+<span style="color: #008080;">136</span>             <span style="color: #0000ff;">echo</span> '滚蛋！'<span style="color: #000000;">;
+</span><span style="color: #008080;">137</span> 
+<span style="color: #008080;">138</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">139</span> 
+<span style="color: #008080;">140</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">141</span> 
+<span style="color: #008080;">142</span>         <span style="color: #008000;">//</span><span style="color: #008000;">6.移动图片</span>
+<span style="color: #008080;">143</span> 
+<span style="color: #008080;">144</span>         <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$name</span>]['tmp_name'],<span style="color: #800080;">$path</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">145</span> 
+<span style="color: #008080;">146</span>             <span style="color: #0000ff;">echo</span> '移动失败'<span style="color: #000000;">;
+</span><span style="color: #008080;">147</span> 
+<span style="color: #008080;">148</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">149</span> 
+<span style="color: #008080;">150</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">151</span> 
+<span style="color: #008080;">152</span>         <span style="color: #008000;">//</span><span style="color: #008000;">7.返回移动成功的图片名</span>
+<span style="color: #008080;">153</span> 
+<span style="color: #008080;">154</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$filename</span><span style="color: #000000;">;
+</span><span style="color: #008080;">155</span> 
+<span style="color: #008080;">156</span>     }</code></pre>
+<img class="cke_reset cke_widget_drag_handler" style="background-color: #ffffff; font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>​​​​​调用函数开始上传：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span>     <span style="color: #0000ff;">include</span> './function.php'<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span>     <span style="color: #008000;">//</span><span style="color: #008000;">var_dump($_FILES);exit;</span>
+<span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span>     <span style="color: #0000ff;">echo</span> upload('file','./leiding',<span style="color: #0000ff;">array</span>('jpg','png'));</code></pre>
+
+<p><strong>第 2 章 多文件上传</strong></p>
+<p>2.1 不同 name 名称多文件上传</p>
+<p>当需要上传多个文件的情况，有两种实现的解决方法：</p>
+<p>1） 使用不同的表单元素。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="file_a"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">2</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="file_b"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">3</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="file_c"</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>2) 使用数组格式的表单元素。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="file[]"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">2</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="file[]"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">3</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="file[]"</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p><strong>第 3 章 文件下载</strong></p>
+<p>1) 对于浏览器不识别的文件，可以直接利用 a 连接下载。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">&lt;!--</span><span style="color: #008000;"> 因为他们三个浏览器不认识这样的类型 </span><span style="color: #008000;">--&gt;</span>
+<span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span>   <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">a </span><span style="color: #ff0000;">href</span><span style="color: #0000ff;">="./downlist/1.rar"</span><span style="color: #0000ff;">&gt;</span>1.rar<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">a</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span>   <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">a </span><span style="color: #ff0000;">href</span><span style="color: #0000ff;">="./downlist/1.exe"</span><span style="color: #0000ff;">&gt;</span>1.exe<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">a</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span>   <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">a </span><span style="color: #ff0000;">href</span><span style="color: #0000ff;">="./downlist/1.avi"</span><span style="color: #0000ff;">&gt;</span>1.avi<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">a</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>​​2) 对于浏览器不识别的，可以利用 readfile 函数。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;!-- 浏览器认识这样的类型,就会被解析 --&gt;
+<span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span>     &lt;a href="./action.php?name=1.html"&gt;1.html&lt;/a&gt;
+<span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span>     &lt;a href="./action.php?name=1.php"&gt;1.php&lt;/a&gt;
+<span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>     &lt;a href="./action.php?name=1.txt"&gt;1.txt&lt;/a&gt;
+<span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span>     &lt;a href="./action.php?name=1.jpg"&gt;1.jpg&lt;/a&gt;
+<span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #008000;">//</span><span style="color: #008000;">接收一下name值.</span>
+<span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> <span style="color: #800080;">$name</span> = <span style="color: #800080;">$_GET</span>['name'<span style="color: #000000;">];
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span> <span style="color: #008000;">//</span><span style="color: #008000;">实现下载功能
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span> <span style="color: #008000;">//强制浏览器弹出另存为对话框</span>
+<span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span> <span style="color: #008080;">header</span>('content-Disposition:attachment;filename="'.<span style="color: #800080;">$name</span>.'"'<span style="color: #000000;">);
+</span><span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span> <span style="color: #008000;">//</span><span style="color: #008000;">此时只是下载了一个空文件,需要利用readfile读一遍所有的内容.便可下载.</span>
+<span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span> <span style="color: #800080;">$path</span> = './downlist/'.<span style="color: #800080;">$name</span><span style="color: #000000;">;
+</span><span style="color: #008080;">24</span> 
+<span style="color: #008080;">25</span> <span style="color: #008080;">readfile</span>(<span style="color: #800080;">$path</span>);</code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

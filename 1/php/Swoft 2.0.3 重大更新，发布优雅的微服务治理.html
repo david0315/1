@@ -1,0 +1,353 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoft 2.0.3 重大更新，发布优雅的微服务治理' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoft 2.0.3 重大更新，发布优雅的微服务治理</center></div><div class='banquan'>原文出处:本文由博客园博主swoft提供。<br/>
+原文连接:https://www.cnblogs.com/stelin/p/11160679.html</div><br>
+    <p><img src="media/15625081442685/15625093656604.jpg" alt="" />￼<img src="./images/Swoft 2.0.3 重大更新，发布优雅的微服务治理1.jpg" alt="" /></p>
+<h2 id="toc_1">什么是 Swoft ?</h2>
+<p><a href="https://github.com/swoft-cloud/swoft">Swoft</a><span class="Apple-converted-space">&nbsp;是一款基于<span class="Apple-converted-space">&nbsp;<a href="https://github.com/swoole/swoole-src">Swoole</a><span class="Apple-converted-space">&nbsp;扩展实现的 PHP 微服务协程框架。Swoft 能像 Go 一样，内置协程网络服务器及常用的协程客户端且常驻内存，不依赖传统的 PHP-FPM。有类似 Go 语言的协程操作方式，有类似 Spring Cloud 框架灵活的注解、强大的全局依赖注入容器、完善的服务治理、灵活强大的 AOP、标准的 PSR 规范实现等等。</span></span></span></p>
+<p>Swoft 通过长达三年的积累和方向的探索，把 Swoft 打造成 PHP 界的 Spring Cloud, 它是 PHP 高性能框架和微服务治理的最佳选择。</p>
+<h2 id="toc_2">优雅的服务治理</h2>
+<p>Swoft 官方建议开发者使用 Service mesh 模式，比如 Istio/Envoy 框架，把业务和服务治理分开，但是 Swoft 也为中小型企业快速构建微服务提供了一套微服务组件。</p>
+<ul>
+<li><a href="https://www.swoft.org/docs/2.x/zh-CN/ms/govern/register-discovery.html">服务注册与发现</a></li>
+<li><a href="https://www.swoft.org/docs/2.x/zh-CN/ms/govern/breaker.html">服务熔断</a></li>
+<li><a href="https://www.swoft.org/docs/2.x/zh-CN/ms/govern/limiter.html">服务限流</a></li>
+<li><a href="https://www.swoft.org/docs/2.x/zh-CN/ms/govern/config.html">配置中心</a></li>
+</ul>
+<h3 id="toc_3">服务注册与发现</h3>
+<p>服务注册与发现，需要用到 Swoft 官方提供的<span class="Apple-converted-space">&nbsp;<a href="https://www.swoft.org/docs/2.x/zh-CN/extra/consul.html">swoft-consul</a><span class="Apple-converted-space">&nbsp;组件，如果其它第三方也类似。</span></span></p>
+<h4 id="toc_4">注册与取消服务</h4>
+<p>监听<span class="Apple-converted-space">&nbsp;<code>SwooleEvent::START</code><span class="Apple-converted-space">&nbsp;事件，注册服务</span></span></p>
+<pre><code><code><span class="token comment">/**
+ * Class RegisterServiceListener
+ *
+ * @since 2.0
+ *
+ * @Listener(event=SwooleEvent::START)
+ */
+<span class="token keyword">class <span class="token class-name">RegisterServiceListener <span class="token keyword">implements <span class="token class-name">EventHandlerInterface
+<span class="token punctuation">{
+    <span class="token comment">/**
+     * @Inject()
+     *
+     * @var Agent
+     */
+    <span class="token keyword">private <span class="token variable">$agent<span class="token punctuation">;
+
+    <span class="token comment">/**
+     * @param EventInterface $event
+     */
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">handle<span class="token punctuation">(EventInterface <span class="token variable">$event<span class="token punctuation">)<span class="token punctuation">: void
+    <span class="token punctuation">{
+        <span class="token comment">/* @var HttpServer $httpServer */
+        <span class="token variable">$httpServer <span class="token operator">= <span class="token variable">$event<span class="token operator">-<span class="token operator">&gt;<span class="token function">getTarget<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+
+        <span class="token variable">$service <span class="token operator">= <span class="token punctuation">[
+            <span class="token comment">// ....
+        <span class="token punctuation">]<span class="token punctuation">;
+
+        <span class="token variable">$scheduler <span class="token operator">= Swoole\<span class="token package">Coroutine<span class="token punctuation">\Scheduler<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$scheduler<span class="token operator">-<span class="token operator">&gt;<span class="token function">add<span class="token punctuation">(<span class="token keyword">function <span class="token punctuation">(<span class="token punctuation">) <span class="token keyword">use <span class="token punctuation">(<span class="token variable">$service<span class="token punctuation">) <span class="token punctuation">{
+            <span class="token comment">// Register
+            <span class="token this">$this<span class="token operator">-<span class="token operator">&gt;<span class="token property">agent<span class="token operator">-<span class="token operator">&gt;<span class="token function">registerService<span class="token punctuation">(<span class="token variable">$service<span class="token punctuation">)<span class="token punctuation">;
+            <span class="token scope">CLog<span class="token punctuation">::<span class="token function">info<span class="token punctuation">(<span class="token single-quoted-string string">'Swoft http register service success by consul!'<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token punctuation">}<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$scheduler<span class="token operator">-<span class="token operator">&gt;<span class="token function">start<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+    <span class="token punctuation">}
+<span class="token punctuation">}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>监听<span class="Apple-converted-space">&nbsp;<code>SwooleEvent::SHUTDOWN</code><span class="Apple-converted-space">&nbsp;事件，取消服务</span></span></p>
+<pre><code><code><span class="token comment">/**
+ * Class DeregisterServiceListener
+ *
+ * @since 2.0
+ *
+ * @Listener(SwooleEvent::SHUTDOWN)
+ */
+<span class="token keyword">class <span class="token class-name">DeregisterServiceListener <span class="token keyword">implements <span class="token class-name">EventHandlerInterface
+<span class="token punctuation">{
+    <span class="token comment">/**
+     * @Inject()
+     *
+     * @var Agent
+     */
+    <span class="token keyword">private <span class="token variable">$agent<span class="token punctuation">;
+
+    <span class="token comment">/**
+     * @param EventInterface $event
+     */
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">handle<span class="token punctuation">(EventInterface <span class="token variable">$event<span class="token punctuation">)<span class="token punctuation">: void
+    <span class="token punctuation">{
+        <span class="token comment">/* @var HttpServer $httpServer */
+        <span class="token variable">$httpServer <span class="token operator">= <span class="token variable">$event<span class="token operator">-<span class="token operator">&gt;<span class="token function">getTarget<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+
+        <span class="token variable">$scheduler <span class="token operator">= Swoole\<span class="token package">Coroutine<span class="token punctuation">\Scheduler<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$scheduler<span class="token operator">-<span class="token operator">&gt;<span class="token function">add<span class="token punctuation">(<span class="token keyword">function <span class="token punctuation">(<span class="token punctuation">) <span class="token keyword">use <span class="token punctuation">(<span class="token variable">$httpServer<span class="token punctuation">) <span class="token punctuation">{
+            <span class="token this">$this<span class="token operator">-<span class="token operator">&gt;<span class="token property">agent<span class="token operator">-<span class="token operator">&gt;<span class="token function">deregisterService<span class="token punctuation">(<span class="token single-quoted-string string">'swoft'<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token punctuation">}<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$scheduler<span class="token operator">-<span class="token operator">&gt;<span class="token function">start<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+    <span class="token punctuation">}
+<span class="token punctuation">}    
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<h4 id="toc_5">服务发现</h4>
+<p>定义服务提供者</p>
+<pre><code><code><span class="token comment">/**
+ * Class RpcProvider
+ *
+ * @since 2.0
+ *        
+ * @Bean()
+ */
+<span class="token keyword">class <span class="token class-name">RpcProvider <span class="token keyword">implements <span class="token class-name">ProviderInterface
+<span class="token punctuation">{
+    <span class="token comment">/**
+     * @Inject()
+     *
+     * @var Agent
+     */
+    <span class="token keyword">private <span class="token variable">$agent<span class="token punctuation">;
+
+    <span class="token comment">/**
+     * @param Client $client
+     *
+     * @return array
+     * @example
+     * [
+     *     'host:port'
+     * ]
+     */
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">getList<span class="token punctuation">(Client <span class="token variable">$client<span class="token punctuation">)<span class="token punctuation">: <span class="token keyword">array
+    <span class="token punctuation">{
+        <span class="token comment">// Get health service from consul
+        <span class="token variable">$services <span class="token operator">= <span class="token this">$this<span class="token operator">-<span class="token operator">&gt;<span class="token property">agent<span class="token operator">-<span class="token operator">&gt;<span class="token function">services<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+
+        <span class="token variable">$services <span class="token operator">= <span class="token punctuation">[
+
+        <span class="token punctuation">]<span class="token punctuation">;
+
+        <span class="token keyword">return <span class="token variable">$services<span class="token punctuation">;
+    <span class="token punctuation">}
+<span class="token punctuation">}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>配置服务提供者</p>
+<pre><code><code><span class="token keyword">return <span class="token punctuation">[
+    <span class="token single-quoted-string string">'user'           <span class="token operator">=<span class="token operator">&gt; <span class="token punctuation">[
+      <span class="token single-quoted-string string">'class'   <span class="token operator">=<span class="token operator">&gt; <span class="token scope">ServiceClient<span class="token punctuation">::<span class="token keyword">class<span class="token punctuation">,
+      <span class="token single-quoted-string string">'provider' <span class="token operator">=<span class="token operator">&gt; <span class="token function">bean<span class="token punctuation">(<span class="token scope">RpcProvider<span class="token punctuation">::<span class="token keyword">class<span class="token punctuation">)
+      <span class="token comment">// ...
+    <span class="token punctuation">]
+<span class="token punctuation">]<span class="token punctuation">;
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<h3 id="toc_6">服务熔断</h3>
+<p>Swoft 使用<span class="Apple-converted-space">&nbsp;<code>@Breaker</code><span class="Apple-converted-space">&nbsp;注解实现熔断，可以在<strong><em>任何方法</em></strong>上面进行熔断操作。<span class="Apple-converted-space">&nbsp;</span></span></span></p>
+<pre><code><code><span class="token comment">/**
+ * Class BreakerLogic
+ *
+ * @since 2.0
+ *
+ * @Bean()
+ */
+<span class="token keyword">class <span class="token class-name">BreakerLogic
+<span class="token punctuation">{
+    <span class="token comment">/**
+     * @Breaker(fallback="funcFallback")
+     *
+     * @return string
+     * @throws Exception
+     */
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">func<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">: string
+    <span class="token punctuation">{
+        <span class="token comment">// Do something
+
+        <span class="token keyword">throw <span class="token keyword">new <span class="token class-name">Exception<span class="token punctuation">(<span class="token single-quoted-string string">'Breaker exception'<span class="token punctuation">)<span class="token punctuation">;
+    <span class="token punctuation">}
+    
+    <span class="token comment">/**
+     * @return string
+     */
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">funcFallback<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">: string
+    <span class="token punctuation">{
+        <span class="token keyword">return <span class="token single-quoted-string string">'funcFallback'<span class="token punctuation">;
+    <span class="token punctuation">}
+<span class="token punctuation">}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<h3 id="toc_7">服务限流</h3>
+<p>Swoft 中使用<span class="Apple-converted-space">&nbsp;<code>@RateLimiter</code><span class="Apple-converted-space">&nbsp;注解实现服务限流，可以在<strong><em>任何方法</em></strong>上面限流，不仅仅是控制器，且 KEY 还支持<span class="Apple-converted-space">&nbsp;<a href="https://symfony.com/doc/current/components/expression_language/syntax.html#component-expression-objects">symfony/expression-language</a><span class="Apple-converted-space">&nbsp;表达式。</span></span></span></span></p>
+<pre><code><code><span class="token comment">/**
+ * Class LimiterController
+ *
+ * @since 2.0
+ *
+ * @Controller(prefix="limiter")
+ */
+<span class="token keyword">class <span class="token class-name">LimiterController
+<span class="token punctuation">{
+    <span class="token comment">/**
+     * @RequestMapping()
+     * @RateLimiter(key="request.getUriPath()", fallback="limiterFallback")
+     *
+     * @param Request $request
+     *
+     * @return array
+     */
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">requestLimiter<span class="token punctuation">(Request <span class="token variable">$request<span class="token punctuation">)<span class="token punctuation">: <span class="token keyword">array
+    <span class="token punctuation">{
+        <span class="token variable">$uri <span class="token operator">= <span class="token variable">$request<span class="token operator">-<span class="token operator">&gt;<span class="token function">getUriPath<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token keyword">return <span class="token punctuation">[<span class="token single-quoted-string string">'requestLimiter'<span class="token punctuation">, <span class="token variable">$uri<span class="token punctuation">]<span class="token punctuation">;
+    <span class="token punctuation">}
+
+    <span class="token comment">/**
+     * @param Request $request
+     *
+     * @return array
+     */
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">limiterFallback<span class="token punctuation">(Request <span class="token variable">$request<span class="token punctuation">)<span class="token punctuation">: <span class="token keyword">array
+    <span class="token punctuation">{
+        <span class="token variable">$uri <span class="token operator">= <span class="token variable">$request<span class="token operator">-<span class="token operator">&gt;<span class="token function">getUriPath<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token keyword">return <span class="token punctuation">[<span class="token single-quoted-string string">'limiterFallback'<span class="token punctuation">, <span class="token variable">$uri<span class="token punctuation">]<span class="token punctuation">;
+    <span class="token punctuation">}
+<span class="token punctuation">}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<h3 id="toc_8">配置中心</h3>
+<p>配置中心，需要用到 Swoft 官方提供的<span class="Apple-converted-space">&nbsp;<a href="https://www.swoft.org/docs/2.x/zh-CN/extra/apollo.html">Swoft-apollo</a><span class="Apple-converted-space">&nbsp;组件，如果其它第三方也类似。</span></span></p>
+<h4 id="toc_9">声明Agent</h4>
+<pre><code><code>/**
+ * Class AgentCommand
+ *
+ * @since 2.0
+ *
+ * @Command("agent")
+ */
+class AgentCommand
+{
+    /**
+     * @Inject()
+     *
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @CommandMapping(name="index")
+     */
+    public function index(): void
+    {
+        $namespaces = [
+            'application'
+        ];
+
+        while (true) {
+            try {
+                $this-&gt;config-&gt;listen($namespaces, [$this, 'updateConfigFile']);
+            } catch (Throwable $e) {
+                CLog::error('Config agent fail(%s %s %d)!', $e-&gt;getMessage(), $e-&gt;getFile(), $e-&gt;getLine());
+            }
+        }
+    }
+
+    /**
+     * @param array $data
+     *
+     * @throws ContainerException
+     * @throws ReflectionException
+     */
+    public function updateConfigFile(array $data): void
+    {
+        foreach ($data as $namespace =&gt; $namespaceData) {
+            $configFile = sprintf('@config/%s.php', $namespace);
+
+            $configKVs = $namespaceData['configurations'] ?? '';
+            $content   = '<span class="token php language-php"><span class="token delimiter important">&lt;?php <span class="token keyword">return <span class="token single-quoted-string string">' . var_export($configKVs, true) . '<span class="token punctuation">;<span class="token single-quoted-string string">';
+            Co::writeFile(alias($configFile), $content, FILE_NO_DEFAULT_CONTEXT);
+
+            CLog::info('Apollo update success！<span class="token single-quoted-string string">');
+
+            /** @var HttpServer $server */
+            $server = bean('httpServer'<span class="token punctuation">)<span class="token punctuation">;
+            <span class="token variable">$server<span class="token operator">-<span class="token operator">&gt;<span class="token function">restart<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token punctuation">}
+    <span class="token punctuation">}
+<span class="token punctuation">}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<h4 id="toc_10">启动Agent</h4>
+<p>Agent 只需要在服务(Http/RPC/Websocket)启动前，运行即可。</p>
+<pre class=" language-text"><code class=" language-text">php bin/swoft agent:index
+</code></code></pre>
+<h2 id="toc_11">更新内容</h2>
+<p>移除(Remove)</p>
+<ul>
+<li>移除<span class="Apple-converted-space">&nbsp;<code>request-&gt;json()</code><span class="Apple-converted-space">&nbsp;方法(<a href="https://github.com/swoft-cloud/swoft-component/pull/455/commits/c9e8f048217670fd975e70d4eee1d8d3b2fccd7e">c9e8f04</a>)</span></span></li>
+</ul>
+<p>新增(Enhancement)：</p>
+<ul>
+<li>新增接口依赖注入(<a href="https://github.com/swoft-cloud/swoft-component/pull/442/commits/6169f84ffd32622c4d3bb21f6ab3c69ef04746e2">6169f84</a>)</li>
+<li>新增<span class="Apple-converted-space">&nbsp;<code>getFile</code><span class="Apple-converted-space">&nbsp;方法获取文件上传保存之后的信息(<a href="https://github.com/swoft-cloud/swoft-component/commit/fe7e3a69f215a92af83c5837d32b72a5c181383a">fe7e3a6</a>)</span></span></li>
+<li>新增<span class="Apple-converted-space">&nbsp;<code>restart()</code><span class="Apple-converted-space">&nbsp;服务新增重启方法(<a href="https://github.com/swoft-cloud/swoft-component/pull/453/commits/2ffec37568618cc49c038f96a901cbb339769623">2ffec37</a>)</span></span></li>
+<li>新增调用 1.x RPC 服务支持(<a href="https://github.com/swoft-cloud/swoft-component/pull/455/commits/30d73c3bcef6294d5985ce5af316e7aa6e86c0e5">30d73c3</a>)</li>
+<li>新增 AOP 类名匹配支持正则表达式(<a href="https://github.com/swoft-cloud/swoft-component/pull/455/commits/bc5e47951d1426e6944b934e6c8eb5db5657f8a4">bc5e479</a>)</li>
+<li>新增 RPC Server /Http Server 中间件命名空间<span class="Apple-converted-space">&nbsp;<code>use</code><span class="Apple-converted-space">&nbsp;错误提示(<a href="https://github.com/swoft-cloud/swoft-component/pull/455/commits/b1cec041ea402fe1c837d6755eff6efbfcef3681">b1cec04</a>)</span></span></li>
+<li>新增 验证器排除属性字段<span class="Apple-converted-space">&nbsp;<code>unfields</code>(<a href="https://github.com/swoft-cloud/swoft-component/pull/459/commits/b1bf44f62ae096674f2c413e9630964782b14d3f">b1bf44f</a>)</span></li>
+<li>新增 自动写入时间戳(<a href="https://github.com/swoft-cloud/swoft-component/pull/457/commits/dc58011cfa90996e6e319365fc738c1cd386f08d">dc58011</a>)</li>
+<li>新增 模型动作事件(<a href="https://github.com/swoft-cloud/swoft-component/pull/457/commits/dc58011cfa90996e6e319365fc738c1cd386f08d">dc58011</a>)</li>
+<li>新增 数据库迁移(<a href="https://github.com/swoft-cloud/swoft-ext/commit/26bb464ba61e43b6bbae9ba191a8e69525ad7dc5">26bb464</a>)</li>
+<li>新增 实体自动与 json 和数组互转(<a href="https://github.com/swoft-cloud/swoft-component/pull/457/commits/dc58011cfa90996e6e319365fc738c1cd386f08d">dc58011</a>)</li>
+<li>新增 模型批量更新方法<code>batchUpdateByIds</code>(<a href="https://github.com/swoft-cloud/swoft-component/pull/457/commits/dc58011cfa90996e6e319365fc738c1cd386f08d">dc58011</a>)</li>
+</ul>
+<p>修复(Fixed)：</p>
+<ul>
+<li>修复 cookies 设置时的一些问题，增加一些 withCookie 相关方法(<a href="https://github.com/swoft-cloud/swoft-component/pull/443/commits/b05afbb011457d217bb3a40c6a3639c28b0eef18">b05afbb01</a>)</li>
+<li>修复 在console使用协程方式运行命令时，没有捕获处理错误(<a href="https://github.com/swoft-cloud/swoft-component/pull/443/commits/8a5418bf25a4d4797d99281bf7db8881b7ca43ed">8a5418bf</a>)</li>
+<li>修复 websocket server 重启命令没有先停止旧server问题(<a href="https://github.com/swoft-cloud/swoft-component/pull/443/commits/db2d935542c715bbe1ed4b3ed822b2d946317b6f">db2d935</a>)</li>
+<li>修复任务返回值为<span class="Apple-converted-space">&nbsp;<code>null</code><span class="Apple-converted-space">&nbsp;问题(<a href="https://github.com/swoft-cloud/swoft-component/pull/455/commits/a69347c8ce486102e23bb82d70cfef63573a94eb">a69347c</a>)<span class="Apple-converted-space">&nbsp;</span></span></span></li>
+<li>修复 RPC Server 只有类中间件无法使用问题()<a href="https://github.com/swoft-cloud/swoft-component/pull/455/commits/204bc7f4f23a26f75534ac808e2f9eb05a0118a2">204bc7f</a></li>
+<li>修复 RPC Server 返回值为<span class="Apple-converted-space">&nbsp;<code>null</code><span class="Apple-converted-space">&nbsp;问题(<a href="https://github.com/swoft-cloud/swoft-component/pull/455/commits/4d091bef0ece773bcd382a750de01eef830f2949">4d091be</a>)</span></span></li>
+<li>修复 Logger 和 CLog 日志等级无法覆盖和无效问题(<a href="https://github.com/swoft-cloud/swoft-component/pull/459/commits/8eb8aba2313a45191318b52a3698135d92cb3e71">8eb8aba</a>)</li>
+<li>修复 模型里面的属性不支持自定义表达式(<a href="https://github.com/swoft-cloud/swoft-component/pull/457/commits/dc58011cfa90996e6e319365fc738c1cd386f08d">dc58011</a>)</li>
+</ul>
+<p>更新(Update):</p>
+<ul>
+<li>验证器优化，支持自定义验证规则(<a href="https://github.com/swoft-cloud/swoft-component/pull/442/commits/d959a4f5facfc24070fbde547f0557213e5184ee">d959a4f</a>)</li>
+<li>重命名错误处理管理类<span class="Apple-converted-space">&nbsp;<code>ErrorHanlders</code><span class="Apple-converted-space">&nbsp;为<span class="Apple-converted-space">&nbsp;<code>ErrorManager</code><span class="Apple-converted-space">&nbsp;(<a href="https://github.com/swoft-cloud/swoft-component/pull/443/commits/f3a8f04ba6d83874b772a419fe29e5449b3dcea9">f3a8f04b</a>)</span></span></span></span></li>
+<li>console组件的异常处理改为由error组件提供的统一处理风格 (<a href="https://github.com/swoft-cloud/swoft-component/pull/443/commits/4f472045e3d80165145907331386f46a2912b2e3">4f47204</a>)</li>
+<li>console组件允许设置禁用命令组(<a href="https://github.com/swoft-cloud/swoft-component/pull/454/commits/c5a0269f26ae6b9739401393a48fd3fd91280bbb">c5a0269</a>)</li>
+<li>在默认的错误处理中，允许设置错误捕获级别。默认级别是<span class="Apple-converted-space">&nbsp;<code>E_ALL | E_STRICT</code><span class="Apple-converted-space">&nbsp;(<a href="https://github.com/swoft-cloud/swoft-component/pull/443/commits/afff90296d80085acd30b951441774049d0ca2e7">afff9029</a>)</span></span></li>
+<li>优化 启动ws server时同时启用了http处理功能，信息面板添加提示(<a href="https://github.com/swoft-cloud/swoft-component/pull/456/commits/83a8117047036da5687fa6dc5236301716dfd59f">83a81170</a>)</li>
+<li>优化 启动ws server 并同时添加rpc server启动，信息面板没有显示 rpc server信息(<a href="https://github.com/swoft-cloud/swoft-component/pull/454/commits/3d1d0d848a8f5ca31a09feb5ee860079f7c018e4">3d1d0d848</a>)</li>
+</ul>
+<p>扩展(Extra):</p>
+<ul>
+<li>文档添加支持通过google进行搜索</li>
+<li>新增 apollo 组件</li>
+<li>新增 consul 组件</li>
+<li>新增 breaker 组件</li>
+<li>新增 limter 组件</li>
+</ul>
+<h2 id="toc_12">资源</h2>
+<ul>
+<li>Gitee:<span class="Apple-converted-space">&nbsp;<a href="https://gitee.com/swoft/swoft">https://gitee.com/swoft/swoft</a></span></li>
+<li>GitHub:<span class="Apple-converted-space">&nbsp;<a href="https://github.com/swoft-cloud/swoft">https://github.com/swoft-cloud/swoft</a></span></li>
+<li>官网：<a href="https://www.swoft.org">https://www.swoft.org</a></li>
+<li>文档：<a href="https://www.swoft.org">https://www.swoft.org/docs</a></li>
+<li></li>
+</ul>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

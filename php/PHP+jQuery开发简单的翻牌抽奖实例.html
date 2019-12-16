@@ -1,0 +1,97 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP+jQuery开发简单的翻牌抽奖实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP+jQuery开发简单的翻牌抽奖实例</center></div><div class='banquan'>原文出处:本文由博客园博主mrlime提供。<br/>
+原文连接:https://www.cnblogs.com/mrlime/p/12017304.html</div><br>
+    <p>PHP+jQuery开发简单的翻牌抽奖实例，实现流程：页面放置6个方块作为奖项，当抽奖者点击某一块时，方块翻转到背面，显示中奖信息，这个奖品是随机的，不是固定的。</p>
+<p><img src="./images/PHP+jQuery开发简单的翻牌抽奖实例0.jpg" alt="" width="607" height="245" /></p>
+<p>在页面上放置6个奖项：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">ul </span><span style="color: #ff0000;">id</span><span style="color: #0000ff;">="prize"</span><span style="color: #0000ff;">&gt;</span> 
+<span style="color: #008080;">2</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">li </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="red"</span><span style="color: #ff0000;"> title</span><span style="color: #0000ff;">="点击抽奖"</span><span style="color: #0000ff;">&gt;</span>1<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">li</span><span style="color: #0000ff;">&gt;</span> 
+<span style="color: #008080;">3</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">li </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="green"</span><span style="color: #ff0000;"> title</span><span style="color: #0000ff;">="点击抽奖"</span><span style="color: #0000ff;">&gt;</span>2<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">li</span><span style="color: #0000ff;">&gt;</span> 
+<span style="color: #008080;">4</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">li </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="blue"</span><span style="color: #ff0000;"> title</span><span style="color: #0000ff;">="点击抽奖"</span><span style="color: #0000ff;">&gt;</span>3<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">li</span><span style="color: #0000ff;">&gt;</span> 
+<span style="color: #008080;">5</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">li </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="purple"</span><span style="color: #ff0000;"> title</span><span style="color: #0000ff;">="点击抽奖"</span><span style="color: #0000ff;">&gt;</span>4<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">li</span><span style="color: #0000ff;">&gt;</span> 
+<span style="color: #008080;">6</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">li </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="olive"</span><span style="color: #ff0000;"> title</span><span style="color: #0000ff;">="点击抽奖"</span><span style="color: #0000ff;">&gt;</span>5<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">li</span><span style="color: #0000ff;">&gt;</span> 
+<span style="color: #008080;">7</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">li </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="brown"</span><span style="color: #ff0000;"> title</span><span style="color: #0000ff;">="点击抽奖"</span><span style="color: #0000ff;">&gt;</span>6<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">li</span><span style="color: #0000ff;">&gt;</span> 
+<span style="color: #008080;">8</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">ul</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p><br />点击每个方块，触发的事件：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> $("#prize li").each(<span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">var</span> p = $(<span style="color: #0000ff;">this</span><span style="color: #000000;">); 
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">var</span> c = $(<span style="color: #0000ff;">this</span>).attr('class'<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 4</span>     p.css("background-color"<span style="color: #000000;">, c); 
+</span><span style="color: #008080;"> 5</span>     p.click(<span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;"> 6</span>         $("#prize li").unbind('click'); <span style="color: #008000;">//</span><span style="color: #008000;">连续翻动 </span>
+<span style="color: #008080;"> 7</span>         $.getJSON("ajax.php"<span style="color: #000000;">, 
+</span><span style="color: #008080;"> 8</span>         <span style="color: #0000ff;">function</span><span style="color: #000000;">(json) { 
+</span><span style="color: #008080;"> 9</span>             <span style="color: #0000ff;">var</span> prize = json.yes; <span style="color: #008000;">//</span><span style="color: #008000;">抽中的奖项  </span>
+<span style="color: #008080;">10</span> <span style="color: #000000;">            p.flip({ 
+</span><span style="color: #008080;">11</span>                 direction: 'rl'<span style="color: #000000;">, 
+</span><span style="color: #008080;">12</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">翻动的方向rl：right to left  </span>
+<span style="color: #008080;">13</span> <span style="color: #000000;">                content: prize, 
+</span><span style="color: #008080;">14</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">翻转后显示的内容即奖品  </span>
+<span style="color: #008080;">15</span> <span style="color: #000000;">                color: c, 
+</span><span style="color: #008080;">16</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">背景色  </span>
+<span style="color: #008080;">17</span>                 onEnd: <span style="color: #0000ff;">function</span>() { <span style="color: #008000;">//</span><span style="color: #008000;">翻转结束  </span>
+<span style="color: #008080;">18</span> <span style="color: #000000;">                    p.css({ 
+</span><span style="color: #008080;">19</span>                         "font-size": "22px"<span style="color: #000000;">, 
+</span><span style="color: #008080;">20</span>                         "line-height": "100px" 
+<span style="color: #008080;">21</span> <span style="color: #000000;">                    }); 
+</span><span style="color: #008080;">22</span>                     p.attr("id", "r"); <span style="color: #008000;">//</span><span style="color: #008000;">标记中奖方块的id  </span>
+<span style="color: #008080;">23</span>                     $("#viewother").show(); <span style="color: #008000;">//</span><span style="color: #008000;">显示查看其他按钮  </span>
+<span style="color: #008080;">24</span>                     $("#prize li").unbind('click').css("cursor", "default").removeAttr("title"<span style="color: #000000;">); 
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">                } 
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">            }); 
+</span><span style="color: #008080;">27</span>             $("#data").data("nolist", json.no); <span style="color: #008000;">//</span><span style="color: #008000;">保存未中奖信息  </span>
+<span style="color: #008080;">28</span> <span style="color: #000000;">        }); 
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">    }); 
+</span><span style="color: #008080;">30</span> });</code></pre>
+
+<p><br />翻开其他方块：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> $("#viewother").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">var</span> mydata = $("#data").data("nolist"); <span style="color: #008000;">//</span><span style="color: #008000;">获取数据  </span>
+<span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">var</span> mydata2 = eval(mydata); <span style="color: #008000;">//</span><span style="color: #008000;">通过eval()函数可以将JSON转换成数组  </span>
+<span style="color: #008080;"> 4</span>     $("#prize li").not($('#r')[0]).each(<span style="color: #0000ff;">function</span><span style="color: #000000;">(index) { 
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">var</span> pr = $(<span style="color: #0000ff;">this</span><span style="color: #000000;">); 
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">        pr.flip({ 
+</span><span style="color: #008080;"> 7</span>             direction: 'bt'<span style="color: #000000;">, 
+</span><span style="color: #008080;"> 8</span>             color: 'lightgrey'<span style="color: #000000;">, 
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">            content: mydata2[index], 
+</span><span style="color: #008080;">10</span>             <span style="color: #008000;">//</span><span style="color: #008000;">奖品信息（未抽中）  </span>
+<span style="color: #008080;">11</span>             onEnd: <span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">                pr.css({ 
+</span><span style="color: #008080;">13</span>                     "font-size": "22px"<span style="color: #000000;">, 
+</span><span style="color: #008080;">14</span>                     "line-height": "100px"<span style="color: #000000;">, 
+</span><span style="color: #008080;">15</span>                     "color": "#333" 
+<span style="color: #008080;">16</span> <span style="color: #000000;">                }); 
+</span><span style="color: #008080;">17</span>                 $("#viewother"<span style="color: #000000;">).hide(); 
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">        }); 
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    }); 
+</span><span style="color: #008080;">21</span>     $("#data").removeData("nolist"<span style="color: #000000;">); 
+</span><span style="color: #008080;">22</span> });</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/118.html" target="_blank">https://www.sucaihuo.com/php/118.html</a> 转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,132 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP+Ajax实现文章心情投票功能实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP+Ajax实现文章心情投票功能实例</center></div><div class='banquan'>原文出处:本文由博客园博主mrlime提供。<br/>
+原文连接:https://www.cnblogs.com/mrlime/p/11974988.html</div><br>
+    <p>一个PHP+Ajax实现文章心情投票功能实例，可以学习了解实现投票的基本流程：通过ajax获取心情图标及柱状图相关数据，当用户点击其中的一个心情图标时，向Ajax.php发送请求，PHP验证用户cookie防止重复提交，然后将mysql中对应的数据心情字段内容加<em id="__mceDel">1，成功后返回前端页面，并更新柱状图和统计数据。</em></p>
+<p><em><img src="./images/PHP+Ajax实现文章心情投票功能实例0.jpg" alt="" width="732" height="172" /></em></p>
+<p>发表心情：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$id</span> = (int)<span style="color: #800080;">$_POST</span>['id']; <span style="color: #008000;">//</span><span style="color: #008000;">文章或帖子id  </span>
+<span style="color: #008080;"> 2</span> <span style="color: #800080;">$mid</span> = (int)<span style="color: #800080;">$_POST</span>['moodid']; <span style="color: #008000;">//</span><span style="color: #008000;">心情id（配置文件中提供8种心情）  </span>
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$mid</span> || !<span style="color: #800080;">$id</span><span style="color: #000000;">){  
+</span><span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">echo</span> "此链接不存在";<span style="color: #0000ff;">exit</span><span style="color: #000000;">;  
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">}  
+</span><span style="color: #008080;"> 6</span>   
+<span style="color: #008080;"> 7</span> <span style="color: #800080;">$havemood</span> = chk_mood(<span style="color: #800080;">$id</span>); <span style="color: #008000;">//</span><span style="color: #008000;">验证cookie  </span>
+<span style="color: #008080;"> 8</span> <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$havemood</span>==1<span style="color: #000000;">){  
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">echo</span> "您已经表达过心情了，保持平常心有益身心健康！";<span style="color: #0000ff;">exit</span><span style="color: #000000;">;  
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">}  
+</span><span style="color: #008080;">11</span> <span style="color: #800080;">$field</span> = 'mood'.<span style="color: #800080;">$mid</span>; <span style="color: #008000;">//</span><span style="color: #008000;">数据表中的心情字段，分别用mood0，mood1，mood2...表示不同的心情字段  </span>
+<span style="color: #008080;">12</span> <span style="color: #800080;">$query</span> = <span style="color: #008080;">mysql_query</span>("update mood set ".<span style="color: #800080;">$field</span>."=".<span style="color: #800080;">$field</span>."+1 where id=".<span style="color: #800080;">$id</span>); <span style="color: #008000;">//</span><span style="color: #008000;">对应的心情字段值+1  </span>
+<span style="color: #008080;">13</span> <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">){  
+</span><span style="color: #008080;">14</span>     <span style="color: #008080;">setcookie</span>("mood".<span style="color: #800080;">$id</span>, <span style="color: #800080;">$mid</span>.<span style="color: #800080;">$id</span>, <span style="color: #008080;">time</span>()+300); <span style="color: #008000;">//</span><span style="color: #008000;">设置cookie，为了测试我们设置cookie过期时间为300s  </span>
+<span style="color: #008080;">15</span>     <span style="color: #800080;">$query2</span> = <span style="color: #008080;">mysql_query</span>("select * from mood where id=<span style="color: #800080;">$id</span>"<span style="color: #000000;">);  
+</span><span style="color: #008080;">16</span>     <span style="color: #800080;">$rs</span> = <span style="color: #008080;">mysql_fetch_array</span>(<span style="color: #800080;">$query2</span>);<span style="color: #008000;">//</span><span style="color: #008000;">获取该文章的心情数据  </span>
+<span style="color: #008080;">17</span>     <span style="color: #800080;">$total</span> = <span style="color: #800080;">$rs</span>['mood0']+<span style="color: #800080;">$rs</span>['mood1']+<span style="color: #800080;">$rs</span>['mood2']+<span style="color: #800080;">$rs</span>['mood3']+<span style="color: #800080;">$rs</span>['mood4']+<span style="color: #800080;">$rs</span>['mood5']+  
+<span style="color: #008080;">18</span> <span style="color: #800080;">$rs</span>['mood6']+<span style="color: #800080;">$rs</span>['mood7'<span style="color: #000000;">];  
+</span><span style="color: #008080;">19</span>     <span style="color: #800080;">$height</span> = <span style="color: #008080;">round</span>((<span style="color: #800080;">$rs</span>[<span style="color: #800080;">$field</span>]/<span style="color: #800080;">$total</span>)*<span style="color: #800080;">$moodpicheight</span>); <span style="color: #008000;">//</span><span style="color: #008000;">得到总量，并计算当前对应心情的柱状图的高度  </span>
+<span style="color: #008080;">20</span>     <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$height</span>; <span style="color: #008000;">//</span><span style="color: #008000;">返回当前心情柱状的高度  </span>
+<span style="color: #008080;">21</span> }<span style="color: #0000ff;">else</span><span style="color: #000000;">{  
+</span><span style="color: #008080;">22</span>     <span style="color: #0000ff;">echo</span> -1; <span style="color: #008000;">//</span><span style="color: #008000;">数据出错  </span>
+<span style="color: #008080;">23</span> }</code></pre>
+
+<p><br />获取心情：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$mname</span> = <span style="color: #008080;">explode</span>(',',<span style="color: #800080;">$moodname</span>);<span style="color: #008000;">//</span><span style="color: #008000;">心情说明  </span>
+<span style="color: #008080;"> 2</span> <span style="color: #800080;">$num</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$mname</span><span style="color: #000000;">);  
+</span><span style="color: #008080;"> 3</span> <span style="color: #800080;">$mpic</span> = <span style="color: #008080;">explode</span>(',',<span style="color: #800080;">$moodpic</span>);<span style="color: #008000;">//</span><span style="color: #008000;">心情图标  </span>
+<span style="color: #008080;"> 4</span>   
+<span style="color: #008080;"> 5</span> <span style="color: #800080;">$id</span> = (int)<span style="color: #800080;">$_GET</span>['id']; <span style="color: #008000;">//</span><span style="color: #008000;">文章或帖子id  </span>
+<span style="color: #008080;"> 6</span> <span style="color: #800080;">$query</span> = <span style="color: #008080;">mysql_query</span>("select * from mood where id=<span style="color: #800080;">$id</span>"); <span style="color: #008000;">//</span><span style="color: #008000;">查询对应的心情数据  </span>
+<span style="color: #008080;"> 7</span> <span style="color: #800080;">$rs</span> = <span style="color: #008080;">mysql_fetch_array</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">);  
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$rs</span><span style="color: #000000;">){  
+</span><span style="color: #008080;"> 9</span>     <span style="color: #008000;">//</span><span style="color: #008000;">得到发表心情的总量  </span>
+<span style="color: #008080;">10</span>     <span style="color: #800080;">$total</span> = <span style="color: #800080;">$rs</span>['mood0']+<span style="color: #800080;">$rs</span>['mood1']+<span style="color: #800080;">$rs</span>['mood2']+<span style="color: #800080;">$rs</span>['mood3']+<span style="color: #800080;">$rs</span>['mood4']+  
+<span style="color: #008080;">11</span> <span style="color: #800080;">$rs</span>['mood5']+<span style="color: #800080;">$rs</span>['mood6']+<span style="color: #800080;">$rs</span>['mood7'<span style="color: #000000;">];  
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;<span style="color: #800080;">$num</span>;<span style="color: #800080;">$i</span>++<span style="color: #000000;">){  
+</span><span style="color: #008080;">13</span>         <span style="color: #800080;">$field</span> = 'mood'.<span style="color: #800080;">$i</span>; <span style="color: #008000;">//</span><span style="color: #008000;">字段名  </span>
+<span style="color: #008080;">14</span>         <span style="color: #800080;">$m_val</span> = <span style="color: #008080;">intval</span>(<span style="color: #800080;">$rs</span>[<span style="color: #800080;">$field</span>]); <span style="color: #008000;">//</span><span style="color: #008000;">心情对应的值（次数）  </span>
+<span style="color: #008080;">15</span>         <span style="color: #800080;">$height</span> = 0; <span style="color: #008000;">//</span><span style="color: #008000;">柱图高度  </span>
+<span style="color: #008080;">16</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$total</span> &amp;&amp; <span style="color: #800080;">$m_val</span><span style="color: #000000;">){  
+</span><span style="color: #008080;">17</span>             <span style="color: #800080;">$height</span>=<span style="color: #008080;">round</span>((<span style="color: #800080;">$m_val</span>/<span style="color: #800080;">$total</span>)*<span style="color: #800080;">$moodpicheight</span>); <span style="color: #008000;">//</span><span style="color: #008000;">计算高度  </span>
+<span style="color: #008080;">18</span> <span style="color: #000000;">        }  
+</span><span style="color: #008080;">19</span>               
+<span style="color: #008080;">20</span>         <span style="color: #800080;">$arr</span>[] = <span style="color: #0000ff;">array</span><span style="color: #000000;">(  
+</span><span style="color: #008080;">21</span>             'mid' =&gt; <span style="color: #800080;">$i</span>, <span style="color: #008000;">//</span><span style="color: #008000;">对应心情id  </span>
+<span style="color: #008080;">22</span>             'mood_name' =&gt; <span style="color: #800080;">$mname</span>[<span style="color: #800080;">$i</span>], <span style="color: #008000;">//</span><span style="color: #008000;">心情名称  </span>
+<span style="color: #008080;">23</span>             'mood_pic' =&gt; <span style="color: #800080;">$mpic</span>[<span style="color: #800080;">$i</span>], <span style="color: #008000;">//</span><span style="color: #008000;">图标  </span>
+<span style="color: #008080;">24</span>             'mood_val' =&gt; <span style="color: #800080;">$m_val</span>, <span style="color: #008000;">//</span><span style="color: #008000;">次数  </span>
+<span style="color: #008080;">25</span>             'height' =&gt; <span style="color: #800080;">$height</span> <span style="color: #008000;">//</span><span style="color: #008000;">柱状图高度  </span>
+<span style="color: #008080;">26</span> <span style="color: #000000;">        );  
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">    }  
+</span><span style="color: #008080;">28</span>     <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$arr</span>); <span style="color: #008000;">//</span><span style="color: #008000;">返回JSON数据  </span>
+<span style="color: #008080;">29</span> }</code></pre>
+
+<p><br />获取心情列表信息，并展示在页面中：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> $(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){  
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    $.ajax({  
+</span><span style="color: #008080;"> 3</span>         type: 'GET', <span style="color: #008000;">//</span><span style="color: #008000;">通过get方式发送请求  </span>
+<span style="color: #008080;"> 4</span>         url: 'ajax.php', <span style="color: #008000;">//</span><span style="color: #008000;">目标地址  </span>
+<span style="color: #008080;"> 5</span>         cache: <span style="color: #0000ff;">false</span>, <span style="color: #008000;">//</span><span style="color: #008000;">不缓存数据，注意文明发表心情的数据是实时的，需将cache设置为false，默认是true  </span>
+<span style="color: #008080;"> 6</span>         data: 'id=1', <span style="color: #008000;">//</span><span style="color: #008000;">参数，对应文章或帖子的id，本例中固定为1，实际应用中是获取当前文章或帖子的id  </span>
+<span style="color: #008080;"> 7</span>         dataType: 'json', <span style="color: #008000;">//</span><span style="color: #008000;">数据类型为json  </span>
+<span style="color: #008080;"> 8</span>         error: <span style="color: #0000ff;">function</span><span style="color: #000000;">(){  
+</span><span style="color: #008080;"> 9</span>             alert('出错了！'<span style="color: #000000;">);  
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">        },  
+</span><span style="color: #008080;">11</span>         success: <span style="color: #0000ff;">function</span>(json){ <span style="color: #008000;">//</span><span style="color: #008000;">请求成功后  </span>
+<span style="color: #008080;">12</span>             <span style="color: #0000ff;">if</span><span style="color: #000000;">(json){  
+</span><span style="color: #008080;">13</span>                 $.each(json,<span style="color: #0000ff;">function</span>(index,array){ <span style="color: #008000;">//</span><span style="color: #008000;">遍历json数据列  </span>
+<span style="color: #008080;">14</span>                     <span style="color: #0000ff;">var</span> str = "&lt;li&gt;&lt;span&gt;"+array['mood_val']+"<span style="color: #000000;">&lt;/span&gt;&lt;div class=\"pillar\"   
+</span><span style="color: #008080;">15</span> style=\"height:"+array['height']+"<span style="color: #000000;">px;\"&gt;&lt;/div&gt;&lt;div class=\"face\"   
+</span><span style="color: #008080;">16</span> rel=\""+array['mid']+"\"&gt;&lt;img src=\"images/"+array['mood_pic']+"<span style="color: #000000;">\"&gt;  
+</span><span style="color: #008080;">17</span> &lt;br/&gt;"+array['mood_name']+"&lt;/div&gt;&lt;/li&gt;"<span style="color: #000000;">;  
+</span><span style="color: #008080;">18</span>                     $("#mood ul").append(str); <span style="color: #008000;">//</span><span style="color: #008000;">将数据加入到#mood ul列表中  </span>
+<span style="color: #008080;">19</span> <span style="color: #000000;">                   });   
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">            }  
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">        }  
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">    });  
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    ...  
+</span><span style="color: #008080;">24</span> });</code></pre>
+
+<p><br />数据库表建立直接运行以下代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> CREATE TABLE <span style="color: #0000ff;">IF</span><span style="color: #000000;"> NOT EXISTS `mood` (  
+</span><span style="color: #008080;"> 2</span>   `id` int(11) NOT <span style="color: #0000ff;">NULL</span>,  
+<span style="color: #008080;"> 3</span>   `mood0` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '0',  
+<span style="color: #008080;"> 4</span>   `mood1` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '0',  
+<span style="color: #008080;"> 5</span>   `mood2` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '0',  
+<span style="color: #008080;"> 6</span>   `mood3` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '0',  
+<span style="color: #008080;"> 7</span>   `mood4` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '0',  
+<span style="color: #008080;"> 8</span>   `mood5` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '0',  
+<span style="color: #008080;"> 9</span>   `mood6` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '0',  
+<span style="color: #008080;">10</span>   `mood7` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">DEFAULT</span> '0',  
+<span style="color: #008080;">11</span>   PRIMARY <span style="color: #008080;">KEY</span><span style="color: #000000;"> (`id`)  
+</span><span style="color: #008080;">12</span> ) ENGINE=MyISAM <span style="color: #0000ff;">DEFAULT</span> CHARSET=<span style="color: #000000;">utf8;  
+</span><span style="color: #008080;">13</span>   
+<span style="color: #008080;">14</span>   
+<span style="color: #008080;">15</span> INSERT INTO `mood` (`id`, `mood0`, `mood1`, `mood2`, `mood3`, `mood4`, `mood5`, `mood6`,<span style="color: #000000;"> `mood7`)  
+</span><span style="color: #008080;">16</span> VALUES(1, 8, 6, 20, 16, 6, 9, 15, 21);</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/155.html" target="_blank">https://www.sucaihuo.com/php/155.html</a> 转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

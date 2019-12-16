@@ -1,0 +1,102 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Workerman MySQL组件Connection用法总结' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Workerman MySQL组件Connection用法总结</center></div><div class='banquan'>原文出处:本文由博客园博主dreams7433提供。<br/>
+原文连接:https://www.cnblogs.com/phperlinxinlan/p/11165250.html</div><br>
+    <p><span style="font-size: 18px;"><strong>一、初始化连接</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$db</span> = <span style="color: #0000ff;">new</span> \Workerman\<span style="color: #008080;">MySQL</span>\Connection('host', 'port', 'user', 'password', 'db_name');</code></pre>
+
+<p><span style="font-size: 18px;"><strong>二、获取所有数据</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$db</span>-&gt;select('ID,Sex')-&gt;from('Persons')-&gt;where('sex= :sex AND ID = :id')-&gt;bindValues(<span style="color: #0000ff;">array</span>('sex'=&gt;'M', 'id' =&gt; 1))-&gt;<span style="color: #000000;">query();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">等价于</span>
+<span style="color: #800080;">$db</span>-&gt;select('ID,Sex')-&gt;from('Persons')-&gt;where("sex= 'M' AND ID = 1")-&gt;<span style="color: #000000;">query();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">等价于</span>
+<span style="color: #800080;">$db</span>-&gt;query("SELECT ID,Sex FROM `Persons` WHERE sex='M' AND ID = 1");</code></pre>
+
+<p><span style="font-size: 18px;"><strong>三、获取一行数据</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$db</span>-&gt;select('ID,Sex')-&gt;from('Persons')-&gt;where('sex= :sex')-&gt;bindValues(<span style="color: #0000ff;">array</span>('sex'=&gt;'M'))-&gt;<span style="color: #000000;">row();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">等价于</span>
+<span style="color: #800080;">$db</span>-&gt;select('ID,Sex')-&gt;from('Persons')-&gt;where("sex= 'M' ")-&gt;<span style="color: #000000;">row();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">等价于</span>
+<span style="color: #800080;">$db</span>-&gt;row("SELECT ID,Sex FROM `Persons` WHERE sex='M'");</code></pre>
+
+<p><span style="font-size: 18px;"><strong>四、获取一列数据</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$db</span>-&gt;select('ID')-&gt;from('Persons')-&gt;where('sex= :sex')-&gt;bindValues(<span style="color: #0000ff;">array</span>('sex'=&gt;'M'))-&gt;<span style="color: #000000;">column();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">等价于</span>
+<span style="color: #800080;">$db</span>-&gt;select('ID')-&gt;from('Persons')-&gt;where("sex= 'F' ")-&gt;<span style="color: #000000;">column();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">等价于</span>
+<span style="color: #800080;">$db</span>-&gt;column("SELECT `ID` FROM `Persons` WHERE sex='M'");</code></pre>
+
+<p><span style="font-size: 18px;"><strong>五、获取单个值</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$db</span>-&gt;select('ID')-&gt;from('Persons')-&gt;where('sex= :sex')-&gt;bindValues(<span style="color: #0000ff;">array</span>('sex'=&gt;'M'))-&gt;<span style="color: #000000;">single();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">等价于</span>
+<span style="color: #800080;">$db</span>-&gt;select('ID')-&gt;from('Persons')-&gt;where("sex= 'F' ")-&gt;<span style="color: #000000;">single();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">等价于</span>
+<span style="color: #800080;">$db</span>-&gt;single("SELECT ID FROM `Persons` WHERE sex='M'");</code></pre>
+
+<p><span style="font-size: 18px;"><strong>六、复杂查询</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$db</span>-&gt;select('*')-&gt;from('table1')-&gt;innerJoin('table2','table1.uid = table2.uid')-&gt;where('age &gt; :age')-&gt;groupBy(<span style="color: #0000ff;">array</span>('aid'))-&gt;having('foo="foo"')-&gt;orderByASC<span style="color: #008000;">/*</span><span style="color: #008000;">orderByDESC</span><span style="color: #008000;">*/</span>(<span style="color: #0000ff;">array</span>('did'<span style="color: #000000;">))
+</span>-&gt;limit(10)-&gt;offset(20)-&gt;bindValues(<span style="color: #0000ff;">array</span>('age' =&gt; 13<span style="color: #000000;">));
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 等价于</span>
+<span style="color: #800080;">$db</span>-&gt;query('<span style="color: #000000;">SELECT * FROM `table1` INNER JOIN `table2` ON `table1`.`uid` = `table2`.`uid`
+WHERE age &gt; 13 GROUP BY aid HAVING foo="foo" ORDER BY did LIMIT 10 OFFSET 20</span>');</code></pre>
+
+<p><span style="font-size: 18px;"><strong>七、插入数据</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$insert_id</span> = <span style="color: #800080;">$db</span>-&gt;insert('Persons')-&gt;cols(<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+    </span>'Firstname'=&gt;'abc',
+    'Lastname'=&gt;'efg',
+    'Sex'=&gt;'M',
+    'Age'=&gt;13))-&gt;<span style="color: #000000;">query();
+等价于
+</span><span style="color: #800080;">$insert_id</span> = <span style="color: #800080;">$db</span>-&gt;query("<span style="color: #000000;">INSERT INTO `Persons` ( `Firstname`,`Lastname`,`Sex`,`Age`)
+VALUES ( 'abc', 'efg', 'M', 13)</span>");</code></pre>
+
+<p><span style="font-size: 18px;"><strong>八、更新数据</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$row_count</span> = <span style="color: #800080;">$db</span>-&gt;update('Persons')-&gt;cols(<span style="color: #0000ff;">array</span>('sex'))-&gt;where('ID=1'<span style="color: #000000;">)
+</span>-&gt;bindValue('sex', 'F')-&gt;<span style="color: #000000;">query();
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 等价于</span>
+<span style="color: #800080;">$row_count</span> = <span style="color: #800080;">$db</span>-&gt;update('Persons')-&gt;cols(<span style="color: #0000ff;">array</span>('sex'=&gt;'F'))-&gt;where('ID=1')-&gt;<span style="color: #000000;">query();
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 等价于</span>
+<span style="color: #800080;">$row_count</span> = <span style="color: #800080;">$db</span>-&gt;query("UPDATE `Persons` SET `sex` = 'F' WHERE ID=1");</code></pre>
+
+<p><span style="font-size: 18px;"><strong>九、删除数据</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$row_count</span> = <span style="color: #800080;">$db</span>-&gt;delete('Persons')-&gt;where('ID=9')-&gt;<span style="color: #000000;">query();
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 等价于</span>
+<span style="color: #800080;">$row_count</span> = <span style="color: #800080;">$db</span>-&gt;query("DELETE FROM `Persons` WHERE ID=9");</code></pre>
+
+<p><span style="font-size: 18px;"><strong>十、事务处理</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$db</span>-&gt;<span style="color: #000000;">beginTrans();
+</span>....
+<span style="color: #800080;">$db</span>-&gt;commitTrans(); <span style="color: #008000;">//</span><span style="color: #008000;"> or $db-&gt;rollBackTrans();</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

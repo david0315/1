@@ -1,0 +1,83 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Mac 设置redis开机启动' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Mac 设置redis开机启动</center></div><div class='banquan'>原文出处:本文由博客园博主MoonyHee提供。<br/>
+原文连接:https://www.cnblogs.com/wangziyue/p/11584268.html</div><br>
+    <p>1.创建一个plist文件</p>
+<p>首先我们需要在/Library/LaunchDaemons目录下创建一个plist文件，使用如下命令：</p>
+<p>复制代码代码如下:</p>
+<src class="cnblogs_code">
+<pre><code>sudo vim /Library/LaunchDaemons/io.redis.redis-server.plist</code></pre>
+
+<p>2.将下面的内容粘贴到上一条命令创建的文件里<br />复制代码代码如下:</p>
+<src class="cnblogs_code">
+<pre><code>?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist <span style="color: #0000ff;">PUBLIC</span> "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;<span style="color: #008080;">key</span>&gt;Label&lt;/<span style="color: #008080;">key</span>&gt;
+    &lt;<span style="color: #0000ff;">string</span>&gt;io.redis.redis-server&lt;/<span style="color: #0000ff;">string</span>&gt;
+    &lt;<span style="color: #008080;">key</span>&gt;ProgramArguments&lt;/<span style="color: #008080;">key</span>&gt;
+    &lt;<span style="color: #0000ff;">array</span>&gt;
+        &lt;<span style="color: #0000ff;">string</span>&gt;/usr/local/bin/redis-server&lt;/<span style="color: #0000ff;">string</span>&gt;
+        &lt;<span style="color: #0000ff;">string</span>&gt;/usr/local/redis-4.0.9/redis.conf&lt;/<span style="color: #0000ff;">string</span>&gt;
+    &lt;/<span style="color: #0000ff;">array</span>&gt;
+    &lt;<span style="color: #008080;">key</span>&gt;RunAtLoad&lt;/<span style="color: #008080;">key</span>&gt;
+    &lt;<span style="color: #0000ff;">true</span>/&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;</code></pre>
+
+<p>3.粘贴完以后，我们需要对上面的内容做两处修改：一个是&ldquo;redis-server&rdquo;的路径，这里需要改为你自己的安装路径(可以使用&rdquo;which redis-server&rdquo;命令来查看具体的路径)。还有一个就是redis配置文件的路径，这个是可选的，如果没有使用配置文件那么就把第二个删除，如果使用了配置文件，一定要改为正确的路径。</p>
+<p>将plist文件载入到launchd</p>
+<p>编辑完plist文件以后，我们需要将该文件载入到launchd里，使用launchctl命令，具体命令如下：</p>
+<src class="cnblogs_code">
+<pre><code>sudo launchctl load /Library/LaunchDaemons/io.redis.redis-server.plist</code></pre>
+
+<p>4.重启以后，redis就可以开机启动了。如果不想重新启动，也可以使用如下命令：</p>
+<p><em id="__mceDel">复制代码代码如下:</em></p>
+<src class="cnblogs_code">
+<pre><code>sudo launchctl start io.redis.redis-server</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>-----------------------------------------------------------------------------------------------------</p>
+<p>我遇到了&nbsp;<span style="font-family: 'Microsoft YaHei'; color: #000000;"><a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/zjfjava/p/6881375.html"><span style="color: #000000;">Could not connect to Redis at 127.0.0.1:6379: Connection refused</span></a></span></p>
+<src class="cnblogs_code">
+<pre><code>[root@centoszang 桌面]<span style="color: #008000;">#</span><span style="color: #008000;"> redis-cli</span>
+Could not connect to Redis at 127.0.0.1:6379:<span style="color: #000000;"> Connection refused
+Could not connect to Redis at </span>127.0.0.1:6379:<span style="color: #000000;"> Connection refused
+not connected</span>&gt; <span style="color: #0000ff;">exit</span><span style="color: #000000;">
+[root@centoszang 桌面]</span><span style="color: #008000;">#</span><span style="color: #008000;"> redis-server /etc/redis.conf</span>
+[root@centoszang 桌面]<span style="color: #008000;">#</span><span style="color: #008000;"> redis-cli</span>
+127.0.0.1:6379&gt;</code></pre>
+
+<p>在使用Redis时，开始就遇到了问题，客户端打不开，原因是需要先开启服务端，这需要先配置&mdash;&mdash;</p>
+<p>1.下载好redis安装包，解压安装之后，复制其配置文件redis.conf 到etc 文件夹下</p>
+<p>　　cd /opt/redis-3.2.8</p>
+<p>　　cp redis.conf /etc</p>
+<p>2. 进入etc，找到redis.conf 并修改&nbsp;daemonize no（第128行） 为&nbsp;daemonize&nbsp;<strong>yes&nbsp;</strong>，这样就可以默认启动就后台运行</p>
+<p>3. 开启客户端要确保服务端启动 &nbsp; &nbsp; &nbsp;&nbsp;</p>
+<p>　　redis-server /etc/redis.conf</p>
+<p>4.启动客户端不成功要退出再进行下一步</p>
+<p><img src="./images/Mac 设置redis开机启动0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

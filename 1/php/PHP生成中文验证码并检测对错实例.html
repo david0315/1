@@ -1,0 +1,77 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP生成中文验证码并检测对错实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP生成中文验证码并检测对错实例</center></div><div class='banquan'>原文出处:本文由博客园博主我乐意啊提供。<br/>
+原文连接:https://www.cnblogs.com/woleyia/p/10958984.html</div><br>
+    <p>PHP生成中文验证码并检测对错实例，中文验证码的例子还是比较少的，今天给大家分享一下，支持自定义中文、字体、背景色等</p>
+<p><img src="https://img2018.cnblogs.com/blog/1294934/201906/1294934-20190601112656350-883232752.jpg" alt="" /></p>
+<p><strong>生成验证码，注意font字体路径要对，否则显示图片不存在</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008080;">session_start</span><span style="color: #000000;">(); 
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">//</span><span style="color: #008000;">1&gt;设置验证码图片大小的函数 </span>
+<span style="color: #008080;"> 4</span> <span style="color: #800080;">$image</span> = imagecreatetruecolor(200, 60<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">//</span><span style="color: #008000;">5&gt;设置验证码颜色 imagecolorallocate(int im, int red, int green, int blue); </span>
+<span style="color: #008080;"> 6</span> <span style="color: #800080;">$bgcolor</span> = imagecolorallocate(<span style="color: #800080;">$image</span>, 255, 255, 255); <span style="color: #008000;">//</span><span style="color: #008000;">#ffffff 
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">//6&gt;区域填充 int imagefill(int im, int x, int y, int col)  (x,y) 所在的区域着色,col 表示欲涂上的颜色 </span>
+<span style="color: #008080;"> 8</span> imagefill(<span style="color: #800080;">$image</span>, 0, 0, <span style="color: #800080;">$bgcolor</span><span style="color: #000000;">); 
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">//</span><span style="color: #008000;">7&gt;设置ttf字体 </span>
+<span style="color: #008080;">10</span> <span style="color: #800080;">$fontface</span> = 'simhei.ttf'<span style="color: #000000;">; 
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">//</span><span style="color: #008000;">7&gt;设置字库，实现简单的数字储备 </span>
+<span style="color: #008080;">12</span> <span style="color: #800080;">$str</span> = '天地不仁以万物为刍狗圣人不仁以百姓为刍狗这句经常出现在控诉暴君暴政上地残暴不仁把万物都当成低贱的猪狗来看待而那些高高在上的所谓圣人们也没两样还不是把我们老百姓也当成猪狗不如的东西但实在正取的解读是地不情感用事对万物一视同仁圣人不情感用事对百姓一视同仁执子之手与子偕老当男女主人公含情脉脉看着对方说了句执子之手与子偕老女方泪眼朦胧含羞地回一句讨厌啦这样的情节我们是不是见过很多但是我们来看看这句的原句死生契阔与子成说执子之手与子偕老于嗟阔兮不我活兮于嗟洵兮不我信兮意思是说战士之间的约定说要一起死现在和我约定的人都走了我怎么活啊赤裸裸的兄弟江湖战友友谊啊形容好基友的基情比男女之间的爱情要合适很多吧'<span style="color: #000000;">; 
+</span><span style="color: #008080;">13</span> <span style="color: #008000;">//</span><span style="color: #008000;">str_split()切割字符串为一个数组,一个中文在utf_8为3个字符 </span>
+<span style="color: #008080;">14</span> <span style="color: #800080;">$strdb</span> = <span style="color: #008080;">str_split</span>(<span style="color: #800080;">$str</span>, 3<span style="color: #000000;">); 
+</span><span style="color: #008080;">15</span> <span style="color: #008000;">//</span><span style="color: #008000;">&gt;11 </span>
+<span style="color: #008080;">16</span> <span style="color: #800080;">$captcha_code</span> = ''<span style="color: #000000;">; 
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">//</span><span style="color: #008000;">8&gt;生成随机的汉子 </span>
+<span style="color: #008080;">18</span> <span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; 4; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) { 
+</span><span style="color: #008080;">19</span>     <span style="color: #008000;">//</span><span style="color: #008000;">设置字体颜色，随机颜色 </span>
+<span style="color: #008080;">20</span>     <span style="color: #800080;">$fontcolor</span> = imagecolorallocate(<span style="color: #800080;">$image</span>, <span style="color: #008080;">rand</span>(0, 120), <span style="color: #008080;">rand</span>(0, 120), <span style="color: #008080;">rand</span>(0, 120));            <span style="color: #008000;">//</span><span style="color: #008000;">0-120深颜色 
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">    //随机选取中文 </span>
+<span style="color: #008080;">22</span>     <span style="color: #800080;">$in</span> = <span style="color: #008080;">rand</span>(0, <span style="color: #008080;">count</span>(<span style="color: #800080;">$strdb</span><span style="color: #000000;">)); 
+</span><span style="color: #008080;">23</span>     <span style="color: #800080;">$cn</span> = <span style="color: #800080;">$strdb</span>[<span style="color: #800080;">$in</span><span style="color: #000000;">]; 
+</span><span style="color: #008080;">24</span>     <span style="color: #008000;">//</span><span style="color: #008000;">将中文记录到将保存到session的字符串中 </span>
+<span style="color: #008080;">25</span>     <span style="color: #800080;">$captcha_code</span> .= <span style="color: #800080;">$cn</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">26</span>     <span style="color: #008000;">/*</span><span style="color: #008000;"> imagettftext (resource $image ,float $size ,float $angle ,int $x ,int $y,int $color, 
+</span><span style="color: #008080;">27</span> <span style="color: #008000;">      string $fontfile ,string $text ) 幕布 ，尺寸，角度，坐标，颜色，字体路径，文本字符串 
+</span><span style="color: #008080;">28</span> <span style="color: #008000;">      mt_rand()生成更好的随机数,比rand()快四倍 </span><span style="color: #008000;">*/</span> 
+<span style="color: #008080;">29</span>     imagettftext(<span style="color: #800080;">$image</span>, <span style="color: #008080;">mt_rand</span>(20, 24), <span style="color: #008080;">mt_rand</span>(-60, 60), (40 * <span style="color: #800080;">$i</span> + 20), <span style="color: #008080;">mt_rand</span>(30, 35), <span style="color: #800080;">$fontcolor</span>, <span style="color: #800080;">$fontface</span>, <span style="color: #800080;">$cn</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">} 
+</span><span style="color: #008080;">31</span> <span style="color: #008000;">//</span><span style="color: #008000;">11&gt;存到session </span>
+<span style="color: #008080;">32</span> <span style="color: #800080;">$_SESSION</span>['sucaihuo_code'] = <span style="color: #800080;">$captcha_code</span>;</code></pre>
+
+<p>&nbsp;</p>
+<p><strong>Ajax检测验证码</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> checkCode() { 
+</span><span style="color: #008080;"> 2</span>     $.post("ajax.php", {code: $("#input_code").val()}, <span style="color: #0000ff;">function</span><span style="color: #000000;">(data) { 
+</span><span style="color: #008080;"> 3</span>         <span style="color: #0000ff;">if</span> (data == '1'<span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 4</span>             alert("验证码正确！"<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 5</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;"> 6</span>             alert("验证码错误！"<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span>     }, "json"<span style="color: #000000;">) 
+</span><span style="color: #008080;">10</span> }</code></pre>
+
+<p>本文转自<a href="https://www.sucaihuo.com/php/550.html" target="_blank">https://www.sucaihuo.com/php/550.html</a>，转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,255 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php实现命令行里输出带颜色文字' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php实现命令行里输出带颜色文字</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/11121628.html</div><br>
+    <p><span style="font-size: 15px;">今天执行composer的时候看到命令窗口出现的提示里面有的关键性部分带有颜色，于是很好奇研究了一下，在这里记录下来</span></p>
+<p><span style="font-size: 15px;">其实在命令行输出带颜色字体主要是使用的 ANSI 转义字符实现的，我们先看个例子：</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?
+<span style="color: #0000ff;">echo</span> "\033[38;5;1m红色文字\033[0m";</code></pre>
+
+<p><span style="font-size: 15px;">显示：</span></p>
+<p><img src="./images/php实现命令行里输出带颜色文字0.jpg" alt="" /></p>
+<p><span style="font-size: 15px;">在终端中，ANSI定义了用于屏幕显示的Escape屏幕控制码，其格式为：</span></p>
+<blockquote>
+<pre><code><span style="background-color: #ff6600;">\033[</span><span style="background-color: #99cc00;">38;5;1</span><span style="background-color: #ff00ff;">m</span><span style="background-color: #33cccc;">红色文字</span><span style="background-color: #ff6600;">\033[</span><span style="background-color: #99cc00;">0</span><span style="background-color: #ff00ff;">m</span></code></pre>
+</blockquote>
+<p><span style="background-color: #ff6600;">&nbsp; &nbsp;&nbsp;<span style="background-color: #ffffff;">&nbsp;代表开始设置标签</span></span></p>
+<p><span style="background-color: #ff00ff;">&nbsp; &nbsp; <span style="background-color: #ffffff;">&nbsp;代表设置完成标签</span></span></p>
+<p><span style="background-color: #99cc00;">&nbsp; &nbsp;&nbsp;<span style="background-color: #ffffff;"> 代表设置参数</span></span></p>
+<p><span style="background-color: #99cc00;"><span style="background-color: #ffffff;"><span style="background-color: #33cccc;">&nbsp; &nbsp;&nbsp;<span style="background-color: #ffffff;"> 代表要显示的字符</span></span><br /></span></span></p>
+<p><span style="background-color: #99cc00; font-size: 15px;"><span style="background-color: #ffffff;"><span style="background-color: #33cccc;"><span style="background-color: #ffffff;">这里开始标签和结束标签都是固定的，开始标签是 &ldquo;\033[&rdquo; 结束标签是 &ldquo;m&rdquo; 其中参数部分的含义可以按照下表中的参数来设置</span></span></span></span></p>
+<src>
+<src>
+<table class="wikitable eye-protector-processed" style="height: 961px; width: 524px;">
+<tbody>
+<tr><th class="eye-protector-processed">代码</th><th class="eye-protector-processed">作用</th><th class="eye-protector-processed">备注</th></tr>
+<tr>
+<td class="eye-protector-processed">0</td>
+<td class="eye-protector-processed">重置/正常</td>
+<td class="eye-protector-processed">关闭所有属性。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">1</td>
+<td class="eye-protector-processed">粗体或增加强度</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">2</td>
+<td class="eye-protector-processed">弱化（降低强度）</td>
+<td class="eye-protector-processed">未广泛支持。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">3</td>
+<td class="eye-protector-processed">斜体</td>
+<td class="eye-protector-processed">未广泛支持。有时视为反相显示。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">4</td>
+<td class="eye-protector-processed">下划线</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">5</td>
+<td class="eye-protector-processed">缓慢闪烁</td>
+<td class="eye-protector-processed">低于每分钟150次。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">6</td>
+<td class="eye-protector-processed">快速闪烁</td>
+<td class="eye-protector-processed">MS-DOS ANSI.SYS；每分钟150以上；未广泛支持。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">7</td>
+<td class="eye-protector-processed">反显</td>
+<td class="eye-protector-processed">前景色与背景色交换。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">8</td>
+<td class="eye-protector-processed">隐藏</td>
+<td class="eye-protector-processed">未广泛支持。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">9</td>
+<td class="eye-protector-processed">划除</td>
+<td class="eye-protector-processed">字符清晰，但标记为删除。未广泛支持。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">10</td>
+<td class="eye-protector-processed">主要（默认）字体</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">11&ndash;19</td>
+<td class="eye-protector-processed">替代字体</td>
+<td class="eye-protector-processed">选择替代字体<span class="mwe-math-element"><span class="mwe-math-mathml-inline mwe-math-mathml-a11y">{\displaystyle n-10}<img class="mwe-math-fallback-image-inline" src="./images/php实现命令行里输出带颜色文字1.jpg" alt="{\displaystyle n-10}" />。</span></span></td>
+</tr>
+<tr>
+<td class="eye-protector-processed">20</td>
+<td class="eye-protector-processed"><a title="德文尖角体" href="https://zh.wikipedia.org/wiki/%E5%BE%B7%E6%96%87%E5%B0%96%E8%A7%92%E9%AB%94">尖角体</a></td>
+<td class="eye-protector-processed">几乎无支持。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">21</td>
+<td class="eye-protector-processed">关闭粗体或双下划线</td>
+<td class="eye-protector-processed">关闭粗体未广泛支持；双下划线几乎无支持。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">22</td>
+<td class="eye-protector-processed">正常颜色或强度</td>
+<td class="eye-protector-processed">不强不弱。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">23</td>
+<td class="eye-protector-processed">非斜体、非尖角体</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">24</td>
+<td class="eye-protector-processed">关闭下划线</td>
+<td class="eye-protector-processed">去掉单双下划线。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">25</td>
+<td class="eye-protector-processed">关闭闪烁</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">27</td>
+<td class="eye-protector-processed">关闭反显</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">28</td>
+<td class="eye-protector-processed">关闭隐藏</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">29</td>
+<td class="eye-protector-processed">关闭划除</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">30&ndash;37</td>
+<td class="eye-protector-processed">设置前景色</td>
+<td class="eye-protector-processed">参见下面的颜色表。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">38</td>
+<td class="eye-protector-processed">设置前景色</td>
+<td class="eye-protector-processed">下一个参数是<code class="eye-protector-processed">5;n</code>或<code class="eye-protector-processed">2;r;g;b</code>，见下。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">39</td>
+<td class="eye-protector-processed">默认前景色</td>
+<td class="eye-protector-processed">由具体实现定义（按照标准）。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">40&ndash;47</td>
+<td class="eye-protector-processed">设置背景色</td>
+<td class="eye-protector-processed">参见下面的颜色表。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">48</td>
+<td class="eye-protector-processed">设置背景色</td>
+<td class="eye-protector-processed">下一个参数是<code class="eye-protector-processed">5;n</code>或<code class="eye-protector-processed">2;r;g;b</code>，见下。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">49</td>
+<td class="eye-protector-processed">默认背景色</td>
+<td class="eye-protector-processed">由具体实现定义（按照标准）。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">51</td>
+<td class="eye-protector-processed">Framed</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">52</td>
+<td class="eye-protector-processed">Encircled</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">53</td>
+<td class="eye-protector-processed">上划线</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">54</td>
+<td class="eye-protector-processed">Not framed or encircled</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">55</td>
+<td class="eye-protector-processed">关闭上划线</td>
+<td class="eye-protector-processed">&nbsp;</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">60</td>
+<td class="eye-protector-processed">表意文字下划线或右边线</td>
+<td class="eye-protector-processed" rowspan="5">几乎无支持。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">61</td>
+<td class="eye-protector-processed">表意文字双下划线或双右边线</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">62</td>
+<td class="eye-protector-processed">表意文字上划线或左边线</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">63</td>
+<td class="eye-protector-processed">表意文字双上划线或双左边线</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">64</td>
+<td class="eye-protector-processed">表意文字着重标志</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">65</td>
+<td class="eye-protector-processed">表意文字属性关闭</td>
+<td class="eye-protector-processed">重置<code class="eye-protector-processed">60</code>&ndash;<code class="eye-protector-processed">64</code>的所有效果。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed">90&ndash;97</td>
+<td class="eye-protector-processed">设置明亮的前景色</td>
+<td class="eye-protector-processed">aixterm（非标准）。</td>
+</tr>
+<tr>
+<td class="eye-protector-processed"><span class="nowrap">100&ndash;107</span></td>
+<td class="eye-protector-processed">设置明亮的背景色</td>
+<td class="eye-protector-processed">aixterm（非标准）。</td>
+</tr>
+</tbody>
+</table>
+
+
+<p><span style="font-size: 15px;">根据表格我们可以看出 设置的参数 <span style="background-color: #ff6600; color: #ffffff;">38</span>表示设置前景色<span style="background-color: #ff6600; color: #ffffff;">5</span>表示颜色的设置模式表示的是256种颜色 <span style="background-color: #ff6600; color: #ffffff;">1</span>表示使用的那种颜色</span></p>
+<p><span style="font-size: 15px;">除了设置颜色属性外我们还可以设置下划线等其他属性，而且并不是每种属性都需要设置多个参数，例如下划线属性我们直接添加个4就可以啦</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">echo</span> "\033[38;5;1;4m红色文字\033[0m";</code></pre>
+
+<p><img src="./images/php实现命令行里输出带颜色文字2.jpg" alt="" /></p>
+<p><span style="color: #99cc00; font-size: 15px;">注意：由于各个系统终端的不同，所以有的设置是不起作用的或者效果会有所差异，最终效果以实际的显示效果为准！</span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

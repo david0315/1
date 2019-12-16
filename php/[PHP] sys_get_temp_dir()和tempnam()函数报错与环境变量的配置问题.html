@@ -1,0 +1,37 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] sys_get_temp_dir()和tempnam()函数报错与环境变量的配置问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] sys_get_temp_dir()和tempnam()函数报错与环境变量的配置问题</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10731566.html</div><br>
+    <p>1.项目运行过程中遇到个问题,保存临时文件时,一直返回false</p>
+<p>2.根据经验这个是在/tmp目录下建立临时文件,所以检查了一遍权限问题,发现权限没有问题</p>
+<p>3.查出sys_get_temp_dir()这个返回的目录是/data1/phptmp</p>
+<p>4.grep了一遍php-fpm的配置文件,找到这个位置&nbsp;</p>
+<p>/etc/php-fpm.d/www.conf</p>
+<p>env[TMP] = /data1/phptmp<br />env[TMPDIR] = /data1/phptmp<br />env[TEMP] = /data1/phptmp</p>
+<p>5.这个地方的配置会影响某些函数的功能 , 也会改变$_SERVR环境变量,开启了以后会看到增加了这个环境变量</p>
+<p><img src="./images/[PHP] sys_get_temp_dir()和tempnam()函数报错与环境变量的配置问题0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>6.引申想查一下$_ENV环境变量 , 这个变量默认是空数组,只有在php.ini中开启了下面的时候才会有值,并且和$_SERVER是一样的</p>
+<p>Default Value: &ldquo;EGPCS&rdquo;</p>
+<p>7.那么一些框架在目录下放置.env文件,又是咋回事,测试后发现这些文件并不会改变上面$_ENV或者$_SERVER变量的值,可能是某些框架内部单独去读取了这个文件</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

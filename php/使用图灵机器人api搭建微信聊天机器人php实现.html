@@ -1,0 +1,143 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修使用图灵机器人api搭建微信聊天机器人php实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>使用图灵机器人api搭建微信聊天机器人php实现</center></div><div class='banquan'>原文出处:本文由博客园博主指间人生提供。<br/>
+原文连接:https://www.cnblogs.com/gracexu/p/11515622.html</div><br>
+    <blockquote>
+<p>之前通过hook技术实现了微信pc端发送消息功能，如果在结合图灵机器人就能实现微信聊天机器人。</p>
+</blockquote>
+<p>代码下载：http://blog.yshizi.cn/131.html</p>
+<p>逻辑如下：<br />
+<img src="./images/使用图灵机器人api搭建微信聊天机器人php实现0.jpg" alt="捕获.jpg" /></p>
+<p>下面我简单介绍一下步骤。</p>
+<ol>
+<li>首先，你需要下载我的微信助手，下载地址请参考我的博客文章：<br />
+<a href="http://blog.yshizi.cn/104.html">通过对微信pc hook实现微信助手</a>。</li>
+<li>申请图灵机器人，并认证。<a href="http://www.turingapi.com/">申请地址</a>，使用api接入并获取apikey（详细请参考图灵机器人官网） 。</li>
+<li><p>使用php实现访问图灵机器人api。<br />
+php实现代码如下：</p>
+<p>&lt;?php<br />
+class Tuling123<br />
+{<br />
+private $apiKey;<br />
+private $secret;<br />
+private $text;<br />
+private $userId = 1;<br />
+private $selfInfo = '';</p>
+<p>public function __construct($apiKey, $userId, $selfInfo){</p>
+<pre><code><code>$this-&gt;apikey = $apiKey;
+$this-&gt;secret = $secret;
+$this-&gt;userId = $userId;
+$this-&gt;selfInfo = $selfInfo;        </code></code></pre>
+<p>}</p>
+<p>public function tuling($text, $raw = false){</p>
+<pre><code><code>$this-&gt;text = $text;    
+
+$param = [
+    &#39;perception&#39; =&gt; [
+        &#39;inputText&#39; =&gt; [
+            &#39;text&#39; =&gt; $this-&gt;text,
+        ],
+        &#39;selfInfo&#39; =&gt; $this-&gt;selfInfo
+    ],
+    &#39;userInfo&#39; =&gt; [
+        &#39;apiKey&#39; =&gt; $this-&gt;apikey,
+        &#39;userId&#39; =&gt; $this-&gt;userId,
+    ]
+];
+
+
+$result = json_decode(&#39;[&#39;.$this-&gt;post(&#39;http://openapi.tuling123.com/openapi/api/v2&#39;,json_encode($param)).&#39;]&#39;,true);
+
+return $raw ? $result : $result[0][&#39;results&#39;][0][&#39;values&#39;][&#39;text&#39;];</code></code></pre>
+<p>}</p>
+<p>private function post($url,$data){</p>
+<pre><code><code>$curl = curl_init();
+curl_setopt($curl, CURLOPT_POST, 1);
+curl_setopt($curl, CURLOPT_HEADER, 0);
+curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_TIMEOUT, 500);
+curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+curl_setopt($curl, CURLOPT_URL, $url);
+$result = curl_exec($curl);
+curl_close($curl);
+
+return $result;  </code></code></pre>
+<p>}</p>
+<p>}<br />
+?&gt;</p></li>
+</ol>
+<p>TuLing.php<br />
+这段代码主要是封装图灵机器人api</p>
+<pre><code><code>&lt;?php 
+
+require __DIR__.&#39;/TuLing.php&#39;;
+
+/**
+ * 获取 post 参数; 在 content_type 为 application/json 时，自动解析 json
+ * @return array
+ */
+function initPostData()
+{
+    if (empty($_POST)) {
+        $content = file_get_contents(&#39;php://input&#39;);
+        $post    = (array)json_decode($content, true);
+    } else {
+        $post = $_POST;
+    }
+    return $post;
+}
+
+$selfInfo = [
+    &#39;location&#39; =&gt; [
+    &#39;city&#39; =&gt; &#39;广州&#39;
+    ]
+];
+
+header(&#39;Content-Type:application/json&#39;); 
+
+$post = initPostData();
+
+$userid=$post[&#39;wxid&#39;];
+
+$content=$post[&#39;content&#39;];</code></code></pre>
+<p>//str_replace(&quot;<em>&quot;,&quot;&quot;,&quot;$userid&quot;) 将去除&quot;</em>&quot;的微信id作为图灵机器人的用户id,因为图灵机器人用户id不能含&quot;<em>&quot;<br />
+$data = new Tuling123('您的图灵机器人apikey',str_replace(&quot;</em>&quot;,&quot;&quot;,&quot;$userid&quot;),$selfInfo);<br />
+$result = $data-&gt;tuling($content);</p>
+<pre><code><code>$json[&#39;wxid&#39;] = $userid;    
+
+$json[&#39;content&#39;] = $result;    
+
+echo json_encode($json,JSON_UNESCAPED_UNICODE);
+
+?&gt;</code></code></pre>
+<p>wechatrobot.php</p>
+<p>之前将这两个文件发布服务器。发布之后的wechatrobot.php文件访问地址即使微信助手接口地址。<br />
+如我的发布后地址是：http://blog.yshizi.cn/wechatrobot.php<br />
+微信助手配置如下：<br />
+<img src="./images/使用图灵机器人api搭建微信聊天机器人php实现1.jpg" alt="122.JPG" /><br />
+然后就可撩机器人。<br />
+<img src="./images/使用图灵机器人api搭建微信聊天机器人php实现2.jpg" alt="微信图片_20190912173652.jpg" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,492 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修深入理解 PHP 的 7 个预定义接口' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>深入理解 PHP 的 7 个预定义接口</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11867558.html</div><br>
+    <h3>深入理解预定义接口</h3>
+<blockquote>
+<p>场景：平常工作中写的都是业务模块，很少会去实现这样的接口，但是在框架里面用的倒是很多。</p>
+</blockquote>
+<src data-unique="518720">&nbsp;
+<h4>1. Traversable（遍历）接口</h4>
+<blockquote>
+<p>该接口不能被类直接实现，如果直接写了一个普通类实现了该遍历接口，是会直接报致命的错误，提示使用 Iterator（迭代器接口）或者 IteratorAggregate（聚合迭代器接口）来实现，这两个接口后面会介绍；所有通常情况下，我们只是会用来判断该类是否可以使用 foreach 来进行遍历；</p>
+</blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span>    <span style="color: #0000ff;">class</span> Test <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Traversable
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">3</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">4</span> <span style="color: #000000;">    上面这个是错误示范，该代码会提示这样的错误：
+</span><span style="color: #008080;">5</span>     Fatal error: <span style="color: #0000ff;">Class</span> Test must implement <span style="color: #0000ff;">interface</span> Traversable <span style="color: #0000ff;">as</span><span style="color: #000000;"> part of either Iterator or 
+</span><span style="color: #008080;">6</span>     IteratorAggregate in Unknown on line 0</code></pre>
+
+<pre class=" language-php"><code class="  language-php"><span class="token keyword"><span class="token class-name"><span class="token keyword"><span class="token class-name"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token class-name"><span class="token keyword"><span class="token keyword"><span class="token number">
+    上面的大致意思是说如要实现这个接口，必须同Iterator或者IteratorAggregate来实现
+
+    正确的做法：
+    当我们要判断一个类是否可以使用<span class="token keyword">foreach来进行遍历，只需要判断是否是traversable的实例</span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span>     <span style="color: #0000ff;">class</span><span style="color: #000000;"> Test
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">3</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">4</span>     <span style="color: #800080;">$test</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Test;
+</span><span style="color: #008080;">5</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span> instanceOf Traversable);</code></pre>
+
+<pre class=" language-php"></code></pre>
+<h4>2. Iterator（迭代器）接口</h4>
+<blockquote>
+<p>迭代器接口其实实现的原理就是类似指针的移动，当我们写一个类的时候，通过实现对应的 5 个方法：key（），current（），next（），rewind（），valid（），就可以实现数据的迭代移动，具体看以下代码</p>
+</blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">class</span> Test <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Iterator
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">private</span> <span style="color: #800080;">$key</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">private</span> <span style="color: #800080;">$val</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 6</span>             'one',
+<span style="color: #008080;"> 7</span>             'two',
+<span style="color: #008080;"> 8</span>             'three',
+<span style="color: #008080;"> 9</span> <span style="color: #000000;">        ];
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">key</span><span style="color: #000000;">()
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">13</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">key</span><span style="color: #000000;">;
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">15</span> 
+<span style="color: #008080;">16</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">current</span><span style="color: #000000;">()
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">18</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;val[<span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">key</span><span style="color: #000000;">];
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">next</span><span style="color: #000000;">()
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">23</span>             ++<span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">key</span><span style="color: #000000;">;
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">rewind</span><span style="color: #000000;">()
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">28</span>             <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">key</span> = 0<span style="color: #000000;">;
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> valid()
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">33</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;val[<span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">key</span><span style="color: #000000;">]);
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span>     <span style="color: #800080;">$test</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Test;
+</span><span style="color: #008080;">38</span> 
+<span style="color: #008080;">39</span>     <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">rewind</span><span style="color: #000000;">();
+</span><span style="color: #008080;">40</span> 
+<span style="color: #008080;">41</span>     <span style="color: #0000ff;">while</span>(<span style="color: #800080;">$test</span>-&gt;<span style="color: #000000;">valid()) {
+</span><span style="color: #008080;">42</span>         <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">key</span> . ':' . <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">current</span>() . <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">43</span>         <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">next</span><span style="color: #000000;">();
+</span><span style="color: #008080;">44</span>     }</code></pre>
+
+<pre class=" language-php"><code class="  language-php"><span class="token php language-php"><span class="token delimiter important"><span class="token keyword"><span class="token class-name"><span class="token keyword"><span class="token class-name"><span class="token punctuation"><span class="token keyword"><span class="token variable"><span class="token punctuation"><span class="token keyword"><span class="token variable"><span class="token operator"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token operator"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token operator"><span class="token number"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token punctuation"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token keyword"><span class="token class-name"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token constant"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation">
+
+  <span class="token shell-comment comment">## 该输出结果 ：       
+        <span class="token number">0<span class="token punctuation">: one
+        <span class="token number">1<span class="token punctuation">: two
+        <span class="token number">2<span class="token punctuation">: three
+
+  看了这个原理我们就知道，其实迭代的移动方式：rewind（）<span class="token operator">-<span class="token operator">&gt; valid（）<span class="token operator">-<span class="token operator">&gt;<span class="token function">key<span class="token punctuation">(<span class="token punctuation">) <span class="token operator">-<span class="token operator">&gt; <span class="token function">current<span class="token punctuation">(<span class="token punctuation">) <span class="token operator">-<span class="token operator">&gt; <span class="token function">next<span class="token punctuation">(<span class="token punctuation">) <span class="token operator">-<span class="token operator">&gt; valid（）<span class="token operator">-<span class="token operator">&gt; <span class="token function">key<span class="token punctuation">(<span class="token punctuation">) <span class="token punctuation">.<span class="token punctuation">.<span class="token punctuation">.<span class="token punctuation">.<span class="token operator">-<span class="token operator">&gt; <span class="token function">valid<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+
+  好的，理解了上面，我们打开Iterator的接口，发现它是实现了Traversable（遍历）接口的，接下来我们来证明下：
+  <span class="token function">var_dump<span class="token punctuation">(<span class="token variable">$test <span class="token keyword">instanceOf Traversable<span class="token punctuation">)<span class="token punctuation">;
+  结果返回的是<span class="token boolean constant">true，证明这个类的对象是可以进行遍历的。</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">foreach</span> （<span style="color: #800080;">$test</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">）{
+</span><span style="color: #008080;">2</span>         <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">key</span> . ':' . <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">current</span>() . <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">3</span>  }</code></pre>
+
+<pre class=" language-php"><code class="  language-php"><span class="token php language-php"><span class="token delimiter important"><span class="token keyword"><span class="token class-name"><span class="token keyword"><span class="token class-name"><span class="token punctuation"><span class="token keyword"><span class="token variable"><span class="token punctuation"><span class="token keyword"><span class="token variable"><span class="token operator"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token operator"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token operator"><span class="token number"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token keyword"><span class="token punctuation"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token this"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token keyword"><span class="token class-name"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token keyword"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token constant"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token shell-comment comment"><span class="token number"><span class="token punctuation"><span class="token number"><span class="token punctuation"><span class="token number"><span class="token punctuation"><span class="token operator"><span class="token operator"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token operator"><span class="token operator"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token function"><span class="token punctuation"><span class="token variable"><span class="token keyword"><span class="token punctuation"><span class="token punctuation"><span class="token boolean constant"><span class="token keyword"><span class="token variable"><span class="token keyword"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token variable"><span class="token punctuation"><span class="token keyword"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token property"><span class="token punctuation"><span class="token single-quoted-string string"><span class="token punctuation"><span class="token variable"><span class="token operator"><span class="token operator"><span class="token function"><span class="token punctuation"><span class="token punctuation"><span class="token punctuation"><span class="token constant"><span class="token punctuation"><span class="token punctuation"> 这个的结果跟<span class="token keyword">while循环实现的模式是一样的。</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<src data-unique="9b5476">&nbsp;
+<h4>3. IteratorAggregate（聚合迭代器） 接口</h4>
+<blockquote>
+<p>聚合迭代器和迭代器的原理是一样的，只不过聚合迭代器已经实现了迭代器原理，你只需要实现一个 getIterator（）方法来实现迭代，具体看以下代码</p>
+</blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">class</span> Test <span style="color: #0000ff;">implements</span><span style="color: #000000;"> IteratorAggregate
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">public</span> <span style="color: #800080;">$one</span> = 1<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">public</span> <span style="color: #800080;">$two</span> = 2<span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span>         <span style="color: #0000ff;">public</span> <span style="color: #800080;">$three</span> = 3<span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">10</span>             <span style="color: #800080;">$this</span>-&gt;four = 4<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getIterator()
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">15</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> AraayIterator(<span style="color: #800080;">$this</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>     <span style="color: #800080;">$test</span> = (<span style="color: #0000ff;">new</span> Test())-&gt;<span style="color: #000000;">getIterator();
+</span><span style="color: #008080;">20</span>     <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">rewind</span><span style="color: #000000;">();
+</span><span style="color: #008080;">21</span>     <span style="color: #0000ff;">while</span>(<span style="color: #800080;">$test</span>-&gt;<span style="color: #000000;">valid()) {
+</span><span style="color: #008080;">22</span>         <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">key</span>() . ' : '  .  <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">current</span>() . <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">23</span>         <span style="color: #800080;">$test</span>-&gt;<span style="color: #008080;">next</span><span style="color: #000000;">();
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span> <span style="color: #000000;">    从上面的代码，我们可以看到我们将Test类的对象传进去当做迭代器，通过while循环的话，我们必须通过调用getIterator（）方法获取到迭代器对象，然后直接进行迭代输出，而不需要去实现相关的key()等方法。
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">    当然这个时候，我们肯定想知道是否可以直接从foreach进行迭代循环出去呢？那么我们来打印一下结果
+</span><span style="color: #008080;">28</span> 
+<span style="color: #008080;">29</span>     <span style="color: #800080;">$test</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Test;
+</span><span style="color: #008080;">30</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span><span style="color: #000000;"> instanceOf Traversable);
+</span><span style="color: #008080;">31</span> 
+<span style="color: #008080;">32</span>     结果是输出bool <span style="color: #0000ff;">true</span><span style="color: #000000;">，所以我们接下来是直接用foreach来实现一下。
+</span><span style="color: #008080;">33</span> 
+<span style="color: #008080;">34</span>     <span style="color: #800080;">$test</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Test;
+</span><span style="color: #008080;">35</span>   <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$test</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">36</span>      <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$key</span> . ' : ' . <span style="color: #800080;">$value</span>  .  <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">38</span> 
+<span style="color: #008080;">39</span> <span style="color: #000000;"> 接下来，我们看到是对对象进行迭代，这个时候我们是否可以数组进行迭代呢？
+</span><span style="color: #008080;">40</span> 
+<span style="color: #008080;">41</span>  <span style="color: #0000ff;">class</span> Test <span style="color: #0000ff;">implements</span><span style="color: #000000;"> IteratorAggregate
+</span><span style="color: #008080;">42</span> <span style="color: #000000;"> {
+</span><span style="color: #008080;">43</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">44</span> 
+<span style="color: #008080;">45</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;">46</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">47</span>         <span style="color: #800080;">$this</span>-&gt;data = [''one' =&gt;  1 , 'two'<span style="color: #000000;"> =&gt; 2];
+</span><span style="color: #008080;">48</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">49</span> 
+<span style="color: #008080;">50</span> <span style="color: #000000;">    public function getIterator()
+</span><span style="color: #008080;">51</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">52</span> <span style="color: #000000;">        return new AraayIterator($this-&gt;data);
+</span><span style="color: #008080;">53</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">54</span> <span style="color: #000000;"> }
+</span><span style="color: #008080;">55</span> 
+<span style="color: #008080;">56</span> <span style="color: #000000;"> 同理实现的方式跟对对象进行迭代是一样的。
+</span><span style="color: #008080;">57</span>  </code></pre>
+
+<p>&nbsp;</p>
+<ul>
+<li>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></li>
+</ul>
+<h4>4. ArrayAccess（数组式访问）接口</h4>
+<blockquote>
+<p>通常情况下，我们会看到 this ['name'] 这样的用法，但是我们知道，$this 是一个对象，是如何使用数组方式访问的？答案就是实现了数据组访问接口 ArrayAccess，具体代码如下</p>
+</blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">class</span> Test <span style="color: #0000ff;">implements</span><span style="color: #000000;"> ArrayAccess
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">public</span> <span style="color: #800080;">$container</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> 
+<span style="color: #008080;"> 6</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;"> 8</span>             <span style="color: #800080;">$this</span>-&gt;container =<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 9</span>                 'one' =&gt; 1,
+<span style="color: #008080;">10</span>                 'two' =&gt; 2,
+<span style="color: #008080;">11</span>                 'three'  =&gt; 3,
+<span style="color: #008080;">12</span> <span style="color: #000000;">            ];
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> offsetExists(<span style="color: #800080;">$offset</span><span style="color: #000000;">) 
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">17</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;container[<span style="color: #800080;">$offset</span><span style="color: #000000;">]);
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">19</span> 
+<span style="color: #008080;">20</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> offsetGet(<span style="color: #800080;">$offset</span><span style="color: #000000;">)
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">22</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;container[<span style="color: #800080;">$offset</span>]) ? <span style="color: #800080;">$this</span>-&gt;container[<span style="color: #800080;">$offset</span>] : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">24</span> 
+<span style="color: #008080;">25</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> offsetSet(<span style="color: #800080;">$offset</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">)
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">27</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$offset</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">28</span>                 <span style="color: #800080;">$this</span>-&gt;container[] = <span style="color: #800080;">$value</span><span style="color: #000000;">;
+</span><span style="color: #008080;">29</span>             } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">30</span>                 <span style="color: #800080;">$this</span>-&gt;container[<span style="color: #800080;">$offset</span>] = <span style="color: #800080;">$value</span><span style="color: #000000;">;
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">33</span> 
+<span style="color: #008080;">34</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> offsetUnset(<span style="color: #800080;">$offset</span><span style="color: #000000;">)
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">36</span>             <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$this</span>-&gt;container[<span style="color: #800080;">$offset</span><span style="color: #000000;">]);
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">39</span>    <span style="color: #800080;">$test</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Test;
+</span><span style="color: #008080;">40</span>    <span style="color: #008080;">var_dump</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$test</span>['one'<span style="color: #000000;">]));
+</span><span style="color: #008080;">41</span>    <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span>['two'<span style="color: #000000;">]);
+</span><span style="color: #008080;">42</span>    <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$test</span>['two'<span style="color: #000000;">]);
+</span><span style="color: #008080;">43</span>    <span style="color: #008080;">var_dump</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$test</span>['two'<span style="color: #000000;">]));
+</span><span style="color: #008080;">44</span>    <span style="color: #800080;">$test</span>['two'] = 22<span style="color: #000000;">;
+</span><span style="color: #008080;">45</span>    <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span>['two'<span style="color: #000000;">]);
+</span><span style="color: #008080;">46</span>    <span style="color: #800080;">$test</span>[] = 4<span style="color: #000000;">;
+</span><span style="color: #008080;">47</span>    <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span><span style="color: #000000;">);
+</span><span style="color: #008080;">48</span>    <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span>[0<span style="color: #000000;">]);
+</span><span style="color: #008080;">49</span> 
+<span style="color: #008080;">50</span> <span style="color: #000000;">   当然我们也有经典的一个做法就是把对象的属性当做数组来访问
+</span><span style="color: #008080;">51</span> 
+<span style="color: #008080;">52</span>    <span style="color: #0000ff;">class</span> Test <span style="color: #0000ff;">implements</span><span style="color: #000000;"> ArrayAccess
+</span><span style="color: #008080;">53</span> <span style="color: #000000;">   {
+</span><span style="color: #008080;">54</span>         <span style="color: #0000ff;">public</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+</span><span style="color: #008080;">55</span> 
+<span style="color: #008080;">56</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;">57</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">58</span>             <span style="color: #800080;">$this</span>-&gt;name = 'gabe'<span style="color: #000000;">;  
+</span><span style="color: #008080;">59</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">60</span> 
+<span style="color: #008080;">61</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> offsetExists(<span style="color: #800080;">$offset</span><span style="color: #000000;">)
+</span><span style="color: #008080;">62</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">63</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #800080;">$offset</span><span style="color: #000000;">);
+</span><span style="color: #008080;">64</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">65</span> 
+<span style="color: #008080;">66</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> offsetGet(<span style="color: #800080;">$offset</span><span style="color: #000000;">)
+</span><span style="color: #008080;">67</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">68</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #800080;">$offset</span>) ? <span style="color: #800080;">$this</span>-&gt;<span style="color: #800080;">$offset</span> : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">69</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">70</span> 
+<span style="color: #008080;">71</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> offsetSet(<span style="color: #800080;">$offset</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">)
+</span><span style="color: #008080;">72</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">73</span>             <span style="color: #800080;">$this</span>-&gt;<span style="color: #800080;">$offset</span> = <span style="color: #800080;">$value</span><span style="color: #000000;">;
+</span><span style="color: #008080;">74</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">75</span> 
+<span style="color: #008080;">76</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> offsetUnset(<span style="color: #800080;">$offset</span><span style="color: #000000;">)
+</span><span style="color: #008080;">77</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">78</span>             <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #800080;">$offset</span><span style="color: #000000;">);
+</span><span style="color: #008080;">79</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">80</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;">81</span> 
+<span style="color: #008080;">82</span>   <span style="color: #800080;">$test</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Test;
+</span><span style="color: #008080;">83</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$test</span>['name'<span style="color: #000000;">]));
+</span><span style="color: #008080;">84</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span>['name'<span style="color: #000000;">]);
+</span><span style="color: #008080;">85</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span>['age'<span style="color: #000000;">]);
+</span><span style="color: #008080;">86</span>   <span style="color: #800080;">$test</span>[1] = '22'<span style="color: #000000;">;
+</span><span style="color: #008080;">87</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span><span style="color: #000000;">);
+</span><span style="color: #008080;">88</span>   <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$test</span>['name'<span style="color: #000000;">]);
+</span><span style="color: #008080;">89</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$test</span>['name'<span style="color: #000000;">]));
+</span><span style="color: #008080;">90</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span><span style="color: #000000;">);
+</span><span style="color: #008080;">91</span>   <span style="color: #800080;">$test</span>[] = 'hello world'<span style="color: #000000;">;
+</span><span style="color: #008080;">92</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$test</span><span style="color: #000000;">);
+</span><span style="color: #008080;">93</span>  </code></pre>
+
+<p>&nbsp;</p>
+<h4>5. Serializable （序列化）接口</h4>
+<blockquote>
+<p>通常情况下，如果我们的类中定义了魔术方法，sleep(),wakeup () 的话，我们在进行 serialize () 的时候，会先调用&nbsp;sleep () 的魔术方法，我们通过返回一个数组，来定义对对象的哪些属性进行序列化，同理，我们在调用反序列化 unserialize () 方法的时候，也会先调用的&nbsp;wakeup（）魔术方法，我们可以进行初始化，如对一个对象的属性进行赋值等操作；但是如果该类实现了序列化接口，我们就必须实现 serialize（）方法和 unserialize () 方法，同时&nbsp;sleep（）和&nbsp;wakeup () 两个魔术方法都会同时不再支持，具体代码看如下；</p>
+</blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">class</span><span style="color: #000000;"> Test
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">    {    
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">public</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">public</span> <span style="color: #800080;">$age</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;"> 9</span>             <span style="color: #800080;">$this</span>-&gt;name = 'gabe'<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>             <span style="color: #800080;">$this</span>-&gt;age = 25<span style="color: #000000;">; 
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">        }    
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __wakeup()
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">15</span>             <span style="color: #008080;">var_dump</span>(<span style="color: #ff00ff;">__METHOD__</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">16</span>             <span style="color: #800080;">$this</span>-&gt;age++<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">        }   
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>         <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __sleep()
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">        {        
+</span><span style="color: #008080;">21</span>             <span style="color: #008080;">var_dump</span>(<span style="color: #ff00ff;">__METHOD__</span><span style="color: #000000;">);
+</span><span style="color: #008080;">22</span>             <span style="color: #0000ff;">return</span> ['name'<span style="color: #000000;">];    
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span>     <span style="color: #800080;">$test</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Test;
+</span><span style="color: #008080;">27</span>     <span style="color: #800080;">$a</span> = <span style="color: #008080;">serialize</span>(<span style="color: #800080;">$test</span><span style="color: #000000;">);
+</span><span style="color: #008080;">28</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">);
+</span><span style="color: #008080;">29</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #008080;">unserialize</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">));
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span>     <span style="color: #008000;">//</span><span style="color: #008000;">实现序列化接口，发现魔术方法失效了</span>
+<span style="color: #008080;">32</span> 
+<span style="color: #008080;">33</span>    <span style="color: #0000ff;">class</span> Test <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Serializable
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">   {    
+</span><span style="color: #008080;">35</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+</span><span style="color: #008080;">36</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$age</span><span style="color: #000000;">;
+</span><span style="color: #008080;">37</span> 
+<span style="color: #008080;">38</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">    {        
+</span><span style="color: #008080;">40</span>         <span style="color: #800080;">$this</span>-&gt;name = 'gabe'<span style="color: #000000;">;
+</span><span style="color: #008080;">41</span>         <span style="color: #800080;">$this</span>-&gt;age = 25<span style="color: #000000;">;
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">43</span> 
+<span style="color: #008080;">44</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __wakeup()
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">    { 
+</span><span style="color: #008080;">46</span>         <span style="color: #008080;">var_dump</span>(<span style="color: #ff00ff;">__METHOD__</span><span style="color: #000000;">);
+</span><span style="color: #008080;">47</span>         <span style="color: #800080;">$this</span>-&gt;age++<span style="color: #000000;">;
+</span><span style="color: #008080;">48</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">49</span> 
+<span style="color: #008080;">50</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __sleep()
+</span><span style="color: #008080;">51</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">52</span>         <span style="color: #008080;">var_dump</span>(<span style="color: #ff00ff;">__METHOD__</span><span style="color: #000000;">);
+</span><span style="color: #008080;">53</span>         <span style="color: #0000ff;">return</span> ['name'<span style="color: #000000;">];
+</span><span style="color: #008080;">54</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">55</span> 
+<span style="color: #008080;">56</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">serialize</span><span style="color: #000000;">()
+</span><span style="color: #008080;">57</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">58</span>         <span style="color: #0000ff;">return</span> <span style="color: #008080;">serialize</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">name);
+</span><span style="color: #008080;">59</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">60</span> 
+<span style="color: #008080;">61</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">unserialize</span>(<span style="color: #800080;">$serialized</span><span style="color: #000000;">)
+</span><span style="color: #008080;">62</span> <span style="color: #000000;">    {       
+</span><span style="color: #008080;">63</span>         <span style="color: #800080;">$this</span>-&gt;name = <span style="color: #008080;">unserialize</span>(<span style="color: #800080;">$serialized</span><span style="color: #000000;">);
+</span><span style="color: #008080;">64</span>         <span style="color: #800080;">$this</span>-&gt;age = 1<span style="color: #000000;">;    
+</span><span style="color: #008080;">65</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">66</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">67</span> <span style="color: #800080;">$test</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Test;
+</span><span style="color: #008080;">68</span> <span style="color: #800080;">$a</span> = <span style="color: #008080;">serialize</span>(<span style="color: #800080;">$test</span><span style="color: #000000;">);
+</span><span style="color: #008080;">69</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">);
+</span><span style="color: #008080;">70</span> <span style="color: #008080;">var_dump</span>(<span style="color: #008080;">unserialize</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">));
+</span><span style="color: #008080;">71</span>  </code></pre>
+
+<p>&nbsp;</p>
+<h4>6. Closure 类</h4>
+<blockquote>
+<p>用于代表匿名函数的类，凡是匿名函数其实返回的都是 Closure 闭包类的一个实例，该类中主要有两个方法，bindTo（）和 bind（），通过查看源码，可以发现两个方法是殊途同归，只不过是 bind () 是个静态方法，具体用法看如下；</p>
+</blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$closure</span> = <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;">3</span>         <span style="color: #0000ff;">return</span> 'hello world'<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">5</span> 
+<span style="color: #008080;">6</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$closure</span><span style="color: #000000;">);
+</span><span style="color: #008080;">7</span>     <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$closure</span>());</code></pre>
+
+<p>&nbsp;</p>
+<blockquote>
+<p>通过上面的例子，可以看出第一个打印出来的是 Closure 的一个实例，而第二个就是打印出匿名函数返回的 hello world 字符串；接下来是使用这个匿名类的方法，这两个方法的目的都是把匿名函数绑定一个类上使用；</p>
+<ol>
+<li>bindTo()</li>
+</ol></blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace demo1;
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">class</span><span style="color: #000000;"> Test {
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">private</span> <span style="color: #800080;">$name</span> = 'hello woeld'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>     <span style="color: #800080;">$closure</span> = <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;"> 8</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">name;
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>     <span style="color: #800080;">$func</span> = <span style="color: #800080;">$closure</span>-&gt;bindTo(<span style="color: #0000ff;">new</span><span style="color: #000000;"> Test);
+</span><span style="color: #008080;">12</span>     <span style="color: #800080;">$func</span><span style="color: #000000;">();
+</span><span style="color: #008080;">13</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 这个是可以访问不到私有属性的，会报出无法访问私有属性
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">    // 下面这个是正确的做法</span>
+<span style="color: #008080;">15</span>     <span style="color: #800080;">$func</span> = <span style="color: #800080;">$closure</span>-&gt;bindTo(<span style="color: #0000ff;">new</span> Test, Test::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span>     <span style="color: #800080;">$func</span><span style="color: #000000;">();
+</span><span style="color: #008080;">17</span> 
+<span style="color: #008080;">18</span> <span style="color: #000000;">namespace demo2;
+</span><span style="color: #008080;">19</span>     <span style="color: #0000ff;">class</span><span style="color: #000000;"> Test
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">21</span>         <span style="color: #0000ff;">private</span> statis <span style="color: #800080;">$name</span> = 'hello world'<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span>     <span style="color: #800080;">$closure</span> = <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;">25</span>         <span style="color: #0000ff;">return</span> self::<span style="color: #800080;">$name</span><span style="color: #000000;">;
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">27</span>     <span style="color: #800080;">$func</span> = <span style="color: #800080;">$closure</span>-&gt;bindTo(<span style="color: #0000ff;">null</span>, Test::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">28</span>     <span style="color: #800080;">$func</span>();</code></pre>
+
+<p>&nbsp;</p>
+<blockquote><ol start="2">
+<li>bind()</li>
+</ol></blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace demo1;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Test 
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">private</span>  <span style="color: #800080;">$name</span> = 'hello world'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #800080;">$func</span> = \Closure::bind(<span style="color: #0000ff;">function</span><span style="color: #000000;">() {
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">name;
+</span><span style="color: #008080;">10</span> }, <span style="color: #0000ff;">new</span> Test, Test::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span> <span style="color: #800080;">$func</span><span style="color: #000000;">();
+</span><span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span> <span style="color: #000000;">namespace demo2;
+</span><span style="color: #008080;">15</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Test 
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">17</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span>  <span style="color: #800080;">$name</span> = 'hello world'<span style="color: #000000;">;
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">19</span> 
+<span style="color: #008080;">20</span> <span style="color: #800080;">$func</span> = \Closure::bind(<span style="color: #0000ff;">function</span><span style="color: #000000;">() {
+</span><span style="color: #008080;">21</span>     <span style="color: #0000ff;">return</span> self::<span style="color: #800080;">$name</span><span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> }, <span style="color: #0000ff;">null</span>, Test::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span> <span style="color: #800080;">$func</span>()</code></pre>
+
+<p>&nbsp;</p>
+<src data-unique="9366f7">&nbsp;
+<h4>7. Generator （生成器）</h4>
+<blockquote>
+<p>Generator 实现了 Iterator，但是他无法被继承，同时也生成实例。既然实现了 Iterator，所以正如上文所介绍，他也就有了和 Iterator 相同的功能:rewind-&gt;valid-&gt;current-&gt;key-&gt;next...，Generator 的语法主要来自于关键字 yield。yield 就好比一次循环的中转站，记录本次的活动轨迹，返回一个 Generator 的实例。Generator 的优点在于，当我们要使用到大数据的遍历，或者说大文件的读写，而我们的内存不够的情况下，能够极大的减少我们对于内存的消耗，因为传统的遍历会返回所有的数据，这个数据存在内存上，而 yield 只会返回当前的值，不过当我们在使用 yield 时，其实其中会有一个处理记忆体的过程，所以实际上这是一个用时间换空间的办法。</p>
+</blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #800080;">$start_time</span> = <span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">function</span> xrange(int <span style="color: #800080;">$num</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$num</span>; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 5</span>         yield <span style="color: #800080;">$i</span><span style="color: #000000;">;    
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 8</span> <span style="color: #800080;">$generator</span> = xrange(100000<span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$generator</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$key</span> . ': ' . <span style="color: #800080;">$value</span> . <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span> <span style="color: #0000ff;">echo</span> 'memory: ' . memory_get_usage() . ' time: '. (<span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span>) - <span style="color: #800080;">$start_time</span>);</code></pre>
+
+<p>&nbsp;</p>
+<blockquote>
+<p>输出：memory: 388904 time: 0.12135100364685</p>
+</blockquote>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #800080;">$start_time</span> = <span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">function</span> xrange(int <span style="color: #800080;">$num</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 4</span>     <span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [];    
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$num</span>; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 6</span>         <span style="color: #008080;">array_push</span>(<span style="color: #800080;">$arr</span>, <span style="color: #800080;">$i</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$arr</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">10</span> <span style="color: #800080;">$arr</span> = xrange(100000<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$key</span> . ': ' . <span style="color: #800080;">$value</span> . <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">14</span> <span style="color: #0000ff;">echo</span> 'memory: ' . memory_get_usage() . ' time: '. (<span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span>) - <span style="color: #800080;">$start_time</span>);</code></pre>
+
+<p>&nbsp;</p>
+<blockquote>
+<p>输出：memory: 6680312 time: 0.10804104804993</p>
+</blockquote>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

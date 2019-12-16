@@ -1,0 +1,66 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP判断设备访问来源' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP判断设备访问来源</center></div><div class='banquan'>原文出处:本文由博客园博主itbsl提供。<br/>
+原文连接:https://www.cnblogs.com/itbsl/p/10818980.html</div><br>
+    <pre><code><code>/**
+ * 判断用户请求设备是否是移动设备
+ * @return bool
+ */
+function isMobile() {
+
+    //如果有HTTP_X_WAP_PROFILE则一定是移动设备
+    if (isset($_SERVER[&#39;HTTP_X_WAP_PROFILE&#39;])) {
+        return true;
+    }
+
+    //如果via信息含有wap则一定是移动设备,部分服务商会屏蔽该信息
+    if (isset($_SERVER[&#39;HTTP_VIA&#39;]) &amp;&amp; stristr($_SERVER[&#39;HTTP_VIA&#39;], &#39;wap&#39;)) {
+        return true;
+    }
+
+    //野蛮方法,判断手机发送的客户端标志,兼容性有待提高
+    if (isset($_SERVER[&#39;HTTP_USER_AGENT&#39;])) {
+
+        $clientKeywords = [&#39;nokia&#39;,&#39;sony&#39;,&#39;ericsson&#39;,&#39;mot&#39;,&#39;samsung&#39;,&#39;htc&#39;,&#39;sgh&#39;,&#39;lg&#39;,&#39;sharp&#39;,&#39;sie-&#39;,&#39;philips&#39;,&#39;panasonic&#39;,&#39;alcatel&#39;,&#39;lenovo&#39;,&#39;iphone&#39;,&#39;ipod&#39;,&#39;blackberry&#39;,&#39;meizu&#39;,&#39;android&#39;,&#39;netfront&#39;,&#39;symbian&#39;,&#39;ucweb&#39;,&#39;windowsce&#39;,&#39;palm&#39;,&#39;operamini&#39;,&#39;operamobi&#39;,&#39;openwave&#39;,&#39;nexusone&#39;,&#39;cldc&#39;,&#39;midp&#39;,&#39;wap&#39;,&#39;mobile&#39;];
+
+        //从HTTP_USER_AGENT中查找手机浏览器的关键字
+        if (preg_match(&quot;/(&quot;.implode(&#39;|&#39;, $clientKeywords).&quot;)/i&quot;, strtolower($_SERVER[&#39;HTTP_USER_AGENT&#39;]))) {
+            return true;
+        }
+    }
+
+    //协议法,因为有可能不准确,放到最后判断
+    if (isset($_SERVER[&#39;HTTP_ACCEPT&#39;])) {
+        //如果只支持wml并且不支持html那一定是移动设备
+        //如果支持wml和html但是wml在html之前则是移动设备
+        if ((strpos($_SERVER[&#39;HTTP_ACCEPT&#39;], &#39;vnd.wap.wml&#39;) !== false) &amp;&amp; (strpos($_SERVER[&#39;HTTP_ACCEPT&#39;], &#39;text/html&#39;) === false || (strpos($_SERVER[&#39;HTTP_ACCEPT&#39;], &#39;vnd.wap.wml&#39;) &lt; strpos($_SERVER[&#39;HTTP_ACCEPT&#39;], &#39;text/html&#39;)))) {
+            return true;
+        }
+    }
+
+    return false;
+}</code></code></pre>
+<p>转载自:<br />
+<a href="https://blog.csdn.net/luoangen/article/details/85328918">php判断设备访问来源</a></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

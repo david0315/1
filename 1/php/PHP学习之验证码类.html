@@ -1,0 +1,254 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP学习之验证码类' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP学习之验证码类</center></div><div class='banquan'>原文出处:本文由博客园博主随缘盛世提供。<br/>
+原文连接:https://www.cnblogs.com/shengChristine/p/10936100.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$code</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Code();
+</span><span style="color: #800080;">$code</span>-&gt;<span style="color: #000000;">outImage();
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Code
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">验证码个数</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$number</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">验证码类型</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$codeType</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">图像宽度</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$width</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">图像高度</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$height</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">图像资源</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$image</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">验证码字符串</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$code</span><span style="color: #000000;">;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Undocumented function
+     *
+     * @param integer $number
+     * @param integer $codeType
+     * @param integer $width
+     * @param integer $height
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$number</span> = 4, <span style="color: #800080;">$codeType</span> = 2, <span style="color: #800080;">$width</span> = 100, <span style="color: #800080;">$height</span> = 50<span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">初始化自己的成员属性</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span> = <span style="color: #800080;">$number</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;codeType = <span style="color: #800080;">$codeType</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;width = <span style="color: #800080;">$width</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;height = <span style="color: #800080;">$height</span><span style="color: #000000;">;
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">生成验证码函数</span>
+        <span style="color: #800080;">$this</span>-&gt;code = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">createCode();
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 析构函数
+     * 释放图像资源
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">释放图像资源</span>
+        imagedestroy(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">image);
+    }
+
+    
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * //魔术方法   通过对象获取保护的code
+     * $code = new Code();
+     * echo $code-&gt;code;
+     *
+     * @param [type] $name
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __get(<span style="color: #800080;">$name</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$name</span> == 'code'<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">code;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取验证码
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> createCode()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">通过你的验证码类型给你生成不同的验证码</span>
+        <span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">codeType) {
+            </span><span style="color: #0000ff;">case</span> 0:  <span style="color: #008000;">//</span><span style="color: #008000;">纯数字</span>
+                <span style="color: #800080;">$code</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getNumberCode();
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 1:  <span style="color: #008000;">//</span><span style="color: #008000;">纯字母</span>
+                <span style="color: #800080;">$code</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getCharCode();
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> 2:  <span style="color: #008000;">//</span><span style="color: #008000;">字母和数字混合</span>
+                <span style="color: #800080;">$code</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getNumCharCode();
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">default</span>:
+                <span style="color: #0000ff;">die</span>('不支持这种验证码类型'<span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$code</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 生成纯数字验证码
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getNumberCode()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> $startNum = pow(10, $this-&gt;number - 1);
+        // $endNum = pow(10, $this-&gt;number) - 1;
+        // $str = rand($startNum, $endNum);
+        // return $str;</span>
+        <span style="color: #800080;">$str</span> = <span style="color: #008080;">join</span>('', <span style="color: #008080;">range</span>(0, 9<span style="color: #000000;">));
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">substr</span>(<span style="color: #008080;">str_shuffle</span>(<span style="color: #800080;">$str</span>), 0, <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 生成纯字母验证码
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getCharCode()
+    {
+        </span><span style="color: #800080;">$str</span> = <span style="color: #008080;">join</span>('', <span style="color: #008080;">range</span>('a', 'z'<span style="color: #000000;">));
+        </span><span style="color: #800080;">$str</span> = <span style="color: #800080;">$str</span> . <span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$str</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">substr</span>(<span style="color: #008080;">str_shuffle</span>(<span style="color: #800080;">$str</span>), 0, <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 生成字母和数字验证码
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getNumCharCode()
+    {
+        </span><span style="color: #800080;">$numStr</span> = <span style="color: #008080;">join</span>('', <span style="color: #008080;">range</span>(0, 9<span style="color: #000000;">));
+        </span><span style="color: #800080;">$str</span> = <span style="color: #008080;">join</span>('', <span style="color: #008080;">range</span>('a', 'z'<span style="color: #000000;">));
+        </span><span style="color: #800080;">$str</span> = <span style="color: #800080;">$numStr</span> . <span style="color: #800080;">$str</span> . <span style="color: #008080;">strtoupper</span>(<span style="color: #800080;">$str</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">substr</span>(<span style="color: #008080;">str_shuffle</span>(<span style="color: #800080;">$str</span>), 0, <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 创建画布
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> createImage()
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;image = imagecreatetruecolor(<span style="color: #800080;">$this</span>-&gt;width, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">height);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 填充背景颜色
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> fillBack()
+    {
+        imagefill(</span><span style="color: #800080;">$this</span>-&gt;image, 0, 0, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">lightColor());
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 随机生成浅颜色
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> lightColor()
+    {
+        </span><span style="color: #0000ff;">return</span> imagecolorallocate(<span style="color: #800080;">$this</span>-&gt;image, <span style="color: #008080;">mt_rand</span>(130, 255), <span style="color: #008080;">mt_rand</span>(130, 255), <span style="color: #008080;">mt_rand</span>(130, 255<span style="color: #000000;">));
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 随机生成深颜色
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> darkColor()
+    {
+        </span><span style="color: #0000ff;">return</span> imagecolorallocate(<span style="color: #800080;">$this</span>-&gt;image, <span style="color: #008080;">mt_rand</span>(0, 120), <span style="color: #008080;">mt_rand</span>(0, 120), <span style="color: #008080;">mt_rand</span>(0, 120<span style="color: #000000;">));
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 将验证码字符串画到画布中
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> drawChar()
+    {
+        </span><span style="color: #800080;">$width</span> = <span style="color: #008080;">ceil</span>(<span style="color: #800080;">$this</span>-&gt;width / <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span>; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$x</span> = <span style="color: #008080;">mt_rand</span>(<span style="color: #800080;">$i</span> * <span style="color: #800080;">$width</span>+5, (<span style="color: #800080;">$i</span> + 1) * <span style="color: #800080;">$width</span> - 10<span style="color: #000000;">);
+            </span><span style="color: #800080;">$y</span> = <span style="color: #008080;">mt_rand</span>(0, <span style="color: #800080;">$this</span>-&gt;height - 15<span style="color: #000000;">);
+            imagechar(</span><span style="color: #800080;">$this</span>-&gt;image, 5, <span style="color: #800080;">$x</span>, <span style="color: #800080;">$y</span>, <span style="color: #800080;">$this</span>-&gt;code[<span style="color: #800080;">$i</span>], <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">darkColor());
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 添加干扰项
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> drawDisturb()
+    {
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; 150; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$x</span> = <span style="color: #008080;">mt_rand</span>(0, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">width);
+            </span><span style="color: #800080;">$y</span> = <span style="color: #008080;">mt_rand</span>(0, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">height);
+            imagesetpixel(</span><span style="color: #800080;">$this</span>-&gt;image, <span style="color: #800080;">$x</span>, <span style="color: #800080;">$y</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">lightColor());
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 输出并且显示
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> show()
+    {
+        </span><span style="color: #008080;">header</span>('Content-Type:image/png'<span style="color: #000000;">);
+        imagepng(</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">image);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> outImage()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">创建画布 </span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">createImage();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">填充背景色</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">fillBack();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">将验证码字符串画到画布中</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">drawChar();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">添加干扰项</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">drawDisturb();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">输出并且显示</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">show();
+    }
+}</span></code></pre>
+
+<p>运行效果：</p>
+<p><img src="https://img2018.cnblogs.com/blog/1318317/201905/1318317-20190528112055225-1682735512.png" alt="" /></p>
+<p>&nbsp;</p>
+<src style="color: #d4d4d4; background-color: #1e1e1e; font-family: Consolas, 'Courier New', monospace; font-size: 20px; line-height: 27px; white-space: pre;">&nbsp;
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

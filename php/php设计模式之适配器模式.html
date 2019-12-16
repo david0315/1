@@ -1,0 +1,123 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php设计模式之适配器模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php设计模式之适配器模式</center></div><div class='banquan'>原文出处:本文由博客园博主TOPHP提供。<br/>
+原文连接:https://www.cnblogs.com/guoyachao/p/11253906.html</div><br>
+    <p>将各种截然不同的函数接口封装成统一的API。&nbsp;<br />PHP中的数据库操作有MySQL,MySQLi,PDO三种，可以用适配器模式统一成一致，使不同的数据库操作，统一成一样的API。类似的场景还有cache适配器，可以将memcache,redis,file,apc等不同的缓存函数，统一成一致。&nbsp;<br />首先定义一个接口(有几个方法，以及相应的参数)。然后，有几种不同的情况，就写几个类实现该接口。将完成相似功能的函数，统一成一致的方法。</p>
+<p>创建接口IMooc/Database.php</p>
+<p>在IMooc/Database文件创建 Mysql.php Mysqli.php&nbsp; PDO.php</p>
+<src class="cnblogs_Highlighter">
+<pre><code>//接口 IDatabase
+&lt;?php
+namespace Database;
+interface IDatabase
+{
+    function connect($host, $user, $passwd, $dbname);
+    function query($sql);
+    function close();
+}
+</code></pre>
+
+<src class="cnblogs_Highlighter">
+<pre><code>MySQL
+&lt;?php
+namespace IMooc\Database;
+use IMooc\IDatabase;
+class MySQL implements IDatabase
+{
+    protected $conn;
+    function connect($host, $user, $passwd, $dbname)
+    {
+        $conn = mysql_connect($host, $user, $passwd);
+        mysql_select_db($dbname, $conn);
+        $this-&gt;conn = $conn;
+    }
+
+    function query($sql)
+    {
+        $res = mysql_query($sql, $this-&gt;conn);
+        return $res;
+    }
+
+    function close()
+    {
+        mysql_close($this-&gt;conn);
+    }
+}
+</code></pre>
+
+<p>　　</p>
+<src class="cnblogs_Highlighter">
+<pre><code>MySQLi
+&lt;?php
+namespace IMooc\Database;
+use IMooc\IDatabase;
+class MySQLi implements IDatabase
+{
+    protected $conn;
+
+    function connect($host, $user, $passwd, $dbname)
+    {
+        $conn = mysqli_connect($host, $user, $passwd, $dbname);
+        $this-&gt;conn = $conn;
+    }
+
+    function query($sql)
+    {
+        return mysqli_query($this-&gt;conn, $sql);
+    }
+
+    function close()
+    {
+        mysqli_close($this-&gt;conn);
+    }
+}
+</code></pre>
+
+<p>　　</p>
+<src class="cnblogs_Highlighter">
+<pre><code>PDO
+&lt;?php
+namespace IMooc\Database;
+use IMooc\IDatabase;
+class PDO implements IDatabase
+{
+    protected $conn;
+    function connect($host, $user, $passwd, $dbname)
+    {
+        $conn = new \PDO("mysql:host=$host;dbname=$dbname", $user, $passwd);
+        $this-&gt;conn = $conn;
+    }
+function query($sql)
+    {
+        return $this-&gt;conn-&gt;query($sql);
+    }
+
+    function close()
+    {
+        unset($this-&gt;conn);
+    }
+}
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

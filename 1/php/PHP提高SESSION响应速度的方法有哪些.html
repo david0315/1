@@ -1,0 +1,123 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP提高SESSION响应速度的方法有哪些' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP提高SESSION响应速度的方法有哪些</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11827807.html</div><br>
+    <p><strong>1、设置多级目录存储SESSION</strong></p>
+<p>默认session的存储目录是1级目录，如果用户量比较大，session文件数量就比较大，我们可以设置目录数为2，使用2级目录可以提交查找和存取速度。不过这种方式对速度的提升一般不是很明显，可以通过修改php.ini，进而修改session存储目录数。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">session.save_path = </code><code class="php string">"2;/tmp"</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>2、将SESSION存储到redis中</strong></p>
+<p>php中的session默认是存储在文件中的，支持redis存储方式，因为redis的键值数据时存储在内存中的，可以提高session的存取速度。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">session.save_handler = redis</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">session.save_path = </code><code class="php string">"tcp://127.0.0.1:6379"</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>3、及时释放SESSION文件锁</strong></p>
+<p>我们在使用session时，需要先执行<code>session_start()</code>函数。</p>
+<p><strong>session_start()函数的作用如下：</strong></p>
+<p>判断http请求是否包含名为PHPSESSID的cookie，如果没有则创建该cookie并写入到http响应的头文件。</p>
+<p>通过PHPSESSID查找对应的session文件，以读写方式打开的文件，然后读取里面的数据到内存。</p>
+<p>然后我们一般会通过$_SESSION这个超全局变量，读取或者设置session的值，我们操作的时候，session的值都是保存在内存中的，默认在页面执行完毕之后，才会写入到对应的文件中。</p>
+<p>我们通过下面的一段代码测试这个过程：</p>
+<p><strong>SESSION执行过程分析：</strong></p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">include</code> <code class="php string">"session_function.php"</code><code class="php plain">; </code></p>
+<p class="line number2 index1 alt1"><code class="php comments">//session_function.php代码在附录</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">session_start();</code></p>
+<p class="line number4 index3 alt1"><code class="php variable">$_SESSION</code><code class="php plain">[</code><code class="php string">'name'</code><code class="php plain">]=</code><code class="php string">"koastal"</code><code class="php plain">;</code></p>
+<p class="line number5 index4 alt2"><code class="php functions">echo</code> <code class="php string">"&lt;br/&gt;html content&lt;br/&gt;"</code><code class="php plain">;</code></p>
+<p class="line number6 index5 alt1"><code class="php plain">var_dump(</code><code class="php variable">$_SESSION</code><code class="php plain">);</code></p>
+<p class="line number7 index6 alt2"><code class="php functions">echo</code> <code class="php string">"&lt;br/&gt;"</code><code class="php plain">;</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>输出结果：</strong></p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">open</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">read</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">html content</code></p>
+<p class="line number4 index3 alt1"><code class="php keyword">array</code> <code class="php plain">(size=1)</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;</code><code class="php string">'name'</code> <code class="php plain">=&gt; string </code><code class="php string">'koastal'</code> <code class="php plain">(length=7)</code></p>
+<p class="line number6 index5 alt1"><code class="php plain">shutdown</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">write</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">close</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>通过上面的例子可以发现，在页面执行的过程中（页面的执行过程是指将php文件解析为对应的html文件的耗时，而不是用户在该页面上的停留时间），session文件是被锁定的。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

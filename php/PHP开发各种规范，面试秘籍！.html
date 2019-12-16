@@ -1,0 +1,133 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP开发各种规范，面试秘籍！' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP开发各种规范，面试秘籍！</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11963182.html</div><br>
+    <p>基本约定</p>
+<h2><strong>源文件</strong></h2>
+<p>代码使用&lt;?php开头，忽略闭合标签?&gt;</p>
+<p>文件格式必须是无BOM UTF-8格式</p>
+<p>一个文件只声明一种类型，如class和interface不能混写在一个源文件中</p>
+<h2><strong>缩进</strong></h2>
+<p>使用4个空格来缩进，IDE可以设置</p>
+<h2><strong>行长度</strong></h2>
+<p>每行120个字符</p>
+<h2><strong>关键字</strong></h2>
+<p>所有关键字均为小写，如true、false</p>
+<h2><strong>命名</strong></h2>
+<p>类名为大驼峰法，如UserModel</p>
+<p>类方法名为小驼峰法，如getUserId()</p>
+<p>函数使用小写字母加_组合，如get_cookie()</p>
+<p>变量名使用小驼峰法，如$userId</p>
+<p>常量定义为大写字母加_组合，如IS_DEBUG</p>
+<h2><strong>代码注释标签</strong></h2>
+<p>类文件中对类、方法、属性进行注释，使用@param @return @throwns</p>
+<p>@param注释写出详解，如@param string $username 用户名</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<h2><strong>业务模块</strong></h2>
+<p>路由为小写字母加_组成，如/api/get_user_info</p>
+<p>View层负责数据展示</p>
+<p>Controller层负责输入参数校验，最外层捕捉异常，调用Logic和View视图层</p>
+<p>Logic层负责具体业务逻辑，调用Model层，返回处理数据</p>
+<p>Model层负责数据表查询和关联关系</p>
+<p>异常类需分清功能，如ParamException表示参数错误，UserException表示自定义异常</p>
+<p>异常需分类定义code，使用PHP类常量代替，如</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">namespace</span><span style="color: #000000;"> app\exceptions\codes;
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> UserExceptionCode extends BaseExceptionCode {
+  </span><span style="color: #0000ff;">const</span> NO_AUTH       = <span style="color: #800080;">1000001</span><span style="color: #000000;">;
+  </span><span style="color: #0000ff;">const</span> NO_AUTH_MSG     = <span style="color: #800000;">'</span><span style="color: #800000;">不具有权限</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+  </span><span style="color: #0000ff;">const</span> STATUS_EXCEPTION   = <span style="color: #800080;">1000002</span><span style="color: #000000;">;
+  </span><span style="color: #0000ff;">const</span> STATUS_EXCEPTION_MSG = <span style="color: #800000;">'</span><span style="color: #800000;">状态异常</span><span style="color: #800000;">'</span><span style="color: #000000;">;    
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>数据表文件如有Enum类型，使用PHP类常量代替，如</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">namespace</span><span style="color: #000000;"> app\enums;
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> UserEnum extends BaseEnum {
+  </span><span style="color: #0000ff;">const</span> STATUS_DELETED = -<span style="color: #800080;">1</span>;<span style="color: #008000;">//</span><span style="color: #008000;"> 已删除</span>
+  <span style="color: #0000ff;">const</span> STATUS_DISABLE = <span style="color: #800080;">0</span>;<span style="color: #008000;">//</span><span style="color: #008000;"> 禁用</span>
+  <span style="color: #0000ff;">const</span> STATUS_ENABLE = <span style="color: #800080;">1</span>;<span style="color: #008000;">//</span><span style="color: #008000;"> 正常</span>
+
+  <span style="color: #0000ff;">const</span> AUTH_GUEST     = <span style="color: #800080;">1</span>;<span style="color: #008000;">//</span><span style="color: #008000;"> 匿名用户</span>
+  <span style="color: #0000ff;">const</span> AUTH_GENERAL_ADMIN = <span style="color: #800080;">2</span>;<span style="color: #008000;">//</span><span style="color: #008000;"> 普通管理员</span>
+  <span style="color: #0000ff;">const</span> AUTH_SUPER_ADMIN  = <span style="color: #800080;">3</span>;<span style="color: #008000;">//</span><span style="color: #008000;"> 超级管理员</span>
+}</code></pre>
+
+<p>&nbsp;</p>
+
+<p>其中STATUS和AUTH为数据表映射字段名</p>
+<p>Api接口输出，示例</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">{
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">code</span><span style="color: #800000;">"</span> : <span style="color: #800080;">0</span><span style="color: #000000;">,
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">msg</span><span style="color: #800000;">"</span> : <span style="color: #800000;">"</span><span style="color: #800000;">success</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">data</span><span style="color: #800000;">"</span><span style="color: #000000;"> : {
+    </span><span style="color: #800000;">"</span><span style="color: #800000;">userId</span><span style="color: #800000;">"</span> : <span style="color: #800080;">100</span><span style="color: #000000;">
+  }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>其中code与msg为必填字段，data为空的情况下不填，示例</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">{
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">code</span><span style="color: #800000;">"</span> : <span style="color: #800080;">0</span><span style="color: #000000;">,
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">msg</span><span style="color: #800000;">"</span> : <span style="color: #800000;">"</span><span style="color: #800000;">success</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">data</span><span style="color: #800000;">"</span><span style="color: #000000;"> : {
+    </span><span style="color: #800000;">"</span><span style="color: #800000;">userId</span><span style="color: #800000;">"</span> : <span style="color: #800080;">100</span><span style="color: #000000;">
+  }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<h2>其它</h2>
+<p>数组，键为字符串时候使用单引号，只有一个键时候使用单行，示例</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$arr = [ <span style="color: #800000;">'</span><span style="color: #800000;">userId</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800080;">100</span> ];</code></pre>
+
+<p>&nbsp;</p>
+
+<p>多个键时候使用多行，示例</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$arr =<span style="color: #000000;"> [
+  </span><span style="color: #800000;">'</span><span style="color: #800000;">id</span><span style="color: #800000;">'</span>    =&gt; <span style="color: #800080;">100</span><span style="color: #000000;">,
+  </span><span style="color: #800000;">'</span><span style="color: #800000;">username</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">admin</span><span style="color: #800000;">'</span><span style="color: #000000;">,
+];</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>还有很多很多规范，大家可以去找一些学习！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

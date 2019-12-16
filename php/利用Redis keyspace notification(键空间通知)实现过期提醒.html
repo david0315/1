@@ -1,0 +1,966 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修利用Redis keyspace notification(键空间通知)实现过期提醒' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>利用Redis keyspace notification(键空间通知)实现过期提醒</center></div><div class='banquan'>原文出处:本文由博客园博主Martini提供。<br/>
+原文连接:https://www.cnblogs.com/martini-d/p/10675945.html</div><br>
+    <h1 class="md-end-block md-heading">一、序言：</h1>
+<p class="md-end-block"><span> 本文所说的定时任务或者说计划任务并不是很多人想象中的那样，比如说每天凌晨三点自动运行起来跑一个脚本。这种都已经烂大街了，随便一个 Crontab 就能搞定了。</span></p>
+<p class="md-end-block"><span> 这里所说的定时任务可以说是计时器任务，比如说用户触发了某个动作，那么从这个点开始过二十四小时我们要对这个动作做点什么。那么如果有 1000 个用户触发了这个动作，就会有 1000 个定时任务。于是这就不是 Cron 范畴里面的内容了。</span></p>
+<p class="md-end-block"><span> 举个最简单的例子，一个用户推荐了另一个用户，我们定一个二十四小时之后的任务，看看被推荐的用户有没有来注册，如果没注册就给他搞一条短信过去</span></p>
+<h1 class="md-end-block md-heading md-focus"><span class="md-expand">二、需求分析：</span></h1>
+<ol class="ol-list">
+<li class="md-list-item">
+<p class="md-end-block"><span>设置了生存时间的Key，在过期时能不能有所提示？</span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>如果能对过期Key有个监听，如何对过期Key进行一个回调处理？</span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>如何使用 Redis 来实现定时任务？</span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>更具体需求：</span></p>
+<blockquote>
+<p class="md-end-block"><span>现在需要做一个拍卖活动，如何在拍卖结束那一刻，就执行任务进行相关逻辑；</span></p>
+<p class="md-end-block"><span>如何在订单交易有效期时间结束的那一刻，进行相关逻辑</span></p>
+</blockquote>
+</li>
+</ol>
+<h1 class="md-end-block md-heading"><span>三、Redis介绍</span></h1>
+<p class="md-end-block"><span> 在 Redis 的 2.8.0 版本之后，其推出了一个新的特性&mdash;&mdash;键空间消息（Redis Keyspace Notifications），它配合 2.0.0 版本之后的 SUBSCRIBE 就能完成这个定时任务</span></p>
+<p class="md-end-block"><span>的操作了，不过定时的单位是秒。</span></p>
+<p class="md-end-block"><span><strong>（1）Publish / Subscribe</strong></span></p>
+<p class="md-end-block"><span> Redis 在 2.0.0 之后推出了 Pub / Sub 的指令，大致就是说一边给 Redis 的特定频道发送消息，另一边从 Redis 的特定频道取值&mdash;&mdash;形成了一个简易的消息队列。</span></p>
+<p class="md-end-block"><span><strong>（2）Redis Keyspace Notifications</strong></span></p>
+<p class="md-end-block"><span> 在 Redis 里面有一些事件，比如键到期、键被删除等。然后我们可以通过配置一些东西来让 Redis 一旦触发这些事件的时候就往特定的 Channel 推一条消息。</span></p>
+<p class="md-end-block"><span> 大致的流程就是我们给 Redis 的某一个 db 设置过期事件，使其键一旦过期就会往特定频道推消息，我在自己的客户端这边就一直消费这个频道就好了。</span></p>
+<p class="md-end-block"><span> 以后一来一条定时任务，我们就把这个任务状态压缩成一个键，并且过期时间为距这个任务执行的时间差。那么当键一旦到期，就到了任务该执行的时间，Redis 自然会把过期消息推去，我们的客户端就能接收到了。这样一来就起到了定时任务的作用。</span></p>
+<h2 class="md-end-block md-heading"><span>配置</span></h2>
+<p class="md-end-block"><span>因为开启键空间通知功能需要消耗一些 CPU ， 所以在默认配置下， 该功能处于关闭状态。</span></p>
+<p class="md-end-block"><span>可以通过修改 <span><code>redis.conf</code><span> 文件， 或者直接使用 <span><code>CONFIG SET</code><span> 命令来开启或关闭键空间通知功能：</span></span></span></span></span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>当 <span><code>notify-keyspace-events</code><span> 选项的参数为空字符串时，功能关闭。</span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>另一方面，当参数不是空字符串时，功能开启。</span></p>
+</li>
+</ul>
+<p class="md-end-block"><span><code>notify-keyspace-events</code><span> 的参数可以是以下字符的任意组合， 它指定了服务器该发送哪些类型的通知：</span></span></p>
+<table class="md-table">
+<thead>
+<tr class="md-end-block"><th style="text-align: center;"><span class="td-span"><span>字符</span></span></th><th><span class="td-span"><span>发送的通知</span></span></th></tr>
+</thead>
+<tbody>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; K</code></span></span></td>
+<td><span class="td-span"><span>键空间通知，所有通知以 <span><code>__keyspace@&lt;db&gt;__</code><span> 为前缀</span></span></span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; E</code></span></span></td>
+<td><span class="td-span"><span>键事件通知，所有通知以 <span><code>__keyevent@&lt;db&gt;__</code><span> 为前缀</span></span></span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; g</code></span></span></td>
+<td><span class="td-span"><span><code>DEL</code><span> 、 <span><code>EXPIRE</code><span> 、 <span><code>RENAME</code><span> 等类型无关的通用命令的通知</span></span></span></span></span></span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; $</code></span></span></td>
+<td><span class="td-span"><span>字符串命令的通知</span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; l</code></span></span></td>
+<td><span class="td-span"><span>列表命令的通知</span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; s</code></span></span></td>
+<td><span class="td-span"><span>集合命令的通知</span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; h</code></span></span></td>
+<td><span class="td-span"><span>哈希命令的通知</span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; z</code></span></span></td>
+<td><span class="td-span"><span>有序集合命令的通知</span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; x</code></span></span></td>
+<td><span class="td-span"><span>过期事件：每当有过期键被删除时发送</span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; e</code></span></span></td>
+<td><span class="td-span"><span>驱逐(evict)事件：每当有键因为 <span><code>maxmemory</code><span> 政策而被删除时发送</span></span></span></span></td>
+</tr>
+<tr class="md-end-block">
+<td style="text-align: center;"><span class="td-span"><span><code>&nbsp; A</code></span></span></td>
+<td><span class="td-span"><span>参数 <span><code>g$lshzxe</code><span> 的别名</span></span></span></span></td>
+</tr>
+</tbody>
+</table>
+<p class="md-end-block"><span>输入的参数中至少要有一个 <span><code>K</code><span> 或者 <span><code>E</code><span> ， 否则的话， 不管其余的参数是什么， 都不会有任何通知被分发。</span></span></span></span></span></p>
+<p class="md-end-block"><span>举个例子， 如果只想订阅键空间中和列表相关的通知， 那么参数就应该设为 <span><code>Kl</code><span> ， 诸如此类。</span></span></span></p>
+<p class="md-end-block"><span>将参数设为字符串 <span><code>"AKE"</code><span> 表示发送所有类型的通知。</span></span></span></p>
+<p class="md-end-block"><span>监听过期事件需要设置Redis 配置文件</span></p>
+<src class="cnblogs_code">
+<pre><code>notify-keyspace-events "Ex"</code></pre>
+
+<h2 class="md-end-block md-heading"><span>命令产生的通知</span></h2>
+<p class="md-end-block"><span>以下列表记录了不同命令所产生的不同通知：</span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>[DEL key <span class=" md-link"><a href="http://redisdoc.com/database/del.html#del"><span>key &hellip;<span>]</span></span></a><span> 命令为每个被删除的键产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/database/rename.html#rename"><span>RENAME key newkey</span></a><span> 产生两个通知：为来源键（source key）产生一个 <span><code>rename_from</code><span> 通知，并为目标键（destination key）产生一个 <span><code>rename_to</code><span> 通知。</span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/expire/expire.html#expire"><span>EXPIRE key seconds</span></a><span> 和 <span class=" md-link"><a href="http://redisdoc.com/expire/expireat.html#expireat"><span>EXPIREAT key timestamp</span></a><span> 在键被正确设置过期时间时产生一个 <span><code>expire</code><span> 通知。当 <span class=" md-link"><a href="http://redisdoc.com/expire/expireat.html#expireat"><span>EXPIREAT key timestamp</span></a><span> 设置的时间已经过期，或者 <span class=" md-link"><a href="http://redisdoc.com/expire/expire.html#expire"><span>EXPIRE key seconds</span></a><span>传入的时间为负数值时，键被删除，并产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[SORT key [BY pattern<span>]<span> [LIMIT offset count] [GET pattern [GET pattern &hellip;]] [ASC | DESC] [ALPHA] [STORE destination]](<span class="md-link"><a href="http://redisdoc.com/database/sort.html#sort">http://redisdoc.com/database/sort.html#sort</a><span>) 在命令带有 <span><code>STORE</code><span> 参数时产生一个 <span><code>sortstore</code><span> 事件。如果 <span><code>STORE</code><span> 指示的用于保存排序结果的键已经存在，那么程序还会发送一个 <span><code>del</code><span> 事件。</span></span></span></span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/string/set.html#set"><span>SET key value [EX seconds<span>]<span> [PX milliseconds] [NX|XX]</span></span></span></a><span> 以及它的所有变种（<span class=" md-link"><a href="http://redisdoc.com/string/setex.html#setex"><span>SETEX key seconds value</span></a><span> 、 <span class=" md-link"><a href="http://redisdoc.com/string/setnx.html#setnx"><span>SETNX key value</span></a><span> 和 <span class=" md-link"><a href="http://redisdoc.com/string/getset.html#getset"><span>GETSET key value</span></a><span>）都产生 <span><code>set</code><span> 通知。其中 <span class=" md-link"><a href="http://redisdoc.com/string/setex.html#setex"><span>SETEX key seconds value</span></a><span> 还会产生 <span><code>expire</code><span> 通知。</span></span></span></span></span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[MSET key value <span class=" md-link"><a href="http://redisdoc.com/string/mset.html#mset"><span>key value &hellip;<span>]</span></span></a><span> 为每个键产生一个 <span><code>set</code><span> 通知。</span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/string/setrange.html#setrange"><span>SETRANGE key offset value</span></a><span> 产生一个 <span><code>setrange</code><span> 通知。</span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/string/incr.html#incr"><span>INCR key</span></a><span> 、 <span class=" md-link"><a href="http://redisdoc.com/string/decr.html#decr"><span>DECR key</span></a><span> 、 <span class=" md-link"><a href="http://redisdoc.com/string/incrby.html#incrby"><span>INCRBY key increment</span></a><span> 和 <span class=" md-link"><a href="http://redisdoc.com/string/decrby.html#decrby"><span>DECRBY key decrement</span></a><span> 都产生 <span><code>incrby</code><span>通知。</span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/string/incrbyfloat.html#incrbyfloat"><span>INCRBYFLOAT key increment</span></a><span> 产生 <span><code>incrbyfloat</code><span> 通知。</span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/string/append.html#append"><span>APPEND key value</span></a><span> 产生 <span><code>append</code><span> 通知。</span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[LPUSH key value <span class=" md-link"><a href="http://redisdoc.com/list/lpush.html#lpush"><span>value &hellip;<span>]</span></span></a><span> 和 <span class=" md-link"><a href="http://redisdoc.com/list/lpushx.html#lpushx"><span>LPUSHX key value</span></a><span> 都产生单个 <span><code>lpush</code><span> 通知，即使有多个输入元素时，也是如此。</span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[RPUSH key value <span class=" md-link"><a href="http://redisdoc.com/list/rpush.html#rpush"><span>value &hellip;<span>]</span></span></a><span> 和 <span class=" md-link"><a href="http://redisdoc.com/list/rpushx.html#rpushx"><span>RPUSHX key value</span></a><span> 都产生单个 <span><code>rpush</code><span> 通知，即使有多个输入元素时，也是如此。</span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/list/rpop.html#rpop"><span>RPOP key</span></a><span> 产生 <span><code>rpop</code><span> 通知。如果被弹出的元素是列表的最后一个元素，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/list/lpop.html#lpop"><span>LPOP key</span></a><span> 产生 <span><code>lpop</code><span> 通知。如果被弹出的元素是列表的最后一个元素，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/list/linsert.html#linsert"><span>LINSERT key BEFORE|AFTER pivot value</span></a><span> 产生一个 <span><code>linsert</code><span> 通知。</span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/list/lset.html#lset"><span>LSET key index value</span></a><span> 产生一个 <span><code>lset</code><span> 通知。</span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/list/ltrim.html#ltrim"><span>LTRIM key start stop</span></a><span> 产生一个 <span><code>ltrim</code><span> 通知。如果 <span class=" md-link"><a href="http://redisdoc.com/list/ltrim.html#ltrim"><span>LTRIM key start stop</span></a><span> 执行之后，列表键被清空，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/list/rpoplpush.html#rpoplpush"><span>RPOPLPUSH source destination</span></a><span> 和 <span class=" md-link"><a href="http://redisdoc.com/list/brpoplpush.html#brpoplpush"><span>BRPOPLPUSH source destination timeout</span></a><span> 产生一个 <span><code>rpop</code><span> 通知，以及一个 <span><code>lpush</code><span> 通知。两个命令都会保证 <span><code>rpop</code><span> 的通知在 <span><code>lpush</code><span> 的通知之前分发。如果从键弹出元素之后，被弹出的列表键被清空，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/hash/hset.html#hset"><span>HSET hash field value</span></a><span> 、 <span class=" md-link"><a href="http://redisdoc.com/hash/hsetnx.html#hsetnx"><span>HSETNX hash field value</span></a><span> 和 <span class=" md-link"><a href="http://redisdoc.com/hash/hmset.html#hmset"><span>HMSET</span></a><span> 都只产生一个 <span><code>hset</code><span> 通知。</span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/hash/hincrby.html#hincrby"><span>HINCRBY</span></a><span> 产生一个 <span><code>hincrby</code><span> 通知。</span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/hash/hincrbyfloat.html#hincrbyfloat"><span>HINCRBYFLOAT</span></a><span> 产生一个 <span><code>hincrbyfloat</code><span> 通知。</span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/hash/hdel.html#hdel"><span>HDEL</span></a><span> 产生一个 <span><code>hdel</code><span> 通知。如果执行 <span class=" md-link"><a href="http://redisdoc.com/hash/hdel.html#hdel"><span>HDEL</span></a><span> 之后，哈希键被清空，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[SADD key member <span class=" md-link"><a href="http://redisdoc.com/set/sadd.html#sadd"><span>member &hellip;<span>]</span></span></a><span> 产生一个 <span><code>sadd</code><span> 通知，即使有多个输入元素时，也是如此。</span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[SREM key member <span class=" md-link"><a href="http://redisdoc.com/set/srem.html#srem"><span>member &hellip;<span>]</span></span></a><span> 产生一个 <span><code>srem</code><span> 通知，如果执行 [SREM key member <span class=" md-link"><a href="http://redisdoc.com/set/srem.html#srem"><span>member &hellip;<span>]</span></span></a><span> 之后，集合键被清空，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/set/smove.html#smove"><span>SMOVE source destination member</span></a><span> 为来源键（source key）产生一个 <span><code>srem</code><span> 通知，并为目标键（destination key）产生一个 <span><code>sadd</code><span> 事件。</span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/set/spop.html#spop"><span>SPOP key</span></a><span> 产生一个 <span><code>spop</code><span> 事件。如果执行 <span class=" md-link"><a href="http://redisdoc.com/set/spop.html#spop"><span>SPOP key</span></a><span> 之后，集合键被清空，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[SINTERSTORE destination key <span class=" md-link"><a href="http://redisdoc.com/set/sinterstore.html#sinterstore"><span>key &hellip;<span>]</span></span></a><span> 、 [SUNIONSTORE destination key <span class=" md-link"><a href="http://redisdoc.com/set/sunionstore.html#sunionstore"><span>key &hellip;<span>]</span></span></a><span> 和 [SDIFFSTORE destination key <span class=" md-link"><a href="http://redisdoc.com/set/sdiffstore.html#sdiffstore"><span>key &hellip;<span>]</span></span></a><span> 分别产生 <span><code>sinterstore</code><span> 、 <span><code>sunionostore</code><span> 和 <span><code>sdiffstore</code><span>三种通知。如果用于保存结果的键已经存在，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/sorted_set/zincrby.html#zincrby"><span>ZINCRBY key increment member</span></a><span> 产生一个 <span><code>zincr</code><span> 通知。（译注：非对称，请注意。）</span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[ZADD key score member [[score member<span>]<span> [score member] &hellip;]](<span class="md-link"><a href="http://redisdoc.com/sorted_set/zadd.html#zadd">http://redisdoc.com/sorted_set/zadd.html#zadd</a><span>) 产生一个 <span><code>zadd</code><span> 通知，即使有多个输入元素时，也是如此。</span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[ZREM key member <span class=" md-link"><a href="http://redisdoc.com/sorted_set/zrem.html#zrem"><span>member &hellip;<span>]</span></span></a><span> 产生一个 <span><code>zrem</code><span> 通知，即使有多个输入元素时，也是如此。如果执行 [ZREM key member <span class=" md-link"><a href="http://redisdoc.com/sorted_set/zrem.html#zrem"><span>member &hellip;<span>]</span></span></a><span> 之后，有序集合键被清空，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/sorted_set/zremrangebyscore.html#zremrangebyscore"><span>ZREMRANGEBYSCORE key min max</span></a><span> 产生一个 <span><code>zrembyscore</code><span> 通知。（译注：非对称，请注意。）如果用于保存结果的键已经存在，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span class=" md-link"><a href="http://redisdoc.com/sorted_set/zremrangebyrank.html#zremrangebyrank"><span>ZREMRANGEBYRANK key start stop</span></a><span> 产生一个 <span><code>zrembyrank</code><span> 通知。（译注：非对称，请注意。）如果用于保存结果的键已经存在，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>[ZINTERSTORE destination numkeys key [key &hellip;<span>]<span> [WEIGHTS weight [weight &hellip;]] [AGGREGATE SUM|MIN|MAX]](<span class="md-link"><a href="http://redisdoc.com/sorted_set/zinterstore.html#zinterstore">http://redisdoc.com/sorted_set/zinterstore.html#zinterstore</a><span>) 和 [ZUNIONSTORE destination numkeys key [key &hellip;<span>]<span> [WEIGHTS weight [weight &hellip;]] [AGGREGATE SUM|MIN|MAX]](<span class="md-link"><a href="http://redisdoc.com/sorted_set/zunionstore.html#zunionstore">http://redisdoc.com/sorted_set/zunionstore.html#zunionstore</a><span>) 分别产生 <span><code>zinterstore</code><span> 和 <span><code>zunionstore</code><span> 两种通知。如果用于保存结果的键已经存在，那么还会产生一个 <span><code>del</code><span> 通知。</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>每当一个键因为过期而被删除时，产生一个 <span><code>expired</code><span> 通知。</span></span></span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>每当一个键因为 <span><code>maxmemory</code><span> 政策而被删除以回收内存时，产生一个 <span><code>evicted</code><span> 通知。</span></span></span></span></span></p>
+</li>
+</ul>
+<h2 class="md-end-block"><span>Note</span></h2>
+<p class="md-end-block"><span>所有命令都只在键<span><strong>真的</strong><span>被改动了之后，才会产生通知。</span></span></span></p>
+<p class="md-end-block"><span>比如说，当 [SREM key member <span class=" md-link"><a href="http://redisdoc.com/set/srem.html#srem"><span>member &hellip;<span>]</span></span></a><span> 试图删除不存在于集合的元素时，删除操作会执行失败，因为没有真正的改动键，所以这一操作不会发送通知。</span></span></span></p>
+<p class="md-end-block"><span>如果对命令所产生的通知有疑问， 最好还是使用以下命令， 自己来验证一下：</span></p>
+<src class="cnblogs_code">
+<pre><code>$ redis-cli config set notify-keyspace-<span style="color: #000000;">events KEA
+$ redis</span>-cli --csv psubscribe <span style="color: #800000;">'</span><span style="color: #800000;">__key*__:*</span><span style="color: #800000;">'</span><span style="color: #000000;">
+Reading messages... (press Ctrl</span>-<span style="color: #000000;">C to quit)
+</span><span style="color: #800000;">"</span><span style="color: #800000;">psubscribe</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">__key*__:*</span><span style="color: #800000;">"</span>,<span style="color: #800080;">1</span></code></pre>
+
+<p class="md-end-block"><span>然后， 只要在其他终端里用 Redis 客户端发送命令， 就可以看到产生的通知了：</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800000;">"</span><span style="color: #800000;">pmessage</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">__key*__:*</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">__keyspace@0__:foo</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">set</span><span style="color: #800000;">"</span>
+<span style="color: #800000;">"</span><span style="color: #800000;">pmessage</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">__key*__:*</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">__keyevent@0__:set</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">foo</span><span style="color: #800000;">"</span><span style="color: #000000;">
+...</span></code></pre>
+
+<h2 class="md-end-block md-heading"><span>过期通知的发送时间</span></h2>
+<p class="md-end-block"><span>Redis 使用以下两种方式删除过期的键：</span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>当一个键被访问时，程序会对这个键进行检查，如果键已经过期，那么该键将被删除。</span></p>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>底层系统会在后台渐进地查找并删除那些过期的键，从而处理那些已经过期、但是不会被访问到的键。</span></p>
+</li>
+</ul>
+<p class="md-end-block"><span>当过期键被以上两个程序的任意一个发现、 并且将键从数据库中删除时， Redis 会产生一个 <span><code>expired</code><span> 通知。</span></span></span></p>
+<p class="md-end-block"><span>Redis 并不保证生存时间（TTL）变为 <span><code>0</code><span> 的键会立即被删除： 如果程序没有访问这个过期键， 或者带有生存时间的键非常多的话， 那么在键的生存时间变为 <span><code>0</code><span> ， 直到键真正被删除这中间， 可能会有一段比较显著的时间间隔。</span></span></span></span></span></p>
+<p class="md-end-block"><span>因此， Redis 产生 <span><code>expired</code><span> 通知的时间为过期键被删除的时候， 而不是键的生存时间变为 <span><code>0</code><span> 的时候。</span></span></span></span></span></p>
+<h1 class="md-end-block md-heading"><span>四、高可用性</span></h1>
+<p class="md-end-block"><span>因为 Redis 目前的订阅与发布功能采取的是发送即忘（fire and forget）策略， 所以如果你的程序需要可靠事件通知（reliable notification of events）， 那么目前的键空间通知可能并不适合你：当订阅事件的客户端断线时， 它会丢失所有在断线期间分发给它的事件。并不能确保消息送达。未来有计划允许更可靠的事件传递，但可能这将在更一般的层面上解决，或者为Pub / Sub本身带来可靠性，或者允许Lua脚本拦截Pub / Sub消息来执行诸如推送将事件列入清单。</span></p>
+<h2 class="md-end-block md-heading"><span>事件类型</span></h2>
+<p class="md-end-block"><span>对于每个修改数据库的操作，键空间通知都会发送两种不同类型的事件消息：keyspace 和 keyevent。以 keyspace 为前缀的频道被称为键空间通知（key-space notification）， 而以 keyevent 为前缀的频道则被称为键事件通知（key-event notification）。</span></p>
+<pre class="md-fences md-end-block ty-contain-cm modeLoaded"><span><span class="cm-variable">事件是用 &nbsp;<span class="cm-variable">__keyspace@DB__:<span class="cm-variable">KeyPattern <span class="cm-variable">或者 &nbsp;<span class="cm-variable">__keyevent@DB__:<span class="cm-variable">OpsType <span class="cm-variable">的格式来发布消息的。<br /><span><span class="cm-variable">DB表示在第几个库；KeyPattern则是表示需要监控的键模式（可以用通配符，如：__key<span class="cm-operator">*<span class="cm-variable">__:<span class="cm-operator">*<span class="cm-variable">）；OpsType则表示操作类型。因此，如果想要订阅特殊的Key上的事件，应该是订阅keyspace。<br /><span><span class="cm-variable">比如说，对 <span class="cm-number">0 <span class="cm-variable">号数据库的键 <span class="cm-variable">mykey <span class="cm-variable">执行 <span class="cm-variable">DEL <span class="cm-variable">命令时， <span class="cm-variable">系统将分发两条消息， <span class="cm-variable">相当于执行以下两个 <span class="cm-variable">PUBLISH <span class="cm-variable">命令：<br /><span><span class="cm-variable">PUBLISH <span class="cm-variable">__keyspace@0__:<span class="cm-variable">sampleKey <span class="cm-variable">del<br /><span><span class="cm-variable">PUBLISH <span class="cm-variable">__keyevent@0__:<span class="cm-variable">del <span class="cm-variable">sampleKey<br /><span><span class="cm-variable">订阅第一个频道 <span class="cm-variable">__keyspace@0__:<span class="cm-variable">mykey <span class="cm-variable">可以接收 <span class="cm-number">0 <span class="cm-variable">号数据库中所有修改键 <span class="cm-variable">mykey <span class="cm-variable">的事件， <span class="cm-variable">而订阅第二个频道 <span class="cm-variable">__keyevent@0__:<span class="cm-variable">del <span class="cm-variable">则可以接收 <span class="cm-number">0 <span class="cm-variable">号数据库中所有执行 <span class="cm-variable">del <span class="cm-variable">命令的键。</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></pre>
+<h1 class="md-end-block md-heading"><span>五、实现步骤</span></h1>
+<p class="md-end-block"><span>为了高可用性，为了确保解决过期事件的执行，将 定时事件存入MySQL数据库。触发键过期事件后，再查询一次数据库，检查一下过期事件是否全部执行了。</span></p>
+<h2 class="md-end-block md-heading"><span>数据表结构</span></h2>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">CREATE</span> <span style="color: #0000ff;">TABLE</span><span style="color: #000000;"> `tb_time_limit_task` (
+  `id` </span><span style="color: #0000ff;">int</span>(<span style="color: #800000; font-weight: bold;">10</span>) unsigned <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span><span style="color: #000000;"> AUTO_INCREMENT,
+  `</span><span style="color: #0000ff;">key</span>` <span style="color: #0000ff;">varchar</span>(<span style="color: #800000; font-weight: bold;">255</span>) <span style="color: #0000ff;">CHARACTER</span> <span style="color: #0000ff;">SET</span> utf8 COLLATE utf8_bin <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">Redis键</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `status` </span><span style="color: #0000ff;">tinyint</span>(<span style="color: #800000; font-weight: bold;">3</span>) unsigned <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">状态，0未处理，1已处理</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `start_time` </span><span style="color: #0000ff;">decimal</span>(<span style="color: #800000; font-weight: bold;">13</span>,<span style="color: #800000; font-weight: bold;">3</span>) unsigned <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">开始时间(小数部分为毫秒)</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  `end_time` </span><span style="color: #0000ff;">decimal</span>(<span style="color: #800000; font-weight: bold;">13</span>,<span style="color: #800000; font-weight: bold;">3</span>) unsigned <span style="color: #808080;">NOT</span> <span style="color: #0000ff;">NULL</span> COMMENT <span style="color: #ff0000;">'</span><span style="color: #ff0000;">结束时间（小数部分为毫秒）</span><span style="color: #ff0000;">'</span><span style="color: #000000;">,
+  </span><span style="color: #0000ff;">PRIMARY</span> <span style="color: #0000ff;">KEY</span><span style="color: #000000;"> (`id`),
+  </span><span style="color: #0000ff;">KEY</span> `we` (`<span style="color: #0000ff;">key</span><span style="color: #000000;">`) USING BTREE
+) ENGINE</span><span style="color: #808080;">=</span>InnoDB <span style="color: #0000ff;">DEFAULT</span> CHARSET<span style="color: #808080;">=</span>utf8 COMMENT<span style="color: #808080;">=</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">这个表用于记录需要时间控制的任务Key，配合Redis、以及回调脚本使用</span><span style="color: #ff0000;">'</span><span style="color: #000000;">;
+​
+key存储规则是 类名</span><span style="color: #008000;">@方法名@参数</span>...   (参数可为空，多个参数以<span style="color: #008000;">@分隔</span><span style="color: #000000;">) 
+例子： PTCountdown</span><span style="color: #008000;">@countdown@218</span></code></pre>
+
+<p>&nbsp;</p>
+<h2 class="md-end-block md-heading"><span>实现思路：</span></h2>
+<ol class="ol-list" start="">
+<li class="md-list-item">
+<p class="md-end-block"><span>（查询数据库）<span><strong>任务状态检查</strong><span>，执行未正常执行的任务</span></span></span></p>
+<p class="md-end-block"><span><strong>任务状态检查</strong></span></p>
+<blockquote>
+<p class="md-end-block"><span>查询 &rdquo;结束时间 &lt; 当前时间&ldquo; 的未处理的任务</span></p>
+<p class="md-end-block"><span>如果存在，则执行任务， </span></p>
+<p class="md-end-block"><span class="md-tab"> <span>1.先解析key，类名@方法名@参数... <span class="md-tab"> <span class="md-softbreak"> <span>​<span class="md-tab"> <span>2.然后根据类名去执行相应方法</span></span></span></span></span></span></span></p>
+</blockquote>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>连接redis</span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>连接成功 </span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>（查询数据库）任务状态检查，查看在脚本未运行期间是否有部分任务未处理，可能很长时间才连上redis，需要查看连接时间内的任务状况；</span></p>
+</li>
+</ul>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>可能会永远连不上，则每10s，尝试重连</span></p>
+</li>
+</ul>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>生成订阅消息丢失控制键</span></p>
+<p class="md-end-block"><span>向redis初始新增 10个有效期（900/1800/...）的键</span></p>
+<blockquote>
+<pre class="md-fences md-end-block ty-contain-cm modeLoaded"><span>#SILCK`1 900<br /><span>#SILCK`2 1800<br /><span>#SILCK`3 2700<br /><span>...<br /><span>#SILCK`10 9000</span></span></span></span></span></code></pre>
+</blockquote>
+</li>
+</ol>
+<p class="md-end-block"><span>这一步的目的是 每900秒（15）分钟，查询数据库，检查任务执行情况</span></p>
+<ol class="ol-list" start="4">
+<li class="md-list-item">
+<p class="md-end-block"><span>订阅过期事件</span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>正常键过期</span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>执行任务</span></p>
+</li>
+</ul>
+</li>
+<li class="md-list-item">
+<p class="md-end-block"><span>订阅消息控制键过期</span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>检查任务状态</span></p>
+<ul class="ul-list" data-mark="-">
+<li class="md-list-item">
+<p class="md-end-block"><span>如果超过一半的控制键都过期了，那么重新生成10个</span></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 class="md-end-block md-heading"><span>具体代码：</span></h2>
+<h5 class="md-end-block md-heading"><span>监听脚本</span></h5>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * Description:时间结点任务监听
+ * Created by dong.cx
+ * DateTime: 2019-03-15 10:58
+ </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+
+namespace wladmin\cmd;
+
+\think\Loader</span>::addNamespace('wlmis', './wlmis/'<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\logic\timeLimitTask\base\TimeLimitTaskLogic;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Config;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> think\console\Input;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> think\console\Output;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> think\console\Command;
+</span><span style="color: #0000ff;">use</span> think\<span style="color: #008080;">Log</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\common\redis\Redis;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\logic\timeLimitTask\base\LogRecord;
+
+</span><span style="color: #0000ff;">class</span> TimeLimitTask <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Command
+{
+    </span><span style="color: #0000ff;">use</span><span style="color: #000000;"> LogRecord;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 订阅信息丢失控制键最大数量
+     * @var int
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$subscription_info_loss_control_key_max</span> = 10<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 订阅信息丢失控制键最后执行的索引，键的索引从1开始，为0表示未执行过，这个变量用于控制订阅信息控制键自动生成
+     * @var int
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$subscription_info_loss_control_key_last</span> = 0<span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$name</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+    {
+        parent</span>::__construct(<span style="color: #800080;">$name</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 日志记录初始化</span>
+        <span style="color: #008080;">Log</span>::<span style="color: #000000;">init([
+            </span>'type' =&gt; 'File',
+            'path' =&gt; RUNTIME_PATH . 'redis-logs/',
+            <span style="color: #008000;">//</span><span style="color: #008000;"> error和sql日志单独记录</span>
+            'apart_level' =&gt; ['log', 'error', 'sql', 'debug', 'info', 'notice'],<span style="color: #000000;">
+        ]);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 运行方式 php tp5cornnew.php TimeLimitTask
+     * @author dong.cx 2019-04-02 10:59
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> configure()
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;setName('TimeLimitTask')-&gt;setDescription('Redis keyspace notification subscription script'<span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> execute(Input <span style="color: #800080;">$input</span>, Output <span style="color: #800080;">$output</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 配置断线重连</span>
+        Config::set('database.break_reconnect', <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$config</span> = Config::get('redis_db'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$reconnect_str</span> = ''<span style="color: #000000;">;
+        RedisReconnect</span>:
+        <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$this</span>-&gt;logRecord('info', "ThinkPHP Version: " .<span style="color: #000000;"> THINK_VERSION);
+            </span><span style="color: #800080;">$this</span>-&gt;logRecord('info', <span style="color: #800080;">$reconnect_str</span> . "Redis host: " . <span style="color: #800080;">$config</span>['host'], <span style="color: #0000ff;">true</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 进行任务状态检查</span>
+            <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">taskStatusCheck();
+            </span><span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span> Redis(<span style="color: #008080;">get_class</span>(<span style="color: #800080;">$this</span>), <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$redis</span>-&gt;ping() == '+PONG'<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;logRecord('info', 'Connection succeeded', <span style="color: #0000ff;">true</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 查看在脚本未运行期间是否有部分任务未处理</span>
+                <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">taskStatusCheck();
+            }
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 生成订阅消息丢失控制键</span>
+            <span style="color: #800080;">$this</span>-&gt;subscription_info_loss_control(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$this</span>-&gt;logRecord('info', 'Start listening', <span style="color: #0000ff;">true</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 订阅消息</span>
+            <span style="color: #800080;">$redis</span>-&gt;psubscribe(<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+                </span>'__keyevent@' . <span style="color: #800080;">$config</span>['db'] . '__:expired'<span style="color: #000000;">
+            )</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$redis</span>, <span style="color: #800080;">$pattern</span>, <span style="color: #800080;">$channelName</span>, <span style="color: #800080;">$message</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$msg_split</span> = <span style="color: #008080;">explode</span>('`', <span style="color: #800080;">$message</span><span style="color: #000000;">);
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">count</span>(<span style="color: #800080;">$msg_split</span>) == 2 &amp;&amp; <span style="color: #800080;">$msg_split</span>[0] == '#SILCK' &amp;&amp; <span style="color: #008080;">is_numeric</span>(<span style="color: #800080;">$msg_split</span>[1<span style="color: #000000;">])) {
+                    </span><span style="color: #800080;">$this</span>-&gt;subscription_info_loss_control_key_last = <span style="color: #800080;">$msg_split</span>[1<span style="color: #000000;">];
+                    </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">taskStatusCheck();
+                    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;subscription_info_loss_control_key_last &gt; (<span style="color: #800080;">$this</span>-&gt;subscription_info_loss_control_key_max / 2<span style="color: #000000;">)) {
+                        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">subscription_info_loss_control();
+                        </span><span style="color: #800080;">$this</span>-&gt;subscription_info_loss_control_key_last = 0<span style="color: #000000;">;
+                    }
+                } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 这里代表是Redis回调执行</span>
+                    <span style="color: #800080;">$this</span>-&gt;task(<span style="color: #800080;">$message</span><span style="color: #000000;">);
+                }
+            });
+        } </span><span style="color: #0000ff;">catch</span> (\RedisException <span style="color: #800080;">$redisThrow</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> Redis抛出异常，一般的情况是失去连接，执行重新连接</span>
+            <span style="color: #800080;">$this</span>-&gt;logRecord('notice', "Redis loses connection and is reconnecting...", <span style="color: #0000ff;">true</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$redis</span>-&gt;<span style="color: #000000;">close();
+            } </span><span style="color: #0000ff;">catch</span> (\<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$ee</span><span style="color: #000000;">) {
+            }
+            </span><span style="color: #008080;">sleep</span>(10<span style="color: #000000;">);
+            </span><span style="color: #800080;">$reconnect_str</span> = 'Reconnect '<span style="color: #000000;">;
+            goto RedisReconnect;
+        } </span><span style="color: #0000ff;">catch</span> (\<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 运行错误，这里抛出错误的原因为这个文件中的代码有误，其他任务执行代码抛出错误，不会导致运行中断 - 执行到这里运行中断</span>
+            <span style="color: #800080;">$this</span>-&gt;logRecord('error', 'Run-time error' . <span style="color: #ff00ff;">PHP_EOL</span> . 'File location: ' . <span style="color: #800080;">$e</span>-&gt;getFile() . <span style="color: #ff00ff;">PHP_EOL</span> . 'Line: ' . <span style="color: #800080;">$e</span>-&gt;getLine() . <span style="color: #ff00ff;">PHP_EOL</span> . 'Error Message: ' . <span style="color: #800080;">$e</span>-&gt;getMessage() . <span style="color: #ff00ff;">PHP_EOL</span>, <span style="color: #0000ff;">true</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 任务执行
+     * @param string $key 任务键名，记录于Redis中的键名
+     *                         键名规则：类名@方法名@参数...(后续的多个参数都用@分隔)，在时间限制任务基类中有生成键的封装函数
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> task(<span style="color: #800080;">$key</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$params</span> = <span style="color: #008080;">explode</span>('@', <span style="color: #800080;">$key</span>, 3<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">count</span>(<span style="color: #800080;">$params</span>) &lt; 2<span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #800080;">$class</span> = <span style="color: #0000ff;">new</span> \ReflectionClass('wlmis\\logic\\timeLimitTask\\' . <span style="color: #800080;">$params</span>[0<span style="color: #000000;">]);
+            </span><span style="color: #800080;">$instance</span> = <span style="color: #800080;">$class</span>-&gt;<span style="color: #000000;">newInstance();
+            </span><span style="color: #800080;">$transfer</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">count</span>(<span style="color: #800080;">$params</span>) == 3<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$transfer</span> = <span style="color: #008080;">explode</span>('@', <span style="color: #800080;">$params</span>[2<span style="color: #000000;">]);
+            }
+            </span><span style="color: #800080;">$instance</span>-&gt;call_func(<span style="color: #800080;">$params</span>[1], <span style="color: #800080;">$transfer</span><span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">catch</span> (\<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;logRecord('notice', 'Task execution class or method not found! Or call the method to throw an error.'
+                . <span style="color: #ff00ff;">PHP_EOL</span> . 'Pass Key Parameter: ' . <span style="color: #800080;">$key</span> . <span style="color: #ff00ff;">PHP_EOL</span> . 'File location: ' . <span style="color: #008080;">get_class</span>(<span style="color: #800080;">$this</span><span style="color: #000000;">)
+                </span>. <span style="color: #ff00ff;">PHP_EOL</span> . 'Line: ' . <span style="color: #800080;">$e</span>-&gt;getLine() . <span style="color: #ff00ff;">PHP_EOL</span> . 'Error Message: ' . <span style="color: #800080;">$e</span>-&gt;getMessage() . <span style="color: #ff00ff;">PHP_EOL</span> . <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 任务状态检查，执行未正常执行的任务
+     * @author dong.cx 2019-04-02 10:57
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> taskStatusCheck()
+    {
+        </span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$result</span> = (<span style="color: #0000ff;">new</span> TimeLimitTaskLogic())-&gt;<span style="color: #000000;">getNotPerformedTask();
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$this</span>-&gt;logRecord('info', 'Find ' . <span style="color: #008080;">count</span>(<span style="color: #800080;">$result</span>) . ' unprocessed task：'<span style="color: #000000;">);
+                </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$result</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$this</span>-&gt;task(<span style="color: #800080;">$value</span>['key'<span style="color: #000000;">]);
+                }
+            }
+        } </span><span style="color: #0000ff;">catch</span> (\<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;logRecord('notice', 'An exception occurred during task status checking.'<span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 生成订阅消息丢失控制键
+     * @param boolean $always_output_screen 不管不否在调试模式都输出到屏幕
+     *
+     * @author dong.cx 2019-04-02 10:58
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> subscription_info_loss_control(<span style="color: #800080;">$always_output_screen</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$this</span>-&gt;logRecord('info', 'Generates subscription information loss control keys.', <span style="color: #0000ff;">true</span>, <span style="color: #800080;">$always_output_screen</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$success</span> = 0<span style="color: #000000;">;
+            </span><span style="color: #800080;">$error</span> = 0<span style="color: #000000;">;
+            </span><span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+            </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 1; <span style="color: #800080;">$i</span> &lt;= <span style="color: #800080;">$this</span>-&gt;subscription_info_loss_control_key_max; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$redis</span>-&gt;setex('#SILCK`' . <span style="color: #800080;">$i</span>, <span style="color: #800080;">$i</span> * 900, '') ? <span style="color: #800080;">$success</span>++ : <span style="color: #800080;">$error</span>++<span style="color: #000000;">;
+            }
+            </span><span style="color: #800080;">$this</span>-&gt;logRecord('info', 'Generates loss control keys: ' . <span style="color: #800080;">$this</span>-&gt;subscription_info_loss_control_key_max . ' total, ' . <span style="color: #800080;">$success</span> . ' success, ' . <span style="color: #800080;">$error</span> . ' error', <span style="color: #0000ff;">true</span>, <span style="color: #800080;">$always_output_screen</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$redis</span>-&gt;<span style="color: #000000;">close();
+        } </span><span style="color: #0000ff;">catch</span> (\<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;logRecord('notice', 'An exception occurs when the subscription information loss control key is created.', <span style="color: #0000ff;">true</span>, <span style="color: #800080;">$always_output_screen</span><span style="color: #000000;">);
+        }
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<h5 class="md-end-block md-heading"><span>键事件回调操作</span></h5>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * Description:拍卖倒计时操作
+ * Created by dong.cx
+ * DateTime: 2019-03-18 10:04
+ </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+
+namespace wlmis\logic\timeLimitTask;
+
+
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Config;
+</span><span style="color: #0000ff;">use</span> think\<span style="color: #0000ff;">Exception</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\common\redis\Redis;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\dao\addons\auction\AuctionGoodsDao;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\logic\oper\addons\auction\AuctionLogic;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\logic\timeLimitTask\base\TimeLimitBaseLogic;
+
+</span><span style="color: #0000ff;">class</span> AuctionCutDownLogic <span style="color: #0000ff;">extends</span><span style="color: #000000;"> TimeLimitBaseLogic
+{
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$auctionGoodsDao</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+    {
+        parent</span>::<span style="color: #000000;">__construct();
+        </span><span style="color: #800080;">$this</span>-&gt;auctionGoodsDao = <span style="color: #0000ff;">new</span><span style="color: #000000;"> AuctionGoodsDao();
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 拍卖结束, 更新拍品表/保单表 操作
+     * @param $params
+     *
+     * @author dong.cx 2019-03-18 18:39
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> auctionEndCutDown(<span style="color: #800080;">$params</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$auctionId</span> = <span style="color: #800080;">$params</span>[0<span style="color: #000000;">];
+        </span><span style="color: #800080;">$auctionLogic</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> AuctionLogic();
+        </span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$auctionId</span> || !<span style="color: #008080;">is_numeric</span>(<span style="color: #800080;">$auctionId</span>)) <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('Params error'<span style="color: #000000;">);
+            </span><span style="color: #800080;">$goodsInfo</span> = <span style="color: #800080;">$this</span>-&gt;auctionGoodsDao-&gt;load(<span style="color: #800080;">$auctionId</span>, 'final_end_time'<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$goodsInfo</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;logRecord('notice', 'tb_auction_goods主键:' . <span style="color: #800080;">$auctionId</span> . '不存在'<span style="color: #000000;">);
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                parent</span>::<span style="color: #000000;">startTrans();
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 拍卖结束</span>
+                <span style="color: #800080;">$result</span> = <span style="color: #800080;">$auctionLogic</span>-&gt;auctionEnded(<span style="color: #800080;">$auctionId</span><span style="color: #000000;">);
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span>['code'] == 0<span style="color: #000000;">) {
+                    </span><span style="color: #800080;">$this</span>-&gt;logRecord('notice', <span style="color: #800080;">$result</span>['msg'<span style="color: #000000;">]);
+                }
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 更改mysql中键的状态为已处理</span>
+                <span style="color: #800080;">$this</span>-&gt;recording_process_mysql(<span style="color: #800080;">$this</span>-&gt;key_splice(<span style="color: #ff00ff;">__FUNCTION__</span>, [<span style="color: #800080;">$auctionId</span><span style="color: #000000;">]));
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 删除 redis 当前价</span>
+                <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+                </span><span style="color: #800080;">$redis</span>-&gt;del('auction_gid@' . <span style="color: #800080;">$auctionId</span> . '@current_bid'<span style="color: #000000;">);
+
+                websocket_send(</span><span style="color: #800080;">$auctionId</span> . 'bid/index', <span style="color: #0000ff;">true</span>, 2, '拍卖结束'<span style="color: #000000;">);
+            }
+            parent</span>::<span style="color: #000000;">commit();
+
+        } </span><span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+            parent</span>::<span style="color: #000000;">rollback();
+            </span><span style="color: #800080;">$this</span>-&gt;throw_message(<span style="color: #ff00ff;">__FUNCTION__</span>, <span style="color: #800080;">$e</span><span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 拍卖交易结束
+     *     无订单/未付款,不释放保证金
+     * @param $params
+     *
+     * @author dong.cx 2019-03-18 20:15
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> dealCutDown(<span style="color: #800080;">$params</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$auctionId</span> = <span style="color: #800080;">$params</span>[0<span style="color: #000000;">];
+        </span><span style="color: #800080;">$auctionLogic</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> AuctionLogic();
+        </span><span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+            parent</span>::<span style="color: #000000;">startTrans();
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$auctionId</span> || !<span style="color: #008080;">is_numeric</span>(<span style="color: #800080;">$auctionId</span>)) <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('Params error'<span style="color: #000000;">);
+            </span><span style="color: #800080;">$goodsInfo</span> = <span style="color: #800080;">$this</span>-&gt;auctionGoodsDao-&gt;load(<span style="color: #800080;">$auctionId</span>, 'final_end_time'<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$goodsInfo</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;logRecord('notice', 'tb_auction_goods主键:' . <span style="color: #800080;">$auctionId</span> . '不存在'<span style="color: #000000;">);
+            } </span><span style="color: #0000ff;">elseif</span> (!<span style="color: #800080;">$goodsInfo</span>['final_end_time'<span style="color: #000000;">]) {
+                </span><span style="color: #800080;">$this</span>-&gt;logRecord('notice', 'tb_auction_goods主键:' . <span style="color: #800080;">$auctionId</span> . '的拍品还未结束或最终结束时间为空'<span style="color: #000000;">);
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$auctionLogic</span>-&gt;checkStatus(<span style="color: #800080;">$auctionId</span><span style="color: #000000;">);
+                </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span>['code'] == 0) <span style="color: #800080;">$this</span>-&gt;logRecord('notice', <span style="color: #800080;">$result</span>['msg'<span style="color: #000000;">]);
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 更改mysql中键的状态为已处理</span>
+                <span style="color: #800080;">$this</span>-&gt;recording_process_mysql(<span style="color: #800080;">$this</span>-&gt;key_splice(<span style="color: #ff00ff;">__FUNCTION__</span>, [<span style="color: #800080;">$auctionId</span><span style="color: #000000;">]));
+            }
+            parent</span>::<span style="color: #000000;">commit();
+        } </span><span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+            parent</span>::<span style="color: #000000;">rollback();
+            </span><span style="color: #800080;">$this</span>-&gt;throw_message(<span style="color: #ff00ff;">__FUNCTION__</span>, <span style="color: #800080;">$e</span><span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 创建拍卖结束倒计时任务
+     * @param $auctionId
+     * @param int $ttl
+     *
+     * @throws Exception
+     * @author dong.cx 2019-04-01 09:49
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> auction_end_countdown_create(<span style="color: #800080;">$auctionId</span>, <span style="color: #800080;">$ttl</span>=0<span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;create('auctionEndCutDown', <span style="color: #800080;">$ttl</span>, [<span style="color: #800080;">$auctionId</span><span style="color: #000000;">]);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 删除拍卖结束倒计时任务
+     * @param int $auctionId 拍卖商品表主键
+     *
+     * @return bool|int
+     * @throws Exception
+     * @author dong.cx 2019-04-01 10:08:49
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> auction_end_countdown_delete(<span style="color: #800080;">$auctionId</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;del_key('auctionEndCutDown', [<span style="color: #800080;">$auctionId</span><span style="color: #000000;">]);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 创建交易倒计时任务
+     * @param int $auctionId 拍卖商品表主键
+     * @param int $ttl 生存时间
+     *
+     * @throws Exception
+     * 异常代码：
+     * 500     redis操作失败
+     * @author dong.cx 2019-03-22 15:36
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> deal_countdown_create(<span style="color: #800080;">$auctionId</span>, <span style="color: #800080;">$ttl</span>=0<span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;create('dealCutDown', <span style="color: #800080;">$ttl</span> + Config::get('auction_deal_limit_time'), [<span style="color: #800080;">$auctionId</span><span style="color: #000000;">]);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 删除交易倒计时任务
+     * @param int $auctionId 拍卖商品表主键
+     *
+     * @return bool|int
+     * @throws Exception
+     * @author dong.cx 2019-03-22 15:36
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> deal_countdown_delete(<span style="color: #800080;">$auctionId</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;del_key('countdown', [<span style="color: #800080;">$auctionId</span><span style="color: #000000;">]);
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p class="md-end-block">&nbsp;</p>
+<h5 class="md-end-block md-heading"><span>任务基类</span></h5>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * Created by dong.cx
+ * Date: 2019/3/27 17:13
+ * Description: 时间限制任务基类
+ *              每一个子类继承这个基类实现时间任务调度
+ *              子类中开放给Redis调度的函数设置访问权限为protected，防止外部误触发
+ *              子类中其他开放给内部调用的访问权限为public
+ * ************************************************
+ * 存储到Redis中的键名规则为：类名@方法名@参数...(参数可为空，多个参数则以@分隔) key_splice 函数可生成键
+ * 所有的参数通过一个数组传入方法(一维索引数组，跟存储函数 create 传入参数时一样)
+ * 类名、方法名，尽量精简，能节约带宽以及Redis查询速度
+ * 参数设计也尽量精简，所有操作都在服务端内部完成，所以能用1个条件准确查询数据库的，不要用两个条件查询
+ *
+ * 存储键直接使用 create 方法，以秒为单位，会自动拼接键键
+ * 如果以毫秒为单位则 create_ms 方法
+ * ************************************************
+ </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+
+namespace wlmis\logic\timeLimitTask\base;
+
+
+</span><span style="color: #0000ff;">use</span> think\<span style="color: #0000ff;">Exception</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\common\redis\Redis;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\model\sys\TimeLimitTaskModel;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> wlmis\logic\BaseLogic;
+
+</span><span style="color: #0000ff;">class</span> TimeLimitBaseLogic <span style="color: #0000ff;">extends</span><span style="color: #000000;"> BaseLogic
+{
+    </span><span style="color: #0000ff;">use</span><span style="color: #000000;"> LogRecord;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Redis连接实例
+     * @var Redis
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$redis</span><span style="color: #000000;">;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * TimeLimitBaseLogic constructor.
+     * @author dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+    {
+        parent</span>::<span style="color: #000000;">__construct();
+        </span><span style="color: #800080;">$this</span>-&gt;redis = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 任务调度入口
+     * @param string $funcName 调用方法名
+     * @param array $params 传递参数
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> call_func(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+    {
+        </span><span style="color: #008080;">call_user_func</span>(<span style="color: #0000ff;">array</span>(<span style="color: #800080;">$this</span>, <span style="color: #800080;">$funcName</span>), <span style="color: #800080;">$params</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 键拼接
+     * 键用 @ 符号作为分隔符，所以方法名、参数中不可出现
+     * 键名规则中的类名会自动生成
+     * @param string $funcName 方法名
+     * @param array $params 参数（必须传入一维索引数组，请勿传入关联数组，按照顺序生成参数，关联数组不保证顺序）
+     * @return string                  返回键
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> key_splice(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+    {
+        </span><span style="color: #800080;">$class</span> = <span style="color: #008080;">explode</span>('\\', <span style="color: #008080;">get_class</span>(<span style="color: #800080;">$this</span><span style="color: #000000;">));
+        </span><span style="color: #800080;">$paramsStr</span> = ''<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$params</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$paramsStr</span> .= '@' . <span style="color: #800080;">$value</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$class</span>[<span style="color: #008080;">count</span>(<span style="color: #800080;">$class</span>) - 1] . '@' . <span style="color: #800080;">$funcName</span> . <span style="color: #800080;">$paramsStr</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 向Redis存储键（延时单位秒）
+     * 会自动将参数进行拼接，然后存入Redis
+     * @param string $funcName 调用方法名
+     * @param int $ttl 延时(秒)
+     * @param array $params 参数（必须传入一维索引数组，请勿传入关联数组，按照顺序生成参数，关联数组不保证顺序）
+     * @throws Exception
+     * *********************
+     * 异常代码：
+     * 500     redis操作失败
+     * *********************
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> create(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$ttl</span> = 0, <span style="color: #800080;">$params</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+    {
+        </span><span style="color: #800080;">$key</span> = <span style="color: #800080;">$this</span>-&gt;key_splice(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;recording_mysql(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$ttl</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (!(<span style="color: #800080;">$this</span>-&gt;redis-&gt;setex(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$ttl</span>, ''<span style="color: #000000;">))) {
+            </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('Redis存储失败', 500<span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 向Redis存储键（延时单位毫秒）
+     * 会自动将参数进行拼接，然后存入Redis
+     * @param string $funcName 调用方法名
+     * @param int $ttl 延时(毫秒)
+     * @param array $params 参数（必须传入一维索引数组，请勿传入关联数组，按照顺序生成参数，关联数组不保证顺序）
+     * @throws Exception
+     * *********************
+     * 异常代码：
+     * 500     redis操作失败
+     * *********************
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> create_ms(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$ttl</span> = 0, <span style="color: #800080;">$params</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+    {
+        </span><span style="color: #800080;">$key</span> = <span style="color: #800080;">$this</span>-&gt;key_splice(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;recording_mysql(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$ttl</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (!(<span style="color: #800080;">$this</span>-&gt;redis-&gt;psetex(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$ttl</span>, ''<span style="color: #000000;">))) {
+            </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('Redis存储失败', 500<span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取指定键的剩余生存时间（秒）
+     * @param string $funcName  任务方法名
+     * @param array $params 任务参数
+     * @return bool|int         如果为false，说明Redis连接失败
+     *                          如果为-1，说明改键不是定时键
+     *                          如果为-2，说明键不存在（已消失）
+     *                          其他为剩余生存时间(秒)
+     * @throws Exception
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> getTTL(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+    {
+        </span><span style="color: #800080;">$key</span> = <span style="color: #800080;">$this</span>-&gt;key_splice(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;redis-&gt;ttl(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取指定键的剩余生存时间（毫秒）
+     * @param string $funcName  任务方法名
+     * @param array $params 任务参数
+     * @return bool|int         如果为false，说明Redis连接失败
+     *                          如果为-1，说明改键不是定时键
+     *                          如果为-2，说明键不存在（已消失）
+     *                          其他为剩余生存时间(秒)
+     * @throws Exception
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> getPTTL(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+    {
+        </span><span style="color: #800080;">$key</span> = <span style="color: #800080;">$this</span>-&gt;key_splice(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;redis-&gt;pttl(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 删除指定键
+     * ***********************************************
+     * 删除不会触发事件，用于无用记录的删除
+     * 如生成支付订单二次提交时删除前面一个未处理任务。
+     * 一般在设计任务处理流程时需要考虑到无用任务的触发，并进行规避，必要时进行主动删除任务可以减轻服务器负担
+     * 任务处理流程应该做到无用记录的触发不会影响到系统正常运行
+     * ***********************************************
+     * @param $funcName
+     * @param array $params
+     * @return bool|int         返回false则Redis实例获取失败，连接不上，返回int则为影响的记录条数
+     * @throws Exception
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> del_key(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">())
+    {
+        </span><span style="color: #800080;">$key</span> = <span style="color: #800080;">$this</span>-&gt;key_splice(<span style="color: #800080;">$funcName</span>, <span style="color: #800080;">$params</span><span style="color: #000000;">);
+        TimeLimitTaskModel</span>::where('key', <span style="color: #800080;">$key</span>)-&gt;<span style="color: #000000;">update([
+            </span>'sts' =&gt; 1<span style="color: #000000;">
+        ]);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;redis-&gt;del(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 记录键到mysql中，
+     * @param string $key 键
+     * @param int $ttl 触发时间
+     * @param bool $mode 当为false时，触发时间为秒，当为true时，触发时间为毫秒
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> recording_mysql(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$ttl</span>, <span style="color: #800080;">$mode</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$mode</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 这里说明 TTL 以毫秒为单位</span>
+            <span style="color: #800080;">$currentTime</span> = <span style="color: #008080;">bcmul</span>(<span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span>), '1', 3<span style="color: #000000;">);
+            </span><span style="color: #800080;">$endTime</span> = <span style="color: #008080;">bcadd</span>(<span style="color: #800080;">$currentTime</span>, <span style="color: #008080;">bcdiv</span>(<span style="color: #800080;">$ttl</span>, '1000', 3), 3<span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 这里说明 TTL 以秒为单位</span>
+            <span style="color: #800080;">$currentTime</span> = <span style="color: #008080;">time</span><span style="color: #000000;">();
+            </span><span style="color: #800080;">$endTime</span> = <span style="color: #800080;">$currentTime</span> + <span style="color: #800080;">$ttl</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">if</span> (TimeLimitTaskModel::field('id')-&gt;where('key', <span style="color: #800080;">$key</span>)-&gt;find() !== <span style="color: #0000ff;">null</span><span style="color: #000000;">) {
+            TimeLimitTaskModel</span>::where('key', <span style="color: #800080;">$key</span>)-&gt;<span style="color: #000000;">update([
+                </span>'status'     =&gt; 0,
+                'start_time' =&gt; <span style="color: #800080;">$currentTime</span>,
+                'end_time'   =&gt; <span style="color: #800080;">$endTime</span><span style="color: #000000;">
+            ]);
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            TimeLimitTaskModel</span>::<span style="color: #000000;">create([
+                </span>'key'        =&gt; <span style="color: #800080;">$key</span>,
+                'status'     =&gt; 0,
+                'start_time' =&gt; <span style="color: #800080;">$currentTime</span>,
+                'end_time'   =&gt; <span style="color: #800080;">$endTime</span>,
+                'sts'        =&gt; 0<span style="color: #000000;">
+            ]);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 更改键在mysql中的状态为已处理
+     * @param $key
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> recording_process_mysql(<span style="color: #800080;">$key</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$tlm</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> TimeLimitTaskModel();
+        </span><span style="color: #800080;">$tlm</span>-&gt;where('key', <span style="color: #800080;">$key</span>)-&gt;<span style="color: #000000;">update([
+            </span>'status' =&gt; 1<span style="color: #000000;">
+        ]);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 抛出错误信息
+     * @param string $funcName 出错方法名(__FUNCTION__)
+     * @param \Exception $e 错误信息
+     * @author: dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> throw_message(<span style="color: #800080;">$funcName</span>, \<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;logRecord('error', 'The task logic has made an error:' . <span style="color: #ff00ff;">PHP_EOL</span> . 'Class：' . <span style="color: #008080;">get_class</span>(<span style="color: #800080;">$this</span><span style="color: #000000;">)
+            </span>. <span style="color: #ff00ff;">PHP_EOL</span> . 'Method name：' . <span style="color: #800080;">$funcName</span> . <span style="color: #ff00ff;">PHP_EOL</span> . 'File：' . <span style="color: #800080;">$e</span>-&gt;getFile() . <span style="color: #ff00ff;">PHP_EOL</span> . 'Line: ' . <span style="color: #800080;">$e</span>-&gt;<span style="color: #000000;">getLine()
+            </span>. <span style="color: #ff00ff;">PHP_EOL</span> . 'Error Message：' . <span style="color: #800080;">$e</span>-&gt;getMessage() . <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 析构函数
+     * @author dong.cx
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct()
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;redis-&gt;<span style="color: #000000;">close();
+    }
+
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<h3 class="md-end-block md-heading"><span>运行</span></h3>
+<src class="cnblogs_code">
+<pre><code> ✘  ~/Documents/<span style="color: #000000;">card253  php tp5cornnew.php TimeLimitTask
+【</span><span style="color: #800080;">2019</span>-<span style="color: #800080;">04</span>-<span style="color: #800080;">08</span> <span style="color: #800080;">11</span>:<span style="color: #800080;">40</span>:<span style="color: #800080;">02</span>】ThinkPHP Version: <span style="color: #800080;">5.0</span>.<span style="color: #800080;">7</span><span style="color: #000000;">
+【</span><span style="color: #800080;">2019</span>-<span style="color: #800080;">04</span>-<span style="color: #800080;">08</span> <span style="color: #800080;">11</span>:<span style="color: #800080;">40</span>:<span style="color: #800080;">02</span>】Redis host: <span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span><span style="color: #000000;">
+【</span><span style="color: #800080;">2019</span>-<span style="color: #800080;">04</span>-<span style="color: #800080;">08</span> <span style="color: #800080;">11</span>:<span style="color: #800080;">40</span>:<span style="color: #800080;">02</span><span style="color: #000000;">】Connection succeeded
+【</span><span style="color: #800080;">2019</span>-<span style="color: #800080;">04</span>-<span style="color: #800080;">08</span> <span style="color: #800080;">11</span>:<span style="color: #800080;">40</span>:<span style="color: #800080;">02</span><span style="color: #000000;">】Generates subscription information loss control keys.
+【</span><span style="color: #800080;">2019</span>-<span style="color: #800080;">04</span>-<span style="color: #800080;">08</span> <span style="color: #800080;">11</span>:<span style="color: #800080;">40</span>:<span style="color: #800080;">02</span>】Generates loss control keys: <span style="color: #800080;">10</span> total, <span style="color: #800080;">10</span> success, <span style="color: #800080;">0</span><span style="color: #000000;"> error
+【</span><span style="color: #800080;">2019</span>-<span style="color: #800080;">04</span>-<span style="color: #800080;">08</span> <span style="color: #800080;">11</span>:<span style="color: #800080;">40</span>:<span style="color: #800080;">02</span>】Start listening</code></pre>
+
+<p class="md-end-block"><span>使用：</span></p>
+<blockquote>
+<p class="md-end-block"><span>只需要启动脚本，</span></p>
+<p class="md-end-block"><span>在需要的时候，新增任务即可</span></p>
+</blockquote>
+<p class="md-end-block">参考资料：</p>
+<p class="md-end-block"><a title="redis键空间" href="http://redisdoc.com/topic/notification.html" target="_blank">redis键空间</a></p>
+<p class="md-end-block"><span><a href="https://www.cnblogs.com/tinywan/p/5903988.html">Redis实践操作之&mdash;&mdash; keyspace notification（键空间通知）</a></span></p>
+<p class="md-end-block">&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

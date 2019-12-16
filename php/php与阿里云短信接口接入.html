@@ -1,0 +1,276 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php与阿里云短信接口接入' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php与阿里云短信接口接入</center></div><div class='banquan'>原文出处:本文由博客园博主下页、再停留提供。<br/>
+原文连接:https://www.cnblogs.com/zxf100/p/11473662.html</div><br>
+    <p><strong>使用阿里云短信API，需要在控制台获取以下必要参数</strong>，其中需要自己手机验证+官方审核多次，尤其审核需要保持耐心。</p>
+<p>1. accessKeyId&nbsp; 相当于你的个人账户密钥；</p>
+<p>2. accessKeySecret 与上是成对的；</p>
+<p>3. SignName&nbsp; 个人签名，在发出去的短信中，这个签名会显示在开头，类似 【签名】亲爱的用户...... 这种格式，SignName需要通过提交审核；</p>
+<p>4.TemplateCode&nbsp; 模板代码，阿里云短信是无法完全自定义短信的，需要通过审核的模板，然后自己再替换掉模板中的变量，如模板：&ldquo;您的验证码是${code}&rdquo; ,code就是变量，使用时需设置变量值{"code"："12345"}(设置变量值的过程在demo中实现)，短信发出去后变成：&ldquo;您的验证码是12345&rdquo;，每个通过审核的模板会提供一个模板代码；</p>
+<p><strong>最新的阿里云短信接口，适用于阿里大于搬家以后的情况。</strong><br />之前一直用阿里大于的短信接口，最近上项目时发现阿里大于悄悄地搬家到了阿里云！阿里云的SDK文件繁多，看得一头雾水！下面代码是最新的可适用于阿里云短信服务的类，亲测成功！</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 阿里云短信验证码发送类
+ * @author Administrator
+ *
+ </span><span style="color: #008000;">*/</span>
+
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Sms {
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 保存错误信息</span>
+
+    <span style="color: #0000ff;">public</span> <span style="color: #800080;">$error</span><span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> Access Key ID</span>
+
+    <span style="color: #0000ff;">private</span> <span style="color: #800080;">$accessKeyId</span> = ''<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> Access Access Key Secret</span>
+
+    <span style="color: #0000ff;">private</span> <span style="color: #800080;">$accessKeySecret</span> = ''<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 签名</span>
+
+    <span style="color: #0000ff;">private</span> <span style="color: #800080;">$signName</span> = ''<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 模版ID</span>
+
+    <span style="color: #0000ff;">private</span> <span style="color: #800080;">$templateCode</span> = ''<span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$cofig</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">()) {
+
+        </span><span style="color: #800080;">$cofig</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;"> (
+
+                </span>'accessKeyId' =&gt; 'xxxxxxxxxxx',
+
+                'accessKeySecret' =&gt; 'xxxxxxxxxx',
+
+                'signName' =&gt; '你的签名',
+
+                'templateCode' =&gt; 'SMS_76510109'<span style="color: #000000;">
+
+        );
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 配置参数</span>
+
+        <span style="color: #800080;">$this</span>-&gt;accessKeyId = <span style="color: #800080;">$cofig</span> ['accessKeyId'<span style="color: #000000;">];
+
+        </span><span style="color: #800080;">$this</span>-&gt;accessKeySecret = <span style="color: #800080;">$cofig</span> ['accessKeySecret'<span style="color: #000000;">];
+
+        </span><span style="color: #800080;">$this</span>-&gt;signName = <span style="color: #800080;">$cofig</span> ['signName'<span style="color: #000000;">];
+
+        </span><span style="color: #800080;">$this</span>-&gt;templateCode = <span style="color: #800080;">$cofig</span> ['templateCode'<span style="color: #000000;">];
+
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> percentEncode(<span style="color: #800080;">$string</span><span style="color: #000000;">) {
+
+        </span><span style="color: #800080;">$string</span> = <span style="color: #008080;">urlencode</span> ( <span style="color: #800080;">$string</span><span style="color: #000000;"> );
+
+        </span><span style="color: #800080;">$string</span> = <span style="color: #008080;">preg_replace</span> ( '/\+/', '%20', <span style="color: #800080;">$string</span><span style="color: #000000;"> );
+
+        </span><span style="color: #800080;">$string</span> = <span style="color: #008080;">preg_replace</span> ( '/\*/', '%2A', <span style="color: #800080;">$string</span><span style="color: #000000;"> );
+
+        </span><span style="color: #800080;">$string</span> = <span style="color: #008080;">preg_replace</span> ( '/%7E/', '~', <span style="color: #800080;">$string</span><span style="color: #000000;"> );
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$string</span><span style="color: #000000;">;
+
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 签名
+     *
+     * @param unknown $parameters            
+     * @param unknown $accessKeySecret            
+     * @return string
+     </span><span style="color: #008000;">*/</span>
+
+    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> computeSignature(<span style="color: #800080;">$parameters</span>, <span style="color: #800080;">$accessKeySecret</span><span style="color: #000000;">) {
+
+        </span><span style="color: #008080;">ksort</span> ( <span style="color: #800080;">$parameters</span><span style="color: #000000;"> );
+
+        </span><span style="color: #800080;">$canonicalizedQueryString</span> = ''<span style="color: #000000;">;
+
+        </span><span style="color: #0000ff;">foreach</span> ( <span style="color: #800080;">$parameters</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;"> ) {
+
+            </span><span style="color: #800080;">$canonicalizedQueryString</span> .= '&amp;' . <span style="color: #800080;">$this</span>-&gt;percentEncode ( <span style="color: #800080;">$key</span> ) . '=' . <span style="color: #800080;">$this</span>-&gt;percentEncode ( <span style="color: #800080;">$value</span><span style="color: #000000;"> );
+
+        }
+
+        </span><span style="color: #800080;">$stringToSign</span> = 'GET&amp;%2F&amp;' . <span style="color: #800080;">$this</span>-&gt;percentencode ( <span style="color: #008080;">substr</span> ( <span style="color: #800080;">$canonicalizedQueryString</span>, 1<span style="color: #000000;"> ) );
+
+        </span><span style="color: #800080;">$signature</span> = <span style="color: #008080;">base64_encode</span> ( hash_hmac ( 'sha1', <span style="color: #800080;">$stringToSign</span>, <span style="color: #800080;">$accessKeySecret</span> . '&amp;', <span style="color: #0000ff;">true</span><span style="color: #000000;"> ) );
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$signature</span><span style="color: #000000;">;
+
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * @param unknown $mobile            
+     * @param unknown $verify_code            
+     *
+     </span><span style="color: #008000;">*/</span>
+
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> send_verify(<span style="color: #800080;">$mobile</span>, <span style="color: #800080;">$verify_code</span><span style="color: #000000;">) {
+
+        </span><span style="color: #800080;">$params</span> = <span style="color: #0000ff;">array</span> (   <span style="color: #008000;">//</span><span style="color: #008000;">此处作了修改</span>
+
+                'SignName' =&gt; <span style="color: #800080;">$this</span>-&gt;signName,
+
+                'Format' =&gt; 'JSON',
+
+                'Version' =&gt; '2017-05-25',
+
+                'AccessKeyId' =&gt; <span style="color: #800080;">$this</span>-&gt;accessKeyId,
+
+                'SignatureVersion' =&gt; '1.0',
+
+                'SignatureMethod' =&gt; 'HMAC-SHA1',
+
+                'SignatureNonce' =&gt; <span style="color: #008080;">uniqid</span> (),
+
+                'Timestamp' =&gt; <span style="color: #008080;">gmdate</span> ( 'Y-m-d\TH:i:s\Z' ),
+
+                'Action' =&gt; 'SendSms',
+
+                'TemplateCode' =&gt; <span style="color: #800080;">$this</span>-&gt;templateCode,
+
+                'PhoneNumbers' =&gt; <span style="color: #800080;">$mobile</span>,
+
+                <span style="color: #008000;">//</span><span style="color: #008000;">'TemplateParam' =&gt; '{"code":"' . $verify_code . '"}' </span>
+
+                'TemplateParam' =&gt; '{"time":"1234"}'   <span style="color: #008000;">//</span><span style="color: #008000;">更换为自己的实际模版</span>
+<span style="color: #000000;">
+        );
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">var_dump($params);die;
+
+        // 计算签名并把签名结果加入请求参数</span>
+
+        <span style="color: #800080;">$params</span> ['Signature'] = <span style="color: #800080;">$this</span>-&gt;computeSignature ( <span style="color: #800080;">$params</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">accessKeySecret );
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 发送请求（此处作了修改）
+
+        //$url = 'https://sms.aliyuncs.com/?' . http_build_query ( $params );</span>
+
+        <span style="color: #800080;">$url</span> = 'http://dysmsapi.aliyuncs.com/?' . <span style="color: #008080;">http_build_query</span> ( <span style="color: #800080;">$params</span><span style="color: #000000;"> );
+
+
+
+        </span><span style="color: #800080;">$ch</span> =<span style="color: #000000;"> curl_init ();
+
+        curl_setopt ( </span><span style="color: #800080;">$ch</span>, CURLOPT_URL, <span style="color: #800080;">$url</span><span style="color: #000000;"> );
+
+        curl_setopt ( </span><span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">FALSE</span><span style="color: #000000;"> );
+
+        curl_setopt ( </span><span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span style="color: #0000ff;">FALSE</span><span style="color: #000000;"> );
+
+        curl_setopt ( </span><span style="color: #800080;">$ch</span>, CURLOPT_RETURNTRANSFER, 1<span style="color: #000000;"> );
+
+        curl_setopt ( </span><span style="color: #800080;">$ch</span>, CURLOPT_TIMEOUT, 10<span style="color: #000000;"> );
+
+        </span><span style="color: #800080;">$result</span> = curl_exec ( <span style="color: #800080;">$ch</span><span style="color: #000000;"> );
+
+        curl_close ( </span><span style="color: #800080;">$ch</span><span style="color: #000000;"> );
+
+        </span><span style="color: #800080;">$result</span> = json_decode ( <span style="color: #800080;">$result</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;"> );
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">var_dump($result);die;</span>
+
+        <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span> ( <span style="color: #800080;">$result</span> ['Code'<span style="color: #000000;">] )) {
+
+            </span><span style="color: #800080;">$this</span>-&gt;error = <span style="color: #800080;">$this</span>-&gt;getErrorMessage ( <span style="color: #800080;">$result</span> ['Code'<span style="color: #000000;">] );
+
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取详细错误信息
+     *
+     * @param unknown $status            
+     </span><span style="color: #008000;">*/</span>
+
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getErrorMessage(<span style="color: #800080;">$status</span><span style="color: #000000;">) {
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 阿里云的短信 乱八七糟的(其实是用的阿里大于)
+
+        // https://api.alidayu.com/doc2/apiDetail?spm=a3142.7629140.1.19.SmdYoA&amp;apiId=25450</span>
+
+        <span style="color: #800080;">$message</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;"> (
+
+                </span>'InvalidDayuStatus.Malformed' =&gt; '账户短信开通状态不正确',
+
+                'InvalidSignName.Malformed' =&gt; '短信签名不正确或签名状态不正确',
+
+                'InvalidTemplateCode.MalFormed' =&gt; '短信模板Code不正确或者模板状态不正确',
+
+                'InvalidRecNum.Malformed' =&gt; '目标手机号不正确，单次发送数量不能超过100',
+
+                'InvalidParamString.MalFormed' =&gt; '短信模板中变量不是json格式',
+
+                'InvalidParamStringTemplate.Malformed' =&gt; '短信模板中变量与模板内容不匹配',
+
+                'InvalidSendSms' =&gt; '触发业务流控',
+
+                'InvalidDayu.Malformed' =&gt; '变量不能是url，可以将变量固化在模板中'<span style="color: #000000;">
+
+        );
+
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span> ( <span style="color: #800080;">$message</span> [<span style="color: #800080;">$status</span><span style="color: #000000;">] )) {
+
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$message</span> [<span style="color: #800080;">$status</span><span style="color: #000000;">];
+
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$status</span><span style="color: #000000;">;
+
+    }
+
+}</span></code></pre>
+
+<p>调用方法：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">生成验证码</span>
+<span style="color: #800080;">$mobile</span> = 'xxxxxxx'<span style="color: #000000;">;
+</span><span style="color: #800080;">$code</span> = <span style="color: #008080;">rand</span> ( 1000, 9999<span style="color: #000000;"> );
+</span><span style="color: #008000;">//</span><span style="color: #008000;">发送短信</span>
+<span style="color: #800080;">$sms</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Sms();
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">测试模式</span>
+<span style="color: #800080;">$status</span> = <span style="color: #800080;">$sms</span>-&gt;send_verify(<span style="color: #800080;">$mobile</span>, <span style="color: #800080;">$code</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$status</span><span style="color: #000000;">) {
+  </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$sms</span>-&gt;<span style="color: #000000;">error;
+
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>PHP与九大接口实战视频教程【80节】</p>
+<p>链接：http://www.mano100.cn/thread-180-1-1.html</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

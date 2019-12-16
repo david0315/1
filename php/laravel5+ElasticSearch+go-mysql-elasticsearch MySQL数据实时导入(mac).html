@@ -1,0 +1,52 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修laravel5+ElasticSearch+go-mysql-elasticsearch MySQL数据实时导入(mac)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>laravel5+ElasticSearch+go-mysql-elasticsearch MySQL数据实时导入(mac)</center></div><div class='banquan'>原文出处:本文由博客园博主久伴成忆提供。<br/>
+原文连接:https://www.cnblogs.com/starluke/p/11806640.html</div><br>
+    <h2 style="box-sizing: border-box; outline: 0px; margin: 8px 0px 16px; padding: 0px; font-size: 24px; font-family: 'Microsoft YaHei', 'SF Pro Display', Roboto, Noto, Arial, 'PingFang SC', sans-serif; color: #4f4f4f; line-height: 32px; overflow-wrap: break-word;"><span style="box-sizing: border-box; outline: 0px; margin: 0px; padding: 0px; overflow-wrap: break-word; font-size: 18px;">1. ElasticSearch安装</span></h2>
+<p><span style="box-sizing: border-box; outline: 0px; margin: 0px; padding: 0px; overflow-wrap: break-word;">直接使用brew <span class="hljs-keyword">install elasticsearch 安装最新版本的es，基本没有障碍。 </span></span></p>
+<h2><span style="font-size: 18px;">2.Laravel5 框架添加elasticsearch支持</span></h2>
+<p><span style="font-size: 18px;">在composer.json文件中添加elasticsearch-php依赖:</span></p>
+<p><span style="font-size: 18px;"><img src="./images/laravel5+ElasticSearch+go-mysql-elasticsearch MySQL数据实时导入(mac)0.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;执行composer命令更新es代码加载到当前laravel框架中</p>
+<p>　　composer <span class="hljs-keyword">update</span></p>
+<p><span class="hljs-keyword">　　laravel控制器中使用es</span></p>
+<p>　　use Elasticsearch\ClientBuilder;//引入<br />　　$client = ClientBuilder::create()-&gt;build();//初始化<br />　　$params = [<br />    　　'index' =&gt; 'my_index',<br />    　　'type' =&gt; 'my_type',<br />    　　'id' =&gt; 'my_id',<br />    　　'body' =&gt; ['testField' =&gt; 'abc']<br />　　];<br /> <br />　　$response = $client-&gt;index($params);//添加索引<br />　　print_r($response);<br /> <br />　　$params = [<br />    　　'index' =&gt; 'my_index',<br />    　　'type' =&gt; 'my_type',<br />    　　'id' =&gt; 'my_id'<br />　　];<br /> <br />　　$response = $client-&gt;get($params);//获取my_id对应的数据<br />　　print_r($response);<br />实例：</p>
+<p>　　</p>
+<p>&lt;?php<br /> <br />namespace App\Http\Controllers;<br /> <br />use Illuminate\Http\Request;<br /> <br />use App\Http\Requests;<br />use App\Http\Controllers\Controller;<br />use Elasticsearch\ClientBuilder;<br /> <br /> <br /> <br />class VideoController extends Controller<br />{<br />    private $client;<br /> <br />    public function __construct()<br />    {<br />        $this-&gt;client = ClientBuilder::create()-&gt;build();<br />    }<br />    /**<br />     * Display a listing of the resource.<br />     *<br />     * @return \Illuminate\Http\Response<br />     */<br />    public function index()<br />    {<br />        for ($i=0;$i&lt;5000;$i++) {<br />            $params = [<br />                'index' =&gt; 'my_index',<br />                'type' =&gt; 'my_type',<br />                'id' =&gt; 'my_id' . $i,<br />                'body' =&gt; ['testField' =&gt; $i . '、Kitty,今天气很好!!!']<br />            ];<br />            $response = $this-&gt;client-&gt;index($params);<br />        }<br /> <br />        dd($response);<br />    }<br /> <br />    /**<br />     * Display the specified resource.<br />     *<br />     * @param  string  $str<br />     * @return \Illuminate\Http\Response<br />     */<br />    public function show($str='abc')<br />    {<br />//        $params = [<br />//            'index' =&gt; 'my_index',<br />//            'type' =&gt; 'my_type',<br />//            'id' =&gt; $id<br />//        ];<br />        $params = [<br />            'index' =&gt; 'my_index',<br />            'type' =&gt; 'my_type',<br />            //"scroll" =&gt; "3s",<br />            "from" =&gt; 0,<br />            "size" =&gt; 100,<br />            'body' =&gt; [<br />                'query' =&gt; [<br />                    'match' =&gt; [<br />                        'testField' =&gt; $str,<br />                    ]<br />                ]<br />            ]<br />        ];<br /> <br />        $response = $this-&gt;client-&gt;search($params);<br />        dd($response);<br />    }<br /> <br />}</p>
+<h2><span style="font-size: 18px;">3. 实时导入插件go-mysql-elasticsearch</span></h2>
+<p><span style="font-size: 18px;">安装go环境，设置环境变量</span></p>
+<p> 　　brew install go<br />    　　vi ~/.bash_profile 添加以下PATH和GOPATH，并在命令行中执行这两条命令<br />    　　export PATH=$PATH:/usr/local/Cellar/go/1.7.4_2/bin/<br />    　　export GOPATH=/Users/User/go</p>
+<p>获取go-mysql-elasticsearch</p>
+<p>　　go get github.com/siddontang/go-mysql-elasticsearch</p>
+<p>编译go-mysql-elasticsearch</p>
+<p>　　cd $GOPATH/src/github.com/siddontang/go-mysql-elasticsearch <br />　　make</p>
+<p>配置elasticsearch的etc目录下的river.toml</p>
+<p># MySQL address, user and password<br /># user must have replication privilege in MySQL.<br />my_addr = "192.168.0.1:3306"#mysql地址<br />my_user = "test"#用户名<br />my_pass = "test123"#密码<br /> <br /># Elasticsearch address<br />es_addr = "127.0.0.1:9200"#es安装地址<br /> <br /># Path to store data, like master.info, and dump MySQL data<br />data_dir = "./var"<br /> <br /># Inner Http status address<br />stat_addr = "127.0.0.1:12800"<br /> <br /># pseudo server id like a slave<br />server_id = 1001<br /> <br /># mysql or mariadb<br />flavor = "mysql"#mysql数据库<br /> <br /># mysqldump execution path<br /># if not set or empty, ignore mysqldump.<br />mysqldump = "mysqldump"<br /> <br /># MySQL data source<br />[[source]]<br />schema = "dev_cms"#数据库名称<br /> <br /># Only below tables will be synced into Elasticsearch.<br /># "test_river_[0-9]{4}" is a wildcard table format, you can use it if you have many sub tables, like table_0000 - table_1023<br /># I don't think it is necessary to sync all tables in a database.<br />tables = ["test_content"]#数据表名称，可以多个<br /> <br /># Below is for special rule mapping<br />#[[rule]]<br />#schema = "test"<br />#table = "test_river"<br />#index = "river"<br />#type = "river"<br /># only MySQL field in filter will be synced<br />#filter=["title","tags"]<br />    # title is MySQL test_river field name, es_title is the customized name in Elasticsearch<br />    #[rule.field]<br />    # This will map column title to elastic search my_title<br />    #title="es_title"<br />    # This will map column tags to elastic search my_tags and use array type<br />    #tags="my_tags,list"<br />    # This will map column keywords to elastic search keywords and use array type<br />    #keywords=",list"<br /> <br /># wildcard table rule, the wildcard table must be in source tables<br />[[rule]]<br />schema = "dev_cms"#数据库名称<br />table = "test_content"#数据表名称<br />index = "es_dev_cms"#生成es数据索引名称，对应schema<br />type = "es_test_content"#生成es数据类型，对应table<br /> <br />    # title is MySQL test_river field name, es_title is the customized name in Elasticsearch<br />    [[rule.fields]]<br />    mysql = "title"<br />    elastic = "es_title"</p>
+<p>执行命令，导入数据</p>
+<p>cd $GOPATH/src/github.com/siddontang/go-mysql-elasticsearch <br />./bin/go-mysql-elasticsearch -config=./etc/river.toml &amp;</p>
+<p>可以在谷歌浏览器安装sense插件查看es数据</p>
+<p><span class="img-wrap"><img title="clipboard.png" src="./images/laravel5+ElasticSearch+go-mysql-elasticsearch MySQL数据实时导入(mac)1.jpg" alt="clipboard.png" /></span></p>
+<pre><code><code class="hljs bash"></code></code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

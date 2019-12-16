@@ -1,0 +1,137 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP Laravel 6.2 中用于用户登录的新密码确认流程' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP Laravel 6.2 中用于用户登录的新密码确认流程</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11815622.html</div><br>
+    <p>Laravel 发布了 v6.2 版本，它添加了一个新的密码确认功能，该功能使你可以要求已登录的用户重新输入密码，然后才能访问路由。</p>
+<p>在你执行敏感操作的时候，这个功能就类似GitHub确认对话框。在 Laravel 中你可以轻松的设置它，所以让我们来试用一下新功能，以便你可以更好的了解它的工作原理：</p>
+<p>设置<br />首先，为了更直观的了解这个新功能，我们创建一个新的 Laravel 应用:</p>
+<src class="cnblogs_Highlighter">
+<pre><code>laravel new confirm-app
+cd confirm-app
+composer require laravel/ui --dev
+</code></pre>
+
+<p>　　</p>
+<p>你知道, make:auth 命令在 Laravel 6 中被移除，相同功能已经迁移到 laravel/ui 这个官方扩展包中. 让我们用新的命令生成用户认证相关的代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> php artisan ui vue --<span style="color: #000000;">auth
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">yarn install
+</span><span style="color: #008080;">3</span> yarn dev</code></pre>
+
+<p>&nbsp;</p>
+<p><br />接下来，我们配置 SQLite 数据库 (当然你可以选择自己想用的数据库):</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">touch</span> database/database.sqlite</code></pre>
+
+<p>&nbsp;</p>
+<p><br />我们已经创建好了 Laravel 在使用 sqlite 驱动程序时所需的默认配置文件, 但是你仍然需要去更新.env 文件来确保数据库连接和路径正确：</p>
+<src class="cnblogs_code">
+<pre><code>DB_CONNECTION=<span style="color: #000000;">sqlite
+</span><span style="color: #008000;">#</span><span style="color: #008000;"> ...</span><span style="color: #008000;">
+#</span><span style="color: #008000;"> 使用 sqlite 驱动程序的默认路径</span><span style="color: #008000;">
+#</span><span style="color: #008000;"> DB_DATABASE=laravel</span></code></pre>
+
+<p>&nbsp;</p>
+<p><br />接下来，让我们运行迁移，然后创建一个测试用户：</p>
+<src class="cnblogs_code">
+<pre><code>php artisan migrate</code></pre>
+
+<p>&nbsp;</p>
+<p><br />我们可以通过 factory() 方法在控制台创建一个测试用户：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">php artisan tinker
+</span><span style="color: #008080;">2</span> &gt;&gt;&gt; <span style="color: #800080;">$user</span> = factory(App\User::<span style="color: #0000ff;">class</span>)-&gt;<span style="color: #000000;">create([
+</span><span style="color: #008080;">3</span> ... 'password' =&gt; bcrypt('secret'),
+<span style="color: #008080;">4</span> ... 'email' =&gt; 'admin@example.com'
+<span style="color: #008080;">5</span> ... ]);</code></pre>
+
+<p>&nbsp;</p>
+<p><br />编写控制器.<br />假设你希望用户在查看诸如添加 SSH 密钥之类的管理操作之前重新验证其密码。我们希望用户在配置的窗口重新输入他们的密码(默认值是三个小时)。</p>
+<p>我们将创建一条伪造的 /settings/ssh/create 路由，在该路由中，我们需要新的 password.confirm 中间件，然后用户才能去创建新的密钥:</p>
+<src class="cnblogs_code">
+<pre><code>php artisan make:controller Settings/SSHController</code></pre>
+
+<p>&nbsp;</p>
+<p><br />接下来，在这个控制器中创建方法 create() :</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">namespace App\Http\Controllers\Settings;
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Http\Controllers\Controller;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Http\Request;
+</span><span style="color: #008080;"> 5</span> 
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">class</span> SSHController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> create()
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">return</span> view('secret'<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><br />我们将存根 secret 模板，并将其放在视图路径的根目录当中 resources/views/secret.blade.php:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> @<span style="color: #0000ff;">extends</span>('layouts.app'<span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> @section('content'<span style="color: #000000;">)
+</span><span style="color: #008080;"> 3</span> &lt;div <span style="color: #0000ff;">class</span>="container"&gt;
+<span style="color: #008080;"> 4</span> &lt;div <span style="color: #0000ff;">class</span>="row justify-content-center"&gt;
+<span style="color: #008080;"> 5</span> &lt;div <span style="color: #0000ff;">class</span>="col-md-8"&gt;
+<span style="color: #008080;"> 6</span> &lt;h1&gt;Add a <span style="color: #0000ff;">New</span> SSH <span style="color: #008080;">Key</span>&lt;/h1&gt;
+<span style="color: #008080;"> 7</span> &lt;p&gt;This page is only shown after password confirmation.&lt;/p&gt;
+<span style="color: #008080;"> 8</span> &lt;/div&gt;
+<span style="color: #008080;"> 9</span> &lt;/div&gt;
+<span style="color: #008080;">10</span> &lt;/div&gt;
+<span style="color: #008080;">11</span> @endsection</code></pre>
+
+<p>&nbsp;</p>
+<p>在码代码的时候时, 你应该复制文件 auth/passwords/confirm.blade.php 到你的项目中. 你可以在这里拿到要复制的文件: ui/confirm.stub. 复制这个文件并将其添加到你项目的如下路径:</p>
+<p>resources/views/auth/passwords/confirm.blade.php<br />接下来, 我们需要定义路由, 在 routes/web.php 文件的末尾我讲需要这个中间件:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> Route::namespace('Settings'<span style="color: #000000;">)
+</span><span style="color: #008080;">2</span> -&gt;middleware(['auth'<span style="color: #000000;">])
+</span><span style="color: #008080;">3</span> -&gt;group(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;">4</span> Route::get('/settings/ssh/create', 'SSHController@create')-&gt;middleware('password.confirm'<span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> });</code></pre>
+
+<p>&nbsp;</p>
+<p><br />注意: 通常, 你可以将所有需要通过 auth 中间件身份认证的路由聚合在一起. 在这个 demo 中, 我们在 Settings 的命名空间里面创建了一个控制器.</p>
+<p>有了它，一旦登录，您将被重定向到 /home 。在那里，导航到 /settings/ssh/create ，然后提示您输入密码：</p>
+<p>&nbsp;<img src="./images/PHP Laravel 6.2 中用于用户登录的新密码确认流程0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>如果按照本教程进行操作，请输入 secret ，提交表单，然后进入 create 视图。确认密码后，无需提示即可刷新此页。</p>
+<p>使用新的 ddd() 辅助函数 ，将其添加到您的 SSHController::create() 方法中，方法将确定下次提示您时auth.password_confirmed_at 中 session 的值：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> create()
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span> ddd(session('auth'<span style="color: #000000;">));
+</span><span style="color: #008080;">4</span> <span style="color: #0000ff;">return</span> view('secret'<span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><img src="./images/PHP Laravel 6.2 中用于用户登录的新密码确认流程1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><br />这个即是上次验证密码的时间。默认情况下在3小时内不会重复的提醒用户再次验证密码，当然，你可以通过修改 config('auth.password_timeout') 配置项来自定义（配置项定义在 Laravel v6.2.0 版本 的 config/auth.php 配置文件中）。</p>
+<p>了解更多<br />非常感谢 Dries Vints 为我们带来这个包含在 Laravel 6.2 版本中的超赞的新功能， 你可以通过 Pull Request #5129 了解到更多的关于中间件的实现细节。</p>
+<p><br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

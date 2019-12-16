@@ -1,0 +1,186 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修2019-07-24 Smarty模板引擎的简单应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>2019-07-24 Smarty模板引擎的简单应用</center></div><div class='banquan'>原文出处:本文由博客园博主筏愫提供。<br/>
+原文连接:https://www.cnblogs.com/zhangxu-fasu/p/11237160.html</div><br>
+    <p><strong>smarty是什么？</strong></p>
+<p>Smarty是一个使用PHP写出来的模板引擎，是业界最著名的PHP模板引擎之一。Smarty分离了逻辑代码和外在的内容，提供一种易于管理和使用的方法，用来将原本与HTML代码混杂在一起PHP代码逻辑分离。Smarty工作的目的是要使PHP程序员同前端人员分离，使程序员改变程序的逻辑内容不会影响到前端人员的页面设计，前端人员重新修改页面不会影响到程序的程序逻辑，这在多人合作的项目中显的尤为重要。简单来说：<span style="color: #ff0000;">Smarty是PHP的一个引擎模板，可以更好的进行逻辑与显示的分离，即我们常说的MVC，这个引擎的作用就是将C分离出来</span>。<span style="color: #000000;">【mvc 三层架构思想；m=》model模型、v=》view视图、c=》controller控制】</span></p>
+<p><img src="./images/2019-07-24 Smarty模板引擎的简单应用0.jpg" alt="" width="270" height="152" /></p>
+<p><strong>smarty有何优点？</strong></p>
+<p>1.速度：采用Smarty编写的程序可以获得最大速度的提高，这一点是相对于其它的模板引擎技术而言的。</p>
+<p>2.编译型：采用Smarty编写的程序在运行时要编译成一个非模板技术的PHP文件，这个文件采用了PHP与HTML混合的方式，在下一次访问模板时将WEB请求直接转换到这个文件中，而不再进行模板重新编译（在源程序没有改动的情况下）</p>
+<p>3.缓存技术：Smarty选用的一种缓存技术，它可以将用户最终看到的HTML文件缓存成一个静态的HTML页，当设定Smarty的cache属性为true时，在Smarty设定的cachetime期内将用户的WEB请求直接转换到这个静态的HTML文件中来，这相当于调用一个静态的HTML文件。</p>
+<p>4.插件技术：Smarty可以自定义插件。插件实际就是一些自定义的函数。</p>
+<p>5.模板中可以使用if/elseif/else/endif。在模板文件使用判断语句可以非常方便的对模板进行格式重排。</p>
+<p>&nbsp;</p>
+<p><strong>不适合使用Smarty的地方</strong></p>
+<p>需要实时更新的内容。例如像股票显示，它需要经常对数据进行更新，这类型的程序使用smarty会使模板处理速度变慢。</p>
+<p>小项目。小项目因为项目简单而美工与程序员兼于一人的项目，使用Smarty会在一定程度上丧失PHP开发迅速的优点。</p>
+<p>&nbsp;</p>
+<p><strong>如何使用smarty？</strong></p>
+<p>首先我们去下载一个smarty的压缩包。下载地址<a title="下载smarty" href="https://codeload.github.com/smarty-php/smarty/zip/v3.1.33" target="_blank">https://codeload.github.com/smarty-php/smarty/zip/v3.1.33</a>，然后我们得到了一个压缩包，进行解压后，里面有如下文件：</p>
+<p>&nbsp;<img src="./images/2019-07-24 Smarty模板引擎的简单应用1.jpg" alt="" width="489" height="242" /></p>
+<p>我们只需要其中的libs文件，注意不要对其中的文件进行任何的修改。直接将其拖拽至你创建的网站根目录下。并且需要再创建几个文件夹：cache（存放缓存文件）、templates（存放模板文件）、templates_c（存放混编文件）、configs（存放配置文件）；这几个文件夹只是默认名称，你也可以根据需要进行修改，但要注意如果你修改了文件夹名称，需要打开libs文件夹下的Smarty.class.php文件，对其中的文件夹路径进行修改。如下找到文件夹名称修改即可：</p>
+<p><img src="./images/2019-07-24 Smarty模板引擎的简单应用2.jpg" alt="" width="411" height="430" /></p>
+<p>做完上述步骤后，在根目录下创建PHP逻辑代码文件，此处我取名为index.php，并打开，写入下面的代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">1.引入smarty类</span>
+<span style="color: #0000ff;">require</span> './libs/Smarty.class.php'<span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">2.实例化smarty类</span>
+<span style="color: #800080;">$smarty</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> smarty();
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">var_dump($smarty);//打印一下 看是否有结果
+
+//3.根据业务连接数据库</span>
+<span style="color: #800080;">$con</span> = <span style="color: #008080;">mysql_connect</span>('127.0.0.1','root','root'<span style="color: #000000;">);
+</span><span style="color: #008080;">mysql_query</span>('use news'<span style="color: #000000;">);
+</span><span style="color: #008080;">mysql_query</span>('set names utf8'<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">4.sql语句</span>
+<span style="color: #800080;">$sql</span> = "select * from news"<span style="color: #000000;">;
+</span><span style="color: #800080;">$res</span> = <span style="color: #008080;">mysql_query</span>(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">while</span> (<span style="color: #800080;">$row</span> = <span style="color: #008080;">mysql_fetch_assoc</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">)) {
+    </span><span style="color: #800080;">$arr</span>[]=<span style="color: #800080;">$row</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">print_r($arr);//打印一下 看是否有结果
+
+
+//5.发送数据</span>
+<span style="color: #800080;">$smarty</span>-&gt;assign('news',<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">6.显示视图页面 要显示哪个页面就写哪个页面路径</span>
+<span style="color: #800080;">$smarty</span>-&gt;display('news_list.html');</code></pre>
+
+<p>上述代码中，因为我们读取的是数据库中的数据，因此需要连接数据库，查询信息，并把结果读取出来，在这里建库根据自己的业务建立就可以了。我只是建立了一个简单的新闻表news。</p>
+<p><img src="./images/2019-07-24 Smarty模板引擎的简单应用3.jpg" alt="" /></p>
+<p>第五部分，用$smarty这个对象指向assign给变量赋值。</p>
+<p>赋值的方式有两种，第一种就像如上代码一样在php中用assign赋值，第二种是在html中用{<strong>assign</strong>&nbsp;<strong>var</strong>='name' &nbsp;<strong>value</strong>='值'} ；</p>
+<p>第六部分，指向display展示视图。&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;在templates文件夹下创建视图文件，名称要与php代码中的视图名称一致。写入html代码即可。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>新闻列表<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">='utf-8'</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">table </span><span style="color: #ff0000;">border</span><span style="color: #0000ff;">="1px"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">th</span><span style="color: #0000ff;">&gt;</span>新闻id<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">th</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">th</span><span style="color: #0000ff;">&gt;</span>新闻title<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">th</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">th</span><span style="color: #0000ff;">&gt;</span>新闻content<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">th</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">th</span><span style="color: #0000ff;">&gt;</span>新闻time<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">th</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+            {foreach $news as $k=&gt;$v}
+            </span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">tr</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">td</span><span style="color: #0000ff;">&gt;</span>{$v['id']}<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">td</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">td</span><span style="color: #0000ff;">&gt;</span>{$v['title']}<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">td</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">td</span><span style="color: #0000ff;">&gt;</span>{$v['content']}<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">td</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">td</span><span style="color: #0000ff;">&gt;</span>{$v['time']}<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">td</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">tr</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+            {/foreach}
+        </span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">table</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>&nbsp;注意，PHP代码中第五步发送的数据名称与HTML中的要一致，在HTML中写变量用{&nbsp; &nbsp; }包裹即可，其中{$v['id']}等也可以写成{$v.id}。</p>
+<p>最终效果如下：</p>
+<p><img src="./images/2019-07-24 Smarty模板引擎的简单应用4.jpg" alt="" width="584" height="267" /></p>
+<p>同时，在templates_c文件夹中也生成了一个混编文件：</p>
+<p><img src="./images/2019-07-24 Smarty模板引擎的简单应用5.jpg" alt="" width="482" height="96" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>补充内容：</p>
+<p>1.if else 语句怎样写？</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">{if $v['status'] eq 1}
+正在发布
+{else if $v['status'] eq 2}
+已下线
+{/if}</span></code></pre>
+
+<p>&nbsp;if在smarty中是双标签{if}和{/if}，$v['status']是变量，eq是==的意思，运算符对照表如下：</p>
+<p><img src="./images/2019-07-24 Smarty模板引擎的简单应用6.jpg" alt="" width="490" height="257" /></p>
+<p>2.获取当前时间戳{$smarty.now}</p>
+<p>3.直接访问PHP常量{$smarty.const.常量名}</p>
+<p>4.使用smarty访问PHP中的超全局数组变量：</p>
+<p>$_GET=&gt;{$smarty.get.name}</p>
+<p>$_POST=&gt;{$smarty.post.name}</p>
+<p>$_COOKIE=&gt;{$samrty.cookies.name}</p>
+<p>等等。</p>
+<p>5.时间戳转化时间格式</p>
+<p>{$samrty.now|<span style="color: #ff0000;">date_format</span>:"%y-%m-%d %T"}</p>
+<p>对照表：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">%a - 当前区域星期几的简写
+%A - 当前区域星期几的全称
+%b - 当前区域月份的简写
+%B - 当前区域月份的全称
+%c - 当前区域首选的日期时间表达
+%C - 世纪值（年份除以 100 后取整，范围从 00 到 99）
+%d - 月份中的第几天，十进制数字（范围从 01 到 31）
+%D - 和 %m/%d/%y 一样
+%e - 月份中的第几天，十进制数字，一位的数字前会加上一个空格（范围从 ' 1' 到 '31'）
+%g - 和 %G 一样，但是没有世纪
+%G - 4 位数的年份，符合 ISO 星期数（参见 %V）。和 %V 的格式和值一样，只除了如果 ISO 星期数属于前一年或者后一年，则使用那一年。
+%h - 和 %b 一样
+%H - 24 小时制的十进制小时数（范围从 00 到 23）
+%I - 12 小时制的十进制小时数（范围从 00 到 12）
+%j - 年份中的第几天，十进制数（范围从 001 到 366）
+%m - 十进制月份（范围从 01 到 12）
+%M - 十进制分钟数
+%n - 换行符
+%p - 根据给定的时间值为 `am' 或 `pm'，或者当前区域设置中的相应字符串
+%r - 用 a.m. 和 p.m. 符号的时间
+%R - 24 小时符号的时间
+%S - 十进制秒数
+%t - 制表符
+%T - 当前时间，和 %H:%M:%S 一样
+%u - 星期几的十进制数表达 [1,7]，1 表示星期一
+%U - 本年的第几周，从第一周的第一个星期天作为第一天开始
+%V - 本年第几周的 ISO 8601:1988 格式，范围从 01 到 53，第 1 周是本年第一个至少还有 4 天的星期，星期一作为每周的第一天。（用 %G 或者 %g 作为指定时间戳相应周数的年份组成。）
+%W - 本年的第几周数，从第一周的第一个星期一作为第一天开始
+%w - 星期中的第几天，星期天为 0
+%x - 当前区域首选的时间表示法，不包括时间
+%X - 当前区域首选的时间表示法，不包括日期
+%y - 没有世纪数的十进制年份（范围从 00 到 99）
+%Y - 包括世纪数的十进制年份
+%Z 或 %z - 时区名或缩写
+%% - 文字上的 `%' 字符</span></code></pre>
+
+<p>&nbsp;6.其他</p>
+<p>获取配置变量：{$smarty.config}</p>
+<p>返回当前模板名称：{$smarty.template}</p>
+<p>返回当前模板对象：{$smarty.template_object}</p>
+<p>返回当前目录名称：{$smarty.current_dir}</p>
+<p>&nbsp;</p>
+<p>7.将变量转换为大小写</p>
+<p>小写</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">{$articleTitle</span><span style="color: #ff0000;">|lower}</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>大写</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">{$articleTitle</span><span style="color: #ff0000;">|upper}</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>&nbsp;8.调用对象</p>
+<p>也是使用-&gt;属性调用,如{$obj-&gt;name}；</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

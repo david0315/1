@@ -1,0 +1,156 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP读取Excel内的图片' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP读取Excel内的图片</center></div><div class='banquan'>原文出处:本文由博客园博主itbsl提供。<br/>
+原文连接:https://www.cnblogs.com/itbsl/p/11883458.html</div><br>
+    <p>今天接到了一个从Excel内读取图片的需求，在网上查找了一些资料，基本实现了自己的需求，不过由于查到的一些代码比较久远，里面一些库方法已经被移除不存在了，所以不能直接移植到自己的项目里，需要稍加改动一下。</p>
+<p>这里介绍一下分别使用phpspreadsheet和PHPExcel扩展库来实现读取Excel内图片的功能:</p>
+<p><img src="./images/PHP读取Excel内的图片0.jpg" /></p>
+<h3 id="phpspreadsheet">PHPSpreadsheet</h3>
+<p>首先安装phpspreadsheet，由于线上服务器PHP版本是PHP5.6，所以需要安装兼容PHP5.6的版本,这里安装1.8.2版本</p>
+<pre><code><code>composer require phpoffice/phpspreadsheet=1.8.2</code></code></pre>
+<p>然后就可以在项目里使用了</p>
+<pre class="php"><code>use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
+$imageFilePath = &#39;./uploads/imgs/&#39;; //图片本地存储的路径
+if (!file_exists($imageFilePath)) { //如果目录不存在则递归创建
+    mkdir($imageFilePath, 0777, true);
+}
+
+try {
+    $inputFileName = &#39;./files/1.xlsx&#39;;  //包含图片的Excel文件
+    $objRead = IOFactory::createReader(&#39;Xlsx&#39;);
+    $objSpreadsheet = $objRead-&gt;load($inputFileName);
+    $objWorksheet = $objSpreadsheet-&gt;getSheet(0);
+    $data = $objWorksheet-&gt;toArray();
+
+    foreach ($objWorksheet-&gt;getDrawingCollection() as $drawing) {
+        list($startColumn, $startRow) = Coordinate::coordinateFromString($drawing-&gt;getCoordinates());
+        $imageFileName = $drawing-&gt;getCoordinates() . mt_rand(1000, 9999);
+
+        switch ($drawing-&gt;getExtension()) {
+            case &#39;jpg&#39;:
+            case &#39;jpeg&#39;:
+                $imageFileName .= &#39;.jpg&#39;;
+                $source = imagecreatefromjpeg($drawing-&gt;getPath());
+                imagejpeg($source, $imageFilePath . $imageFileName);
+                break;
+            case &#39;gif&#39;:
+                $imageFileName .= &#39;.gif&#39;;
+                $source = imagecreatefromgif($drawing-&gt;getPath());
+                imagegif($source, $imageFilePath . $imageFileName);
+                break;
+            case &#39;png&#39;:
+                $imageFileName .= &#39;.png&#39;;
+                $source = imagecreatefrompng($drawing-&gt;getPath());
+                imagepng($source, $imageFilePath, $imageFileName);
+                break;
+        }
+        $startColumn = ABC2decimal($startColumn);
+        $data[$startRow-1][$startColumn] = $imageFilePath . $imageFileName;
+    }
+    dump($data);die();
+} catch (\Exception $e) {
+    throw $e;
+}
+
+public function ABC2decimal($abc)
+{
+    $ten = 0;
+    $len = strlen($abc);
+    for($i=1;$i&lt;=$len;$i++){
+        $char = substr($abc,0-$i,1);//反向获取单个字符
+
+        $int = ord($char);
+        $ten += ($int-65)*pow(26,$i-1);
+    }
+    return $ten;
+}</code></code></pre>
+<p>可以看到，图片被读取并存到了本地服务器中</p>
+<p><img src="./images/PHP读取Excel内的图片1.jpg" /></p>
+<h3 id="phpexcel">PHPExcel</h3>
+<p>PHPExcel实现从Excel文件里读取内容的方法和phpspreadsheet几乎一样，毕竟phpspreadsheet就是在PHPExcel基础上写的，不过PHPExcel由于已经被废弃了，所以建议优先使用phpspreadsheet，如果原来项目里一直使用了PHPExcel也可以继续使用PHPExcel的方法</p>
+<pre class="php"><code>use PHPExcel_IOFactory;
+use PHPExcel_Cell;
+
+try {
+    $inputFileName = &#39;./files/1.xlsx&#39;;
+    $inputFileType = PHPExcel_IOFactory::identify($inputFileName);
+    $objReader = PHPExcel_IOFactory::createReader($inputFileType);
+    $objPHPExcel = $objReader-&gt;load($inputFileName);
+} catch (\Exception $e) {
+    die(&#39;加载文件发生错误：&quot;&#39;.pathinfo($inputFileName,PATHINFO_BASENAME).&#39;&quot;: &#39;.$e-&gt;getMessage());
+}
+
+$sheet = $objPHPExcel-&gt;getSheet(0);
+$data = $sheet-&gt;toArray(); //该方法读取不到图片，图片需单独处理
+$imageFilePath = &#39;./uploads/imgs/&#39;; //图片本地存储的路径
+if (!file_exists($imageFilePath)) {
+    mkdir($imageFilePath, 0777, true);
+}
+
+//处理图片
+foreach ($sheet-&gt;getDrawingCollection() as $img) {
+    list($startColumn, $startRow) = PHPExcel_Cell::coordinateFromString($img-&gt;getCoordinates()); //获取图片所在行和列
+    $imageFileName = $img-&gt;getCoordinates() . mt_rand(1000, 9999);
+    switch($img-&gt;getExtension()) {
+        case &#39;jpg&#39;:
+        case &#39;jpeg&#39;:
+            $imageFileName .= &#39;.jpeg&#39;;
+            $source = imagecreatefromjpeg($img-&gt;getPath());
+            imagejpeg($source, $imageFilePath.$imageFileName);
+            break;
+        case &#39;gif&#39;:
+            $imageFileName .= &#39;.gif&#39;;
+            $source = imagecreatefromgif($img-&gt;getPath());
+            imagejpeg($source, $imageFilePath.$imageFileName);
+            break;
+        case &#39;png&#39;:
+            $imageFileName .= &#39;.png&#39;;
+            $source = imagecreatefrompng($img-&gt;getPath());
+            imagejpeg($source, $imageFilePath.$imageFileName);
+            break;
+    }
+    $startColumn = ABC2decimal($startColumn);
+    $data[$startRow-1][$startColumn] = $imageFilePath . $imageFileName;
+
+}
+var_dump($data);
+
+public function ABC2decimal($abc)
+{
+    $ten = 0;
+    $len = strlen($abc);
+    for($i=1;$i&lt;=$len;$i++){
+        $char = substr($abc,0-$i,1);//反向获取单个字符
+
+        $int = ord($char);
+        $ten += ($int-65)*pow(26,$i-1);
+    }
+    return $ten;
+}</code></code></pre>
+<p>参考文章:</p>
+<p><a href="https://www.cnblogs.com/changning0822/p/9921055.html">PHPExcel数据导入（含图片）</a></p>
+<p><a href="http://www.yiqiao.me/articles/18/phpspreadsheet-import-picture-function">PhpSpreadsheet 导入图片功能</a></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

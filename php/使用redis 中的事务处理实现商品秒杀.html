@@ -1,0 +1,76 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修使用redis 中的事务处理实现商品秒杀' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>使用redis 中的事务处理实现商品秒杀</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10769737.html</div><br>
+    <p><span style="font-size: 18pt;">redis中的事务处理：</span></p>
+<p><span style="font-size: 16px;">redis中的事物事物处理是指能够批量的执行一组命令(当事务开始执行时，事务中的命令能够按照按照规定好的顺序执行而不会被插队或打断)；</span></p>
+<p><span style="font-size: 16px;">与<span style="background-color: #ff00ff; color: #ffffff;">mysql事务的区别</span>在于：mysql中事务开启后，当某一条语句执行出现错误时该事务会回退到开始时的状态，而redis中的事务却不会这么做！但是redis中可以去指定监测某一个Key值，当该Key值在开始事务后并且执行事务之前发生了变化的话，则该事务会被遗弃，事务中的命令将不会执行。</span></p>
+<p><span style="font-size: 18pt;">redis事务中的常用命令：</span></p>
+<p><span style="background-color: #333300; color: #ffffff;">Multi</span> 命令用于标记一个事务块的开始。事务块内的多条命令会按照先后顺序被放进一个队列当中，最后由 EXEC 命令原子性(atomic)地执行。</p>
+<p><span style="background-color: #333300; color: #ffffff;">Exec</span> 命令用于执行所有事务块内的命令。</p>
+<p><span style="background-color: #333300; color: #ffffff;">Watch</span> 命令用于监视一个(或多个) key ，如果在事务执行之前这个(或这些) key 被其他命令所改动，那么事务将被打断</p>
+<p><span style="background-color: #333300; color: #ffffff;">Unwatch</span> 命令用于取消 WATCH 命令对所有 key 的监视。</p>
+<p><span style="background-color: #333300; color: #ffffff;">Discard</span> 命令用于取消事务，放弃执行事务块内的所有命令。</p>
+<p><span style="font-size: 18pt;">php中使用 redis处理秒杀：</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+* shop_sell_num 存储已经出售商品数量
+* shop_total  商品总数
+* shop_users_list 请购成功的用户信息
+</span><span style="color: #008000;">*/</span>
+<span style="color: #800080;">$shop_total</span> = 100<span style="color: #000000;">;
+
+</span><span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> redis();
+
+</span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1',6379<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$result</span><span style="color: #000000;">){
+    </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('redis连接失败'<span style="color: #000000;">);
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">监视 shop_sell_num</span>
+<span style="color: #800080;">$redis</span>-&gt;watch('shop_sell_num'<span style="color: #000000;">);
+</span><span style="color: #800080;">$shop_sell_num</span> = <span style="color: #800080;">$redis</span>-&gt;get('shop_sell_num'<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">判断商品是否剩余</span>
+<span style="color: #0000ff;">if</span>(<span style="color: #800080;">$shop_sell_num</span> &lt; <span style="color: #800080;">$shop_total</span><span style="color: #000000;">){
+
+    </span><span style="color: #800080;">$redis</span>-&gt;<span style="color: #000000;">multi();
+
+    </span><span style="color: #800080;">$redis</span>-&gt;set('shop_sell_num',<span style="color: #800080;">$shop_sell_num</span>+1<span style="color: #000000;">);
+
+    </span><span style="color: #800080;">$multi_result</span> = <span style="color: #800080;">$redis</span>-&gt;<span style="color: #008080;">exec</span><span style="color: #000000;">();
+
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$multi_result</span><span style="color: #000000;">){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">将用户表示放入已购用户集合中</span>
+        <span style="color: #800080;">$redis</span>-&gt;sAdd('shop_users_list','用户信息'<span style="color: #000000;">);
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #0000ff;">return</span> "抢购失败"<span style="color: #000000;">
+    }
+}</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+    </span><span style="color: #0000ff;">return</span> "抢购结束"<span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

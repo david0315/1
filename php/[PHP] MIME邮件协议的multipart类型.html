@@ -1,0 +1,1187 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] MIME邮件协议的multipart类型' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] MIME邮件协议的multipart类型</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10718625.html</div><br>
+    <p>邮件协议中的三种情况,对应下面的三种类型</p>
+<p>multipart/mixed可以包含附件。<br />multipart/related可以包含内嵌资源。<br />multipart/alternative 纯文本与超文本共存</p>
+<p>1.纯文本的,只需要一块content-type块,不需要multipart块</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Date: Tue, 16 Apr 2019 17:35:19 +0800
+Received: from shihan2@sopans.com([]) by  via HTTP;
+ Tue, 16 Apr 2019 17:35:19 +0800 (CST)
+Reply-To: shihan2@sopans.com
+From: &lt;shihan2@sopans.com&gt;
+To: shihan2@sopans.com
+Subject: =?GBK?B?ztLAtLLiytQ=?=
+MIME-Version: 1.0
+X-Priority: 3
+X-MessageID: 1555407319.5028.10108
+X-Originating-IP: []
+X-Mailer: Sina WebMail 4.0
+X-Sina-Mid: 044D8EB6F6EF3F6FAE1A32D8B0930F609000000000000002
+Content-Type: text/plain; charset=GBK
+Content-Transfer-Encoding: base64
+
+aGVsbG8=
+</code></pre>
+
+<p>2.内容是html的要加两块content-type块内容,一块是html一块是纯文本,并且要增加一块multipart类型块</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Date: Tue, 16 Apr 2019 17:36:41 +0800
+Received: from shihan2@sopans.com([]) by  via HTTP;
+ Tue, 16 Apr 2019 17:36:41 +0800 (CST)
+Reply-To: shihan2@sopans.com
+From: &lt;shihan2@sopans.com&gt;
+To: shihan2@sopans.com
+Subject: =?GBK?B?ztLAtLLiytQ=?=
+MIME-Version: 1.0
+X-Priority: 3
+X-MessageID: 1555407401.2205.10152
+X-Originating-IP: []
+X-Mailer: Sina WebMail 4.0
+X-Sina-Mid: 044D8EB6F6EF3F6FAE1A32D8B0930F609000000000000002
+Content-Type: multipart/alternative;
+         boundary="=-sinamail_alt_849bb6f96e7dc06cb99a08e3f9c84179"
+
+--=-sinamail_alt_849bb6f96e7dc06cb99a08e3f9c84179
+Content-Type: text/plain;
+        charset=GBK
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+aGVsbG8=
+
+
+--=-sinamail_alt_849bb6f96e7dc06cb99a08e3f9c84179
+Content-Type: text/html;
+        charset=GBK
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+PGgxPmhlbGxvPC9oMT4=
+
+
+--=-sinamail_alt_849bb6f96e7dc06cb99a08e3f9c84179--
+</code></pre>
+
+<p>3.有附件的话,还会增加下面两种multipart类型</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Date: Tue, 16 Apr 2019 17:38:47 +0800
+Received: from shihan2@sopans.com([]) by  via HTTP;
+ Tue, 16 Apr 2019 17:38:47 +0800 (CST)
+Reply-To: shihan2@sopans.com
+From: &lt;shihan2@sopans.com&gt;
+To: shihan2@sopans.com
+Subject: =?GBK?B?ztLAtLLiytQ=?=
+MIME-Version: 1.0
+X-Priority: 3
+X-MessageID: 1555407527.4947.4232
+X-Originating-IP: []
+X-Mailer: Sina WebMail 4.0
+X-Sina-Mid: 044D8EB6F6EF3F6FAE1A32D8B0930F609000000000000002
+Content-Type: multipart/mixed;
+         boundary="=-sinamail_mix_fe895d50cd0d0669bb8a7eb8c697db19"
+
+--=-sinamail_mix_fe895d50cd0d0669bb8a7eb8c697db19
+Content-Type: multipart/alternative;
+         boundary="=-sinamail_alt_f50efff67f5369967ea1a6c77020a1e7"
+
+--=-sinamail_alt_f50efff67f5369967ea1a6c77020a1e7
+Content-Type: text/plain;
+        charset=GBK
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+aGVsbG8=
+
+
+--=-sinamail_alt_f50efff67f5369967ea1a6c77020a1e7
+Content-Type: text/html; charset=GBK
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+PGgxPmhlbGxvPC9oMT4=
+
+
+--=-sinamail_alt_f50efff67f5369967ea1a6c77020a1e7--
+
+--=-sinamail_mix_fe895d50cd0d0669bb8a7eb8c697db19
+Content-Type: application/octet-stream; name="=?GBK?B?MS5sb2c=?="
+Content-Disposition: attachment; filename="=?GBK?B?MS5sb2c=?="
+Content-Transfer-Encoding: base64
+
+MXwyNTAgUElQRUxJTklORw0K
+
+
+--=-sinamail_mix_fe895d50cd0d0669bb8a7eb8c697db19--
+</code></pre>
+
+<p>下面的代码是php组合mime邮件协议的类库</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+/**
+ * RFC 822: CR LF
+ * character "CR":hex value 0D
+ * character "LF":hex value 0A
+ * @var string
+ */
+define("CRLF", "\r\n");
+
+/**
+ * RFC 2822: 2.1.1. Line Length Limits
+ * @var int
+ */
+define("MIME_LINE_LENGTH_LIMIT", 76);
+
+class MimeMail
+{
+
+    /**
+     * the charset of the email
+     * @var string
+     */
+    var $_mail_charset = 'GBK';
+    var $_mail_text_charset = 'GBK';
+    /**
+     * the subject of the email
+     * @var string
+     */
+    var $_mail_subject = '';
+    /**
+     * the From address including display-name of the email
+     * @var string
+     */
+    var $_mail_from = '';
+    /**
+     * Just keep the address of from
+     *
+     * @var string
+     */
+    var $_mail_from_addr = '';
+    /**
+     * the sender Address  of the email
+     * @var string
+     */
+    var $_mail_sender = '';
+    /**
+     * the To Address list of the email
+     * @var string
+     */
+    var $_mail_to = '';
+    /**
+     * the Cc Address list of the email
+     * @var string
+     */
+    var $_mail_cc = '';
+    /**
+     * the Bcc Address list of the email
+     * @var string
+     */
+    var $_mail_bcc = '';
+    /**
+     * the priority of the email
+     * @var int, default 3
+     */
+    var $_mail_priority = 3;
+    /**
+     * need notification or not
+     * @var string
+     */
+    var $_mail_needReply = false;
+    /**
+     * 回复地址
+     * @var &lt;string&gt;
+     */
+    var $_mail_replyTo = '';
+    /**
+     * notification address of the email
+     * @var string
+     */
+    var $_mail_notificationTo = '';
+    /**
+     * message id
+     * @var string
+     */
+    var $_mail_messageId = '';
+    /**
+     * the text body of the email
+     * @var string
+     */
+    var $_mail_textBody = '';
+    /**
+     * the html body of the email
+     * @var string
+     */
+    var $_mail_htmlBody = '';
+    var $_mail_BodyType = '';
+    /**
+     * the default body content-type
+     * @var string
+     */
+    var $_mail_type = '';
+    /**
+     * the header of the email
+     * @var string
+     */
+    var $_mail_header = '';
+    /**
+     * the body of the email
+     * @var string
+     */
+    var $_mail_body = '';
+    /**
+     * 	附件信息数组（附件所在路径、附件名称、附件类型）
+     */
+    var $aAttachments = array();
+    /**
+     * the encode attachments of the email
+     * @var array
+     */
+    var $_mail_subpart_attachments = array();
+    /**
+     * the attachments  index of the email
+     * @var array
+     */
+    var $_mail_attachments_index = 0;
+    /**
+     * count of embedded attachments
+     * @var int
+     */
+    var $_mail_embedded_count = 0;
+    /**
+     * the boundary for 'multipart/mixed' type
+     * @var string
+     */
+    var $_mail_boundary_mix = '';
+    /**
+     * the boundary for 'multipart/related'type
+     * @var string
+     */
+    var $_mail_boundary_rel = '';
+    /**
+     * the boundary for 'multipart/alternative' type
+     * @var array
+     */
+    var $_mail_boundary_alt = '';
+    /**
+     * 用户自定义邮件头
+     *
+     * @var array
+     */
+    var $_mail_userHeaders = array();
+    var $mime_types = array(
+        'gif' =&gt; 'image/gif',
+        'jpg' =&gt; 'image/jpeg',
+        'jpeg' =&gt; 'image/jpeg',
+        'jpe' =&gt; 'image/jpeg',
+        'bmp' =&gt; 'image/bmp',
+        'png' =&gt; 'image/png',
+        'tif' =&gt; 'image/tiff',
+        'tiff' =&gt; 'image/tiff',
+        'swf' =&gt; 'application/x-shockwave-flash',
+        'doc' =&gt; 'application/msword',
+        'xls' =&gt; 'application/vnd.ms-excel',
+        'ppt' =&gt; 'application/vnd.ms-powerpoint',
+        'pdf' =&gt; 'application/pdf',
+        'ps' =&gt; 'application/postscript',
+        'eps' =&gt; 'application/postscript',
+        'rtf' =&gt; 'application/rtf',
+        'bz2' =&gt; 'application/x-bzip2',
+        'gz' =&gt; 'application/x-gzip',
+        'tgz' =&gt; 'application/x-gzip',
+        'tar' =&gt; 'application/x-tar',
+        'zip' =&gt; 'application/zip',
+        'html' =&gt; 'text/html',
+        'htm' =&gt; 'text/html',
+        'txt' =&gt; 'text/plain',
+        'css' =&gt; 'text/css',
+        'js' =&gt; 'text/javascript',
+        'eml' =&gt; 'message/rfc822'
+    );
+
+    var $_mail_clientIp = '';
+
+    /**
+     * MimeMail 构造函数
+     *
+     */
+    function MimeMail()
+    {
+        $this-&gt;_mail_messageId = sprintf('%s.%s', microtime(true), getmypid());
+        $this-&gt;_mail_boundary_mix = "=-sinamail_mix_" . md5(uniqid(rand(), true));
+        $this-&gt;_mail_boundary_rel = "=-sinamail_rel_" . md5(uniqid(rand(), true));
+        $this-&gt;_mail_boundary_alt = "=-sinamail_alt_" . md5(uniqid(rand(), true));
+        //$this-&gt;_mail_sended_index = 0 ;
+    }
+
+    /**
+     * Get message id
+     *
+     * @return string
+     */
+    function getMessageID()
+    {
+        return $this-&gt;_mail_messageId;
+    }
+
+    function convEnc($s, $charset = 'GBK')
+    {
+        if ($charset == 'UTF-8') {
+            return array($s, 'UTF-8');
+        }
+
+        if ($charset == 'GBK' &amp;&amp; preg_match('/[^\x00-\x7f\x{3000}-\x{303F}\x{4e00}-\x{9fff}\x{ff00}-\x{ffef}]/u', $s)) {
+            return array($s, 'UTF-8');
+        }
+
+        $es = mb_convert_encoding($s, $charset, 'UTF-8');
+        if ($es === false) {
+            return array($s, 'UTF-8');
+        } else {
+            return array($es, $charset);
+        }
+    }
+
+    function getClientIp()
+    {
+        if (!$this-&gt;_mail_clientIp) {
+            $ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : '';
+            if (!$ip) {
+                $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+            }
+
+            $a = explode('|', str_replace(',', '|', $ip));
+            $this-&gt;_mail_clientIp = trim($a[0]);
+        }
+        return $this-&gt;_mail_clientIp;
+    }
+
+    function setClientIp($ip)
+    {
+        $this-&gt;_mail_clientIp = $ip;
+    }
+
+    /**
+     * 取得用户自定义邮件头
+     *
+     * @param string $name
+     * @return mixed
+     */
+    function getUserHeader($name = '')
+    {
+        if (!$name) {
+            return $this-&gt;_mail_userHeaders;
+        }
+
+        return (isset($this-&gt;_mail_userHeaders[$name]) ? $this-&gt;_mail_userHeaders[$name] : false);
+    }
+
+    /**
+     * 设置用户自定义邮件头
+     *
+     * @param mixed $value
+     * @param string $name
+     */
+    function setUserHeader($value, $name = '')
+    {
+        $d = array();
+        if ($name == '') {
+            if (is_array($value)) {
+                $d = $value;
+            } else {
+                return;
+            }
+        } else {
+            $d[$name] = $value;
+        }
+
+        foreach ($d as $k =&gt; $v) {
+            if (is_scalar($v)) {
+                $this-&gt;_mail_userHeaders[$k] = $v;
+            }
+        }
+    }
+
+    /**
+     * 设置邮件主题
+     * @param string $subject 邮件主题
+     *
+     */
+    function setSubject($subject)
+    {
+        if (!is_null($subject)) {
+            if (!$this-&gt;isBig($subject)) {
+                $this-&gt;_mail_subject = $subject;
+            } else {
+                list($subject, $charset) = $this-&gt;convEnc($subject);
+                $this-&gt;_mail_subject
+                        = '=?' . $charset . '?B?' . base64_encode($subject) . '?=';
+            }
+        }
+    }
+
+    /**
+     * 设置真实发信地址
+     *
+     * @param string $sender
+     */
+    function setSender($sender)
+    {
+        $this-&gt;_mail_sender = $sender;
+    }
+
+    /**
+     * 设置发件人
+     * @param string $from 发件人邮件地址
+     * 	@param string $nickname 发件人昵称
+     *
+     */
+    function setFrom($from, $nickname = '')
+    {
+        $this-&gt;_mail_from_addr = $from;
+        if ('' == $nickname) {
+            $this-&gt;_mail_from = '&lt;' . $from . '&gt;';
+        } else {
+            if ($this-&gt;isBig($nickname)) {
+                list($nickname, $charset) = $this-&gt;convEnc($nickname);
+
+                $this-&gt;_mail_from = sprintf("\"=?%s?B?%s?=\" &lt;%s&gt;", $charset, base64_encode($nickname), $from);
+            } else {
+                $this-&gt;_mail_from = '"' . $nickname . '" &lt;' . $from . '&gt;';
+            }
+        }
+    }
+
+    /**
+     * 设置收件人邮件列表
+     * @param string $to 收件人邮件地址
+     *
+     */
+    function setTo($mail_to)
+    {
+        if (!is_null($mail_to)) {
+            list($mail_to, $charset) = $this-&gt;convEnc($mail_to);
+            $this-&gt;_mail_to = $this-&gt;_encodeAddr($mail_to, $charset);
+        }
+    }
+
+    /**
+     * 设置抄送邮件列表
+     * @param string $mail_cc 抄送邮件地址列表
+     *
+     */
+    function setCc($mail_cc)
+    {
+        if (!is_null($mail_cc)) {
+            list($mail_cc, $charset) = $this-&gt;convEnc($mail_cc);
+            $this-&gt;_mail_cc = $this-&gt;_encodeAddr($mail_cc, $charset);
+        }
+    }
+
+    /**
+     * 设置密送邮件列表
+     * @param string $mail_bcc 密送邮件地址列表
+     *
+     */
+    function setBcc($mail_bcc)
+    {
+        if (!is_null($mail_bcc)) {
+            list($mail_bcc, $charset) = $this-&gt;convEnc($mail_bcc);
+            $this-&gt;_mail_bcc = $this-&gt;_encodeAddr($mail_bcc, $charset);
+        }
+    }
+
+    /**
+     * 设置邮件正文类型
+     * @param string $text_type 邮件正文类型
+     *
+     */
+    function setBodyType($text_type)
+    {
+        if ($text_type == 'html')
+            $this-&gt;_mail_BodyType = $text_type;
+        else
+            $this-&gt;_mail_BodyType = "plain";
+    }
+
+    /**
+     * 设置邮件优先级别
+     * @param string $priority 邮件优先级别
+     *
+     */
+    function setPriority($priority = 3)
+    {
+        $priority = !is_null($priority) ? $priority : 3;
+        $this-&gt;_mail_priority = $priority;
+    }
+
+    /**
+     * 设置邮件优先级别
+     * @param string $isNeedReply 是否需要读信回执
+     * @param string $addr_notificationTo 回执邮件地址
+     */
+    function setNotificationTo($isNeedReply = false, $addr_notificationTo = '')
+    {
+        if ($isNeedReply == true) {
+            $this-&gt;_mail_needReply = $isNeedReply;
+
+            if (empty($addr_notificationTo))
+                $this-&gt;_mail_notificationTo = $this-&gt;_mail_sender;
+            else
+                $this-&gt;_mail_notificationTo = $addr_notificationTo;
+        }
+    }
+
+    /**
+     * 设置邮件回复信息
+     * @param &lt;string&gt; $replyTo
+     */
+    function setReplyTo($replyTo)
+    {
+        $this-&gt;_mail_replyTo = $replyTo;
+    }
+
+    /**
+     * 添加文本格式正文
+     * @param string $text 文本格式正文
+     */
+    function addTextBody($text)
+    {
+        list($text, $charset) = $this-&gt;convEnc($text, $this-&gt;_mail_text_charset);
+        if ($charset != $this-&gt;_mail_text_charset) {
+            $this-&gt;_mail_textBody = mb_convert_encoding($this-&gt;_mail_textBody, $charset, $this-&gt;_mail_text_charset);
+            $this-&gt;_mail_text_charset = $charset;
+        }
+        $this-&gt;_mail_textBody .= $text;
+    }
+
+    /**
+     * 添加html格式正文
+     * @param string $html html格式正文
+     */
+    function addHtmlBody($html)
+    {
+        list($html, $charset) = $this-&gt;convEnc($html, $this-&gt;_mail_charset);
+        if ($charset != $this-&gt;_mail_charset) {
+            $this-&gt;_mail_htmlBody = mb_convert_encoding($this-&gt;_mail_htmlBody, $charset, $this-&gt;_mail_charset);
+            $this-&gt;_mail_charset = $charset;
+        }
+        $this-&gt;_mail_htmlBody .= $html;
+    }
+
+    function &amp; getSendMailText($to = null)
+    {
+        $msg = '';
+        if (!empty($this-&gt;_mail_userHeaders['sina-sendseparate'])) {
+            if ($to) {
+                $header = str_replace('&lt;{$_mail_to}&gt;', $this-&gt;_splitAddrList($to), $this-&gt;_mail_header);
+            } else {
+                $header = str_replace('&lt;{$_mail_to}&gt;', $this-&gt;_splitAddrList($this-&gt;_mail_to), $this-&gt;_mail_header);
+            }
+            $msg = $header . CRLF . CRLF . $this-&gt;_mail_body;
+        } else {
+            $msg = $this-&gt;_mail_header . CRLF . CRLF . $this-&gt;_mail_body;
+        }
+        return $msg;
+    }
+
+    /*
+     * 	生成邮件header
+     * @param string $mailContentType 邮件content-type
+     * 	@return string mailHeader
+     */
+
+    function _buildHeader($mailContentType)
+    {
+        //$this-&gt;_mail_header = 'Return-path: ' . $this-&gt;_mail_sender . CRLF;
+        $this-&gt;_mail_header =
+                'Date: ' . date("D, d M Y H:i:s") . " +0800 " . CRLF;
+
+        $this-&gt;_mail_header .=
+                'Received: from ' . $this-&gt;_mail_sender . '([' . $this-&gt;getClientIp() . ']) by '
+                . $_SERVER['HTTP_HOST'] . ' via HTTP;' . CRLF
+                . ' ' . date("D, d M Y H:i:s") . " +0800 (CST)" . CRLF;
+
+        $replyTo = (!empty($this-&gt;_mail_replyTo)) ? $this-&gt;_mail_replyTo : $this-&gt;_mail_sender;
+        $this-&gt;_mail_header .= 'Reply-To: ' . $replyTo . CRLF;
+
+        if (strcasecmp($this-&gt;_mail_sender, $this-&gt;_mail_from_addr) != 0) {
+            $this-&gt;_mail_header .= 'Sender: ' . $this-&gt;_mail_sender . CRLF;
+        }
+
+        if (!is_null($this-&gt;_mail_from))
+            $this-&gt;_mail_header .=
+                    "From: " . $this-&gt;_splitAddrList($this-&gt;_mail_from) . CRLF;
+
+        if (!empty($this-&gt;_mail_userHeaders['sina-sendseparate'])) {
+            $this-&gt;_mail_header .= 'To: &lt;{$_mail_to}&gt;' . CRLF;
+        } else {
+            if (!is_null($this-&gt;_mail_to))
+                $this-&gt;_mail_header .=
+                        "To: " . $this-&gt;_splitAddrList($this-&gt;_mail_to) . CRLF;
+        }
+
+        if (!empty($this-&gt;_mail_cc))
+            $this-&gt;_mail_header .=
+                    "Cc: " . $this-&gt;_splitAddrList($this-&gt;_mail_cc) . CRLF;
+
+        if (!empty($this-&gt;_mail_bcc))
+            $this-&gt;_mail_header .= "Bcc: " . $this-&gt;_splitAddrList($this-&gt;_mail_bcc) . CRLF;
+
+        if (!is_null($this-&gt;_mail_subject))
+            $this-&gt;_mail_header .= "Subject: " . $this-&gt;_mail_subject . CRLF;
+
+        $this-&gt;_mail_header .= "MIME-Version: 1.0" . CRLF;
+        $this-&gt;_mail_header .= "X-Priority: " . $this-&gt;_mail_priority . CRLF;
+
+        if ($this-&gt;_mail_needReply == true)
+            $this-&gt;_mail_header .=
+                    "Disposition-Notification-To: " . $this-&gt;_mail_notificationTo . CRLF;
+
+        $this-&gt;_mail_header .= 'X-MessageID: ' . $this-&gt;_mail_messageId . CRLF;
+
+        $this-&gt;_mail_header .= 'X-Originating-IP: [' . $_SERVER["SERVER_ADDR"] . "]" . CRLF;
+        $this-&gt;_mail_header .= "X-Mailer: Sina WebMail 4.0" . CRLF;
+
+        foreach ($this-&gt;_mail_userHeaders as $k =&gt; $v) {
+            $hn = str_replace(' ', '-', ucwords(str_replace('-', ' ', $k)));
+            $this-&gt;_mail_header .= "X-$hn: $v" . CRLF;
+        }
+
+        $this-&gt;_mail_header .= $mailContentType;
+    }
+
+    /*
+     * 	生成邮件体
+     * 	@return bool 成功返回0，失败返回错误代码
+     *
+     */
+
+    function buildBody()
+    {
+
+        /*
+          $b_attachments 		= ($this-&gt;_mail_attachments	&gt; 0 )			? true : false;
+          $b_imgAttachments = (count($this-&gt;attachments_img) &gt; 0)	? true : false;
+          $b_htmlBody       = !empty($this-&gt;_htmlbody)             ? true : false;
+          $b_textBody       = (!$html AND !empty($this-&gt;_txtbody)) ? true : false;
+         */
+
+        if (count($this-&gt;aAttachments) &gt; 0) {
+            foreach ($this-&gt;aAttachments as $a_AttFile) {
+                if (!$this-&gt;_getAttachment($a_AttFile['attFilePath'], $a_AttFile['attName'], $a_AttFile['attType'], $a_AttFile['attEmbedded'])) {
+                    return false;
+                }
+            }
+        }
+
+        switch ($this-&gt;_parseElements()) {
+            case 1:  //text/plain
+                $this-&gt;_buildHeader("Content-Type: text/plain; charset=$this-&gt;_mail_text_charset\nContent-Transfer-Encoding: base64");
+                $this-&gt;_mail_body = $this-&gt;_getTextMailBody();
+                break;
+
+            case 3:  //text/plain &amp;&amp; text/html
+                $this-&gt;_buildHeader("Content-Type: multipart/alternative;\n\t boundary=\"$this-&gt;_mail_boundary_alt\"");
+                $this-&gt;_mail_body = "--" . $this-&gt;_mail_boundary_alt . CRLF;
+                $this-&gt;_mail_body .=
+                        "Content-Type: text/plain;\n\tcharset=$this-&gt;_mail_text_charset" . CRLF;
+
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getTextMailBody() . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . CRLF;
+
+                $this-&gt;_mail_body .=
+                        "Content-Type: text/html; \n\tcharset=$this-&gt;_mail_charset" . CRLF;
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getHtmlMailBody() . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . "--" . CRLF;
+                break;
+
+            case 5:  // text/plain &amp;&amp; attachments
+                $this-&gt;_buildHeader("Content-Type: multipart/mixed;\n\t boundary=\"$this-&gt;_mail_boundary_mix\"");
+                $this-&gt;_mail_body = "--" . $this-&gt;_mail_boundary_mix . CRLF;
+                $this-&gt;_mail_body .=
+                        "Content-Type: text/plain;\n\tcharset=$this-&gt;_mail_text_charset" . CRLF;
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getTextMailBody() . CRLF . CRLF;
+
+                foreach ($this-&gt;_mail_subpart_attachments as $value) {
+                    $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_mix . CRLF;
+                    $this-&gt;_mail_body .=
+                            "Content-Type: " . $value['type'] . "; name=\"" . $value['name'] . "\"" . CRLF;
+                    $this-&gt;_mail_body .=
+                            "Content-Disposition: attachment; filename=\"" . $value['name'] . "\"" . CRLF;
+                    if ($value['type'] == 'message/rfc822') {
+                        $this-&gt;_mail_body .= "Content-Transfer-Encoding: 8bit" . CRLF . CRLF;
+                    } else {
+                        $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF . CRLF;
+                    }
+                    $this-&gt;_mail_body .= $value['content'] . CRLF . CRLF;
+                }
+
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_mix . "--" . CRLF;
+                break;
+
+            case 7:  //text/plain &amp;&amp; text/html &amp;&amp; attachment
+                $this-&gt;_buildHeader("Content-Type: multipart/mixed;\n\t boundary=\"$this-&gt;_mail_boundary_mix\"");
+                $this-&gt;_mail_body = "--" . $this-&gt;_mail_boundary_mix . CRLF;
+                $this-&gt;_mail_body .= "Content-Type: multipart/alternative;\n\t boundary=\"$this-&gt;_mail_boundary_alt\"" . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . CRLF;
+                $this-&gt;_mail_body .= "Content-Type: text/plain;\n\tcharset=$this-&gt;_mail_text_charset" . CRLF;
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getTextMailBody() . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . CRLF;
+
+                $this-&gt;_mail_body .= "Content-Type: text/html; charset=$this-&gt;_mail_charset" . CRLF;
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getHtmlMailBody() . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . "--" . CRLF . CRLF;
+
+                foreach ($this-&gt;_mail_subpart_attachments as $value) {
+                    $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_mix . CRLF;
+                    $this-&gt;_mail_body .= "Content-Type: " . $value['type'] . "; name=\"" . $value['name'] . "\"" . CRLF;
+                    $this-&gt;_mail_body .= "Content-Disposition: attachment; filename=\"" . $value['name'] . "\"" . CRLF;
+                    if ($value['type'] == 'message/rfc822') {
+                        $this-&gt;_mail_body .= "Content-Transfer-Encoding: 8bit" . CRLF . CRLF;
+                    } else {
+                        $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF . CRLF;
+                    }
+                    $this-&gt;_mail_body .= $value['content'] . CRLF . CRLF;
+                }
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_mix . "--" . CRLF;
+                break;
+
+            case 11:
+                $this-&gt;_buildHeader("Content-Type: multipart/related; type=\"multipart/alternative\";\n\t boundary=\"$this-&gt;_mail_boundary_rel\"");
+                $this-&gt;_mail_body = "--" . $this-&gt;_mail_boundary_rel . CRLF;
+                $this-&gt;_mail_body .= "Content-Type: multipart/alternative;\n\t boundary=\"$this-&gt;_mail_boundary_alt\"" . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . CRLF;
+                $this-&gt;_mail_body .= "Content-Type: text/plain;\n\tcharset=$this-&gt;_mail_text_charset" . CRLF;
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getTextMailBody() . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . CRLF;
+
+                $this-&gt;_mail_body .= "Content-Type: text/html; charset=$this-&gt;_mail_charset" . CRLF;
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getHtmlMailBody() . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . "--" . CRLF . CRLF;
+
+                foreach ($this-&gt;_mail_subpart_attachments as $value) {
+                    if ($value['embedded']) {
+                        $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_rel . CRLF;
+                        $this-&gt;_mail_body .= "Content-ID: &lt;" . $value['embedded'] . "&gt;" . CRLF;
+                        $this-&gt;_mail_body .= "Content-Type: " . $value['type'] . "; name=\"" . $value['name'] . "\"" . CRLF;
+                        $this-&gt;_mail_body .= "Content-Disposition: attachment; filename=\"" . $value['name'] . "\"" . CRLF;
+                        $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF . CRLF;
+                        $this-&gt;_mail_body .= $value['content'] . CRLF . CRLF;
+                    }
+                }
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_rel . "--" . CRLF;
+                break;
+
+            case 15:
+                $this-&gt;_buildHeader("Content-Type: multipart/mixed;\n\t boundary=\"$this-&gt;_mail_boundary_mix\"");
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_mix . CRLF;
+
+                $this-&gt;_mail_body .= "Content-Type: multipart/related; type=\"multipart/alternative\"; boundary=\"$this-&gt;_mail_boundary_rel\"" . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_rel . CRLF;
+
+                $this-&gt;_mail_body .= "Content-Type: multipart/alternative;\n\t boundary=\"$this-&gt;_mail_boundary_alt\"" . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . CRLF;
+
+                $this-&gt;_mail_body .= "Content-Type: text/plain; charset=$this-&gt;_mail_text_charset" . CRLF;
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getTextMailBody() . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . CRLF;
+
+                $this-&gt;_mail_body .= "Content-Type: text/html; charset=$this-&gt;_mail_charset" . CRLF;
+                $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF;
+                $this-&gt;_mail_body .= "Content-Disposition: inline" . CRLF . CRLF;
+                $this-&gt;_mail_body .= $this-&gt;_getHtmlMailBody() . CRLF . CRLF;
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_alt . "--" . CRLF . CRLF;
+
+                foreach ($this-&gt;_mail_subpart_attachments as $value) {
+                    if ($value['embedded']) {
+                        $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_rel . CRLF;
+                        $this-&gt;_mail_body .= "Content-ID: &lt;" . $value['embedded'] . "&gt;" . CRLF;
+                        $this-&gt;_mail_body .= "Content-Type: " . $value['type'] . "; name=\"" . $value['name'] . "\"" . CRLF;
+                        $this-&gt;_mail_body .= "Content-Disposition: attachment; filename=\"" . $value['name'] . "\"" . CRLF;
+                        $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF . CRLF;
+                        $this-&gt;_mail_body .= $value['content'] . CRLF . CRLF;
+                    }
+                }
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_rel . "--" . CRLF . CRLF;
+
+                foreach ($this-&gt;_mail_subpart_attachments as $value) {
+                    if (!$value['embedded']) {
+                        $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_mix . CRLF;
+                        $this-&gt;_mail_body .= "Content-Type: " . $value['type'] . "; name=\"" . $value['name'] . "\"" . CRLF;
+                        $this-&gt;_mail_body .= "Content-Disposition: attachment; filename=\"" . $value['name'] . "\"" . CRLF;
+                        //$this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF . CRLF;
+                        if ($value['type'] == 'message/rfc822') {
+                            $this-&gt;_mail_body .= "Content-Transfer-Encoding: 8bit" . CRLF . CRLF;
+                        } else {
+                            $this-&gt;_mail_body .= "Content-Transfer-Encoding: base64" . CRLF . CRLF;
+                        }
+                        $this-&gt;_mail_body .= $value['content'] . CRLF . CRLF;
+                    }
+                }
+                $this-&gt;_mail_body .= "--" . $this-&gt;_mail_boundary_mix . "--" . CRLF;
+                break;
+
+            default:
+                return false;
+        }
+        //$this-&gt;sended_index++;
+        return true;
+    }
+
+    /*
+     * 	分析content-type
+     * @param string $mailContentType 邮件content-type
+     * 	@return string mailHeader
+     */
+
+    function _parseElements()
+    {
+        if ($this-&gt;_mail_BodyType == "html") {
+            $this-&gt;_mail_type = 3;
+            if (!empty($this-&gt;mail_html)) {
+                if (empty($this-&gt;mail_text))
+                    $this-&gt;mail_text = $this-&gt;htmlToText($this-&gt;mail_html);
+            }
+        }
+        else
+            $this-&gt;_mail_type = 1;
+
+        if ($this-&gt;_mail_attachments_index != 0) {
+            if ($this-&gt;_mail_type == 3 &amp;&amp; $this-&gt;_mail_embedded_count &gt; 0) {
+                $this-&gt;_mail_type = $this-&gt;_mail_type + 8;
+                if ((count($this-&gt;aAttachments) - $this-&gt;_mail_embedded_count) &gt;= 1) {
+                    $this-&gt;_mail_type = $this-&gt;_mail_type + 4;
+                }
+            } else if (count($this-&gt;aAttachments) &gt; 0) {
+                $this-&gt;_mail_type = $this-&gt;_mail_type + 4;
+            }
+        }
+        return $this-&gt;_mail_type;
+    }
+
+    /**
+     * 添加附件
+     * @param string $attFile 附件文件绝对路径
+     * @param string $attName 附件名称
+     * @param string $attFileType 附件文件类型
+     * @param bool   $attEmbedded 附件是否为嵌入
+     * 	@return 成功 0，失败 错误代码
+     */
+    function addAttachment($sAttFilePath, $sAttName, $sAttType='', $sAttEmbedded = false)
+    {
+        if (is_null($sAttFilePath)) {
+            return;
+        }
+
+        $embedded = false;
+        if ($sAttEmbedded) {
+            $this-&gt;_mail_embedded_count++;
+            $embedded = sprintf('part%s.%s', $this-&gt;_mail_embedded_count, $this-&gt;_mail_messageId);
+        }
+
+        $this-&gt;aAttachments[$this-&gt;_mail_attachments_index] = array(
+            'attFilePath' =&gt; $sAttFilePath,
+            'attName' =&gt; $sAttName,
+            'attType' =&gt; $sAttType,
+            'attEmbedded' =&gt; $embedded
+        );
+        $this-&gt;_mail_attachments_index++;
+    }
+
+    /**
+     * 获取附件subpart信息
+     * @param string $attFile 附件文件绝对路径
+     * @param string $attName 附件名称
+     * @param string $attFileType 附件文件类型
+     * @param int    $attEmbedded 附件嵌入ID
+     * 	@return 成功 0，失败 错误代码
+     */
+    function _getAttachment($attFile, $attName, $attFileType = "", $attEmbedded)
+    {
+        
+        $content = file_get_contents($attFile);
+        if ($content !== false) {
+            list($attName, $charset) = $this-&gt;convEnc($attName);
+            $attFileType = empty($attFileType) ? $this-&gt;_getMimeType($attName) : $attFileType;
+            if ($attFileType == 'message/rfc822') {
+                $this-&gt;_mail_subpart_attachments[] = array(
+                    'content' =&gt; $content,
+                    'name' =&gt; '=?' . $charset . '?B?' . base64_encode($attName) . '?=',
+                    'type' =&gt; $attFileType,
+                    'embedded' =&gt; false
+                );
+            } else {
+                $this-&gt;_mail_subpart_attachments[] = array(
+                    'content' =&gt; chunk_split(base64_encode($content), MIME_LINE_LENGTH_LIMIT, CRLF),
+                    'name' =&gt; '=?' . $charset . '?B?' . base64_encode($attName) . '?=',
+                    'type' =&gt; $attFileType,
+                    'embedded' =&gt; $attEmbedded
+                );
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 	将文本格式正文按照RFC规范编码并拆分成行
+     * 	@param	string
+     */
+    function _getTextMailBody()
+    {
+        if (isset($this-&gt;_mail_textBody) &amp;&amp; !is_null($this-&gt;_mail_textBody))
+            return chunk_split(
+                    base64_encode($this-&gt;_mail_textBody), MIME_LINE_LENGTH_LIMIT, CRLF);
+        else
+            return '';
+    }
+
+    /**
+     * 将嵌入附件的标记替换为实际的Content-ID
+     *
+     * @param string $body
+     * @return string
+     */
+    function _replaceEmbedded($body)
+    {
+        foreach ($this-&gt;aAttachments as $att) {
+            if (!$att['attEmbedded']) {
+                continue;
+            }
+
+            $search = '__CID__' . md5($att['attFilePath']);
+            $repl = 'cid:' . $att['attEmbedded'];
+            $body = str_replace($search, $repl, $body);
+        }
+        return $body;
+    }
+
+    /**
+     * 	将html格式正文按照RFC规范编码并拆分成行
+     * 	@param	string
+     */
+    function _getHtmlMailBody()
+    {
+        if (isset($this-&gt;_mail_htmlBody) &amp;&amp; !is_null($this-&gt;_mail_htmlBody)) {
+            if ($this-&gt;_mail_embedded_count &gt; 0) {
+                $this-&gt;_mail_htmlBody = $this-&gt;_replaceEmbedded($this-&gt;_mail_htmlBody);
+            }
+            return chunk_split(
+                    base64_encode($this-&gt;_mail_htmlBody), MIME_LINE_LENGTH_LIMIT, CRLF);
+        } else {
+            return '';
+        }
+    }
+
+    /**
+     * private
+     * 	获取附件类型
+     * @param string $attName 附件名称
+     */
+    function _getMimeType($attName)
+    {
+        $ext_array = explode(".", $attName);
+        if (($last = count($ext_array) - 1) != 0) {
+            $ext = strtolower($ext_array[$last]);
+            if (isset($this-&gt;mime_types[$ext]))
+                return $this-&gt;mime_types[$ext];
+        }
+        return "application/octet-stream";
+    }
+
+    /**
+     * 按照RFC规范将邮件地址列表拆分成行
+     * 	@param string $inputAddr 邮件地址列表
+     * @return string 规范后的邮件地址列表
+     */
+    function _splitAddrList($inputAddr)
+    {
+        if (is_null($inputAddr) || MIME_LINE_LENGTH_LIMIT &gt; strlen($inputAddr))
+            return $inputAddr;
+        else {
+            $a_splitAddr = explode(",", $inputAddr);
+            $curLen = 0;
+            $outputAddr = '';
+            foreach ($a_splitAddr as $key =&gt; $address) {
+                $curLen += strlen($address);
+
+                if (MIME_LINE_LENGTH_LIMIT &lt; $curLen) {
+                    $outputAddr .= CRLF . ' ' . $address . ",";
+                    $curLen = strlen($address);
+                } else {
+                    $outputAddr .= $address . ",";
+                }
+            }
+            return $outputAddr;
+        }
+    }
+
+    /**
+     * encode addList for MIME Header
+     * @param string $addr_str 邮件地址列表
+     *
+     */
+    function _encodeAddr($addr_str, $charset = 'GBK')
+    {
+        $addr_ret = '';
+
+        $addr_str = mb_ereg_replace(mb_convert_encoding('，', $charset, 'UTF-8'), ',', $addr_str, $charset);
+        $addrs = $this-&gt;_splitAddressStr($addr_str);
+        foreach ($addrs as $key =&gt; $addr) {
+            $addr = trim($addr);
+            if ($key != 0)
+                $addr_ret .= ', ';
+
+            if (preg_match('/(.*)&lt;(.*)&gt;$/', $addr, $addr_split)) {
+
+                $addr_name = trim($addr_split[1]);
+                $addr_name = trim($addr_name, '"');
+                $addr_mail = trim($addr_split[2]);
+                mb_internal_encoding($charset);
+
+                if (!self::isBig($addr_name)) {
+                    $addr_ret .= '"' . $addr_name . '" &lt;' . $addr_mail . '&gt;';
+                } else {
+                    $addr_ret .= '=?' . $charset . '?B?' . base64_encode($addr_name) . '?= &lt;' . $addr_mail . '&gt;';
+                }
+            }
+            else
+                $addr_ret .= $addr;
+        }
+        return $addr_ret;
+    }
+
+    function _splitAddressStr($s)
+    {
+        $ls = array();
+        $inQuote = false;
+        $item = '';
+        for ($i = 0, $n = strlen($s); $i &lt; $n; ++$i) {
+            $ch = $s[$i];
+            if ($ch == '"') {
+                if (!$inQuote) {
+                    $inQuote = true;
+                } else {
+                    $inQuote = false;
+                }
+            } elseif ($ch == ',' || $ch == ';') {
+                if (!$inQuote) {
+                    if (isset($item[0])) {
+                        array_push($ls, $item);
+                        $item = '';
+                    }
+                } else {
+                    $item .= $ch;
+                }
+            } else {
+                $item .= $ch;
+            }
+        }
+
+        if (isset($item[0])) {
+            array_push($ls, $item);
+        }
+
+        return $ls;
+    }
+
+    /**
+     * 将html格式转换为text
+     * @param string $html
+     * 	@return string 转换后text字符串
+     */
+    function htmlToText($html)
+    {
+        if (!strlen($html))
+            return '';
+
+        $search = array("'&lt;br[^&gt;]*?&gt;'si");
+        $replace = array("\n");
+        $txt = preg_replace($search, $replace, $html);
+
+        $txt = strip_tags($txt);
+        return htmlspecialchars_decode($txt);
+    }
+
+    /**
+     * 检查是否是大字符集
+     *
+     * @param string type $string
+     * @return boolean
+     */
+    function isBig($string)
+    {
+        for ($i = 0; $i &lt; strlen($string); $i++) {
+            if (ord($string[$i]) &gt; 127) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+}
+$html='&lt;h1&gt;hello&lt;/h1&gt;';
+$text=strip_tags($html);
+
+$mime=new MimeMail();
+//增加一个邮件头
+$mime-&gt;setUserHeader('044D8EB6F6EF3F6FAE1A32D8B0930F609000000000000002', 'sina-mid');
+$mime-&gt;setSender("shihan2@sopans.com");
+$mime-&gt;setFrom("shihan2@sopans.com");
+$mime-&gt;setTo("shihan2@sopans.com");
+$mime-&gt;setSubject("我来测试");
+$mime-&gt;setBodyType('html');
+
+$mime-&gt;addHtmlBody($html);
+$mime-&gt;addTextBody($text);
+$mime-&gt;addAttachment("D:/phpServer/WWW/test/1.log","1.log","");
+
+$mime-&gt;buildBody();
+$mail=$mime-&gt;getSendMailText();
+
+echo $mail;
+//file_put_contents("2.eml",$mail);
+</code></pre>
+
+<p>　　</p>
+<p>　　</p>
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

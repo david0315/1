@@ -1,0 +1,65 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP提示 Notice Undefined variable' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP提示 Notice Undefined variable</center></div><div class='banquan'>原文出处:本文由博客园博主html55提供。<br/>
+原文连接:https://www.cnblogs.com/html55/p/10799076.html</div><br>
+    <p>PHP提示Notice: Undefined variable，意思是：你的程序中有未定义的变量</p>
+<p>为什么在其他地方好好的程序，换个环境报这个Notice，因为php.ini提醒级别设置的问题</p>
+<p>场景复原：</p>
+<p>举例，打开php.ini配置文件，搜索error_reporting，让这个配置的值如下图</p>
+<p><img src="./images/PHP提示 Notice Undefined variable0.jpg" alt="" /></p>
+<p>重启apache服务器</p>
+<p>新建php文件，代码如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">header</span>("Content-type:text/html;charset=UTF-8"<span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$aaa</span><span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<p><img src="./images/PHP提示 Notice Undefined variable1.jpg" alt="" /></p>
+<p>就是程序在用到变量$aaa的时候，却发现$aaa没有被定义过。</p>
+<p>那怎么解决呢？</p>
+<p>方法1：对自己要求严格一点，每个变量都声明下，而不是直接用，代码加一句，如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">header</span>("Content-type:text/html;charset=UTF-8"<span style="color: #000000;">);
+</span><span style="color: #800080;">$aaa</span> = <span style="color: #0000ff;">null</span>; <span style="color: #008000;">//</span><span style="color: #008000;">新加的</span>
+<span style="color: #0000ff;">echo</span> <span style="color: #800080;">$aaa</span><span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<p>方法2：文件中设置不提醒notice，代码头部加上ini_set("error_reporting",E_ALL &amp; ~E_NOTICE); &nbsp;【注意：E_ALL &amp; ~E_NOTICE是不带引号的，不是字符串！！！】如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">ini_set</span>("error_reporting",E_ALL &amp; ~E_NOTICE<span style="color: #000000;">);
+</span><span style="color: #008080;">header</span>("Content-type:text/html;charset=UTF-8"<span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$aaa</span><span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<p>方法3：修改php.ini配置，重启服务器error_reporting = E_ALL &amp; ~E_NOTICE</p>
+<p><img src="./images/PHP提示 Notice Undefined variable2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><span style="font-size: 14px;">&nbsp;</span></span></p>
+<p>&nbsp;上述三种方法，任意一种方法都可以解决这个问题（浏览器端不输出Notice: Undefined variable，同时日志里也不记录这个问题）。</p>
+<p>但是，如果是在php.ini中，设置display_errors = Off，这样也不显示，但是日志里会有很多notice的记录（我的日志是开发环境默认的在apache的error.log文件中）</p>
+<p><img src="./images/PHP提示 Notice Undefined variable3.jpg" alt="" /></p>
+<p>为什么呢？因为display_errors = Off是服务器上这样设置，免得暴露太多文件路径等信息被黑客攻击，没有根源上解决问题，错误记录在日志里。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

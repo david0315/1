@@ -1,0 +1,175 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP与nginx之间的运行机制及其原理' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP与nginx之间的运行机制及其原理</center></div><div class='banquan'>原文出处:本文由博客园博主林间星光提供。<br/>
+原文连接:https://www.cnblogs.com/dgxblogs/p/10558261.html</div><br>
+    <h2>一、普及Nginx与Php-fpm相关知识点<br /><br /></h2>
+<h4>Nginx是什么</h4>
+<blockquote>
+<p>Nginx ("engine x") 是一个高性能的HTTP和反向代理服务器，也是一个IMAP/POP3/SMTP服务器。</p>
+
+
+
+
+
+
+
+
+
+</blockquote>
+<h4>Php-fpm是什么</h4>
+<h5>1、cgi、fast-cgi协议</h5>
+<h6>cgi的历史</h6>
+<p>早期的webserver只处理html等静态文件，但是随着技术的发展，出现了像php等动态语言。<br />webserver处理不了了，怎么办呢？那就交给php解释器来处理吧！<br />交给php解释器处理很好，但是，php解释器如何与webserver进行通信呢？</p>
+<blockquote>
+<p>为了解决不同的语言解释器(如php、python解释器)与webserver的通信，于是出现了cgi协议。只要你按照cgi协议去编写程序，就能实现语言解释器与webwerver的通信。如php-cgi程序。</p>
+
+
+
+
+
+
+
+
+
+</blockquote>
+<h6>fast-cgi的改进</h6>
+<p>有了cgi协议，解决了php解释器与webserver通信的问题，webserver终于可以处理动态语言了。<br />但是，webserver每收到一个请求，都会去fork一个cgi进程，请求结束再kill掉这个进程。这样有10000个请求，就需要fork、kill php-cgi进程10000次。</p>
+<p>有没有发现很浪费资源？</p>
+<blockquote>
+<p>于是，出现了cgi的改良版本，fast-cgi。fast-cgi每次处理完请求后，不会kill掉这个进程，而是保留这个进程，使这个进程可以一次处理多个请求。这样每次就不用重新fork一个进程了，大大提高了效率。</p>
+
+
+
+
+
+
+
+
+
+</blockquote>
+<h5>2、php-fpm是什么</h5>
+<p>php-fpm即php-Fastcgi Process Manager.<br />php-fpm是 FastCGI 的实现，并提供了进程管理的功能。<br />进程包含 master 进程和 worker 进程两种进程。<br />master 进程只有一个，负责监听端口，接收来自 Web Server 的请求，而 worker 进程则一般有多个(具体数量根据实际需要配置)，每个进程内部都嵌入了一个 PHP 解释器，是 PHP 代码真正执行的地方。</p>
+<p>&nbsp;</p>
+<h2>二、Nginx如何与Php-fpm结合</h2>
+<p>我们知道Nginx不只有处理http请求的功能，还能做反向代理。<br />故Nginx通过反向代理功能将动态请求转向后端Php-fpm。</p>
+<p>下面我们来配置一个全新的Nginx+Php-fpm</p>
+<h3><a name="t2"></a>1、配置nginx.conf文件</h3>
+<p>进入nginx目录下，编辑 nginx.conf文件。<br />如图，在nginx.conf最后一行，添加include文件</p>
+<p><img src="./images/PHP与nginx之间的运行机制及其原理0.jpg" alt="" /></p>
+<h3>2、添加对应的server</h3>
+<p>进入上面include的路径，添加一个server.</p>
+<p><img src="./images/PHP与nginx之间的运行机制及其原理1.jpg" alt="" /></p>
+<p>下面我们解释一下配置项的含义：</p>
+<src class="cnblogs_code">
+<pre><code>server {    listen       80; <span style="color: #008000;">#</span><span style="color: #008000;">监听80端口，接收http请求</span>
+    server_name  www.example.com; <span style="color: #008000;">#</span><span style="color: #008000;">就是网站地址</span>
+    root /usr/local/etc/nginx/www/huxintong_admin; <span style="color: #008000;">#</span><span style="color: #008000;"> 准备存放代码工程的路径</span>
+    <span style="color: #008000;">#</span><span style="color: #008000;">路由到网站根目录www.example.com时候的处理</span>
+    location / {        index index.php; <span style="color: #008000;">#</span><span style="color: #008000;">跳转到www.example.com/index.php</span>
+<span style="color: #000000;">        autoindex on;
+    }   
+
+    </span><span style="color: #008000;">#</span><span style="color: #008000;">当请求网站下php文件的时候，反向代理到php-fpm</span>
+    location ~ \.php$ {        <span style="color: #0000ff;">include</span> /usr/local/etc/nginx/fastcgi.conf; <span style="color: #008000;">#</span><span style="color: #008000;">加载nginx的fastcgi模块</span>
+        fastcgi_intercept_errors on;        fastcgi_pass   127.0.0.1:9000; <span style="color: #008000;">#</span><span style="color: #008000;">nginx fastcgi进程监听的IP地址和端口</span>
+<span style="color: #000000;">    }
+
+}</span></code></pre>
+
+<p>总而言之：当我们访问www.example.com的时候，处理流程是这样的：</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code> www.example.<span style="color: #000000;">com        
+           </span>|
+        |<span style="color: #000000;">
+       Nginx        
+         </span>|
+        |<span style="color: #000000;">
+   路由到www</span>.example.com/index.<span style="color: #000000;">php        
+        </span>|
+        |<span style="color: #000000;">
+  加载nginx的fast</span>-<span style="color: #000000;">cgi模块        
+           </span>|
+        |<span style="color: #000000;">
+  fast</span>-cgi监听127.0.0.1:<span style="color: #000000;">9000地址        
+           </span>|
+        |<span style="color: #000000;">
+  www</span>.example.com/index.php请求到达127.0.0.1:9000
+        |
+        |<br />   等待处理。。。</code></pre>
+
+<p>下面我们启用php的php-fpm来处理这个请求</p>
+<p>打开php-fpm.conf文件，我们看到如下配置：</p>
+<p><img src="./images/PHP与nginx之间的运行机制及其原理2.jpg" alt="" /></p>
+<p>即:php-fpm模块监听127.0.0.1:9000端口，等待请求到来去处理。</p>
+<p>&nbsp;</p>
+<h2>三、总结</h2>
+<p>nginx与php-fpm的结合，完整的流程是这样的。</p>
+<src class="cnblogs_code">
+<pre><code>nginx与php-<span style="color: #000000;">fpm的结合，完整的流程是这样的。
+
+     www</span>.example.<span style="color: #000000;">com        
+            </span>|
+        |<span style="color: #000000;">
+      Nginx        
+         </span>|
+        |<span style="color: #000000;">
+    路由到www</span>.example.com/index.<span style="color: #000000;">php        
+          </span>|
+        |<span style="color: #000000;">
+    加载nginx的fast</span>-<span style="color: #000000;">cgi模块        
+          </span>|
+        |<span style="color: #000000;">
+    fast</span>-cgi监听127.0.0.1:9000地址        .
+          |
+        |<span style="color: #000000;">
+   www</span>.example.com/index.php请求到达127.0.0.1:9000
+        |
+        |<span style="color: #000000;">
+  php</span>-fpm 监听127.0.0.1:9000
+        |
+        |<span style="color: #000000;">
+  php</span>-<span style="color: #000000;">fpm 接收到请求，启用worker进程处理请求        
+           </span>|
+        |<span style="color: #000000;">
+   php</span>-<span style="color: #000000;">fpm 处理完请求，返回给nginx        
+           </span>|
+        |<span style="color: #000000;">
+  nginx将结果通过http返回给浏览器</span></code></pre>
+
+<h2>四、效果展示</h2>
+<h3><a name="t6"></a>1、启动nginx与php-fpm模块</h3>
+<p>&nbsp;<img src="./images/PHP与nginx之间的运行机制及其原理3.jpg" alt="" /></p>
+<p>启动成功，我们查看php-fpm进程</p>
+<p>&nbsp;<img src="./images/PHP与nginx之间的运行机制及其原理4.jpg" alt="" /></p>
+<p>如上图，有一个master进程，3个worker进程。</p>
+<h3>2、在网站目录下建立文件</h3>
+<p>我们编辑文件如下图：</p>
+<p><img src="./images/PHP与nginx之间的运行机制及其原理5.jpg" alt="" /></p>
+<h3>3、访问网站</h3>
+<p>&nbsp;<img src="./images/PHP与nginx之间的运行机制及其原理6.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>转载于：https://blog.csdn.net/zjuwangleicn/article/details/79300347</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

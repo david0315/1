@@ -1,0 +1,136 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php一致性hash算法的应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php一致性hash算法的应用</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10751122.html</div><br>
+    <p>阅读这篇博客前首先你需要知道什么是分布式存储以及分布式存储中的数据分片存储的方式有哪些？</p>
+<h1 class="postTitle eye-protector-processed"><span style="font-size: 15px;"><a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/glacierh/p/5653512.html">分布式存储系统设计（2）&mdash;&mdash; 数据分片</a></span></h1>
+<p><span style="font-size: 15px;">阅读玩这篇文章后你会知道分布式存储的最优方案是使用 一致性hash算法实现，至于什么是一致性hash算法可以看这里</span></p>
+<h1><span style="font-size: 15px;"><a href="https://blog.csdn.net/sparkliang/article/details/5279393" target="_blank">一致性&nbsp;<span lang="en-us" xml:lang="en-us">hash&nbsp;算法（&nbsp;<span lang="en-us" xml:lang="en-us">consistent hashing&nbsp;）</span></span></a></span></h1>
+<p><span style="font-size: 15px;"><span lang="en-us" xml:lang="en-us"><span lang="en-us" xml:lang="en-us">好啦，如果你能看到这里的话说明你已经知道什么是 一致性hash算法 并且知道了它是用来做什么的啦！下面看下如果使用php代码实现hash一致性算法吧</span></span></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 一致性hash分布式算法
+ * @param $key
+ * @return int
+ * 实现步骤
+ * 1.先将0~ 是32位最大带符号整数（0x7FFFFFFF） 想象成一个闭环
+ * 2.将服务器列表通过hash算法分布在 圆环之中
+ * 3.将key值也分布在圆环之中
+ * 4.通过_isSorted判断服务器是否需要进行倒序排序 排序后遍历服务器 找到最近的服务器 返回
+ * hash算法是不保证平衡的 为了尽量保证平衡性 我们应该加入虚拟节点数 将一个服务器节点虚拟化成为多个 较大程度上保证了平衡性
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> FlexiHash{
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$_serverList</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$_isSorted</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$_virtual_node_num</span> = 20;<span style="color: #008000;">//</span><span style="color: #008000;">虚拟节点数 服务器越少 增加的虚拟节点数应该越多
+    //通过hash算法返回一个整数值</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> myHash(<span style="color: #800080;">$key</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$md5</span> = <span style="color: #008080;">substr</span>(<span style="color: #008080;">md5</span>(<span style="color: #800080;">$key</span>),0,8<span style="color: #000000;">);
+        </span><span style="color: #800080;">$seed</span> = 31; <span style="color: #008000;">//</span><span style="color: #008000;">种子值</span>
+        <span style="color: #800080;">$hash</span>=0<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;8;<span style="color: #800080;">$i</span>++<span style="color: #000000;">){
+            </span><span style="color: #800080;">$hash</span> = <span style="color: #800080;">$hash</span>*<span style="color: #800080;">$seed</span>+<span style="color: #008080;">ord</span>(<span style="color: #800080;">$md5</span>{<span style="color: #800080;">$i</span>}); <span style="color: #008000;">//</span><span style="color: #008000;">ord 返回ascii值</span>
+            <span style="color: #800080;">$i</span>++<span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$hash</span>&amp;0x7FFFFFFF; <span style="color: #008000;">//</span><span style="color: #008000;">0x7FFFFFFF表示最大值</span>
+<span style="color: #000000;">    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">添加服务器</span>
+    <span style="color: #0000ff;">function</span> addServer(<span style="color: #800080;">$server</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$hash</span> =<span style="color: #800080;">$this</span>-&gt;myHash(<span style="color: #800080;">$server</span>. '#1'<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;_serverList[<span style="color: #800080;">$hash</span><span style="color: #000000;">])) {
+            </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 1; <span style="color: #800080;">$i</span> &lt;= <span style="color: #800080;">$this</span>-&gt;_virtual_node_num; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$hash</span> = <span style="color: #800080;">$this</span>-&gt;myHash(<span style="color: #800080;">$server</span> . '#' . <span style="color: #800080;">$i</span><span style="color: #000000;">);
+                </span><span style="color: #800080;">$this</span>-&gt;_serverList[<span style="color: #800080;">$hash</span>] = <span style="color: #800080;">$server</span><span style="color: #000000;">;
+            }
+        }
+        </span><span style="color: #800080;">$this</span>-&gt;_isSorted = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">删除服务器</span>
+    <span style="color: #0000ff;">function</span> removeServer(<span style="color: #800080;">$server</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 1; <span style="color: #800080;">$i</span> &lt;= <span style="color: #800080;">$this</span>-&gt;_virtual_node_num; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$hash</span> = <span style="color: #800080;">$this</span>-&gt;myHash(<span style="color: #800080;">$server</span> . '#' . <span style="color: #800080;">$i</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$this</span>-&gt;_serverList[<span style="color: #800080;">$hash</span><span style="color: #000000;">]);
+        }
+        </span><span style="color: #800080;">$this</span>-&gt;_isSorted = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">获取服务器</span>
+    <span style="color: #0000ff;">function</span> lookup(<span style="color: #800080;">$key</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$hash</span> =<span style="color: #800080;">$this</span>-&gt;myHash(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_isSorted){
+            </span><span style="color: #008080;">krsort</span>(<span style="color: #800080;">$this</span>-&gt;_serverList,<span style="color: #000000;">SORT_NUMERIC);
+            </span><span style="color: #800080;">$this</span>-&gt;_isSorted = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$this</span>-&gt;_serverList <span style="color: #0000ff;">as</span> <span style="color: #800080;">$pos</span>=&gt;<span style="color: #800080;">$server</span><span style="color: #000000;">){
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$hash</span> &gt;= <span style="color: #800080;">$pos</span>) <span style="color: #0000ff;">return</span> <span style="color: #800080;">$server</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">end</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_serverList);
+    }
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getServerList(){
+        </span><span style="color: #008080;">krsort</span>(<span style="color: #800080;">$this</span>-&gt;_serverList,<span style="color: #000000;">SORT_NUMERIC);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_serverList;
+    }
+}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">demo test</span>
+<span style="color: #800080;">$hserver</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> FlexiHash();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">添加服务器</span>
+<span style="color: #800080;">$hserver</span>-&gt;addServer('192.168.1.1'<span style="color: #000000;">);
+</span><span style="color: #800080;">$hserver</span>-&gt;addServer('192.168.1.2'<span style="color: #000000;">);
+</span><span style="color: #800080;">$hserver</span>-&gt;addServer('192.168.1.3'<span style="color: #000000;">);
+</span><span style="color: #800080;">$hserver</span>-&gt;addServer('192.168.1.4'<span style="color: #000000;">);
+</span><span style="color: #800080;">$hserver</span>-&gt;addServer('192.168.1.5'<span style="color: #000000;">);
+</span><span style="color: #800080;">$key1</span>='Key1111'<span style="color: #000000;">;
+</span><span style="color: #800080;">$key2</span>='Key2222'<span style="color: #000000;">;
+</span><span style="color: #800080;">$key2</span>='Key3333'<span style="color: #000000;">;
+</span><span style="color: #800080;">$key2</span>='Key4444'<span style="color: #000000;">;
+</span><span style="color: #800080;">$key2</span>='Key5555'<span style="color: #000000;">;
+</span><span style="color: #800080;">$key2</span>='Key6666'<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key1</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key2</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key3</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key4</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key5</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key6</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "================================================".<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">移除服务器 key值将自动转义到下一台服务器</span>
+<span style="color: #800080;">$hserver</span>-&gt;removeServer('192.168.1.4'<span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key1</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key2</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key3</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key4</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key5</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key6</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "================================================".<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">恢复故障服务器 key值将恢复原来服务器</span>
+<span style="color: #800080;">$hserver</span>-&gt;addServer('192.168.1.4'<span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key1</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key2</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key3</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key4</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key1 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key5</span>).<span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> "save key2 in server: ".<span style="color: #800080;">$hserver</span>-&gt;lookup(<span style="color: #800080;">$key6</span>).<span style="color: #ff00ff;">PHP_EOL</span>;</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

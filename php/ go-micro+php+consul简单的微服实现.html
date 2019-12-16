@@ -1,0 +1,393 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修 go-micro+php+consul简单的微服实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center> go-micro+php+consul简单的微服实现</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11811761.html</div><br>
+    <p>&nbsp;</p>
+<src>
+<p>首先我们用go-micro构建一个服务。（关于go-micro的使用可以参照官方实例或者文档）</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">新建一个微服务</span>
+micro <span style="color: #0000ff;">new</span> --type "srv" user-srv</code></pre>
+
+<p>&nbsp;</p>
+<pre><code><span style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;">定义我们的服务，这里定义两个rpc服务，Register和User</span></code></pre>
+
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 修改proto</span>
+<span style="color: #008080;"> 2</span> syntax = "proto3"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 4</span> package go.micro.srv.<span style="color: #000000;">user;
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">service User {
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">    rpc Register(RegisterRequest) returns (UserInfo) {}
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">    rpc User(UserInfoRequest) returns (UserInfo) {}
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    rpc Stream(StreamingRequest) returns (stream StreamingResponse) {}
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    rpc PingPong(stream Ping) returns (stream Pong) {}
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">message UserInfoRequest {
+</span><span style="color: #008080;">15</span>     int64 userId  = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">message RegisterRequest {
+</span><span style="color: #008080;">19</span>     <span style="color: #0000ff;">string</span> username  = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">20</span>     <span style="color: #0000ff;">string</span> email     = 2<span style="color: #000000;">;
+</span><span style="color: #008080;">21</span>     <span style="color: #0000ff;">string</span> password  = 3<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">message UserInfo {
+</span><span style="color: #008080;">25</span>     int64  id       =  1<span style="color: #000000;">;
+</span><span style="color: #008080;">26</span>     <span style="color: #0000ff;">string</span> username =  2<span style="color: #000000;">;
+</span><span style="color: #008080;">27</span>     <span style="color: #0000ff;">string</span> email    =  3<span style="color: #000000;">;
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">message StreamingRequest {
+</span><span style="color: #008080;">33</span>     int64 <span style="color: #008080;">count</span> = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">message StreamingResponse {
+</span><span style="color: #008080;">37</span>     int64 <span style="color: #008080;">count</span> = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">40</span> <span style="color: #000000;">message Ping {
+</span><span style="color: #008080;">41</span>     int64 stroke = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">44</span> <span style="color: #000000;">message Pong {
+</span><span style="color: #008080;">45</span>     int64 stroke = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">46</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后生成执行下面命令我们就可以发现在proto文件中多出两个文件。这个proto为我们生成的，后面会用到。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>protoc --proto_path=${GOPATH}/src:. --micro_out=. --go_out=. proto/user/user.proto</code></pre>
+
+<p>&nbsp;</p>
+
+<p>写我们的业务逻辑，修改handle/user.go文件</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">type User struct{}
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Call is a single request handler called via client.Call or the generated client code</span>
+<span style="color: #008080;"> 4</span> func (e *User) Register(ctx context.Context, req *user.RegisterRequest, rsp *user.<span style="color: #000000;">UserInfo) error {
+</span><span style="color: #008080;"> 5</span>     <span style="color: #008080;">log</span>.<span style="color: #008080;">Log</span>("Received User.Register request"<span style="color: #000000;">)
+</span><span style="color: #008080;"> 6</span>     rsp.Id    = 1
+<span style="color: #008080;"> 7</span>     rsp.Email = req.<span style="color: #000000;">Email
+</span><span style="color: #008080;"> 8</span>     rsp.Username = req.<span style="color: #000000;">Username
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">return</span><span style="color: #000000;"> nil
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">13</span> func (e *User) User(ctx context.Context, req *user.UserInfoRequest, rsp *user.<span style="color: #000000;">UserInfo) error {
+</span><span style="color: #008080;">14</span>     <span style="color: #008080;">log</span>.<span style="color: #008080;">Log</span>("Received User.Register request"<span style="color: #000000;">)
+</span><span style="color: #008080;">15</span>     rsp.Id    = 1
+<span style="color: #008080;">16</span>     rsp.Email = "741001560@qq.com"
+<span style="color: #008080;">17</span>     rsp.Username = "chensi"
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">return</span><span style="color: #000000;"> nil
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Stream is a server side stream handler called via client.Stream or the generated client code</span>
+<span style="color: #008080;">22</span> func (e *User) Stream(ctx context.Context, req *user.StreamingRequest, stream user.<span style="color: #000000;">User_StreamStream) error {
+</span><span style="color: #008080;">23</span>     <span style="color: #008080;">log</span>.Logf("Received User.Stream request with count: %d", req.<span style="color: #008080;">Count</span><span style="color: #000000;">)
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">25</span>     <span style="color: #0000ff;">for</span> i := 0; i &lt; int(req.<span style="color: #008080;">Count</span>); i++<span style="color: #000000;"> {
+</span><span style="color: #008080;">26</span>         <span style="color: #008080;">log</span>.Logf("Responding: %d",<span style="color: #000000;"> i)
+</span><span style="color: #008080;">27</span>         <span style="color: #0000ff;">if</span> err := stream.Send(&amp;user.<span style="color: #000000;">StreamingResponse{
+</span><span style="color: #008080;">28</span>             <span style="color: #008080;">Count</span>: int64(i),
+<span style="color: #008080;">29</span>         }); err !=<span style="color: #000000;"> nil {
+</span><span style="color: #008080;">30</span>             <span style="color: #0000ff;">return</span><span style="color: #000000;"> err
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">34</span>     <span style="color: #0000ff;">return</span><span style="color: #000000;"> nil
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">//</span><span style="color: #008000;"> PingPong is a bidirectional stream handler called via client.Stream or the generated client code</span>
+<span style="color: #008080;">38</span> func (e *User) PingPong(ctx context.Context, stream user.<span style="color: #000000;">User_PingPongStream) error {
+</span><span style="color: #008080;">39</span>     <span style="color: #0000ff;">for</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">40</span>         req, err := stream.<span style="color: #000000;">Recv()
+</span><span style="color: #008080;">41</span>         <span style="color: #0000ff;">if</span> err !=<span style="color: #000000;"> nil {
+</span><span style="color: #008080;">42</span>             <span style="color: #0000ff;">return</span><span style="color: #000000;"> err
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">44</span>         <span style="color: #008080;">log</span>.Logf("Got ping %v", req.<span style="color: #000000;">Stroke)
+</span><span style="color: #008080;">45</span>         <span style="color: #0000ff;">if</span> err := stream.Send(&amp;user.Pong{Stroke: req.Stroke}); err !=<span style="color: #000000;"> nil {
+</span><span style="color: #008080;">46</span>             <span style="color: #0000ff;">return</span><span style="color: #000000;"> err
+</span><span style="color: #008080;">47</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">48</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">49</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">50</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<p>最后修改我们的main.go文件，服务发现使用时consul。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">func main() {
+</span><span style="color: #008080;"> 2</span>     <span style="color: #008000;">//</span><span style="color: #008000;">initCfg()
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">    // New Service</span>
+<span style="color: #008080;"> 4</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 5</span>     micReg := consul.<span style="color: #000000;">NewRegistry()
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 7</span>     service := micro.<span style="color: #000000;">NewService(
+</span><span style="color: #008080;"> 8</span>         micro.Server(s.NewServer()),
+<span style="color: #008080;"> 9</span>         micro.Name("go.micro.srv.user"),
+<span style="color: #008080;">10</span>         micro.Version("latest"),
+<span style="color: #008080;">11</span>         micro.Registry(micReg),
+<span style="color: #008080;">12</span> <span style="color: #000000;">    )
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">14</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> Initialise service</span>
+<span style="color: #008080;">15</span>     service.<span style="color: #000000;">Init()
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">17</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> Run service</span>
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">if</span> err := service.Run(); err !=<span style="color: #000000;"> nil {
+</span><span style="color: #008080;">19</span>         <span style="color: #008080;">log</span>.<span style="color: #000000;">Fatal(err)
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">22</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<p>我们使用consul做微服务发现，当然首先你需要安装consul</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>wget https:<span style="color: #008000;">//</span><span style="color: #008000;">releases.hashicorp.com/consul/1.2.0/consul_1.6.1_linux_amd64.zip</span>
+unzip consul_1.6.1_linux_amd64.<span style="color: #000000;">zip
+mv consul </span>/usr/local/bin/</code></pre>
+
+<p>&nbsp;</p>
+
+<p>启动consul的时候由于在是本地虚拟机上面，所以我们可以简单处理</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>consul agent -dev  -client 0.0.0.0 -ui</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这时候可以启动consul的ui了，我本地vagrant的虚拟机192.168.10.100，那么我们打开的是<a class=" external" href="https://link.zhihu.com/?target=http%3A//192.168.10.100%3A8500/ui/dc1/services" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">http://<span class="visible">192.168.10.100:8500/ui/<span class="invisible">dc1/services</span></span></span></a></p>
+<p>启动user-srv的服务发现consul里面出现 go.micro.srv.user 的服务注册信息了</p>
+<p>下面来写hyperf的代码了。按照官方文档安装框架，安装的时候rpc需要选择grpc，需要注意的是你的系统上面需要安装php7.2以上的版本，swoole版本也需要4.3的版本以上，我用的是最新homestead，所以相对而言安装这些依赖比较简单，所以在此强烈推荐。</p>
+<p>第一次启动时候官方会要求修改一些php.ini的参数，大家安装要求走就是了。</p>
+<p>这部分的流程自己参照官方文档，至于一些扩展的安装可以谷歌或者百度。</p>
+<p>安装好框架之后再根目录下面新建一个grpc和proto的目录，把go-micro里面user.proto文件复制到hyperf项目的proto的目录之下。然后在目录下执行命令</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>protoc --php_out=plugins=grpc:../grpc user.proto</code></pre>
+
+<p>&nbsp;</p>
+
+<p>执行成功之后会发现在grpc目录下多出两个文件夹。</p>
+<p>接下来我们开始编写client的代码，在hyperf项目的app目录下新建一个Grpc的目录并且新建一个UserClient.php的文件</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">namespace App\Grpc;
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Go\Micro\Srv\User\RegisterRequest;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Go\Micro\Srv\User\UserInfo;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Hyperf\GrpcClient\BaseClient;
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">class</span> UserClient <span style="color: #0000ff;">extends</span><span style="color: #000000;"> BaseClient
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> Register(RegisterRequest <span style="color: #800080;">$argument</span><span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">simpleRequest(
+</span><span style="color: #008080;">13</span>             '/user.User/Register',
+<span style="color: #008080;">14</span>             <span style="color: #800080;">$argument</span>,
+<span style="color: #008080;">15</span>             [UserInfo::<span style="color: #0000ff;">class</span>, 'decode'<span style="color: #000000;">]
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span> ​</code></pre>
+
+<p>&nbsp;</p>
+
+<p>关于这一块的代码，其实官方文档写得特别详细，具体可以参照官方文档。</p>
+<p>新建一个路由</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>Router::addRoute(['GET', 'POST', 'HEAD'], '/grpc', 'App\Controller\IndexController@grpc');</code></pre>
+
+
+<p>编写控制器</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> grpc ()
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 4</span>         <span style="color: #800080;">$client</span> = <span style="color: #0000ff;">new</span> \App\Grpc\UserClient('127.0.0.1:9527',<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 5</span>             'credentials' =&gt; <span style="color: #0000ff;">null</span>,
+<span style="color: #008080;"> 6</span> <span style="color: #000000;">        ]);
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 8</span>         <span style="color: #800080;">$request</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> RegisterRequest();
+</span><span style="color: #008080;"> 9</span>         <span style="color: #800080;">$request</span>-&gt;setEmail("741001560@qq.com"<span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>         <span style="color: #800080;">$request</span>-&gt;setUsername("chensi"<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>         <span style="color: #800080;">$request</span>-&gt;setPassword("123456"<span style="color: #000000;">);
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">13</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">         * @var \Grpc\HiReply $reply
+</span><span style="color: #008080;">15</span>          <span style="color: #008000;">*/</span>
+<span style="color: #008080;">16</span>         <span style="color: #0000ff;">list</span>(<span style="color: #800080;">$reply</span>, <span style="color: #800080;">$status</span>) = <span style="color: #800080;">$client</span>-&gt;Register(<span style="color: #800080;">$request</span><span style="color: #000000;">);
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">18</span>         <span style="color: #800080;">$message</span> = <span style="color: #800080;">$reply</span>-&gt;<span style="color: #000000;">getId();
+</span><span style="color: #008080;">19</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;"> [
+</span><span style="color: #008080;">20</span>             'id' =&gt; <span style="color: #800080;">$message</span>
+<span style="color: #008080;">21</span> <span style="color: #000000;">        ];
+</span><span style="color: #008080;">22</span>     }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这时候还需要吧根目录下的grpc目录加载进来。修改composer.json文件</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">```
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> psr-4 下面新增两个行</span>
+"autoload":<span style="color: #000000;"> {
+        </span>"psr-4":<span style="color: #000000;"> {
+            </span>"App\\": "app/",
+            "GPBMetadata\\": "grpc/GPBMetadata",
+            "Go\\": "grpc/Go"<span style="color: #000000;">
+        }</span>,
+        "files":<span style="color: #000000;"> []
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>然后执行composer dump-autoload命令。然后启动hyperf项目，打开浏览器输入<a class=" external" href="https://link.zhihu.com/?target=http%3A//192.168.10.100%3A9501/grpc" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">http://<span class="visible">192.168.10.100:9501/grp<span class="invisible">c</span></span></span></a>回车，这时候我们就能看到结果了。</p>
+<p>这时候我们会发现一个问题，那就是consul在client端压根没用到，在代码中我们还是需要指明我们的端口号。然后再看看官方文档其实是支持consul的，那么将代码改造下。</p>
+<p>在app下新建一个Register的目录创建一个文件ConsulServices.php，然后开始编写服务发现的代码，安装consul包以后，由于官方提供的consul包没有文档所以需要自己去看源代码。官方在consul提供的api上面做了简单的封装，如KV、Health等，在实例化话的时候需要穿一个客户端过去。下面提供一个简单的实例。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">declare</span>(strict_types=1<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">namespace App\Register;
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">​
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Hyperf\Consul\Health;
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Psr\Container\ContainerInterface;
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Hyperf\Guzzle\ClientFactory;
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> ConsulServices
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">13</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$servers</span><span style="color: #000000;">;
+</span><span style="color: #008080;">14</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$container</span><span style="color: #000000;">;
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">17</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(ContainerInterface <span style="color: #800080;">$container</span><span style="color: #000000;">)
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">19</span>         <span style="color: #800080;">$this</span>-&gt;container = <span style="color: #800080;">$container</span><span style="color: #000000;">;
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">22</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getServers()
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">24</span>         <span style="color: #800080;">$health</span> = <span style="color: #0000ff;">new</span> Health(<span style="color: #0000ff;">function</span><span style="color: #000000;"> ()  {
+</span><span style="color: #008080;">25</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;container-&gt;get(ClientFactory::<span style="color: #0000ff;">class</span>)-&gt;<span style="color: #000000;">create([
+</span><span style="color: #008080;">26</span>                 'base_uri' =&gt; 'http://127.0.0.1:8500',
+<span style="color: #008080;">27</span> <span style="color: #000000;">            ]);
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;">29</span>         <span style="color: #800080;">$resp</span> = <span style="color: #800080;">$health</span>-&gt;service("go.micro.srv.user"<span style="color: #000000;">);
+</span><span style="color: #008080;">30</span>         <span style="color: #800080;">$servers</span> = <span style="color: #800080;">$resp</span>-&gt;<span style="color: #000000;">json();
+</span><span style="color: #008080;">31</span>         <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$servers</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">32</span>             <span style="color: #800080;">$this</span>-&gt;servers =<span style="color: #000000;"> [];
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">34</span>         <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$servers</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$server</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">35</span>             <span style="color: #800080;">$this</span>-&gt;servers[] = <span style="color: #008080;">sprintf</span>("%s:%d",<span style="color: #800080;">$server</span>['Service']['Address'],<span style="color: #800080;">$server</span>['Service']['Port'<span style="color: #000000;">]);
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">38</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这时候发现一个问题如果每次请求过来都去请求一次必然给consul造成很大的负荷。既然用到了swoole框架可以在每次swoole启动的时候去请求一次，然后把服务发现的信息存起来。修改配置文件server。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> 'callbacks' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">//</span><span style="color: #008000;">        SwooleEvent::ON_BEFORE_START =&gt; [Hyperf\Framework\Bootstrap\ServerStartCallback::class, 'beforeStart'],</span>
+<span style="color: #008080;"> 3</span>         SwooleEvent::ON_BEFORE_START =&gt; [\App\Bootstrap\ServerStartCallback::<span style="color: #0000ff;">class</span>, 'beforeStart'],
+<span style="color: #008080;"> 4</span>         SwooleEvent::ON_WORKER_START =&gt; [Hyperf\Framework\Bootstrap\WorkerStartCallback::<span style="color: #0000ff;">class</span>, 'onWorkerStart'],
+<span style="color: #008080;"> 5</span>         SwooleEvent::ON_PIPE_MESSAGE =&gt; [Hyperf\Framework\Bootstrap\PipeMessageCallback::<span style="color: #0000ff;">class</span>, 'onPipeMessage'],
+<span style="color: #008080;"> 6</span>     ],
+<span style="color: #008080;"> 7</span> <span style="color: #000000;">可以在ServerStartCallback类里面请求consul进行服务发现 后面拿到参数就好了。
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #000000;">namespace App\Bootstrap;
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Register\ConsulServices;
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">​
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> ServerStartCallback
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">15</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> beforeStart()
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">17</span>         <span style="color: #800080;">$container</span> = \Hyperf\Utils\ApplicationContext::<span style="color: #000000;">getContainer();
+</span><span style="color: #008080;">18</span>         <span style="color: #800080;">$container</span>-&gt;get(ConsulServices::<span style="color: #0000ff;">class</span>)-&gt;<span style="color: #000000;">getServers();
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">20</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>改造一下原来的控制器</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> grpc ()
+{
+​
+        </span><span style="color: #800080;">$container</span> = \Hyperf\Utils\ApplicationContext::<span style="color: #000000;">getContainer();
+        </span><span style="color: #800080;">$servers</span> = <span style="color: #800080;">$container</span>-&gt;get(ConsulServices::<span style="color: #0000ff;">class</span>)-&gt;<span style="color: #000000;">servers;
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$servers</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> [
+                </span>'errCode' =&gt; 1000,
+                'msg'     =&gt; '服务不存在',<span style="color: #000000;">
+            ];
+        }
+        </span><span style="color: #800080;">$key</span> = <span style="color: #008080;">array_rand</span>(<span style="color: #800080;">$servers</span>,1); <span style="color: #008000;">//</span><span style="color: #008000;"> 哈哈哈一个简单的负载均衡</span>
+        <span style="color: #800080;">$hostname</span> = <span style="color: #800080;">$servers</span>[<span style="color: #800080;">$key</span><span style="color: #000000;">];
+        </span><span style="color: #800080;">$client</span> = <span style="color: #0000ff;">new</span> \App\Grpc\UserClient(<span style="color: #800080;">$hostname</span>,<span style="color: #000000;"> [
+            </span>'credentials' =&gt; <span style="color: #0000ff;">null</span>,<span style="color: #000000;">
+        ]);
+        </span><span style="color: #800080;">$request</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> RegisterRequest();
+        </span><span style="color: #800080;">$request</span>-&gt;setEmail("741001560@qq.com"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$request</span>-&gt;setUsername("chensi"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$request</span>-&gt;setPassword("123456"<span style="color: #000000;">);
+​
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+         * @var \Grpc\HiReply $reply
+         </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">list</span>(<span style="color: #800080;">$reply</span>, <span style="color: #800080;">$status</span>) = <span style="color: #800080;">$client</span>-&gt;Register(<span style="color: #800080;">$request</span><span style="color: #000000;">);
+​
+        </span><span style="color: #800080;">$message</span> = <span style="color: #800080;">$reply</span>-&gt;<span style="color: #000000;">getId();
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> [
+            </span>'id' =&gt; <span style="color: #800080;">$message</span><span style="color: #000000;">
+        ];
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>重启服务，这时候然后刷新浏览器试试。这时候一个简单基于go rpc server和php client的微服务就搭建完成了。当然了这时候还没有心跳机制，hyperf官网提供了一个定时器的功能，我们定时去刷服务发现就好了。</p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

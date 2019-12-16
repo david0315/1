@@ -1,0 +1,79 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php通过session来实现登录验证' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php通过session来实现登录验证</center></div><div class='banquan'>原文出处:本文由博客园博主是圈圈呀提供。<br/>
+原文连接:https://www.cnblogs.com/syyjoy/p/10951129.html</div><br>
+    <h2>1、概述</h2>
+<p>这几天在做一个内部统计管理系统，所有内容需要登录后才能查看。这就需要系统内部每个模块都有登录验证的功能。在网上找了一圈资料，决定用session来做。</p>
+<h2>2、系统概况</h2>
+<p>后端语言：php（用的是原生php，未引入框架）</p>
+<p>前端样式：Bootstrap</p>
+<p>主要功能：基本的管理员功能，普通用户需要通过管理员来统一管理。普通用户可以查看统计数据，管理员用户只能登入管理员中心管理用户。</p>
+<h2>3、session使用</h2>
+<p>a、登录成功后需要创建和记录session</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+    </span><span style="color: #0000ff;">require</span> "../DB/MySQLHelper.php"<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">require</span> "../BLL/UserBLL.php"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$result</span> = -1<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">count</span>(<span style="color: #800080;">$_POST</span>)!=2<span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$name</span> = <span style="color: #800080;">$_POST</span>["name"<span style="color: #000000;">];
+    </span><span style="color: #800080;">$password</span> = <span style="color: #800080;">$_POST</span>["password"<span style="color: #000000;">];
+
+    </span><span style="color: #800080;">$helper</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> MySQLHelper();
+    </span><span style="color: #800080;">$helper</span>-&gt;<span style="color: #000000;">InitMySQL();
+    </span><span style="color: #800080;">$level</span> = SelectUserLevel(<span style="color: #800080;">$helper</span>,<span style="color: #800080;">$name</span>,<span style="color: #800080;">$password</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$level</span> != -1<span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$level</span><span style="color: #000000;">;
+        </span><span style="color: #008080;">session_start</span><span style="color: #000000;">();
+        </span><span style="color: #800080;">$_SESSION</span>["user"] = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$_SESSION</span>["name"]=<span style="color: #800080;">$name</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$_SESSION</span>["pwd"]=<span style="color: #800080;">$password</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<p>b、其他功能模块使用session的具体方法，写了一个通用的php，其他模块在调用前先调用该php判断是否登录。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$user</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    </span><span style="color: #008080;">session_start</span><span style="color: #000000;">();
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">  判断是否登陆</span>
+    <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_SESSION</span>["user"]) &amp;&amp; <span style="color: #800080;">$_SESSION</span>["user"] === <span style="color: #0000ff;">true</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">echo</span> "true"<span style="color: #000000;">;
+    } 
+    </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$_SESSION</span>["user"] = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">echo</span> "false"<span style="color: #000000;">;
+    }
+
+</span>?&gt;</code></pre>
+
+<h2>4、总结</h2>
+<p>系统整体功能比较简单，主要就是熟悉登录整个流程。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,43 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 面试官问：你说说Redis的几个过期策略？' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 面试官问：你说说Redis的几个过期策略？</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11831938.html</div><br>
+    <p>在使用redis时，一般会设置一个过期时间，当然也有不设置过期时间的，也就是永久不过期。当设置了过期时间，redis是如何判断是否过期，以及根据什么策略来进行删除的。</p>
+<p><strong>设置过期时间</strong><br />　expire key time(以秒为单位) 这是最常用的方式<br />setex(String key, int seconds, String value) 字符串独有的方式<br />除了字符串自己独有设置过期时间的方法外，其他方法都需要依靠expire方法来设置时间如果没有设置时间，那缓存就是永不过期如果设置了过期时间，之后又想让缓存永不过期，使用persist key</p>
+<p><br /><strong>三种过期策略</strong><br /><strong>定时删除</strong><br />在设置key的过期时间的同时，为该key创建一个定时器，让定时器在key的过期时间来临时，对key进行删除</p>
+<p><strong>优点：</strong></p>
+<p>保证内存被尽快释放<br /><strong>缺点：</strong></p>
+<p>&nbsp; &nbsp;若过期key很多，删除这些key会占用很多的CPU时间，在CPU时间紧张的情况下，CPU不能把所有的时间用来做要紧的事儿，还需要去花时间删除这些key<br />定时器的创建耗时，若为每一个设置过期时间的key创建一个定时器（将会有大量的定时器产生），性能影响严重<br />懒汉式式删除<br />key过期的时候不删除，每次通过key获取值的时候去检查是否过期，若过期，则删除，返回null。</p>
+<p><strong>优点：</strong></p>
+<p>删除操作只发生在通过key取值的时候发生，而且只删除当前key，所以对CPU时间的占用是比较少的，而且此时的删除是已经到了非做不可的地步（如果此时还不删除的话，我们就会获取到了已经过期的key了）<br /><strong>缺点：</strong></p>
+<p>若大量的key在超出超时时间后，很久一段时间内，都没有被获取过，那么可能发生内存泄露（无用的垃圾占用了大量的内存）<br /><strong>定期删除</strong><br />每隔一段时间执行一次删除过期key操作</p>
+<p><strong>优点：</strong></p>
+<p>&nbsp; &nbsp; 通过限制删除操作的时长和频率，来减少删除操作对CPU时间的占用--处理"定时删除"的缺点<br />定期删除过期key--处理"懒汉式删除"的缺点<br /><strong>缺点：</strong></p>
+<p>&nbsp; &nbsp;在内存友好方面，不如"定时删除"（会造成一定的内存占用，但是没有懒汉式那么占用内存）<br />在CPU时间友好方面，不如"懒汉式删除"（会定期的去进行比较和删除操作，cpu方面不如懒汉式，但是比定时好）<br /><strong>难点：</strong></p>
+<p>&nbsp; 合理设置删除操作的执行时长（每次删除执行多长时间）和执行频率（每隔多长时间做一次删除）（这个要根据服务器运行情况来定了），每次执行时间太长，或者执行频率太高对cpu都是一种压力。<br />每次进行定期删除操作执行之后，需要记录遍历循环到了哪个标志位，以便下一次定期时间来时，从上次位置开始进行循环遍历<br /><strong>说明：</strong></p>
+<p>&nbsp; &nbsp; memcached只是用了惰性删除，而redis同时使用了惰性删除与定期删除，这也是二者的一个不同点（可以看做是redis优于memcached的一点）；<br />对于懒汉式删除而言，并不是只有获取key的时候才会检查key是否过期，在某些设置key的方法上也会检查（eg.setnx key2 value2：该方法类似于memcached的add方法，如果设置的key2已经存在，那么该方法返回false，什么都不做；如果设置的key2不存在，那么该方法设置缓存key2-value2。假设调用此方法的时候，发现redis中已经存在了key2，但是该key2已经过期了，如果此时不执行删除操作的话，setnx方法将会直接返回false，也就是说此时并没有重新设置key2-value2成功，所以对于一定要在setnx执行之前，对key2进行过期检查）。<br />Redis采用的过期策略<br />懒汉式删除+定期删除</p>
+<p><strong>懒汉式删除流程：</strong><br />在进行get或setnx等操作时，先检查key是否过期；<br />若过期，删除key，然后执行相应操作；<br />若没过期，直接执行相应操作；<br />定期删除流程<br />简单而言，对指定个数个库的每一个库随机删除小于等于指定个数个过期key</p>
+<p>遍历每个数据库（就是redis.conf中配置的"database"数量，默认为16）<br />检查当前库中的指定个数个key（默认是每个库检查20个key，注意相当于该循环执行20次，循环体是下边的描述）<br />如果当前库中没有一个key设置了过期时间，直接执行下一个库的遍历<br />随机获取一个设置了过期时间的key，检查该key是否过期，如果过期，删除key<br />判断定期删除操作是否已经达到指定时长，若已经达到，直接退出定期删除。<br />对于定期删除，在程序中有一个全局变量currentdb来记录下一个将要遍历的库，假设有16个库，我们这一次定期删除遍历了10个，那此时的currentdb就是11，下一次定期删除就从第11个库开始遍历，假设currentdb等于15了，那么之后遍历就再从0号库开始（此时currentdb==0）<br /><strong>总结</strong><br />在实际中，如果我们要自己设计过期策略，在使用懒汉式删除+定期删除时，控制时长和频率这个尤为关键，需要结合服务器性能，已经并发量等情况进行调整，以致最佳。<br /><br /><br /></p>
+<p><strong>很多人在刚接触这个行业的时候或者是在遇到瓶颈期的时候，总会遇到一些问题，比如学了一段时间感觉没有方向感，不知道该从那里入手去学习，对此我整理了一些资料，需要的可以免费分享给大家<a href="https://link.zhihu.com/?target=https%3A//jq.qq.com/%3F_wv%3D1027%26k%3D55dPDrC" target="_blank">（点击此处加入php高级交流群一起学习交流，11年架构师带你解读年薪50万面试通关秘籍。）</a></strong></p>
+<p><strong>如果喜欢我的文章，想与一群资深开发者一起交流学习的话，获取更多相关大厂面试咨询和指导，欢迎加入我的学习交流群<a href="https://link.zhihu.com/?target=https%3A//jq.qq.com/%3F_wv%3D1027%26k%3D5kN6y8c" target="_blank">677079770</a></strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

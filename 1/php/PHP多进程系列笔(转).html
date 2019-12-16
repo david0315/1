@@ -1,0 +1,207 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP多进程系列笔(转)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP多进程系列笔(转)</center></div><div class='banquan'>原文出处:本文由博客园博主WebLinuxStudy提供。<br/>
+原文连接:https://www.cnblogs.com/WebLinuxStudy/p/11555457.html</div><br>
+    <p>本系列文章将向大家讲解<code>pcntl_*</code>系列函数，从而更深入的理解进程相关知识。</p>
+<blockquote>PCNTL在PHP中进程控制支持默认是关闭的。您需要使用&nbsp;<code>--enable-pcntl</code>&nbsp;配置选项重新编译PHP的 CGI或CLI版本以打开进程控制支持。</blockquote>
+<p>如果自带的PHP没有安装pcntl扩展，可以下载相同版本的源码，进入<code>ext/pcntl</code>使用<code>phpize</code>编译安装。</p>
+<blockquote>Note: 此扩展在 Windows 平台上不可用。</blockquote>
+<h2 id="articleHeader0">pcntl_fork</h2>
+<pre><code><code class="php">int pcntl_fork ( void )</code></code></pre>
+<p>用于创建子进程。成功时，在父进程执行线程内返回产生的子进程的PID，在子进程执行线程内返回0。失败时，在父进程上下文返回-1，不会创建子进程，并且会引发一个PHP错误。</p>
+<p>fork.php</p>
+<pre><code><code class="php"><span class="hljs-meta">&lt;?php 
+
+$pid = pcntl_fork();
+
+<span class="hljs-keyword">if($pid == <span class="hljs-number">-1){
+    <span class="hljs-comment">//错误处理：创建子进程失败时返回-1.
+    <span class="hljs-keyword">die( <span class="hljs-string">'could not fork' );
+}<span class="hljs-keyword">elseif($pid){
+    <span class="hljs-comment">//父进程会得到子进程号，所以这里是父进程执行的逻辑
+    $id = getmypid();   
+    <span class="hljs-keyword">echo <span class="hljs-string">"Parent process,pid {$id}, child pid {$pid}\n";   
+}<span class="hljs-keyword">else{
+    <span class="hljs-comment">//子进程得到的$pid为0, 所以这里是子进程执行的逻辑
+    $id = getmypid();   
+    <span class="hljs-keyword">echo <span class="hljs-string">"Child process,pid {$id}\n";   
+    sleep(<span class="hljs-number">10); 
+}</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>命令行运行：</p>
+<pre class="hljs properties"><code><span class="hljs-meta">$ <span class="hljs-string">php fork.php
+<span class="hljs-attr">Parent <span class="hljs-string">process,pid 98, child pid 99
+<span class="hljs-attr">Child <span class="hljs-string">process,pid 99</span></span></span></span></span></span></code></code></pre>
+<p>该例里父进程还没有来得及等子进程运行完毕就自动退出了，子进程由&nbsp;<code>init</code>进程接管。通过&nbsp;<code>ps -ef | grep php</code>&nbsp;看到子进程还在运行：</p>
+<pre class="hljs perl"><code>[root@9355490fe5da /]<span class="hljs-comment"># ps -ef | grep php
+root       <span class="hljs-number">105     <span class="hljs-number">1  <span class="hljs-number">0 <span class="hljs-number">16:<span class="hljs-number">46 pts/<span class="hljs-number">0    <span class="hljs-number">00:<span class="hljs-number">00:<span class="hljs-number">00 php fork.php
+root       <span class="hljs-number">107    <span class="hljs-number">27  <span class="hljs-number">0 <span class="hljs-number">16:<span class="hljs-number">46 pts/<span class="hljs-number">1    <span class="hljs-number">00:<span class="hljs-number">00:<span class="hljs-number">00 <span class="hljs-keyword">grep php</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>子进程成为孤立进程，ppid(父进程id)变成1了。如果在父进程里也加个<code>sleep(5)</code>，你会看到子进程ppid本来是大于1的，后来就变成1了。</p>
+<blockquote>注：如果是docker环境，孤立进程的ppid可能是0。</blockquote>
+<h2 id="articleHeader1">pcntl_wait</h2>
+<p><code>pcntl_wait()</code>函数用来让父进程等待子进程退出，默认情况下会阻塞主进程。</p>
+<h3 id="articleHeader2">阻塞模式</h3>
+<p>紧接着上面的例子，如果想等子进程运行结束后父进程再退出，该怎么办？那就用到<code>pcntl_wait</code>了。</p>
+<pre><code><code class="php">int pcntl_wait ( int &amp;$status [, int $options =&nbsp;<span class="hljs-number">0&nbsp;] )</span></code></code></pre>
+<p>该函数阻塞当前进程，只到当前进程的一个子进程退出或者收到一个结束当前进程的信号。</p>
+<p>我们修改代码：</p>
+<pre><code><code class="php"><span class="hljs-meta">&lt;?php 
+
+$pid = pcntl_fork();
+<span class="hljs-keyword">if($pid == <span class="hljs-number">-1){
+    <span class="hljs-keyword">exit(<span class="hljs-string">"fork fail");
+}<span class="hljs-keyword">elseif($pid){
+    $id = getmypid();   
+    <span class="hljs-keyword">echo <span class="hljs-string">"Parent process,pid {$id}, child pid {$pid}\n";   
+    pcntl_wait($status);
+    <span class="hljs-comment">//pcntl_waitpid($pid, $status);
+}<span class="hljs-keyword">else{
+    $id = getmypid();   
+    <span class="hljs-keyword">echo <span class="hljs-string">"Child process,pid {$id}\n";   
+    sleep(<span class="hljs-number">10); 
+}</span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>此时再次运行程序，父进程就会一直等待子进程运行结束然后退出。</p>
+<blockquote><code>pcntl_waitpid()</code>和<code>pcntl_wait()</code>功能相同。前者第一个参数支持指定pid参数，当指定-1作为<code>pid</code>的值等同于后者。</blockquote>
+<pre><code><code class="php">int pcntl_waitpid ( int $pid , int &amp;$status [, int $options =&nbsp;<span class="hljs-number">0&nbsp;] )</span></code></code></pre>
+<blockquote>当已知子进程pid的时候，可以使用<code>pcntl_waitpid()</code>。</blockquote>
+<p>这两个函数返回退出的子进程进程号(&gt;1)，发生错误时返回-1,如果提供了&nbsp;<code>WNOHANG</code>&nbsp;作为option（wait3可用的系统）并且没有可用子进程时返回0。</p>
+<p>返回值为退出的子进程进程号时，想了解如何退出，可以通过&nbsp;<code>$status</code>状态码反应。</p>
+<h3 id="articleHeader3">非阻塞模式</h3>
+<p><code>pcntl_wait()</code>默认情况下会阻塞主进程，直到子进程执行完毕才继续往下运行。如果设置最后一个参数为常量<code>WNOHANG</code>，那么就不会阻塞主进程，而是继续执行后续代码， 此时&nbsp;<code>pcntl_waitpid</code>&nbsp;就会返回0。</p>
+<p>示例：</p>
+<pre><code><code class="php"><span class="hljs-meta">&lt;?php 
+
+$pid = pcntl_fork();
+<span class="hljs-keyword">if($pid == <span class="hljs-number">-1){
+    <span class="hljs-keyword">exit(<span class="hljs-string">"fork fail");
+}<span class="hljs-keyword">elseif($pid){
+    $id = getmypid();   
+    <span class="hljs-keyword">echo <span class="hljs-string">"Parent process,pid {$id}, child pid {$pid}\n";   
+
+    <span class="hljs-keyword">while(<span class="hljs-number">1){
+        $res = pcntl_wait($status, WNOHANG);
+        <span class="hljs-comment">//$res = pcntl_waitpid($pid, $status, WNOHANG);
+        <span class="hljs-keyword">if ($res == <span class="hljs-number">-1 || $res &gt; <span class="hljs-number">0){
+            sleep(<span class="hljs-number">10);<span class="hljs-comment">//此处为了方便看效果，实际不需要
+            <span class="hljs-keyword">break;
+        }
+    } 
+}<span class="hljs-keyword">else{
+    $id = getmypid();   
+    <span class="hljs-keyword">echo <span class="hljs-string">"Child process,pid {$id}\n";   
+    sleep(<span class="hljs-number">2); 
+}</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>该示例里只有一个子进程，看不出来非阻塞的好处，我们修改一下：</p>
+<pre><code><code class="php"><span class="hljs-meta">&lt;?php 
+
+$child_pids = [];
+
+<span class="hljs-keyword">for($i=<span class="hljs-number">0;$i&lt;<span class="hljs-number">3; $i++){
+    $pid = pcntl_fork();
+    <span class="hljs-keyword">if($pid == <span class="hljs-number">-1){
+        <span class="hljs-keyword">exit(<span class="hljs-string">"fork fail");
+    }<span class="hljs-keyword">elseif($pid){
+        $child_pids[] = $pid;
+
+        $id = getmypid();   
+        <span class="hljs-keyword">echo time().<span class="hljs-string">" Parent process,pid {$id}, child pid {$pid}\n";   
+    }<span class="hljs-keyword">else{
+        $id = getmypid(); 
+        $rand =   rand(<span class="hljs-number">1,<span class="hljs-number">3);
+        <span class="hljs-keyword">echo time().<span class="hljs-string">" Child process,pid {$id},sleep $rand\n";   
+        sleep($rand); <span class="hljs-comment">//#1 故意设置时间不一样
+        <span class="hljs-keyword">exit();<span class="hljs-comment">//#2 子进程需要exit,防止子进程也进入for循环
+    }
+}
+
+<span class="hljs-keyword">while(count($child_pids)){
+    <span class="hljs-keyword">foreach ($child_pids <span class="hljs-keyword">as $key =&gt; $pid) {
+        <span class="hljs-comment">// $res = pcntl_wait($status, WNOHANG);
+        $res = pcntl_waitpid($pid, $status, WNOHANG);<span class="hljs-comment">//#3
+        <span class="hljs-keyword">if ($res == <span class="hljs-number">-1 || $res &gt; <span class="hljs-number">0){
+            <span class="hljs-keyword">echo time().<span class="hljs-string">" Child process exit,pid {$pid}\n";   
+            <span class="hljs-keyword">unset($child_pids[$key]);
+        }<span class="hljs-keyword">else{
+            <span class="hljs-comment">// echo time()." Wait End,pid {$pid}\n";   //#4
+        }
+    }
+    
+} </span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p><code>#3</code>处首先先去掉<code>WNOHANG</code>参数，运行：</p>
+<pre class="hljs properties"><code><span class="hljs-meta">$ <span class="hljs-string">php fork.1.php 
+<span class="hljs-attr">1528637334 <span class="hljs-string">Parent process,pid 6600, child pid 6601
+<span class="hljs-attr">1528637334 <span class="hljs-string">Child process,pid 6601,sleep 2
+<span class="hljs-attr">1528637334 <span class="hljs-string">Parent process,pid 6600, child pid 6602
+<span class="hljs-attr">1528637334 <span class="hljs-string">Child process,pid 6602,sleep 2
+<span class="hljs-attr">1528637334 <span class="hljs-string">Parent process,pid 6600, child pid 6603
+<span class="hljs-attr">1528637334 <span class="hljs-string">Child process,pid 6603,sleep 1
+<span class="hljs-attr">1528637336 <span class="hljs-string">Child process exit,pid 6601
+<span class="hljs-attr">1528637336 <span class="hljs-string">Child process exit,pid 6602
+<span class="hljs-attr">1528637336 <span class="hljs-string">Child process exit,pid 6603</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>我们看到，6603号进程运行时间最短，但是是最后回收。我们再加上<code>WNOHANG</code>参数，运行：</p>
+<pre class="hljs properties"><code><span class="hljs-meta">$ <span class="hljs-string">php fork.1.php 
+<span class="hljs-attr">1528637511 <span class="hljs-string">Parent process,pid 6695, child pid 6696
+<span class="hljs-attr">1528637511 <span class="hljs-string">Child process,pid 6696,sleep 2
+<span class="hljs-attr">1528637511 <span class="hljs-string">Parent process,pid 6695, child pid 6697
+<span class="hljs-attr">1528637511 <span class="hljs-string">Child process,pid 6697,sleep 1
+<span class="hljs-attr">1528637511 <span class="hljs-string">Parent process,pid 6695, child pid 6698
+<span class="hljs-attr">1528637511 <span class="hljs-string">Child process,pid 6698,sleep 3
+<span class="hljs-attr">1528637512 <span class="hljs-string">Child process exit,pid 6697
+<span class="hljs-attr">1528637513 <span class="hljs-string">Child process exit,pid 6696
+<span class="hljs-attr">1528637514 <span class="hljs-string">Child process exit,pid 6698</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>6697进程最先回收！说明确实是异步非阻塞的。感兴趣的朋友还可以开启<code>#4</code>处代码，未使用<code>WNOHANG</code>参数的时候，里面的代码是不会运行的。</p>
+<p>注意：<code>#2</code>处需要注意<strong>子进程需要exit,防止子进程也进入for循环</strong>。如果没有<code>exit()</code>，最终创建的子进程不只3个。</p>
+<h3 id="articleHeader4">检测status函数</h3>
+<p>在&nbsp;<code>pcntl_wait</code>和<code>pcntl_waitpid</code>两个函数中的<code>$status</code>中存了子进程的状态信息，这个参数可以用于&nbsp;<code>pcntl_wifexited</code>、<code>pcntl_wifstopped</code>、<code>pcntl_wifsignaled</code>、<code>pcntl_wexitstatus</code>、&nbsp;<code>pcntl_wtermsig</code>、<code>pcntl_wstopsig</code>、<code>pcntl_waitpid</code>这些函数。</p>
+<p>代码片段：</p>
+<src class="widget-codetool">&nbsp;
+<pre><code><code class="php"><span class="hljs-keyword">while(<span class="hljs-number">1){
+$res = pcntl_wait($status);
+<span class="hljs-keyword">if ($res == <span class="hljs-number">-1 || $res &gt; <span class="hljs-number">0){
+
+    <span class="hljs-keyword">if(!pcntl_wifexited($status)){
+        <span class="hljs-comment">//进程非正常退出
+        <span class="hljs-keyword">echo <span class="hljs-string">"service exit unusally; pid is $pid\n";
+    }<span class="hljs-keyword">else{
+        <span class="hljs-comment">//获取进程终端的退出状态码;
+        $code = pcntl_wexitstatus($status);
+        <span class="hljs-keyword">echo <span class="hljs-string">"service exit code: $code;pid is $pid \n";
+    }
+
+    <span class="hljs-keyword">if(pcntl_wifsignaled($status)){
+        <span class="hljs-comment">//不是通过接受信号中断
+        <span class="hljs-keyword">echo <span class="hljs-string">"service term not by signal;pid is $pid \n";
+    }<span class="hljs-keyword">else{
+        $signal = pcntl_wtermsig($status);
+        <span class="hljs-keyword">echo <span class="hljs-string">"service term by signal $signal;pid is $pid\n";
+    }
+
+    <span class="hljs-keyword">if(pcntl_wifstopped($status)){
+        <span class="hljs-keyword">echo <span class="hljs-string">"service stop not unusally;pid is $pid \n";
+    }<span class="hljs-keyword">else{
+        $signal = pcntl_wstopsig($status);
+        <span class="hljs-keyword">echo <span class="hljs-string">"service stop by signal $signal;pid is $pid\n";
+    }
+
+    <span class="hljs-keyword">break;
+}</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code><br /><br /></code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,262 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php session的理解【转】' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php session的理解【转】</center></div><div class='banquan'>原文出处:本文由博客园博主小猿笔记提供。<br/>
+原文连接:https://www.cnblogs.com/KillBugMe/p/11821045.html</div><br>
+    <src class="toc">
+    <p class="toc-title">目录</p>
+    <src class="toc-list">
+        <ul>
+        <li><a href="#什么是session">1、什么是session？</a></li>
+        <li><a href="#session常见函数及用法">2、Session常见函数及用法？</a></li>
+        <li><a href="#如何删除session">● 如何删除session？</a></li>
+        <li><a href="#session安全">● SESSION安全:</a></li>
+        <li><a href="#session跨页传递问题">Session跨页传递问题：</a></li>
+        </ul>
+    
+
+<h2 id="什么是session">1、什么是session？</h2>
+<p>  Session的中文译名叫做“会话”，其本来的含义是指有始有终的一系列动作/消息，比如打电话时从拿起电话拨号到挂断电话这中间的一系列过程可以称之为一个session。目前社会上对session的理解非常混乱：有时候我们可以看到这样的话“在一个浏览器会话期间，...”，这里的会话是指从一个浏览器窗口打开到关闭这个期间；也可以看到“用户（客户端）在一次会话期间”这样一句话，它可能指用户的一系列动作（一般情况下是同某个具体目的相关的一系列动作，比如从登录到选购商品到结账登出这样一个网上购物的过程；然而有时候也可能仅仅是指一次连接；其中的差别只能靠上下文来推断了。<br />
+  然而当session一词与网络协议相关联时，它又往往隐含了“面向连接”和/或“保持状态”这样两个含义，“面向连接”指的是在通信双方在通信之前要先建立一个通信的渠道，比如打电话，直到对方接了电话通信才能开始。“保持状态”则是指通信的一方能够把一系列的消息关联起来，使得消息之间可以互相依赖，比如一个服务员能够认出再次光临的老顾客并且记得上次这个顾客还欠店里一块钱。这一类的例子有“一个TCP session”或者“一个POP3 session”。<br />
+  鉴于这种混乱已不可改变，要为session下个定义就很难有统一的标准。而在阅读session相关资料时，我们也只有靠上下文来推断理解了。不过我们可以这样理解：<font color=red><strong>例如我们打电话，从拨通的那一刻起到挂断电话期间，因为电话一直保持着接通的状态，所以把这种接通的状态叫做session。</strong> </font>它是访客与整个网站交互过程中一直存在的公有变量，在客户端不支持COOKIE的时候，为了保证数据正确、安全，就采用SESSION变量。访问网站的来客会被分配一个唯一的标识符，即所谓的会话 ID。它要么存放在客户端的 cookie，要么经由 URL 传递。<br />
+  SESSION的发明填补了HTTP协议的局限：HTTP协议被认为是无状态协议，无法得知用户的浏览状态，当它在服务端完成响应之后，服务器就失去了与该浏览器的联系。这与HTTP协议本来的目的是相符的，客户端只需要简单的向服务器请求下载某些文件，无论是客户端还是服务器都没有必要纪录彼此过去的行为，每一次请求之间都是独立的，好比一个顾客和一个自动售货机或者一个普通的（非会员制）大卖场之间的关系一样。<br />
+  因此通过SESSION(cookie是另外一种解决办法)记录用户的有关信息，以供用户再次以此身份对web服务器提起请求时作确认。会话的发明使得一个用户在多个页面间切换时能够保存他的信息。网站编程人员都有这样的体会，每一页中的变量是不能在下一页中使用的(虽然form，url也可以实现，但这都是非常不理想的办法)，而SESSION中注册的变量就可以作为全局变量使用了。<br />
+  那么SESSION到底有什么用处呢？网上购物时大家都用过购物车，你可以随时把你选购的商品加入到购物车中，最后再去收银台结帐。在整个过程中购物车一直扮演着临时存贮被选商品的角色，用它追踪用户在网站上的活动情况，这就是SESSION的作用，它可以用于用户身份认证，程序状态记录，页面之间参数传递等。<br />
+  SESSION 的实现中采用COOKIE技术，SESSION会在客户端保存一个包含session_id(SESSION编号)的COOKIE；在服务器端保存其他 session变量，比如session_name等等。当用户请求服务器时也把session_id一起发送到服务器，通过session_id提取所保存在服务器端的变量，就能识别用户是谁了。同时也不难理解为什么SESSION有时会失效了。<br />
+   注：<font color=red> <strong>当客户端禁用COOKIE时(点击IE中的“工具”—“internet=&quot;&quot;&gt;Internet选项”，在弹出的对话框里点击“安全”—“自定义级别”项，将“允许每个对话COOKIE”设为禁用)，session_id将无法传递，此时SESSION失效。</strong> </font>不过php5在linux/unix平台可以自动检查cookie状态，如果客户端设置了禁用，则系统自动把session_id附加到url上传递。windows主机则无此功能。</p>
+<h2 id="session常见函数及用法">2、Session常见函数及用法？</h2>
+<p><font color=red><strong>Session_start()</strong></font> ：开始一个会话或者返回已经存在的会话。<br />
+说明：这个函数没有参数，且返回值均为true。如果你使用基于cookie的session(cookie-based sessions),那么<font color=red><strong>在使用Session_start()之前浏览器不能有任何输出</strong></font>，否则会发生以下错误：</p>
+<blockquote>
+<p>Warning: Cannot send session cache limiter - headers already sent (output started at /usr/local/apache/htdocs/cga/member/1.php:2)…………</p>
+</blockquote>
+<p>你可以在php.ini里启动 <strong>session.auto_start=1</strong>，这样就无需每次使用session之前都要调用session_start()。但启用该选项也有一些限制，如果确实启用了 session.auto_start，则<strong>不能将对象放入会话中</strong>，因为类定义必须在启动会话之前加载以在会话中重建对象。<br />
+请求结束后所有注册的变量都会被序列化。已注册但未定义的变量被标记为未定义。在之后的访问中这些变量也未被会话模块定义，除非用户以后定义它们。<br />
+<font color=red><strong>警告: 有些类型的数据不能被序列化因此也就不能保存在会话中。包括 resource 变量或者有循环引用的对象（即某对象将一个指向自己的引用传递给另一个对象）。</strong></font><br />
+<strong>注册SESSION变量：</strong><br />
+PHP5使用$_SESSION[‘xxx’]=xxx注册SESSION全局变量。和GET，POST，COOKIE的使用方法相似。<br />
+注意：session_register()，session_unregister ，session_is_registered在php5下不再使用，除非在php.ini里把register_globle设为on，不过出于安全考虑，强烈建议关闭register_globle。HTTP_SESSION_VARS也不提倡使用了，**官方建议用$_SESSION代替之<strong>。例如：<br />
+</strong>Page1.php**</p>
+<pre><code><code>&lt;?php
+Session_start();       //使用SESSION前必须调用该函数。
+$_SESSION[&quot;name&quot;]=&quot;我是黑旋风李逵!&quot;;   //注册一个SESSION变量
+$_SESSION[&quot;passwd&quot;]=&quot;mynameislikui&quot;;
+$_SESSION[&quot;time&quot;]=time();
+echo &#39;&lt;br /&gt;&lt;a href=&quot;page2.php&quot;&gt;通过COOKIE传递SESSION&lt;/a&gt;&#39;;   //如果客户端支持cookie，可通过该链接传递session到下一页。
+echo &#39;&lt;br /&gt;&lt;a href=&quot;page2.php?&#39; . SID . &#39;&quot;&gt;通过URL传递SESSION&lt;/a&gt;&#39;;//客户端不支持cookie时，使用该办法传递session.
+?&gt;</code></code></pre>
+<p><strong>Page2.php</strong></p>
+<pre><code><code>&lt;?php
+session_start();
+echo $_SESSION[&#39;name&#39;]; //
+echo $_SESSION[&#39;passwd&#39;];   //
+echo date(&#39;Y m d H:i:s&#39;, $_SESSION[&#39;time&#39;]);
+echo &#39;&lt;br /&gt;&lt;a href=&quot;page1.php&quot;&gt;返回山一页&lt;/a&gt;&#39;;
+?&gt;</code></code></pre>
+<p><strong>有两种方法传递一个会话 ID：</strong></p>
+<ol>
+<li>cookie</li>
+<li>URL 参数</li>
+</ol>
+<p>会话模块支持这两种方法。cookie 更优化，但由于不总是可用，也提供替代的方法。第二种方法直接将会话 ID 嵌入到 URL 中间去。<br />
+PHP 可以透明地转换连接。除非是使用 PHP 4.2 或更新版本，需要手工在编译 PHP 时激活。在 Unix 下，用 --enable-trans-sid 配置选项。如果此配置选项和运行时选项 session.use_trans_sid 都被激活(修改php.ini)，相对 URI 将被自动修改为包含会话 ID。<br />
+<strong>●session_id</strong><br />
+session_id() 用于设定或取得当前session_id。php5中既可以使用session_id()，也可以通过附加在url上的SID取得当前会话的session_id和session_name。<br />
+如果session_id()有具体指定值的话，将取代当前的session_id值。使用该函数前必须启动会话：session_start();<br />
+当我们使用session cookies时，如果指定了一个session_id()值，每次启动session_start()都会往客户端发送一个cookie值。不论当前session_id是否与指定值相等。<br />
+session_id()如果没有指定值，则返回当前session_id();当前会话没有启动的话，则返回空字符串。<br />
+<strong>●检查session是否存在？</strong><br />
+在以往的php版本中通常使用session_is_register()检查session是否存在，如果您使用$_SESSION[‘XXX’]=XXX来注册会话变量，则session_is_register()函数不再起作用。你可以使用<br />
+<font color=red> isset($_SESSION[‘xxx’]) </font>来替代。</p>
+<p><strong>●更改session_id</strong><br />
+session_regenerate_id() 更改成功则返回true，失败则返回false。<br />
+使用该函数可以为当前session更改session_id，但不改变当前session的其他信息。例如：</p>
+<pre><code><code>&lt;?php
+session_start();
+$old_sessionid = session_id();
+session_regenerate_id();
+$new_sessionid = session_id();
+echo &quot;原始 SessionID: $old_sessionid&lt;br /&gt;&quot;;
+echo &quot;新的 SessionID: $new_sessionid&lt;br /&gt;&quot;;
+echo&quot;&lt;pre&gt;&quot;;
+print_r($_SESSION);
+echo&quot;&lt;/pre&gt;&quot;;
+?&gt;</code></code></pre>
+<p><strong>● session_name()</strong> 返回当前session的name或改变当前session的name。如果要改变当前session的name，必须在session_start() 之前调用该函数。注意：session_name不能只由数字组成，它至少包含一个字母。否则会在每时每刻都生成一个新的session id.<br />
+session改名示例：<br />
+&lt;?php<br />
+$previous_name = session_name(&quot;WebsiteID&quot;);<br />
+echo &quot;新的session名为： $previous_name<br />&quot;;<br />
+?&gt;</p>
+<h2 id="如何删除session">● 如何删除session？</h2>
+<p>**1、unset ($_SESSION['xxx'])** 删除单个session，unset($_SESSION['xxx']) 用来unregister一个已注册的session变量。其作用和session_unregister()相同。 session_unregister()在PHP5中不再使用，可将之打入冷宫。<br />
+unset($_SESSION) 此函数千万不可使用，它会将全局变量$_SESSION销毁，而且还没有可行的办法将其恢复。用户也不再可以注册$_SESSION变量。<br />
+<strong><br />
+</strong>2、$_SESSION=array()删除多个session<strong><br />
+</strong>3、session_destroy()** 结束当前的会话，并清空会话中的所有资源。。该函数不会unset(释放)和当前session相关的全局变量(globalvariables),也不会删除客户端的session cookie.PHP默认的session是基于cookie的，如果要删除cookie的话，必须借助setcookie()函数。<br />
+   返回值：布尔值。<br />
+  功能说明：这个函数结束当前的session，此函数没有参数，且返回值均为tru</p>
+<p>session_unset() 如果使用了$_SESSION，则该函数不再起作用。由于PHP5必定要使用$_SESSION，所以此函数可以打入冷宫了。<br />
+<strong>下面是PHP官方关于删除session的案例</strong>：</p>
+<pre><code><code>&lt;?php
+// 初始化session.
+session_start();
+/*** 删除所有的session变量..也可用unset($_SESSION[xxx])逐个删除。****/
+$_SESSION = array();
+/***删除sessin id.由于session默认是基于cookie的，所以使用setcookie删除包含session id的cookie.***/
+if (isset($_COOKIE[session_name()])) {
+   setcookie(session_name(), &#39;&#39;, time()-42000, &#39;/&#39;);
+}
+// 最后彻底销毁session.
+session_destroy();
+?&gt;</code></code></pre>
+<p><strong>由此我们可以得出删除Session的步骤：</strong><br />
+①session_start()<br />
+②$_SESSION=array()/unset($_SESSION['xxx'])<br />
+③session_destroy()</p>
+<h2 id="session安全">● SESSION安全:</h2>
+<p>①会话模块不能保证存放在会话中的信息只能被创建该会话的用户看到。根据其存放的数据，还需要采取更多措施来主动保护会话的完整性。<br />
+②评估会话中携带的数据并实施附加保护措施通常要付出代价，降低用户的方便程度。例如，如果要保护用户免于受简单的社交策略侵害（注：指在 URL 中显示的会话 ID 会被别人在电脑屏幕上看到，或被别的网站通过 HTTP Referer 得到等），则应该启用 session.use_only_cookies。此情形下，客户端必须无条件启用 cookie，否则会话就不工作。<br />
+③有几种途径会将现有的会话 ID 泄露给第三方。泄露出的会话 ID 使第三方能够访问所有与指定 ID 相关联的资源。第一，URL 携带会话 ID。如果连接到外部站点，包含有会话 ID 的 URL 可能会被存在外部站点的 Referer 日志中。第二，较主动的攻击者可能会侦听网段的数据包。如果未加密，会话 ID 会以明文方式在网络中流过。对此的解决方式是在服务器上实施 SSL 并强制用户使用。<br />
+④默认情况下，所有与特定会话相关的数据都被存储在由 INI 选项 session.save_path 指定的目录下的一个文件中。对每个会话会建立一个文件（不论是否有数据与该会话相关）。这是由于每打开一个会话即建立一个文件，不论是否有数据写入到该文件中。注意由于和文件系统协同工作的限制，此行为有个副作用，有可能造成用户定制的会话处理器（例如用数据库）丢失了未存储数据的会话。<br />
+ <br />
+上面介绍函数下文将会用到，但还有一些有关session的函数也介绍一下：<br />
+session_encode<br />
+函数功能：sesssion信息编码<br />
+  函数原型：string session_encode(void);<br />
+  返回值：字符串<br />
+  功能说明：返回的字符串中包含全局变量中各变量的名称与值，形式如：a|s:12:&quot;it is a test/&quot;;c|s:4:&quot;lala&quot;; a是变量名 s:12代表变量a的值&quot;it is a test的长度是12 变量间用分号”;”分隔。<br />
+session_decode<br />
+  函数功能：sesssion信息解码<br />
+  函数原型：boolean session_decode (string data)<br />
+  返回值：布尔值<br />
+  功能说明：这个函数可将session信息解码，成功则返回逻辑值true<br />
+Php5 不再使用session_id，而是把它变成一个常量SID，并保存在cookie中。如果客户端禁用了cookie，php会自动通过url自动传动传递SID，其条件是设置php.ini中的session.use_trans_sid = 1。此时即使客户端即使禁用了cookie也没关系了。<br />
+用 strip_tags() 来输出 SID 以避免 XSS 相关的攻击。</p>
+<h2 id="session跨页传递问题">Session跨页传递问题：</h2>
+<p>session跨页传递需要考虑三种情况：<br />
+①客户端禁用了cookie。<br />
+②浏览器出现问题，暂时无法存取cookie<br />
+③php.ini中的session.use_trans_sid = 0或者编译时没有打开--enable-trans-sid选项<br />
+  <br />
+为什么会这样呢？下面解释一下原因：<br />
+<strong>Session文件分为两部分：session变量保存在服务器端（默认以文件方式存储session）；而session id则以cookie形式保存在客户端。(注意：session默认是基于cookie的)。</strong><br />
+  当用户的浏览器向服务器提出请求时，同时发送包含session id的cookie(默认情况下)。服务器根据客户端提供的session id来得到用户的文件，即保存在服务器端的session变量值。事实上，session id可以使用客户端的Cookie或者Http1.1协议的Query_String（就是访问的URL的“?”后面的部分）来传送给服务器，然后服务器读取Session的目录……。也就是说，session id是取得存储在服务上的session变量的身份证。当代码session_start();运行的时候，就在服务器上产生了一个session文件，随之也产生了与之唯一对应的一个session id，定义session变量以一定形式存储在刚才产生的session文件中。通过session id，可以取出定义的变量。跨页后，为了使用session，你必须又执行session_start();将又会产生一个session文件，与之对应产生相应的session id(注:又会产生是有条件的,如果用户没有禁止Cookie的话,session id是可以隐藏的传过去的,也就是说不会产生新的session id,但如果禁止了Cookie的话,就需要手动传递session id来解决此问题了,见例2))，用这个session id是取不出前面提到的第一个session文件中的变量的，因为这个session id不是打开它的“钥匙”。如果在session_start();之前加代码session_id($session id);将不产生新的session文件，直接读取与这个id对应的session文件。</p>
+<p>  PHP中的session在默认情况下是使用客户端的Cookie来保存session id的,所<br />
+以当客户端的cookie出现问题的时候就会影响session了。必须注意的是：session不一定必须依赖cookie，这也是 session相比cookie的高明之处。当客户端的Cookie被禁用或出现问题时，PHP会自动把session id附着在URL中,这样再通过session id就能跨页使用session变量了。但这种附着也是有一定条件的 <strong>，其一：“php.ini中的session.use_trans_sid = 1或者编译时打开打开了--enable-trans-sid选项”；其二：运行PHP的服务器必须是unix/linux系统，windows不具备此项功能。</strong><br />
+  <br />
+明白了以上的道理，我们就可以得出解决session跨页传递问题的三条途径：<br />
+1、设置php.ini中的session.use_trans_sid = 1或者编译时打开打开了--enable-trans-sid选项，让PHP自动跨页传递session id。<br />
+2、手动通过URL传值、隐藏表单传递session id。<br />
+3、用文件、数据库等形式保存session_id,在跨页过程中手动调用。<br />
+下面举例说明：<br />
+第一种情况：<br />
+<strong>page1.php</strong></p>
+<pre><code><code>&lt;?php
+session_start();
+$_SESSION[&#39;var1&#39;]=&quot;中华人民共和国&quot;;
+$url=&quot;&lt;a href=&quot;.&quot;/&quot;s2.php/&quot;&gt;下一页&lt;/a&gt;&quot;;
+echo $url;
+?&gt;</code></code></pre>
+<p><strong>page2.php</strong></p>
+<pre><code><code>&lt;?php
+session_start();
+echo &quot;传递的session变量var1的值为：&quot;.$_SESSION[&#39;var1&#39;];
+?&gt;</code></code></pre>
+<p>运行以上代码，在客户端cookie正常的情况下，应该可以在得到结果“中华人民共和国”。<br />
+现在你手动关闭客户端的cookie，再运行，可能得不到结果了吧。如果得不到结果，再“设置php.ini中的session.use_trans_sid = 1或者编译时打开打开了--enable-trans-sid选项”，又得到结果“中华人民共和国”</p>
+<p>  <br />
+第二种途径：<br />
+<strong>s1.php</strong></p>
+<pre><code><code>&lt;?php
+session_start();
+$_SESSION[&#39;var1&#39;]=&quot;中华人民共和国&quot;;
+$sn = session_id();
+$url=&quot;&lt;a href=&quot;.&quot;/&quot;s2.php?s=&quot;.$sn.&quot;/&quot;&gt;下一页&lt;/a&gt;&quot;;    //PHP5定义了一个常量SID来表示session_id()，$url还可以写成$url=&#39;&lt;a href=&quot;page2.php?&#39; . SID . &#39;&quot;&gt;下一页&lt;/a&gt;&#39;;
+echo $url;
+?&gt;</code></code></pre>
+<p><strong>s2.php</strong></p>
+<pre><code><code>&lt;?php
+session_id($_GET[&#39;s&#39;]);
+session_start();
+echo &quot;传递的session变量var1的值为：&quot;.$_SESSION[&#39;var1&#39;];
+?&gt;</code></code></pre>
+<p>第三种途径：<br />
+<strong>login.html</strong></p>
+<pre class="html"><code>&lt;!DOCTYPE html=&quot;&quot;&gt;HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Login&lt;/title&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=??????&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+请登录：
+&lt;form method=&quot;post&quot; action=&quot;mylogin1.php&quot;&gt;
+    用户名:&lt;input type=&quot;text&quot; &gt;&lt;br&gt;
+    口　令:&lt;input type=&quot;password&quot; &gt;&lt;br&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;登录&quot;&gt;
+&lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p><strong>mylogin1.php</strong></p>
+<pre><code><code>&lt;?php
+$name=$_POST[&#39;name&#39;];
+$pass=$_POST[&#39;pass&#39;];
+if(!$name || !$pass) {
+    echo &quot;用户名或密码为空，请&lt;a href=/&quot;login.html/&quot;&gt;重新登录&lt;/a&gt;&quot;;
+    die();
+}
+if (!($name==&quot;laogong&quot; &amp;&amp; $pass==&quot;123&quot;)) {
+    echo &quot;用户名或密码不正确，请&lt;a href=/&quot;login.html/&quot;&gt;重新登录&lt;/a&gt;&quot;;
+    die();
+}
+//注册用户
+ob_start();
+session_start();
+$_SESSION[&#39;user&#39;]= $name;
+$psid=session_id();
+$fp=fopen(&quot;e://tmp//phpsid.txt&quot;,&quot;w+&quot;);
+fwrite($fp,$psid);
+fclose($fp);
+//身份验证成功，进行相关操作
+echo &quot;已登录&lt;br&gt;&quot;;
+echo &quot;&lt;a href=/&quot;mylogin2.php/&quot;&gt;下一页&lt;/a&gt;&quot;;
+?&gt;</code></code></pre>
+<p><strong>mylogin2.php</strong></p>
+<pre><code><code>&lt;?php
+$fp=fopen(&quot;e://tmp//phpsid.txt&quot;,&quot;r&quot;);
+$sid=fread($fp,1024);
+fclose($fp);
+session_id($sid);
+session_start();
+if(isset($_SESSION[&#39;user&#39;]) &amp;&amp; $_SESSION[&#39;user&#39;]=&quot;laogong&quot; ) {
+     echo &quot;已登录!&quot;;
+}
+else {
+    //成功登录进行相关操作
+    echo &quot;未登录，无权访问&quot;;
+    echo &quot;请&lt;a href=/&quot;login.html/&quot;&gt;登录&lt;/a&gt;后浏览&quot;;
+    die();
+}
+?&gt;</code></code></pre>
+<p>原文链接：<a href="https://blog.csdn.net/zhengxijia2012/article/details/73437376#commentBox" class="uri">https://blog.csdn.net/zhengxijia2012/article/details/73437376#commentBox</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

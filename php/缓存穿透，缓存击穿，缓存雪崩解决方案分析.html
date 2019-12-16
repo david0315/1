@@ -1,0 +1,186 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修缓存穿透，缓存击穿，缓存雪崩解决方案分析' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>缓存穿透，缓存击穿，缓存雪崩解决方案分析</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11930331.html</div><br>
+    <p><strong>一：前言</strong></p>
+<p>设计一个缓存系统，不得不要考虑的问题就是：缓存穿透、缓存击穿与失效时的雪崩效应。</p>
+<h2><strong>二：缓存穿透</strong></h2>
+<p>缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时被动写的，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到存储层去查询，失去了缓存的意义。在流量大时，可能DB就挂掉了，要是有人利用不存在的key频繁攻击我们的应用，这就是漏洞。</p>
+<p>&nbsp;</p>
+<h3><strong>三：解决方案</strong></h3>
+<p>有很多种方法可以有效地解决缓存穿透问题，最常见的则是采用布隆过滤器，将所有可能存在的数据哈希到一个足够大的bitmap中，一个一定不存在的数据会被 这个bitmap拦截掉，从而避免了对底层存储系统的查询压力。另外也有一个更为简单粗暴的方法（我们采用的就是这种），如果一个查询返回的数据为空（不管是数 据不存在，还是系统故障），我们仍然把这个空结果进行缓存，但它的过期时间会很短，最长不超过五分钟。</p>
+<p>&nbsp;</p>
+<h2><strong>四：缓存雪崩</strong></h2>
+<p>缓存雪崩是指在我们设置缓存时采用了相同的过期时间，导致缓存在某一时刻同时失效，请求全部转发到DB，DB瞬时压力过重雪崩。</p>
+<p>&nbsp;</p>
+<h3><strong>五：解决方案</strong></h3>
+<p>缓存失效时的雪崩效应对底层系统的冲击非常可怕。大多数系统设计者考虑用加锁或者队列的方式保证缓存的单线 程（进程）写，从而避免失效时大量的并发请求落到底层存储系统上。这里分享一个简单方案就时讲缓存失效时间分散开，比如我们可以在原有的失效时间基础上增加一个随机值，比如1-5分钟随机，这样每一个缓存的过期时间的重复率就会降低，就很难引发集体失效的事件。</p>
+<h2><strong>六：缓存击穿</strong></h2>
+<p>对于一些设置了过期时间的key，如果这些key可能会在某些时间点被超高并发地访问，是一种非常&ldquo;热点&rdquo;的数据。这个时候，需要考虑一个问题：缓存被&ldquo;击穿&rdquo;的问题，这个和缓存雪崩的区别在于这里针对某一key缓存，前者则是很多key。</p>
+<p>&nbsp;</p>
+<p>缓存在某个时间点过期的时候，恰好在这个时间点对这个Key有大量的并发请求过来，这些请求发现缓存过期一般都会从后端DB加载数据并回设到缓存，这个时候大并发的请求可能会瞬间把后端DB压垮。</p>
+<p>&nbsp;</p>
+<h3><strong>七：解决方案</strong></h3>
+<h3><strong>1、使用互斥锁(mutex key)</strong></h3>
+<p>业界比较常用的做法，是使用mutex。简单地来说，就是在缓存失效的时候（判断拿出来的值为空），不是立即去load db，而是先使用缓存工具的某些带成功操作返回值的操作（比如Redis的SETNX或者Memcache的ADD）去set一个mutex key，当操作返回成功时，再进行load db的操作并回设缓存；否则，就重试整个get缓存的方法。</p>
+<p>&nbsp;</p>
+<p>SETNX，是「SET if Not eXists」的缩写，也就是只有不存在的时候才设置，可以利用它来实现锁的效果。在redis2.6.1之前版本未实现setnx的过期时间，所以这里给出两种版本代码参考：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="5">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">2.6.1前单机版本锁</span>
+<span style="color: #008080;"> 2</span> String <span style="color: #0000ff;">get</span><span style="color: #000000;">(String key) {  
+</span><span style="color: #008080;"> 3</span>    String value = redis.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;"> 4</span>    <span style="color: #0000ff;">if</span> (value  == <span style="color: #0000ff;">null</span><span style="color: #000000;">) {  
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">if</span> (redis.setnx(key_mutex, <span style="color: #800000;">"</span><span style="color: #800000;">1</span><span style="color: #800000;">"</span><span style="color: #000000;">)) {  
+</span><span style="color: #008080;"> 6</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 3 min timeout to avoid mutex holder crash  </span>
+<span style="color: #008080;"> 7</span>         redis.expire(key_mutex, <span style="color: #800080;">3</span> * <span style="color: #800080;">60</span><span style="color: #000000;">)  
+</span><span style="color: #008080;"> 8</span>         value = db.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;"> 9</span>         redis.<span style="color: #0000ff;">set</span><span style="color: #000000;">(key, value);  
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">        redis.delete(key_mutex);  
+</span><span style="color: #008080;">11</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {  
+</span><span style="color: #008080;">12</span>         <span style="color: #008000;">//</span><span style="color: #008000;">其他线程休息50毫秒后重试  </span>
+<span style="color: #008080;">13</span>         Thread.sleep(<span style="color: #800080;">50</span><span style="color: #000000;">);  
+</span><span style="color: #008080;">14</span>         <span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">    }  
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">  }  
+</span><span style="color: #008080;">17</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p><strong>最新版本代码：</strong></p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="4">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> String <span style="color: #0000ff;">get</span><span style="color: #000000;">(key) {
+</span><span style="color: #008080;"> 2</span>       String value = redis.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);
+</span><span style="color: #008080;"> 3</span>       <span style="color: #0000ff;">if</span> (value == <span style="color: #0000ff;">null</span>) { <span style="color: #008000;">//</span><span style="color: #008000;">代表缓存值过期
+</span><span style="color: #008080;"> 4</span>           <span style="color: #008000;">//</span><span style="color: #008000;">设置3min的超时，防止del操作失败的时候，下次缓存过期一直不能load db</span>
+<span style="color: #008080;"> 5</span>           <span style="color: #0000ff;">if</span> (redis.setnx(key_mutex, <span style="color: #800080;">1</span>, <span style="color: #800080;">3</span> * <span style="color: #800080;">60</span>) == <span style="color: #800080;">1</span>) {  <span style="color: #008000;">//</span><span style="color: #008000;">代表设置成功</span>
+<span style="color: #008080;"> 6</span>                value = db.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);
+</span><span style="color: #008080;"> 7</span>                       redis.<span style="color: #0000ff;">set</span><span style="color: #000000;">(key, value, expire_secs);
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">                      redis.del(key_mutex);
+</span><span style="color: #008080;"> 9</span>               } <span style="color: #0000ff;">else</span> {  <span style="color: #008000;">//</span><span style="color: #008000;">这个时候代表同时候的其他线程已经load db并回设到缓存了，这时候重试获取缓存值即可</span>
+<span style="color: #008080;">10</span>                       sleep(<span style="color: #800080;">50</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>                       <span style="color: #0000ff;">get</span>(key);  <span style="color: #008000;">//</span><span style="color: #008000;">重试</span>
+<span style="color: #008080;">12</span> <span style="color: #000000;">              }
+</span><span style="color: #008080;">13</span>           } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">14</span>               <span style="color: #0000ff;">return</span><span style="color: #000000;"> value;      
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">          }
+</span><span style="color: #008080;">16</span>  }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<p><strong>memcache代码</strong></p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="3">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">if</span> (memcache.<span style="color: #0000ff;">get</span>(key) == <span style="color: #0000ff;">null</span><span style="color: #000000;">) {  
+</span><span style="color: #008080;"> 2</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 3 min timeout to avoid mutex holder crash  </span>
+<span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">if</span> (memcache.add(key_mutex, <span style="color: #800080;">3</span> * <span style="color: #800080;">60</span> * <span style="color: #800080;">1000</span>) == <span style="color: #0000ff;">true</span><span style="color: #000000;">) {  
+</span><span style="color: #008080;"> 4</span>         value = db.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;"> 5</span>         memcache.<span style="color: #0000ff;">set</span><span style="color: #000000;">(key, value);  
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">        memcache.delete(key_mutex);  
+</span><span style="color: #008080;"> 7</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {  
+</span><span style="color: #008080;"> 8</span>         sleep(<span style="color: #800080;">50</span><span style="color: #000000;">);  
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        retry();  
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    }  
+</span><span style="color: #008080;">11</span> } </code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<h3><strong>2、"提前"使用互斥锁(mutex key)：</strong></h3>
+<p>在value内部设置1个超时值(timeout1), timeout1比实际的memcache timeout(timeout2)小。当从cache读取到timeout1发现它已经过期时候，马上延长timeout1并重新设置到cache。然后再从数据库加载数据并设置到cache中。伪代码如下：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="2">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> v = memcache.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">if</span> (v == <span style="color: #0000ff;">null</span><span style="color: #000000;">) {  
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">if</span> (memcache.add(key_mutex, <span style="color: #800080;">3</span> * <span style="color: #800080;">60</span> * <span style="color: #800080;">1000</span>) == <span style="color: #0000ff;">true</span><span style="color: #000000;">) {  
+</span><span style="color: #008080;"> 4</span>         value = db.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;"> 5</span>         memcache.<span style="color: #0000ff;">set</span><span style="color: #000000;">(key, value);  
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">        memcache.delete(key_mutex);  
+</span><span style="color: #008080;"> 7</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {  
+</span><span style="color: #008080;"> 8</span>         sleep(<span style="color: #800080;">50</span><span style="color: #000000;">);  
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        retry();  
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    }  
+</span><span style="color: #008080;">11</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {  
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">if</span> (v.timeout &lt;=<span style="color: #000000;"> now()) {  
+</span><span style="color: #008080;">13</span>         <span style="color: #0000ff;">if</span> (memcache.add(key_mutex, <span style="color: #800080;">3</span> * <span style="color: #800080;">60</span> * <span style="color: #800080;">1000</span>) == <span style="color: #0000ff;">true</span><span style="color: #000000;">) {  
+</span><span style="color: #008080;">14</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> extend the timeout for other threads  </span>
+<span style="color: #008080;">15</span>             v.timeout += <span style="color: #800080;">3</span> * <span style="color: #800080;">60</span> * <span style="color: #800080;">1000</span><span style="color: #000000;">;  
+</span><span style="color: #008080;">16</span>             memcache.<span style="color: #0000ff;">set</span>(key, v, KEY_TIMEOUT * <span style="color: #800080;">2</span><span style="color: #000000;">);  
+</span><span style="color: #008080;">17</span> 
+<span style="color: #008080;">18</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> load the latest value from db  </span>
+<span style="color: #008080;">19</span>             v = db.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;">20</span>             v.timeout =<span style="color: #000000;"> KEY_TIMEOUT;  
+</span><span style="color: #008080;">21</span>             memcache.<span style="color: #0000ff;">set</span>(key, value, KEY_TIMEOUT * <span style="color: #800080;">2</span><span style="color: #000000;">);  
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">            memcache.delete(key_mutex);  
+</span><span style="color: #008080;">23</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {  
+</span><span style="color: #008080;">24</span>             sleep(<span style="color: #800080;">50</span><span style="color: #000000;">);  
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">            retry();  
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">        }  
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">    }  
+</span><span style="color: #008080;">28</span> } </code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>&nbsp;</p>
+<h3><strong>3、"永远不过期"： </strong></h3>
+<p>这里的&ldquo;永远不过期&rdquo;包含两层意思：</p>
+<blockquote>(1) 从redis上看，确实没有设置过期时间，这就保证了，不会出现热点key过期问题，也就是&ldquo;物理&rdquo;不过期。<br />(2) 从功能上看，如果不过期，那不就成静态的了吗？所以我们把过期时间存在key对应的value里，如果发现要过期了，通过一个后台的异步线程进行缓存的构建，也就是&ldquo;逻辑&rdquo;过期</blockquote>
+<p>&nbsp;</p>
+<p>从实战看，这种方法对于性能非常友好，唯一不足的就是构建缓存时候，其余线程(非构建缓存的线程)可能访问的是老数据，但是对于一般的互联网功能来说这个还是可以忍受。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> String <span style="color: #0000ff;">get</span><span style="color: #000000;">(final String key) {  
+</span><span style="color: #008080;"> 2</span>         V v = redis.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;"> 3</span>         String value =<span style="color: #000000;"> v.getValue();  
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">long</span> timeout =<span style="color: #000000;"> v.getTimeout();  
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">if</span> (v.timeout &lt;=<span style="color: #000000;"> System.currentTimeMillis()) {  
+</span><span style="color: #008080;"> 6</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> 异步更新后台异常执行  </span>
+<span style="color: #008080;"> 7</span>             threadPool.execute(<span style="color: #0000ff;">new</span><span style="color: #000000;"> Runnable() {  
+</span><span style="color: #008080;"> 8</span>                 <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span><span style="color: #000000;"> run() {  
+</span><span style="color: #008080;"> 9</span>                     String keyMutex = <span style="color: #800000;">"</span><span style="color: #800000;">mutex:</span><span style="color: #800000;">"</span> +<span style="color: #000000;"> key;  
+</span><span style="color: #008080;">10</span>                     <span style="color: #0000ff;">if</span> (redis.setnx(keyMutex, <span style="color: #800000;">"</span><span style="color: #800000;">1</span><span style="color: #800000;">"</span><span style="color: #000000;">)) {  
+</span><span style="color: #008080;">11</span>                         <span style="color: #008000;">//</span><span style="color: #008000;"> 3 min timeout to avoid mutex holder crash  </span>
+<span style="color: #008080;">12</span>                         redis.expire(keyMutex, <span style="color: #800080;">3</span> * <span style="color: #800080;">60</span><span style="color: #000000;">);  
+</span><span style="color: #008080;">13</span>                         String dbValue = db.<span style="color: #0000ff;">get</span><span style="color: #000000;">(key);  
+</span><span style="color: #008080;">14</span>                         redis.<span style="color: #0000ff;">set</span><span style="color: #000000;">(key, dbValue);  
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">                        redis.delete(keyMutex);  
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">                    }  
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">                }  
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">            });  
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">        }  
+</span><span style="color: #008080;">20</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;"> value;  
+</span><span style="color: #008080;">21</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3><strong>4、资源保护：</strong></h3>
+<p>采用netflix的hystrix，可以做资源的隔离保护主线程池，如果把这个应用到缓存的构建也未尝不可。</p>
+<p><br />四种解决方案：没有最佳只有最合适</p>
+<p>&nbsp;</p>
+<p><span class="cke_widget_wrapper cke_widget_inline cke_widget_image cke_image_nocaption cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="图像" data-cke-widget-id="0"><img class="has cke_widget_element" src="./images/缓存穿透，缓存击穿，缓存雪崩解决方案分析5.jpg" alt="" width="654" height="376" data-cke-saved-src="./images/缓存穿透，缓存击穿，缓存雪崩解决方案分析5.jpg" data-cke-widget-data="{&amp;quot;hasCaption&amp;quot;:false,&amp;quot;src&amp;quot;:&amp;quot;./images/缓存穿透，缓存击穿，缓存雪崩解决方案分析5.jpg&amp;quot;,&amp;quot;alt&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;width&amp;quot;:&amp;quot;654&amp;quot;,&amp;quot;height&amp;quot;:&amp;quot;376&amp;quot;,&amp;quot;lock&amp;quot;:true,&amp;quot;align&amp;quot;:&amp;quot;none&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="image" /><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /><span class="cke_image_resizer" title="点击并拖拽以改变尺寸">​</span></span></span></p>
+<p><strong>八：总结</strong></p>
+<p>针对业务系统，永远都是具体情况具体分析，没有最好，只有最合适。最后，对于缓存系统常见的缓存满了和数据丢失问题，需要根据具体业务分析，通常我们采用LRU策略处理溢出，Redis的RDB和AOF持久化策略来保证一定情况下的数据安全。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

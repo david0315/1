@@ -1,0 +1,98 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Yii2.0 queue' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Yii2.0 queue</center></div><div class='banquan'>原文出处:本文由博客园博主caohongchang提供。<br/>
+原文连接:https://www.cnblogs.com/caohongchang/p/11164749.html</div><br>
+    <p>https://www.yiichina.com/tutorial/1635</p>
+<p>https://my.oschina.net/gcdong/blog/3031113</p>
+<p>https://www.yii-china.com/extend/detail/4</p>
+<p>yii2-queue</p>
+<p>安装<br />首先得安装，用的是composer，这个很简单，在你的项目目录下面<br />composer require --prefer-dist yiisoft/yii2-queue</p>
+<p>##配置</p>
+<p>找到你的项目配置文件，高级版是main.php，普通版console.php，在里面加上你的配置，这个yii2-queue可以使用各种驱动模式来做，我这里选取了redis，所以你得必须先有redis，如果没有可以用file来驱动</p>
+<p> // 把这个组件注册到控制台</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> 'bootstrap' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 2</span> 　　'queue',
+<span style="color: #008080;"> 3</span> ],
+<span style="color: #008080;"> 4</span> 'components' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 5</span> 　　'queue' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 6</span> 　　　　'class' =&gt; \yii\queue\redis\Queue::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;"> 7</span> 　　　　<span style="color: #008000;">//</span><span style="color: #008000;"> 连接组件或它的配置</span>
+<span style="color: #008080;"> 8</span> 　　　　'redis' =&gt; 'redis',
+<span style="color: #008080;"> 9</span> 　　　　<span style="color: #008000;">//</span><span style="color: #008000;"> Queue channel key</span>
+<span style="color: #008080;">10</span> 　　　　'channel' =&gt; 'queue', 
+<span style="color: #008080;">11</span> 　　],
+<span style="color: #008080;">12</span> 　　'queue' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;">13</span> 　　　　'class' =&gt; \yii\queue\<span style="color: #008080;">file</span>\Queue::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">14</span> 　　　　<span style="color: #008000;">//</span><span style="color: #008000;"> 连接组件或它的配置</span>
+<span style="color: #008080;">15</span> 　　　　'as log' =&gt; \yii\queue\LogBehavior::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">16</span> 　　　　'path' =&gt; '@runtime/queue', 
+<span style="color: #008080;">17</span> 　　],
+<span style="color: #008080;">18</span> 　　'redis' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;">19</span> 　　　　'class' =&gt; 'yii\redis\Connection',
+<span style="color: #008080;">20</span> 　　　　'hostname' =&gt; 'localhost',
+<span style="color: #008080;">21</span> 　　　　'port' =&gt; 6379,
+<span style="color: #008080;">22</span> 　　　　'database' =&gt; 0,
+<span style="color: #008080;">23</span> 　　<span style="color: #000000;">]
+</span><span style="color: #008080;">24</span> ]</code></pre>
+
+<p>&nbsp;</p>
+<p><br />使用<br />首先我们得写一个队里文件，里面执行一个队里的任务，我这里简单的写了一个</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace common\components;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> yii\base\BaseObject;
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">class</span> Job <span style="color: #0000ff;">extends</span> BaseObject <span style="color: #0000ff;">implements</span><span style="color: #000000;"> \yii\queue\JobInterface
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$url</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$file</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> execute(<span style="color: #800080;">$queue</span><span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #008080;">file_put_contents</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">file</span>, <span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">url));
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">14</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>上面是队列执行的文件，我们要使用它是这样使用的,一般在控制器里面使用</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> common\components\Job;
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> actionJob(){
+</span><span style="color: #008080;"> 3</span>     <span style="color: #008000;">//</span><span style="color: #008000;">添加任务到队列</span>
+<span style="color: #008080;"> 4</span>     Yii::<span style="color: #800080;">$app</span>-&gt;queue-&gt;push(<span style="color: #0000ff;">new</span><span style="color: #000000;"> Job([
+</span><span style="color: #008080;"> 5</span>         'url' =&gt; 'http://img.netpc.com.cn/2018/06/12080502tmd.jpg',
+<span style="color: #008080;"> 6</span>         'file' =&gt; '/www/project/ideaboat\1.jpg',
+<span style="color: #008080;"> 7</span> <span style="color: #000000;">    ]));
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 延时5s触发</span>
+<span style="color: #008080;">11</span> Yii::<span style="color: #800080;">$app</span>-&gt;queue-&gt;delay(5)-&gt;push(<span style="color: #0000ff;">new</span><span style="color: #000000;"> Job([
+</span><span style="color: #008080;">12</span>     'url' =&gt; 'http://img.netpc.com.cn/2018/06/12080502tmd.jpg',
+<span style="color: #008080;">13</span>     'file' =&gt; '/www/project/ideaboat\1.jpg',
+<span style="color: #008080;">14</span> ]));</code></pre>
+
+<p>&nbsp;</p>
+<p>最后你还得在命令行把这个队列的监听监听起来</p>
+<p>./yii queue/listen<br />这样就可以了</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

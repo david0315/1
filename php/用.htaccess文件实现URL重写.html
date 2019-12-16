@@ -1,0 +1,69 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修用.htaccess文件实现URL重写' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>用.htaccess文件实现URL重写</center></div><div class='banquan'>原文出处:本文由博客园博主xupp提供。<br/>
+原文连接:https://www.cnblogs.com/xuchuanbing/p/11671668.html</div><br>
+    <h5 id="安装-mod_rewrite-模块">1.安装 mod_rewrite 模块</h5>
+<pre><code><code> 因为 Apache 服务器默认是没有打开 mod_rewrite 模块的，所以我们必须手动来启动。打开 Apache 的配置文件 httpd.conf 文件，找到下面一行：
+ 
+ #LoadModule rewrite_module modules/mod_rewrite.so
+ 
+ 前面的 # 号是 Apache 配置文件的注释符，也就是 Apache 服务器没有加载该模块。将前面的 # 号去掉，保存后重启 Apache 服务器，这是我们就实现了加载 mod_rewrite 这个模块了。（提示：任何一次对 Apache 的配置文件 httpd.conf 文件都是要重新启动 Apache 才能生效的）</code></code></pre>
+<h5 id="新建-.htaccess-文件">2、新建 .htaccess 文件</h5>
+<pre><code><code> 在 windows 系统默认的情况下是不能新建没有文件名的文件的，这里建议大家使用 vim 这个编辑器来新建。方法是打开 vim 编辑器随便输入一段文字，然后保存为 .htaccess 即可。很多朋友因为习惯了 windows 系统，所以新建这个文件很头疼。还有就是文件名一定不要错，我今天写的时候把文件保存成了.htacess,看到没有，少了一个c，怎么调试都不对，还好最后发现了这个低级错误。</code></code></pre>
+<h5 id="配置-.htaccess-文件">3、配置 .htaccess 文件</h5>
+<pre><code><code> .htaccess 文件务必放在你项目的根目录下，不要放在其他文件夹下。配置 .htaccess 文件的格式如下：
+ 
+ &lt;ifmodule mod_rewrite.c&gt;
+ RewriteEngine On
+ #这里是你的规则
+ &lt;/ifmodule&gt;
+
+ 解释：RewriteEngine On ：启动URL重写引擎
+ 先看如下一个配置好了的 .htaccess 文件实例：
+ 
+&lt;ifmodule mod_rewrite.c&gt;
+RewriteEngine On
+RewriteRule ^index\.html$ /index.php [L]
+RewriteRule ^shop/(.+)/$ shop/shop.php?providerId=$1 [L] 
+&lt;/ifmodule&gt;
+
+分析：上面 .htaccess 文件就写了二条规则。当在浏览器中输入 index.html 时，后台调用的是 index.php 文件。符号“^”是以后面的字符开头，相信熟悉正则表达式的朋友不会陌生吧，符号“$”是以前面的字符结尾。符号L表示停止处理接下来的规则。最后一条当我们在浏览器中输入 shop/2322 时，后台调用 shop.php文件并传递参数provider=2322 。
+配置规则，大家照着那一条去写吧，记得每行后面加个 L 符号。
+
+再写一个：
+
+http://www.yourdomin.com/category.php?id=12 想重写成 http://www.yourdomin.com/category/12
+
+RewriteRule  ^category/([0-9]+)$  category.php?id=$1
+
+如果有多页的文章 如：http://www.yourdomin.com/category.php?id=12&amp;page=3 重写成 http://www.yourdomin.com/category/12/3
+
+RewriteRule ^category/([0-9]+)/([0-9]+)$  category.php?id=$1&amp;page=$2
+
+如果你想升级你的站点，又要保证老的链接都可用，你也可以通过mod_rewrite模块来实现。你仅仅需要写一个规则之处这个网页被永久的移动了。例子如下：
+
+RewriteRule ^oldpage.html$ newpage.html [R=301]
+
+记录下来，以后还会用到。</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

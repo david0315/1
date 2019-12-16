@@ -1,0 +1,30 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[日常] 项目中业务绑定手机验证手机号的实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[日常] 项目中业务绑定手机验证手机号的实现</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11727718.html</div><br>
+    <p>在进行设置自动转发,增删来信规则,修改密码等操作时,增加必须绑定手机并且验证手机号的安全认证操作.在这个过程中使用控制反转的设计模式封装一个单独的类可以灵活的复用代码和调整逻辑</p>
+<p>首先定义一个SecureTel的class类,这个类里面提供所有业务方法.在生成SecureTel对象的时候,需要使用框架内提供的一个生成对象的方法来操作,不能直接去new这个类,这个方法就是Sina_Application::resource('securetel'),在这个生成器中,会去调用SecureTel类中的createResource方法,并且会把配置文件中对应该类的参数传递进去.</p>
+<p>SecureTel类就可以在自身的createResource方法中进行new自己这个对象,并且可以把配置文件的参数设置到自己的属性里,在其他的方法中可以根据属性进行业务判断</p>
+<p>通过上面的处理,可以灵活的使用这个类在各个接口的控制器代码中,达到复用代码的目的.并且可以直接在配置文件中对这个类里面的属性进行控制,方便在进行业务调整时不去修改类内部的逻辑</p>
+<p>上面是在代码层面的设计,下面是在业务的层面介绍一下<br />1.请求过来后,因为在这个逻辑中是不会有高并发的情况,直接查询数据库绑定手机表,判定是否已经绑定手机.如果没有绑定手机直接返回对应的错误码<br />2.绑定了手机情况下,要去memcache查询是否已经验证过了,key就是"c:xxxx@xxxx.com",这个key的过期时间是一天,如果有值,说明验证过了,没值就返回另一个错误码<br />3.在配置文件中,可以配置是否开启这个手机验证功能,防止在短信接口不能用时,影响用户操作,可以直接关闭所有业务的验证功能.这个配置对应<br />SecureTel类中的一个属性,其他方法对这个属性进行判定<br />4.在配置文件可以配置验证后的过期时间,这个在测试中可以进行灵活修改,让测试人员短期可以多次测试.<br />5.前端根据不同的错误码,进行不同的弹窗,绑定手机的弹窗和验证手机的弹窗</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

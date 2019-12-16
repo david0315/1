@@ -1,0 +1,178 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修如何利用swoole搭建一個簡易聊天室' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>如何利用swoole搭建一個簡易聊天室</center></div><div class='banquan'>原文出处:本文由博客园博主宋宝提供。<br/>
+原文连接:https://www.cnblogs.com/songbao/p/11225870.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Chat
+{
+    </span><span style="color: #0000ff;">const</span> HOST = '0.0.0.0';<span style="color: #008000;">//</span><span style="color: #008000;">ip地址 0.0.0.0代表接受所有ip的访问</span>
+    <span style="color: #0000ff;">const</span> PART = 82;<span style="color: #008000;">//</span><span style="color: #008000;">端口号</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #800080;">$server</span> = <span style="color: #0000ff;">null</span>;<span style="color: #008000;">//</span><span style="color: #008000;">单例存放websocket_server对象</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #800080;">$connectList</span> = [];<span style="color: #008000;">//</span><span style="color: #008000;">客户端的id集合</span>
+    
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">实例化swoole_websocket_server并存储在我们Chat类中的属性上，达到单例的设计</span>
+        <span style="color: #800080;">$this</span>-&gt;server = <span style="color: #0000ff;">new</span> swoole_websocket_server(self::HOST, self::<span style="color: #000000;">PART);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">监听连接事件</span>
+        <span style="color: #800080;">$this</span>-&gt;server-&gt;on('open', [<span style="color: #800080;">$this</span>, 'onOpen'<span style="color: #000000;">]);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">监听接收消息事件</span>
+        <span style="color: #800080;">$this</span>-&gt;server-&gt;on('message', [<span style="color: #800080;">$this</span>, 'onMessage'<span style="color: #000000;">]);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">监听关闭事件</span>
+        <span style="color: #800080;">$this</span>-&gt;server-&gt;on('close', [<span style="color: #800080;">$this</span>, 'onClose'<span style="color: #000000;">]);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">设置允许访问静态文件
+        //$this-&gt;server-&gt;set([
+         //   'document_root' =&gt; '/grx/swoole/public',//这里传入静态文件的目录
+        //    'enable_static_handler' =&gt; true//允许访问静态文件
+        //]);
+        //开启服务</span>
+        <span style="color: #800080;">$this</span>-&gt;server-&gt;<span style="color: #000000;">start();
+    }
+    
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 连接成功回调函数
+     * @param $server
+     * @param $request
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onOpen(<span style="color: #800080;">$server</span>, <span style="color: #800080;">$request</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$request</span>-&gt;fd . '连接了' . <span style="color: #ff00ff;">PHP_EOL</span>;<span style="color: #008000;">//</span><span style="color: #008000;">打印到我们终端</span>
+        <span style="color: #800080;">$this</span>-&gt;connectList[] = <span style="color: #800080;">$request</span>-&gt;fd;<span style="color: #008000;">//</span><span style="color: #008000;">将请求对象上的fd，也就是客户端的唯一标识，可以把它理解为客户端id，存入集合中</span>
+<span style="color: #000000;">    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 接收到信息的回调函数
+     * @param $server
+     * @param $frame
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onMessage(<span style="color: #800080;">$server</span>, <span style="color: #800080;">$frame</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$frame</span>-&gt;fd . '来了，说：' . <span style="color: #800080;">$frame</span>-&gt;data . <span style="color: #ff00ff;">PHP_EOL</span>;<span style="color: #008000;">//</span><span style="color: #008000;">打印到我们终端
+        //将这个用户的信息存入集合</span>
+        <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$this</span>-&gt;connectList <span style="color: #0000ff;">as</span> <span style="color: #800080;">$fd</span>) {<span style="color: #008000;">//</span><span style="color: #008000;">遍历客户端的集合，拿到每个在线的客户端id
+            //将客户端发来的消息，推送给所有用户，也可以叫广播给所有在线客户端</span>
+            <span style="color: #800080;">$server</span>-&gt;push(<span style="color: #800080;">$fd</span>, json_encode(['no' =&gt; <span style="color: #800080;">$frame</span>-&gt;fd, 'msg' =&gt; <span style="color: #800080;">$frame</span>-&gt;<span style="color: #000000;">data]));
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 断开连接回调函数
+     * @param $server
+     * @param $fd
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onClose(<span style="color: #800080;">$server</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$fd</span> . '走了' . <span style="color: #ff00ff;">PHP_EOL</span>;<span style="color: #008000;">//</span><span style="color: #008000;">打印到我们终端</span>
+        <span style="color: #800080;">$this</span>-&gt;connectList = <span style="color: #008080;">array_diff</span>(<span style="color: #800080;">$this</span>-&gt;connectList, [<span style="color: #800080;">$fd</span>]);<span style="color: #008000;">//</span><span style="color: #008000;">将断开了的客户端id，清除出集合</span>
+<span style="color: #000000;">    }
+    
+}
+
+</span><span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span> Chat();</code></pre>
+
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">doctype html</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">="utf-8"</span><span style="color: #0000ff;">&gt;</span>
+
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>聊天室<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">script </span><span style="color: #ff0000;">src</span><span style="color: #0000ff;">="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">textarea </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="log"</span><span style="color: #ff0000;"> style</span><span style="color: #0000ff;">="width: 100%; height: 500px;"</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+
+=======聊天室======
+
+</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">textarea</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="button"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="连接"</span><span style="color: #ff0000;"> onClick</span><span style="color: #0000ff;">="link()"</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="button"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="断开"</span><span style="color: #ff0000;"> onClick</span><span style="color: #0000ff;">="dis()"</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="text"</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="button"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="发送"</span><span style="color: #ff0000;"> onClick</span><span style="color: #0000ff;">="send()"</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span>
+
+    <span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;"> link(){
+
+        </span><span style="background-color: #f5f5f5; color: #0000ff;">var</span><span style="background-color: #f5f5f5; color: #000000;"> url</span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">ws://148.70.98.236:82</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">;
+
+        socket</span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #0000ff;">new</span><span style="background-color: #f5f5f5; color: #000000;"> WebSocket(url);
+
+        socket.onopen</span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;">(){log1(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">连接成功</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">)}
+
+        socket.onmessage</span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;">(msg){log(msg.data);console.log(msg);}
+
+        socket.onclose</span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;">(){log1(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">断开连接</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">)}
+
+    }
+
+    </span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;"> dis(){
+
+        socket.close();
+
+        socket</span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #0000ff;">null</span><span style="background-color: #f5f5f5; color: #000000;">;
+
+    }
+
+    </span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;"> log1(var1) {
+        $(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">.log</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">).append(var1</span><span style="background-color: #f5f5f5; color: #000000;">+</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">\r\n</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">);
+    }
+    </span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;"> log(var1){
+      </span><span style="background-color: #f5f5f5; color: #0000ff;">var</span><span style="background-color: #f5f5f5; color: #000000;">  v</span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #000000;">$.parseJSON(var1)
+        $(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">.log</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">).append(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">用户</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">+</span><span style="background-color: #f5f5f5; color: #000000;">v[</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">no</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">]</span><span style="background-color: #f5f5f5; color: #000000;">+</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">说:</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">+</span><span style="background-color: #f5f5f5; color: #000000;">v[</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">msg</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">]</span><span style="background-color: #f5f5f5; color: #000000;">+</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">\r\n</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">);
+    }
+
+    </span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;"> send(){
+        </span><span style="background-color: #f5f5f5; color: #0000ff;">var</span><span style="background-color: #f5f5f5; color: #000000;"> text</span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #000000;">$(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">#text</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">).val();
+
+        socket.send(text);
+    }
+
+    </span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;"> send2(){
+
+        </span><span style="background-color: #f5f5f5; color: #0000ff;">var</span><span style="background-color: #f5f5f5; color: #000000;"> json </span><span style="background-color: #f5f5f5; color: #000000;">=</span><span style="background-color: #f5f5f5; color: #000000;"> JSON.stringify({</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">type</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">:</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">php</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">,</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">msg</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">:$(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">#text2</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">).attr(</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">value</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">)})
+
+        socket.send(json);
+
+    }
+
+</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

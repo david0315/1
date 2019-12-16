@@ -1,0 +1,90 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【静态延迟加载】self关键字和static关键字的区别' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【静态延迟加载】self关键字和static关键字的区别</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10903998.html</div><br>
+    <p><span style="font-size: 16px;">先来看下代码，从代码中发现问题、解决问题</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">先实现一个手机工厂类</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Phone{
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> setBrand(){
+        </span><span style="color: #0000ff;">echo</span> "Main Phone"<span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getBrand(){
+        self</span>::<span style="color: #000000;">setBrand();
+    }
+
+}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">huawei 手机工厂</span>
+<span style="color: #0000ff;">class</span> HuaWei <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Phone{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> setBrand(){
+        </span><span style="color: #0000ff;">echo</span> "HuaWei Phone"<span style="color: #000000;">;
+    }
+}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">xiaomi 手机工厂</span>
+<span style="color: #0000ff;">class</span> XiaoMi <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Phone{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> setBrand(){
+        </span><span style="color: #0000ff;">echo</span> "XaioMi Phone"<span style="color: #000000;">;
+    }
+}
+
+HuaWei</span>::getBrand(); <span style="color: #008000;">//</span><span style="color: #008000;"> Main Phone</span>
+XiaoMi::getBrand(); <span style="color: #008000;">//</span><span style="color: #008000;"> Main Phone</span></code></pre>
+
+<p><span style="font-size: 16px;">上面是一个很经典很普通的工厂模式代码，我们期望的是输出各自手机的品牌名称，但是结果显示的是父类中的品牌名称。这说明我们调用的 self 关键代表的是代码中它所在的那个类 即 Phone 这个类</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">先实现一个手机工厂类</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Phone{
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> setBrand(){
+        </span><span style="color: #0000ff;">echo</span> "Main Phone"<span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getBrand(){
+        </span><span style="color: #0000ff;">static</span>::setBrand(); <span style="color: #008000;">//</span><span style="color: #008000;">将 self 改为 static</span>
+<span style="color: #000000;">    }
+
+}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">huawei 手机工厂</span>
+<span style="color: #0000ff;">class</span> HuaWei <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Phone{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> setBrand(){
+        </span><span style="color: #0000ff;">echo</span> "HuaWei Phone"<span style="color: #000000;">;
+    }
+}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">xiaomi 手机工厂</span>
+<span style="color: #0000ff;">class</span> XiaoMi <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Phone{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> setBrand(){
+        </span><span style="color: #0000ff;">echo</span> "XaioMi Phone"<span style="color: #000000;">;
+    }
+}
+
+HuaWei</span>::getBrand(); <span style="color: #008000;">//</span><span style="color: #008000;"> HuaWei Phone</span>
+XiaoMi::getBrand(); <span style="color: #008000;">//</span><span style="color: #008000;"> XiaoMi Phone</span></code></pre>
+
+<p><span style="font-size: 16px;">这里我们只是将 self 关键字改为了 static 关键字，当值行代码时 这里的static代表的是当前正在执行的类 例如执行&nbsp;</span></p>
+<pre><code>HuaWei::getBrand(); 时 static 代表的是 HuaWei</code></pre>
+<pre><code>XiaoMi::getBrand(); 时 static 代表的是 XiaoMi</code></pre>
+<p><span style="font-size: 18px;"><span style="background-color: #ff0000;">&nbsp;</span> 这里总结一下 静态延迟加载的含义：把本来在定义阶段固定下来的表达式或变量，改在执行阶段再决定。</span></p>
+<pre><code><span><br /><br /></span></code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

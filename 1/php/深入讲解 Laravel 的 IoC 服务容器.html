@@ -1,0 +1,819 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修深入讲解 Laravel 的 IoC 服务容器' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>深入讲解 Laravel 的 IoC 服务容器</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11874024.html</div><br>
+    <p>&nbsp;</p>
+<p>众所周知，<a href="https://link.zhihu.com/?target=https%3A//laravel.com/" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//laravel.com/">Laravel</a> 控制反转 (IoC) / 依赖注入 (DI) 的功能非常强大。遗憾的是， <a href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.4/container" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.4/container">官方文档</a> 并没有详细讲解它的所有功能，所以我决定自己实践一下，并整理成文。下面的代码是基于 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/tree/5.4/src/Illuminate/Container" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/tree/5.4/src/Illuminate/Container">Laravel 5.4.26</a> 的，其他版本可能会有所不同。</p>
+<h2>了解依赖注入</h2>
+<p>我在这里不会详细讲解依赖注入/控制反转的原则 - 如果你对此还不是很了解，建议阅读 Fabien Potencier （<a href="https://link.zhihu.com/?target=http%3A//symfony.com/" data-cke-saved-href="https://link.zhihu.com/?target=http%3A//symfony.com/">Symfony</a> 框架的创始人）的 <a href="https://link.zhihu.com/?target=http%3A//fabien.potencier.org/what-is-dependency-injection.html" data-cke-saved-href="https://link.zhihu.com/?target=http%3A//fabien.potencier.org/what-is-dependency-injection.html">What is Dependency Injection?</a> 。</p>
+<p>&nbsp;</p>
+<h2>访问容器</h2>
+<p>通过 Laravel 访问 Container 实例的方式有很多种，最简单的就是调用辅助函数 <code>app()</code>：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="64">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span> = app();</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>为了突出重点 Container 类，这里就不赘述其他方式了。</p>
+<p><strong>注意：</strong> <a href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.4/container" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.4/container">官方文档</a>中使用的是 <code>$this-&gt;app</code> 而不是 <code>$container</code>。</p>
+<p>(* 在 Laravel 应用中，<a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Foundation/Application.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Foundation/Application.php">Application</a> 实际上是 Container 的一个子类 ( 这也说明了辅助函数 <code>app()</code> 的由来 )，不过在这篇文章中我还是将重点讲解 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Container/Container.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Container/Container.php">Container</a> 类的方法。)</p>
+<h3>在 Laravel 之外使用 Illuminate\Container</h3>
+<p>想要不基于 Laravel 使用 Container，<a href="https://link.zhihu.com/?target=https%3A//packagist.org/packages/illuminate/container" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//packagist.org/packages/illuminate/container">安装</a> 然后：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="63">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Container\Container;
+
+</span><span style="color: #800080;">$container</span> = Container::getInstance();</code></pre>
+
+<p>&nbsp;</p>
+
+<h2>基础用法</h2>
+<p>最简单的用法是通过构造函数注入依赖类。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="62">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> MyClass
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$dependency</span><span style="color: #000000;">;
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(AnotherClass <span style="color: #800080;">$dependency</span><span style="color: #000000;">)
+</span><span style="color: #008080;">6</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">7</span>         <span style="color: #800080;">$this</span>-&gt;dependency = <span style="color: #800080;">$dependency</span><span style="color: #000000;">;
+</span><span style="color: #008080;">8</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">9</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>使用 Container 的 <code>make()</code> 方法实例化 <code>MyClass</code> 类：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="61">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$instance</span> = <span style="color: #800080;">$container</span>-&gt;make(MyClass::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></p>
+
+<p>container 会自动实例化依赖类，所以上面代码实现的功能就相当于：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="60">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$instance</span> = <span style="color: #0000ff;">new</span> MyClass(<span style="color: #0000ff;">new</span> AnotherClass());</code></pre>
+
+<p><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></p>
+
+<p>（ 假设 <code>AnotherClass</code> 还有需要依赖的类 - 在这种情况下，Container 会递归式地实例化所有的依赖。）</p>
+<h3>实战</h3>
+<p>&nbsp;phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家需要的（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群677079770</a></p>
+<p>下面是一些基于 <a href="https://link.zhihu.com/?target=http%3A//php-di.org/doc/getting-started.html" data-cke-saved-href="https://link.zhihu.com/?target=http%3A//php-di.org/doc/getting-started.html">PHP-DI 文档</a> 的例子 - 将发送邮件与用户注册的代码解耦：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="59">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Mailer
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">mail</span>(<span style="color: #800080;">$recipient</span>, <span style="color: #800080;">$content</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 5</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 发送邮件
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">        // ...</span>
+<span style="color: #008080;"> 7</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> UserManager
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">11</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$mailer</span><span style="color: #000000;">;
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Mailer <span style="color: #800080;">$mailer</span><span style="color: #000000;">)
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">15</span>         <span style="color: #800080;">$this</span>-&gt;mailer = <span style="color: #800080;">$mailer</span><span style="color: #000000;">;
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">17</span> 
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> register(<span style="color: #800080;">$email</span>, <span style="color: #800080;">$password</span><span style="color: #000000;">)
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">20</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 创建用户账号
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">        // ...
+</span><span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span> <span style="color: #008000;">        // 给用户发送问候邮件</span>
+<span style="color: #008080;">24</span>         <span style="color: #800080;">$this</span>-&gt;mailer-&gt;<span style="color: #008080;">mail</span>(<span style="color: #800080;">$email</span>, 'Hello and welcome!'<span style="color: #000000;">);
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">27</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Container\Container;
+</span><span style="color: #008080;">28</span> 
+<span style="color: #008080;">29</span> <span style="color: #800080;">$container</span> = Container::<span style="color: #000000;">getInstance();
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span> <span style="color: #800080;">$userManager</span> = <span style="color: #800080;">$container</span>-&gt;make(UserManager::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">32</span> <span style="color: #800080;">$userManager</span>-&gt;register('dave@davejamesmiller.com', 'MySuperSecurePassword!');</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h2>绑定接口与具体实现</h2>
+<p>通过 Container 类，我们可以轻松实现从接口到具体类到实例的过程。首先定义接口：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="58">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">interface</span> MyInterface { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #0000ff;">interface</span> AnotherInterface { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span> }</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>声明实现接口的具体类，具体类还可以依赖其他接口（ 或者是像上个例子中的具体类 ）：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="57">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;class MyClass implements MyInterface\n{\n    private $dependency;\n\n    public function __construct(AnotherInterface $dependency)\n    {\n        $this-&amp;gt;dependency = $dependency;\n    }\n}&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">class MyClass implements MyInterface</code></code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">2</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$dependency</span><span style="color: #000000;">;
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(AnotherInterface <span style="color: #800080;">$dependency</span><span style="color: #000000;">)
+</span><span style="color: #008080;">5</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">6</span>         <span style="color: #800080;">$this</span>-&gt;dependency = <span style="color: #800080;">$dependency</span><span style="color: #000000;">;
+</span><span style="color: #008080;">7</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">8</span> }</code></pre>
+
+<p>&nbsp;</p>
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;class MyClass implements MyInterface\n{\n    private $dependency;\n\n    public function __construct(AnotherInterface $dependency)\n    {\n        $this-&amp;gt;dependency = $dependency;\n    }\n}&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs"><img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+</code></code></pre>
+
+<p>然后使用 <code>bind()</code> 方法把接口与具体类进行绑定：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="56">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;bind(MyInterface::<span style="color: #0000ff;">class</span>, MyClass::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$container</span>-&gt;bind(AnotherInterface::<span style="color: #0000ff;">class</span>, AnotherClass::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>最后，在 <code>make()</code> 方法中，使用接口作为参数：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="55">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$instance</span> = <span style="color: #800080;">$container</span>-&gt;make(MyInterface::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p><strong>注意：</strong> 如果没有将接口与具体类进行绑定操作，就会报错：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="54">
+<src class="cnblogs_code">
+<pre><code>Fatal error: Uncaught ReflectionException: <span style="color: #0000ff;">Class</span> MyInterface does not exist</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>这是因为 container 会尝试实例化接口 ( <code>new MyInterface</code>)，这本身在语法上就是错误的。</p>
+<h3>实战</h3>
+<p>可更换的缓存层：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="53">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">interface</span><span style="color: #000000;"> Cache
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> get(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> put(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">class</span> RedisCache <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Cache
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> get(<span style="color: #800080;">$key</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> put(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$value</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Worker
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">13</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$cache</span><span style="color: #000000;">;
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Cache <span style="color: #800080;">$cache</span><span style="color: #000000;">)
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">17</span>         <span style="color: #800080;">$this</span>-&gt;cache = <span style="color: #800080;">$cache</span><span style="color: #000000;">;
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">19</span> 
+<span style="color: #008080;">20</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> result()
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">22</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 应用缓存</span>
+<span style="color: #008080;">23</span>         <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;cache-&gt;get('worker'<span style="color: #000000;">);
+</span><span style="color: #008080;">24</span> 
+<span style="color: #008080;">25</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> === <span style="color: #0000ff;">null</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">26</span>             <span style="color: #800080;">$result</span> =<span style="color: #000000;"> do_something_slow();
+</span><span style="color: #008080;">27</span> 
+<span style="color: #008080;">28</span>             <span style="color: #800080;">$this</span>-&gt;cache-&gt;put('worker', <span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">34</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Container\Container;
+</span><span style="color: #008080;">35</span> 
+<span style="color: #008080;">36</span> <span style="color: #800080;">$container</span> = Container::<span style="color: #000000;">getInstance();
+</span><span style="color: #008080;">37</span> <span style="color: #800080;">$container</span>-&gt;bind(Cache::<span style="color: #0000ff;">class</span>, RedisCache::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">38</span> 
+<span style="color: #008080;">39</span> <span style="color: #800080;">$result</span> = <span style="color: #800080;">$container</span>-&gt;make(Worker::<span style="color: #0000ff;">class</span>)-&gt;result();</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h2>绑定抽象类与具体类</h2>
+<p>也可以与抽象类进行绑定：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="52">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;bind(MyAbstract::<span style="color: #0000ff;">class</span>, MyConcreteClass::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>或者将具体类与其子类进行绑定：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="51">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;bind(MySQLDatabase::<span style="color: #0000ff;">class</span>, CustomMySQLDatabase::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h2>自定义绑定</h2>
+<p>在使用 <code>bind()</code> 方法进行绑定操作时，如果某个类需要额外的配置，还通过闭包函数来实现：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="50">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;bind(Database::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> MySQLDatabase(MYSQL_HOST, MYSQL_PORT, MYSQL_USER,<span style="color: #000000;"> MYSQL_PASS);
+});</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>每次带着配置信息创建一个 MySQLDatabase 类的实例的时候（ 下面后讲到如何通过 <em>Singletons</em> 创建一个可以共享的实例），都要用到 Database 接口。我们看到闭包函数接收了 Container 的实例作为参数，如果需要的话，还可以用它来实例化其他类：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="49">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;bind(Logger::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$filesystem</span> = <span style="color: #800080;">$container</span>-&gt;make(Filesystem::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span>     <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> FileLogger(<span style="color: #800080;">$filesystem</span>, 'logs/error.log'<span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>还可以通过闭包函数自定义要如何实例化某个类：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="48">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;bind(GitHub\Client::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$client</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> GitHub\Client;
+</span><span style="color: #008080;">3</span>     <span style="color: #800080;">$client</span>-&gt;<span style="color: #000000;">setEnterpriseUrl(GITHUB_HOST);
+</span><span style="color: #008080;">4</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$client</span><span style="color: #000000;">;
+</span><span style="color: #008080;">5</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3>解析回调函数</h3>
+<p>可以使用 <code>resolving()</code> 方法来注册一个回调函数，当绑定被解析的时候，就调用这个回调函数：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="47">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;resolving(GitHub\Client::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$client</span>, Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$client</span>-&gt;<span style="color: #000000;">setEnterpriseUrl(GITHUB_HOST);
+</span><span style="color: #008080;">3</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>所有的注册的回调函数都会被调用。这种方法也适用于接口和抽象类：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="46">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$container</span>-&gt;resolving(Logger::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (Logger <span style="color: #800080;">$logger</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$logger</span>-&gt;setLevel('debug'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">});
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #800080;">$container</span>-&gt;resolving(FileLogger::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (FileLogger <span style="color: #800080;">$logger</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 6</span>     <span style="color: #800080;">$logger</span>-&gt;setFilename('logs/debug.log'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">});
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #800080;">$container</span>-&gt;bind(Logger::<span style="color: #0000ff;">class</span>, FileLogger::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #800080;">$logger</span> = <span style="color: #800080;">$container</span>-&gt;make(Logger::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>还可以注册一个任何类被解析时都会被调用的回调函数 - 但是我想这可能仅适用于登录和调试：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="45">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;resolving(<span style="color: #0000ff;">function</span> (<span style="color: #800080;">$object</span>, Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> ...</span>
+<span style="color: #008080;">3</span> });</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<h3>扩展类</h3>
+<p>你还可以使用 <code>extend()</code> 方法把一个类与另一个类的实例进行绑定：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="44">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;extend(APIClient::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$client</span>, Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> APIClientDecorator(<span style="color: #800080;">$client</span><span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>这里返回的另外一个类应该也实现了同样的接口，否则会报错。</p>
+<h2>单例绑定</h2>
+<p>只要使用 <code>bind()</code> 方法进行绑定，每次用的时候，就会创建一个新的实例（ 闭包函数就会被调用一次）。为了共用一个实例，可以使用 <code>singleton()</code> 方法来代替 <code>bind()</code> 方法：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="43">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;singleton(Cache::<span style="color: #0000ff;">class</span>, RedisCache::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>或者是闭包：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="42">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;singleton(Database::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> MySQLDatabase('localhost', 'testdb', 'user', 'pass'<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>为一个具体类创建单例，就只传这个类作为唯一的参数：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="41">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;singleton(MySQLDatabase::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>在以上的每种情况下，单例对象都是一次创建，反复使用。如果想要复用的实例已经生成了，则可以使用 <code>instance()</code> 方法。例如，Laravel 就是用这种方式来确保Container 的实例有且仅有一个的：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="40">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;instance(Container::<span style="color: #0000ff;">class</span>, <span style="color: #800080;">$container</span>);</code></pre>
+
+<p>&nbsp;</p>
+
+<h2>自定义绑定的名称</h2>
+<p>其实，你可以使用任意字符串作为绑定的名称，而不一定非要用类名或者接口名 - 但是这样做的弊端就是不能使用类名实例化了，而只能使用 <code>make()</code> 方法：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="39">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;bind('database', MySQLDatabase::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+
+</span><span style="color: #800080;">$db</span> = <span style="color: #800080;">$container</span>-&gt;make('database');</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>为了同时支持类和接口，并且简化类名的写法，可以使用 <code>alias()</code> 方法:</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="38">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;singleton(Cache::<span style="color: #0000ff;">class</span>, RedisCache::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$container</span>-&gt;alias(Cache::<span style="color: #0000ff;">class</span>, 'cache'<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span> <span style="color: #800080;">$cache1</span> = <span style="color: #800080;">$container</span>-&gt;make(Cache::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> <span style="color: #800080;">$cache2</span> = <span style="color: #800080;">$container</span>-&gt;make('cache'<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> <span style="color: #008080;">assert</span>(<span style="color: #800080;">$cache1</span> === <span style="color: #800080;">$cache2</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h2>存储值</h2>
+<p>你也可以使用 container 来存储任何值 - 比如：配置数据：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="37">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;instance('database.name', 'testdb'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$db_name</span> = <span style="color: #800080;">$container</span>-&gt;make('database.name');</code></pre>
+
+<p>&nbsp;</p>
+
+<p>支持以数组的形式存储：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="36">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>['database.name'] = 'testdb'<span style="color: #000000;">;
+
+</span><span style="color: #800080;">$db_name</span> = <span style="color: #800080;">$container</span>['database.name'];</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>在通过闭包进行绑定的时候，这种存储方式就显示出其好用之处了：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="35">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;singleton('database', <span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> MySQLDatabase(
+        </span><span style="color: #800080;">$container</span>['database.host'],
+        <span style="color: #800080;">$container</span>['database.name'],
+        <span style="color: #800080;">$container</span>['database.user'],
+        <span style="color: #800080;">$container</span>['database.pass'<span style="color: #000000;">]
+    );
+});</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>（ Laravel 框架没有用 container 来存储配置文件，而是用了单独的 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Config/Repository.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Config/Repository.php">Config</a> 类 - 但是 <a href="https://link.zhihu.com/?target=http%3A//php-di.org/doc/php-definitions.html%23values" data-cke-saved-href="https://link.zhihu.com/?target=http%3A//php-di.org/doc/php-definitions.html%23values">PHP-DI</a> 用了）</p>
+<p><strong>小贴士：</strong> 在实例化对象的时候，还可以用数组的形式来代替 <code>make()</code> 方法：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="34">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$db</span> = <span style="color: #800080;">$container</span>['database'];</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h2>通过方法 / 函数做依赖注入</h2>
+<p>到目前为止，我们已经看了很多通过构造函数进行依赖注入的例子，其实，Laravel 还支持对任何方法做依赖注入：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="33">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span> do_something(Cache <span style="color: #800080;">$cache</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+
+</span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$container</span>-&gt;call('do_something');</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>除了依赖类，还可以传其他参数：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="32">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">function</span> show_product(Cache <span style="color: #800080;">$cache</span>, <span style="color: #800080;">$id</span>, <span style="color: #800080;">$tab</span> = 'details') { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #008000;">//</span><span style="color: #008000;"> show_product($cache, 1)</span>
+<span style="color: #008080;">4</span> <span style="color: #800080;">$container</span>-&gt;call('show_product', [1<span style="color: #000000;">]);
+</span><span style="color: #008080;">5</span> <span style="color: #800080;">$container</span>-&gt;call('show_product', ['id' =&gt; 1<span style="color: #000000;">]);
+</span><span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> <span style="color: #008000;">//</span><span style="color: #008000;"> show_product($cache, 1, 'spec')</span>
+<span style="color: #008080;">8</span> <span style="color: #800080;">$container</span>-&gt;call('show_product', [1, 'spec'<span style="color: #000000;">]);
+</span><span style="color: #008080;">9</span> <span style="color: #800080;">$container</span>-&gt;call('show_product', ['id' =&gt; 1, 'tab' =&gt; 'spec']);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>可用于任何可调用的方法：</p>
+<h3>闭包</h3>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="31">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$closure</span> = <span style="color: #0000ff;">function</span> (Cache <span style="color: #800080;">$cache</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> };
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #800080;">$container</span>-&gt;call(<span style="color: #800080;">$closure</span>);</code></pre>
+
+<p>&nbsp;</p>
+
+<h3>静态方法</h3>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="30">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> SomeClass
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> staticMethod(Cache <span style="color: #800080;">$cache</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;">4</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">5</span> <span style="color: #800080;">$container</span>-&gt;call(['SomeClass', 'staticMethod'<span style="color: #000000;">]);
+</span><span style="color: #008080;">6</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 或者：</span>
+<span style="color: #008080;">7</span> <span style="color: #800080;">$container</span>-&gt;call('SomeClass::staticMethod');</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3>普通方法</h3>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="29">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> PostController
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> index(Cache <span style="color: #800080;">$cache</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;">4</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> show(Cache <span style="color: #800080;">$cache</span>, <span style="color: #800080;">$id</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;">5</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">6</span> <span style="color: #800080;">$controller</span> = <span style="color: #800080;">$container</span>-&gt;make(PostController::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">7</span> 
+<span style="color: #008080;">8</span> <span style="color: #800080;">$container</span>-&gt;call([<span style="color: #800080;">$controller</span>, 'index'<span style="color: #000000;">]);
+</span><span style="color: #008080;">9</span> <span style="color: #800080;">$container</span>-&gt;call([<span style="color: #800080;">$controller</span>, 'show'], ['id' =&gt; 1]);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3>调用实例方法的快捷方式</h3>
+<p>通过这种语法结构 <code>ClassName@methodName</code>，就 可以达到实例化一个类并调用其方法的目：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="28">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;call('PostController@index'<span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$container</span>-&gt;call('PostController@show', ['id' =&gt; 4]);</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>容器用于实例化类，这意味着：</p>
+<ol>
+<li>依赖项被注入构造函数（以及方法）。</li>
+<li>如果希望重用这个类，则可以将该类定义为单例类。</li>
+<li>你可以使用接口或任意名称，而不是具体的类。</li>
+</ol>
+<p>例如，这将会启作用：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="27">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> PostController
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Request <span style="color: #800080;">$request</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;">4</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> index(Cache <span style="color: #800080;">$cache</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;">5</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">6</span> <span style="color: #800080;">$container</span>-&gt;singleton('post', PostController::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">7</span> <span style="color: #800080;">$container</span>-&gt;call('post@index');</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>最后，你可以将「默认方法」作为第三个参数。如果第一个参数是一个没有指定方法的类名，则将调用默认的方法。 Laravel 使用 <a href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.4/events%23registering-events-and-listeners" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.4/events%23registering-events-and-listeners">事件处理</a> 来实现：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="26">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;call(MyEventHandler::<span style="color: #0000ff;">class</span>, <span style="color: #800080;">$parameters</span>, 'handle'<span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Equivalent to:</span>
+<span style="color: #008080;">4</span> <span style="color: #800080;">$container</span>-&gt;call('MyEventHandler@handle', <span style="color: #800080;">$parameters</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3>方法调用绑定</h3>
+<p>可以使用 <code>bindMethod()</code> 方法重写方法调用，例如传递其他参数：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="25">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;bindMethod('PostController@index', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$controller</span>, <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$posts</span> = get_posts(...<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$controller</span>-&gt;index(<span style="color: #800080;">$posts</span><span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>所有这些都会奏效，调用闭包而不是的原始方法：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="24">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;call('PostController@index'<span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$container</span>-&gt;call('PostController', [], 'index'<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> <span style="color: #800080;">$container</span>-&gt;call([<span style="color: #0000ff;">new</span> PostController, 'index']);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>但是， <code>call()</code> 的任何附加参数都不会传递到闭包中，因此不能使用它们。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="23">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;call('PostController@index', ['Not used :-(']);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p><em><strong>注意：</strong> 这个方法不属于 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Contracts/Container/Container.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Contracts/Container/Container.php">容器接口</a>, 只是具体的 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Container/Container.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Container/Container.php">容器类</a>. 参考 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/pull/16800" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/pull/16800">提交的 PR</a> 了解为什么忽略参数。</em></p>
+<h2>上下文绑定</h2>
+<p>有时候，你希望在不同的地方使用接口的不同实现。下面是来自 <a href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.4/container%23contextual-binding" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//laravel.com/docs/5.4/container%23contextual-binding">Laravel 文档</a> 中的一个例子：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="22">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>
+<span style="color: #008080;">2</span>     -&gt;when(PhotoController::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">3</span>     -&gt;needs(Filesystem::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">4</span>     -&gt;give(LocalFilesystem::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> 
+<span style="color: #008080;">6</span> <span style="color: #800080;">$container</span>
+<span style="color: #008080;">7</span>     -&gt;when(VideoController::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">8</span>     -&gt;needs(Filesystem::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">9</span>     -&gt;give(S3Filesystem::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>现在， PhotoController 和 VideoController 都可以依赖于文件系统接口，但是每个都将接收不同的实现。你还可以为 <code>give()</code> 使用闭包，就像使用 <code>bind()</code> 一样：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="21">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>
+<span style="color: #008080;">2</span>     -&gt;when(VideoController::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">3</span>     -&gt;needs(Filesystem::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">4</span>     -&gt;give(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;">5</span>         <span style="color: #0000ff;">return</span> Storage::disk('s3'<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span>     });</code></pre>
+
+<p>&nbsp;</p>
+
+<p>或者命名依赖项：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="20">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;instance('s3', <span style="color: #800080;">$s3Filesystem</span><span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #800080;">$container</span>
+<span style="color: #008080;">4</span>     -&gt;when(VideoController::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">5</span>     -&gt;needs(Filesystem::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">6</span>     -&gt;give('s3');</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3>将参数绑定基本类型</h3>
+<p>你还可以通过将变量名称传递给 <code>needs()</code>（而不是接口）并将值传递给 <code>give()</code> 来绑定基本类型（字符串，整数等）：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="19">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>
+<span style="color: #008080;">2</span>     -&gt;when(MySQLDatabase::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">3</span>     -&gt;needs('$username'<span style="color: #000000;">)
+</span><span style="color: #008080;">4</span>     -&gt;give(DB_USER);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>您可以使用闭包来延迟检索值，直到需要它：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="18">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>
+<span style="color: #008080;">2</span>     -&gt;when(MySQLDatabase::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">3</span>     -&gt;needs('$username'<span style="color: #000000;">)
+</span><span style="color: #008080;">4</span>     -&gt;give(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+</span><span style="color: #008080;">5</span>         <span style="color: #0000ff;">return</span> config('database.user'<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span>     });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>在这里你不能传递一个类或一个命名的依赖项（例如 <code>give('database.user')</code>）因为它将作为文字值返回 - 为此你必须使用一个闭包：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="17">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>
+<span style="color: #008080;">2</span>     -&gt;when(MySQLDatabase::<span style="color: #0000ff;">class</span><span style="color: #000000;">)
+</span><span style="color: #008080;">3</span>     -&gt;needs('$username'<span style="color: #000000;">)
+</span><span style="color: #008080;">4</span>     -&gt;give(<span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">5</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$container</span>['database.user'<span style="color: #000000;">];
+</span><span style="color: #008080;">6</span>     });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h2>标记</h2>
+<p>你可以使用容器 <code>tag</code> 来绑定相关标记：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="16">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;tag(MyPlugin::<span style="color: #0000ff;">class</span>, 'plugin'<span style="color: #000000;">);
+</span><span style="color: #800080;">$container</span>-&gt;tag(AnotherPlugin::<span style="color: #0000ff;">class</span>, 'plugin');</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>然后将所有标记的实例检索为数组：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="15">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$container</span>-&gt;tagged('plugin') <span style="color: #0000ff;">as</span> <span style="color: #800080;">$plugin</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$plugin</span>-&gt;<span style="color: #000000;">init();
+</span><span style="color: #008080;">3</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p><code>tag()</code> 的参数都接受数组：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="14">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;tag([MyPlugin::<span style="color: #0000ff;">class</span>, AnotherPlugin::<span style="color: #0000ff;">class</span>], 'plugin'<span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$container</span>-&gt;tag(MyPlugin::<span style="color: #0000ff;">class</span>, ['plugin', 'plugin.admin']);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h2>重新绑定</h2>
+<p><strong>*Note:</strong> 这是一个更高级的，只是很少需要-请随意跳过它！ *</p>
+<p>在绑定或实例已经被使用后需要更改时，可以调用 <code>rebinding()</code> 回调 - 例如，此 <code>Session</code> 类在被 <code>Auth</code> 类使用后被替换，因此需要通知 <code>Auth</code> 类变化：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="13">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$container</span>-&gt;singleton(Auth::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$auth</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Auth;
+</span><span style="color: #008080;"> 3</span>     <span style="color: #800080;">$auth</span>-&gt;setSession(<span style="color: #800080;">$container</span>-&gt;make(Session::<span style="color: #0000ff;">class</span><span style="color: #000000;">));
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span>     <span style="color: #800080;">$container</span>-&gt;rebinding(Session::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$container</span>, <span style="color: #800080;">$session</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$auth</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 6</span>         <span style="color: #800080;">$auth</span>-&gt;setSession(<span style="color: #800080;">$session</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">    });
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$auth</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">});
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span> <span style="color: #800080;">$container</span>-&gt;instance(Session::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">new</span> Session(['username' =&gt; 'dave'<span style="color: #000000;">]));
+</span><span style="color: #008080;">13</span> <span style="color: #800080;">$auth</span> = <span style="color: #800080;">$container</span>-&gt;make(Auth::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$auth</span>-&gt;username(); <span style="color: #008000;">//</span><span style="color: #008000;"> dave</span>
+<span style="color: #008080;">15</span> <span style="color: #800080;">$container</span>-&gt;instance(Session::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">new</span> Session(['username' =&gt; 'danny'<span style="color: #000000;">]));
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$auth</span>-&gt;username(); <span style="color: #008000;">//</span><span style="color: #008000;"> danny</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>(有关重新绑定的更多信息, 看 <a href="https://link.zhihu.com/?target=https%3A//stackoverflow.com/questions/38974593/laravels-ioc-container-rebinding-abstract-types" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//stackoverflow.com/questions/38974593/laravels-ioc-container-rebinding-abstract-types">这里</a> 和 <a href="https://link.zhihu.com/?target=https%3A//code.tutsplus.com/tutorials/digging-in-to-laravels-ioc-container--cms-22167" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//code.tutsplus.com/tutorials/digging-in-to-laravels-ioc-container--cms-22167">这里</a>.)</p>
+<h3>refresh()</h3>
+<p>还有一个快捷方法 <code>refresh()</code> 来处理这个常见模式：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="12">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$container</span>-&gt;singleton(Auth::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$auth</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Auth;
+</span><span style="color: #008080;">3</span>     <span style="color: #800080;">$auth</span>-&gt;setSession(<span style="color: #800080;">$container</span>-&gt;make(Session::<span style="color: #0000ff;">class</span><span style="color: #000000;">));
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span>     <span style="color: #800080;">$container</span>-&gt;refresh(Session::<span style="color: #0000ff;">class</span>, <span style="color: #800080;">$auth</span>, 'setSession'<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$auth</span><span style="color: #000000;">;
+</span><span style="color: #008080;">8</span> });</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>它还返回现有实例或绑定（如果有的话），因此您可以这样做：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="11">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> This only works if you call singleton() or bind() on the class</span>
+<span style="color: #008080;">2</span> <span style="color: #800080;">$container</span>-&gt;singleton(Session::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span> <span style="color: #800080;">$container</span>-&gt;singleton(Auth::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (Container <span style="color: #800080;">$container</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">5</span>     <span style="color: #800080;">$auth</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Auth;
+</span><span style="color: #008080;">6</span>     <span style="color: #800080;">$auth</span>-&gt;setSession(<span style="color: #800080;">$container</span>-&gt;refresh(Session::<span style="color: #0000ff;">class</span>, <span style="color: #800080;">$auth</span>, 'setSession'<span style="color: #000000;">));
+</span><span style="color: #008080;">7</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$auth</span><span style="color: #000000;">;
+</span><span style="color: #008080;">8</span> });</code></pre>
+
+<p>&nbsp;</p>
+
+<p>(就个人而言，我发现这种语法更加混乱，并且更喜欢上面更详细的版本!)</p>
+<p><em><strong>Note:</strong> 这些方法不属于 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Contracts/Container/Container.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Contracts/Container/Container.php">Container interface</a>, 只有具体 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Container/Container.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Container/Container.php">Container class</a>.</em></p>
+<h2>覆盖构造函数参数</h2>
+<p><code>makeWith()</code> 方法允许你将其他参数传递给构造函数。 它忽略任何现有的实例或单例，并且在创建具有不同参数的类的多个实例时仍然有用，同时仍然注入依赖项：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="10">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Post
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Database <span style="color: #800080;">$db</span>, int <span style="color: #800080;">$id</span>) { <span style="color: #008000;">/*</span><span style="color: #008000;"> ... </span><span style="color: #008000;">*/</span><span style="color: #000000;"> }
+</span><span style="color: #008080;">4</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">5</span> <span style="color: #800080;">$post1</span> = <span style="color: #800080;">$container</span>-&gt;makeWith(Post::<span style="color: #0000ff;">class</span>, ['id' =&gt; 1<span style="color: #000000;">]);
+</span><span style="color: #008080;">6</span> <span style="color: #800080;">$post2</span> = <span style="color: #800080;">$container</span>-&gt;makeWith(Post::<span style="color: #0000ff;">class</span>, ['id' =&gt; 2]);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p><em><strong>Note:</strong> 在Laravel 5.3及以下版本中，它很简单 <code>make($class, $parameters)</code>. 它是在 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/internals/issues/391" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/internals/issues/391">Laravel 5.4 被移除</a>, 但后来 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/pull/18271" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/pull/18271">重新添加为 makeWith()</a> 在 5.4.16. 在Laravel 5.5中，它似乎将<a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/pull/19201" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/pull/19201">恢复为Laravel 5.3语法</a>.</em></p>
+<h2>其他方法</h2>
+<p>这涵盖了我认为有用的所有方法 - 但只是为了解决问题，这里是剩下的公共方法的摘要......</p>
+<h3>bound()</h3>
+<p>如果类或名称已与 <code>bind()</code>, <code>singleton()</code>, <code>instance()</code> or <code>alias()</code> 绑定，则 <code>bound()</code> 返回true。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="9">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">if</span> (! <span style="color: #800080;">$container</span>-&gt;bound('database.user'<span style="color: #000000;">)) {
+</span><span style="color: #008080;">2</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> ...</span>
+<span style="color: #008080;">3</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> 还可以使用数组访问语法和 <span style="color: #0000ff;">isset</span>():
+<span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> <span style="color: #0000ff;">if</span> (! <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$container</span>['database.user'<span style="color: #000000;">])) {
+</span><span style="color: #008080;">8</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> ...</span>
+<span style="color: #008080;">9</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="8"><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>它可以用 <code>unset()</code> 重置，它删除指定的绑定/实例/别名。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="7">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$container</span>['database.user'<span style="color: #000000;">]);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$container</span>-&gt;bound('database.user')); <span style="color: #008000;">//</span><span style="color: #008000;"> false</span></code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<h3>bindIf()</h3>
+<p><code>bindIf()</code> 与 <code>bind()</code> 做同样的事情，除了它只注册一个绑定（如果还没有）（参考上面的 <code>bound()</code>）。 它可能用于在包中注册默认绑定，同时允许用户覆盖它。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="6">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;bindIf(Loader::<span style="color: #0000ff;">class</span>, FallbackLoader::<span style="color: #0000ff;">class</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>没有 <code>singletonIf()</code> 方法，但你可以使用 <code>bindIf($abstract, $concrete, true)</code> 代替：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="5">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$container</span>-&gt;bindIf(Loader::<span style="color: #0000ff;">class</span>, FallbackLoader::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">true</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>或者这样写全也可以:</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="4">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">if</span> (! <span style="color: #800080;">$container</span>-&gt;bound(Loader::<span style="color: #0000ff;">class</span><span style="color: #000000;">)) {
+    </span><span style="color: #800080;">$container</span>-&gt;singleton(Loader::<span style="color: #0000ff;">class</span>, FallbackLoader::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<h3>resolved()</h3>
+<p>如果已经解析了类 <code>resolved()</code> 则返回true。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="3">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$container</span>-&gt;resolved(Database::<span style="color: #0000ff;">class</span>)); <span style="color: #008000;">//</span><span style="color: #008000;"> false</span>
+<span style="color: #800080;">$container</span>-&gt;make(Database::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$container</span>-&gt;resolved(Database::<span style="color: #0000ff;">class</span>)); <span style="color: #008000;">//</span><span style="color: #008000;"> true</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>我不确定它有什么用处，如果使用 <code>unset()</code> 它会被重置 (可以看上面的 <code>bound()</code>)。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="2">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$container</span>[Database::<span style="color: #0000ff;">class</span><span style="color: #000000;">]);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$container</span>-&gt;resolved(Database::<span style="color: #0000ff;">class</span>)); <span style="color: #008000;">//</span><span style="color: #008000;"> false</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3>factory()</h3>
+<p><code>factory()</code> 方法返回一个不带参数的闭包，并调用 <code>make()</code>。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$dbFactory</span> = <span style="color: #800080;">$container</span>-&gt;factory(Database::<span style="color: #0000ff;">class</span><span style="color: #000000;">);
+
+</span><span style="color: #800080;">$db</span> = <span style="color: #800080;">$dbFactory</span>();</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>我不确定它有什么用处...</p>
+<h3>wrap()</h3>
+<p><code>wrap()</code> 方法包装一个闭包，以便在执行时注入它的依赖项。 wrap 方法接受一组参数, 返回的闭包没有参数：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$cacheGetter</span> = <span style="color: #0000ff;">function</span> (Cache <span style="color: #800080;">$cache</span>, <span style="color: #800080;">$key</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$cache</span>-&gt;get(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> <span style="color: #000000;">};
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> <span style="color: #800080;">$usernameGetter</span> = <span style="color: #800080;">$container</span>-&gt;wrap(<span style="color: #800080;">$cacheGetter</span>, ['username'<span style="color: #000000;">]);
+</span><span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> <span style="color: #800080;">$username</span> = <span style="color: #800080;">$usernameGetter</span>();</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>我不确定它有什么用处，因为闭包没有参数...</p>
+<p><em><strong>Note:</strong> 这种方法不属于 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Contracts/Container/Container.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Contracts/Container/Container.php">Container interface</a>, 只属于 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Container/Container.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Container/Container.php">Container class</a>.</em></p>
+<h3>afterResolving()</h3>
+<p><code>afterResolving()</code> 方法与 <code>resolving()</code> 完全相同，只是在「解析」回调之后调用 「解析后」 回调。 我不确定什么时候会有用...</p>
+<h3>最后...</h3>
+<ul>
+<li><code>isShared()</code> - 确定给定类型是否为共享单例/实例</li>
+<li><code>isAlias()</code> - 确定给定字符串是否是已注册的别名</li>
+<li><code>hasMethodBinding()</code> - 确定容器是否具有给定的方法绑定</li>
+<li><code>getBindings()</code> - 检索所有已注册绑定的原始数组</li>
+<li><code>getAlias($abstract)</code> - 解析基础类/绑定名称的别名</li>
+<li><code>forgetInstance($abstract)</code> - 清除单个实例对象</li>
+<li><code>forgetInstances()</code> - 清除所有实例对象</li>
+<li><code>flush()</code> - 清除所有绑定和实例，有效地重置容器</li>
+<li><code>setInstance()</code> - 替换 <code>getInstance()</code> 使用的实例(Tip:使用 <code>setInstance(null)</code> 清除它，所以下次它将生成一个新实例)</li>
+</ul>
+<p><em><strong>Note:</strong> 最后一节中没有一个方法是其中的一部分 <a href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Contracts/Container/Container.php" data-cke-saved-href="https://link.zhihu.com/?target=https%3A//github.com/laravel/framework/blob/5.4/src/Illuminate/Contracts/Container/Container.php">Container interface</a>.</em></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

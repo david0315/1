@@ -1,0 +1,266 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP切割整数工具，类似微信红包金额分配' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP切割整数工具，类似微信红包金额分配</center></div><div class='banquan'>原文出处:本文由博客园博主werben提供。<br/>
+原文连接:https://www.cnblogs.com/werben/p/11540133.html</div><br>
+    <p>&nbsp;Composer地址：<a href="https://packagist.org/packages/werbenhu/php-number-slicing" target="_blank">https://packagist.org/packages/werbenhu/php-number-slicing</a></p>
+<p><em id="__mceDel">GitHub地址：<a href="https://github.com/werbenhu/php-number-slicing" target="_blank">https://github.com/werbenhu/php-number-slicing</a></em></p>
+<p>主要代码：<span class="final-path">NumberSlicing.php</span></p>
+<p><span class="final-path">思路：将数字按精度放大倍数，比如切割数字1，切割的份数是10，精度是0.01，则将1放大100 X 10倍，然后再来对加了1000倍权重后的值进行切割。</span><span class="final-path">切割完成之后，再将权重去除，保证总值是1。</span></p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+namespace Werben\Tools;
+use Exception;
+class NumberSlicing {
+    /**
+     * 精确小数点，舍弃最后一位之后的数据（非四舍五入）
+     * floor with precision
+     * @param $number 要精确的数
+     * @param $precision 精度，比如保留到0.01，则该值为2
+     * @return float|int
+     */
+    public static function floorWithPrecision($number, $precision) {
+        $power = pow(10, $precision);
+        $ret = floor($number * $power) * 1.0 / $power ;
+        return $ret;
+    }
+    /**
+     * 精确小数点，按四舍五入保留最后一位
+     * round with precision
+     * @param $number 要精确的数
+     * @param $precision 精度，比如保留到0.01，则该值为2
+     * @return float|int
+     */
+    public static function roundWithPrecision($number, $precision) {
+        $power = pow(10, $precision);
+        $ret = round($number * $power) * 1.0 / $power ;
+        return $ret;
+    }
+    /**
+     * 将数把权重放大，比如1，要按精度0.0001分配，则先将1乘以10000然后再来分配
+     * random the sum weights   加上权重之后，整个要切割的数的权重总值
+     * @param $weight_items 用来保留，随机分配的权重值
+     * @param $count    要切割的份数
+     * @param int $each_weight 加上权重之后，每一份平均的权重值
+     * @param int $min_weight   加上权重之后，最小额度的值
+     * @return float|int
+     */
+    public static function weightSlicing(&amp;$weight_items, $count, $each_weight = 10, $min_weight = 3)
+    {
+        $already_count = count($weight_items);
+        $cur_random_full_total = ($already_count + 1) * $each_weight;
+        $already_random_real_total = 0;
+        foreach ($weight_items as $value) {
+            $already_random_real_total += $value;
+        }
+        $cur_random_rest = $cur_random_full_total - $already_random_real_total;
+        if ($already_count == $count - 1) {
+            $cur_random_rate = $cur_random_rest;
+        } else {
+            $cur_random_rate_max = $cur_random_rest + $each_weight - $min_weight * 2;
+            $cur_random_rate = $min_weight + mt_rand(0, $cur_random_rate_max);
+        }
+        $weight_items[] = $cur_random_rate;
+        return $cur_random_rate;
+    }
+    /**
+     * slicing the number
+     * @param int $number
+     * @param int $size
+     * @param float $precision
+     * @param float $min
+     * @return array
+     * @throws Exception
+     */
+    public static function numberSlicing($number, $size, $precision = 0.01, $min = 0.01) {
+        if ($number * 1.0 / $size &lt;= $min) {
+            throw new Exception('min number is bigger than the average value!');
+        }
+        if ($precision &gt; 1) {
+            throw new Exception('precision can\'t bigger than 1!');
+        }
+        if ($min &lt; $precision) {
+            throw new Exception('precision can\'t bigger than min!');
+        }
+        $weight_items = [];
+        $items = [];
+        //不加权重情况下，每一份的平均值
+        $each_weight = intval($number / $size);
+        if ($precision &lt; 1) {
+            //如果精度是小数
+            if ($each_weight &gt; 1) {
+                //如果平均值大于1，则最小额度则直接用min就可以了
+                //每一份的平均值乘以权重的值，比如精度为0.01，则每一份的平均值要乘以权重（100）
+                $each_weight = intval((1 / $precision) * $number / $size);
+                //最小数值也要乘以权重
+                $min_weight = intval(1 / $precision) * $min;
+            } else {
+                //如果平均值小于1，需要将平均值也乘以权重
+                $each_weight = intval(1 / $precision);
+                $min_weight = $each_weight * $size * $min / $number;
+            }
+            $precision_num = log10(1 / $precision);
+        } else {
+            //如果精度是整数(1)
+            $min_weight = $min;
+            $precision_num = 0;
+        }
+        $sum_item_number = 0.0;
+        $sum_weight = 0.0;
+        //先将整个数，随机按最小额度分配
+        for ($i = 0; $i &lt; $size; $i++) {
+            $cur_weight = self::weightSlicing($weight_items, $size, $each_weight, $min_weight);
+            //将权重去除，换算回原先的比例
+            $rate = ($number * $cur_weight * 1.00) / ($size * $each_weight);
+            $rate = self::floorWithPrecision($rate, $precision_num);
+            $sum_item_number += $rate;
+            $sum_weight += $cur_weight;
+            $items[] = $rate;
+        }
+        //由于误差，随机分配后，还会遗留一些数没有完全分配完，则将剩下的数随机分配
+        if ($precision_num != 0) {
+            //如果是切割成小数
+            $rest = $number - $sum_item_number;
+            while ($rest - 0.00 &gt; PHP_FLOAT_MIN) {
+                if ($rest / $min &gt;= 1.0) {
+                    //剩余的数大于min最小额度，则将每份最小额度随机分配
+                    $random_index = mt_rand(0, $size - 1);
+                    $items[$random_index] = self::roundWithPrecision($items[$random_index] + $min, $precision_num);
+                    $sum_item_number = self::roundWithPrecision($sum_item_number + $min, $precision_num);
+                    $rest = self::roundWithPrecision($number - $sum_item_number, $precision_num);
+                } else {
+                    //剩余的数小于min最小额度，则将这最后的未分配的数随机分配
+                    $random_index = mt_rand(0, $size - 1);
+                    $items[$random_index] = self::roundWithPrecision($items[$random_index] + $number - $sum_item_number, $precision_num);
+                    $sum_item_number = $number;
+                    $rest = $number - $sum_item_number;
+                }
+            }
+        } else {
+            //如果是切割成整数
+            $rest = $number - $sum_item_number;
+            while ($rest &gt; 0) {
+                if ($rest / $min &gt;= 1) {
+                    $random_index = mt_rand(0, $size - 1);
+                    $items[$random_index] += $min;
+                    $sum_item_number += $min;
+                    $rest = $number - $sum_item_number;
+                } else {
+                    $random_index = mt_rand(0, $size - 1);
+                    $items[$random_index] += $rest;
+                    $sum_item_number += $rest;
+                    $rest = $number - $sum_item_number;
+                }
+            }
+        }
+        return $items;
+    }
+}
+</code></pre>
+
+<p>　　测试代码：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>use Werben\Tools\NumberSlicing;
+
+function testIntSlicing2IntOne() {
+    $precision = 1; //精确度 eg: 1, 0.1, 0.01, 0.01
+    $size = 10;         //切割的份数，the size of the number to slicing
+    $min = 3;        //最小额度，最小额度必须大于最小精度，min amount eg: 3, 0.23, 0.05, 0.008
+    $number = 100;      //要切割的数字，the number
+    $items = NumberSlicing::numberSlicing($number, $size, $precision, $min);
+
+    $sum = 0.0;
+    $ret_min = $number;
+    foreach ($items as $value) {
+        $sum += $value;
+        if ($ret_min &gt; $value) {
+            $ret_min = $value;
+        }
+    }
+    $count = count($items);
+    echo "count: $count, sum: $sum, ret_min: $ret_min\n";
+    echo "items : ". json_encode($items) ."\n";
+}
+
+function testIntSlicing2IntTwo() {
+    $precision = 1; //精确度 eg: 1, 0.1, 0.01, 0.01
+    $size = 30;         //切割的份数，the size of the number to slicing
+    $min = 18666;        //最小额度，最小额度必须大于最小精度，min amount eg: 3, 0.23, 0.05, 0.008
+    $number = 800000;      //要切割的数字，the number
+    $items = NumberSlicing::numberSlicing($number, $size, $precision, $min);
+
+    $sum = 0.0;
+    $ret_min = $number;
+    foreach ($items as $value) {
+        $sum += $value;
+        if ($ret_min &gt; $value) {
+            $ret_min = $value;
+        }
+    }
+    $count = count($items);
+    echo "count: $count, sum: $sum, ret_min: $ret_min\n";
+    echo "items : ". json_encode($items) ."\n";
+}
+
+function testIntSlicing2FloatOne() {
+    $precision = 0.01; //精确度 eg: 1, 0.1, 0.01, 0.01
+    $size = 1000;         //切割的份数，the size of the number to slicing
+    $min = 0.05;        //最小额度，最小额度必须大于最小精度，min amount eg: 3, 0.23, 0.05, 0.008
+    $number = 100;      //要切割的数字，the number
+    $items = NumberSlicing::numberSlicing($number, $size, $precision, $min);
+
+    $sum = 0.0;
+    $ret_min = $number;
+    foreach ($items as $key =&gt; $value) {
+        $sum += $value;
+        if ($ret_min &gt; $value) {
+            $ret_min = $value;
+        }
+    }
+    $count = count($items);
+    echo "count: $count, sum: $sum, ret_min: $ret_min\n";
+    echo "items: ". json_encode($items) ."\n";
+}
+
+function testIntSlicing2FloatTwo() {
+    $precision = 0.00001; //精确度 eg: 1, 0.1, 0.01, 0.01
+    $size = 1000;         //切割的份数，the size of the number to slicing
+    $min = 0.00005;        //最小额度，最小额度必须大于最小精度，min amount eg: 3, 0.23, 0.05, 0.008
+    $number = 5;      //要切割的数字，the number
+    $items = NumberSlicing::numberSlicing($number, $size, $precision, $min);
+
+    $sum = 0.0;
+    $ret_min = $number;
+    foreach ($items as $key =&gt; $value) {
+        $sum += $value;
+        if ($ret_min &gt; $value) {
+            $ret_min = $value;
+        }
+    }
+    $count = count($items);
+    echo "count: $count, sum: $sum, ret_min: $ret_min\n";
+    echo "items: ". json_encode($items) ."\n";
+}
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

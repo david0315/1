@@ -1,0 +1,139 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP与Python进行数据交互' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP与Python进行数据交互</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11809092.html</div><br>
+    <p>最近，决定在一个项目用tp5进行APP接口开发，用Python做数据分析，然后这就面临一个问题：PHP和Python如何进行数据交互？</p>
+<p>&nbsp;</p>
+<p><strong>思路</strong></p>
+<p>我解决此问题的方法是利用了PHP的passthru函数来调用命令运行Python脚本。</p>
+<p><strong>实现</strong></p>
+<p>在PHP中调用命令运行Python脚本</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php comments">//php.php</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">&lt;?php</code></p>
+<p class="line number3 index2 alt2"><code class="php variable">$params</code> <code class="php plain">= </code><code class="php string">"value"</code><code class="php plain">; #传递给python脚本的入口参数&nbsp; </code></p>
+<p class="line number4 index3 alt1"><code class="php variable">$path</code><code class="php plain">=</code><code class="php string">"python python.py "</code><code class="php plain">; </code><code class="php comments">//需要注意的是：末尾要加一个空格</code></p>
+<p class="line number5 index4 alt2"><code class="php functions">passthru</code><code class="php plain">(</code><code class="php variable">$path</code><code class="php plain">.</code><code class="php variable">$params</code><code class="php plain">);</code><code class="php comments">//等同于命令`python python.py 参数`，并接收打印出来的信息 </code></p>
+<p class="line number6 index5 alt1"><code class="php plain">?&gt;</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>若存在多个参数，则参数之间以空格分开</p>
+<p><strong>在Python中接收PHP传入的参数</strong></p>
+<p>sys.argv[]用于获取到的PHP传入python的入口参数</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php comments">//python.py</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">import sys&nbsp; </code></p>
+<p class="line number3 index2 alt2"><code class="php plain">params = sys.argv[1] #即为获取到的PHP传入python的入口参数</code></p>
+<p class="line number4 index3 alt1"><code class="php functions">print</code><code class="php plain">(params);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>若在Python中接收多个参数</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">params = sys.argv[1:]</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>从Python中返回参数</strong></p>
+<p>若要从Python中返回多个值，需要将值写入元组中，然后通过json.dumps()转化为json，并进行打印，PHP中通过passthru可以获得Python脚本打印的json</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">import sys</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">import json</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">params = (</code><code class="php string">'Google'</code><code class="php plain">, </code><code class="php string">'Runoob'</code><code class="php plain">, 1997, 2000);</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">json_str =json.dumps(params);</code></p>
+<p class="line number5 index4 alt2"><code class="php functions">print</code><code class="php plain">(json_str);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>另需要在PHP中passthru前加@，否则会报以下提示</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">Notice: Array to string conversion in php.php on line 6</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>效果</strong></p>
+<p>运行调用Python脚本的PHP文件，浏览器中输出值为Python打印的值。</p>
+<p><img src="./images/PHP与Python进行数据交互0.jpg" alt="" /></p>
+<p><strong>明确的学习思路能更高效的学习</strong></p>
+<p><strong><img src="./images/PHP与Python进行数据交互1.jpg" alt="" /></strong></p>
+<p>&nbsp;</p>
+<p><a href="https://jq.qq.com/?_wv=1027&amp;k=5Spo1ah" target="_blank"><strong>点击加入该群学习</strong></a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

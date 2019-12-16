@@ -1,0 +1,398 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现日历签到，并实现累计积分功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现日历签到，并实现累计积分功能</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11857434.html</div><br>
+    <p>在网站开发过程中我们会经常用到签到功能来奖励用户积分，或者做一些其他活动。这次项目开发过程中做了日历签到，因为没有经验所有走了很多弯路，再次记录过程和步骤。</p>
+<p>1.日历签到样式：使用的是calendar日历插件</p>
+<p><img src="./images/PHP实现日历签到，并实现累计积分功能0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>前台代码</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;!doctype html&gt;
+<span style="color: #008080;"> 2</span> &lt;html&gt;
+<span style="color: #008080;"> 3</span> &lt;head&gt;
+<span style="color: #008080;"> 4</span> &lt;meta charset="utf-8"&gt;
+<span style="color: #008080;"> 5</span> &lt;title&gt;日历签到&lt;/title&gt;
+<span style="color: #008080;"> 6</span> &lt;meta name="keywords" content="日历签到"/&gt;
+<span style="color: #008080;"> 7</span> &lt;meta name="description" content="日历签到"/&gt;
+<span style="color: #008080;"> 8</span> &lt;meta content="telephone=no" name="format-detection" /&gt;
+<span style="color: #008080;"> 9</span> &lt;meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /&gt;
+<span style="color: #008080;">10</span> &lt;meta content="yes" name="apple-mobile-web-app-capable" /&gt;
+<span style="color: #008080;">11</span> &lt;meta content="black" name="apple-mobile-web-app-status-bar-style" /&gt;
+<span style="color: #008080;">12</span> &lt;link href="__TPL__/css/index.css" rel="stylesheet" type="text/css"&gt;
+<span style="color: #008080;">13</span> &lt;link rel="stylesheet" type="text/css" href="__TPL__/css/main.css"&gt;
+<span style="color: #008080;">14</span> &lt;link rel="stylesheet" type="text/css" href="__TPL__/css/self.css"&gt;
+<span style="color: #008080;">15</span> &lt;link rel="stylesheet" type="text/css" href="__TPL__/css/swiper.min.css"&gt;
+<span style="color: #008080;">16</span> &lt;/head&gt;
+<span style="color: #008080;">17</span> &lt;body style="background:#fff;"&gt;
+<span style="color: #008080;">18</span> &lt;div <span style="color: #0000ff;">class</span>="warpper"&gt;
+<span style="color: #008080;">19</span>   &lt;div <span style="color: #0000ff;">class</span>="sign"&gt;
+<span style="color: #008080;">20</span>     &lt;ul&gt;
+<span style="color: #008080;">21</span>       &lt;li&gt;&lt;span&gt;本月签到&lt;/span&gt;&lt;b&gt;&lt;?<span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$sign</span>)){<span style="color: #0000ff;">echo</span> <span style="color: #008080;">count</span>(<span style="color: #800080;">$sign</span>);}<span style="color: #0000ff;">else</span>{<span style="color: #0000ff;">echo</span> '0';}?&gt;&lt;/b&gt;&lt;/li&gt;
+<span style="color: #008080;">22</span>       &lt;li&gt;&lt;span&gt;签到累计&lt;/span&gt;&lt;b&gt;&lt;?php <span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$allsign</span>)){<span style="color: #0000ff;">echo</span> <span style="color: #008080;">count</span>(<span style="color: #800080;">$allsign</span>);}<span style="color: #0000ff;">else</span>{<span style="color: #0000ff;">echo</span> '0';}?&gt;&lt;/b&gt;&lt;/li&gt;
+<span style="color: #008080;">23</span>       &lt;li&gt;&lt;span&gt;累计积分&lt;/span&gt;&lt;b&gt;&lt;?php <span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$allsign</span>)){<span style="color: #0000ff;">echo</span> <span style="color: #008080;">count</span>(<span style="color: #800080;">$allsign</span>)*<span style="color: #800080;">$config</span>['site_praise'];}<span style="color: #0000ff;">else</span>{<span style="color: #0000ff;">echo</span> '0';}?&gt;&lt;/b&gt;&lt;/li&gt;
+<span style="color: #008080;">24</span>       &lt;li&gt;&lt;span&gt;全部积分&lt;/span&gt;&lt;b&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #008080;">ceil</span>(<span style="color: #800080;">$user</span>['integral']);?&gt;&lt;/b&gt;&lt;/li&gt;
+<span style="color: #008080;">25</span>     &lt;/ul&gt;
+<span style="color: #008080;">26</span>   &lt;/div&gt;
+<span style="color: #008080;">27</span>   &lt;input type="hidden" name="" value="__URL__/checksign.html" id="sign"&gt;
+<span style="color: #008080;">28</span>   &lt;div <span style="color: #0000ff;">class</span>="singBox" id="calendar"&gt;&lt;/div&gt;
+<span style="color: #008080;">29</span>   &lt;div <span style="color: #0000ff;">class</span>="qdbox"&gt;&lt;a href="javascript:;" <span style="color: #0000ff;">class</span>="qd_btn" onclick="sign_()" style="background: &lt;?php echo is_sign_now()?'':'rgb(135, 135, 135)'; ?&gt;"  &gt;&lt;?php <span style="color: #0000ff;">echo</span> is_sign_now()?'签到':'已签到'; ?&gt;&lt;/a&gt;&lt;/div&gt;
+<span style="color: #008080;">30</span> &lt;script src="__TPL__/js/jquery.min.js"&gt;&lt;/script&gt; 
+<span style="color: #008080;">31</span> &lt;script src="__TPL__/js/swiper.min.js"&gt;&lt;/script&gt;
+<span style="color: #008080;">32</span> &lt;script src="__TPL__/js/calendar.js"&gt;&lt;/script&gt;
+<span style="color: #008080;">33</span> &lt;script src="__TPL__/js/js.js"&gt;&lt;/script&gt;
+<span style="color: #008080;">34</span> &lt;script type="text/javascript" src="__TPL__/js/layer/2.1/layer.js"&gt;&lt;/script&gt;
+<span style="color: #008080;">35</span> {<span style="color: #0000ff;">include</span> <span style="color: #008080;">file</span>="footer"<span style="color: #000000;">}
+</span><span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span> &lt;script type="text/javascript"&gt;
+<span style="color: #008080;">38</span> $(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+</span><span style="color: #008080;">39</span>   <span style="color: #0000ff;">var</span> arr=''<span style="color: #000000;">;
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">//</span><span style="color: #008000;">var signList=[{"signDay":"09"},{"signDay":"11"}];</span>
+<span style="color: #008080;">41</span>   &lt;?php <span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$sign</span>)){ <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$sign</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$vo</span>){ ?&gt;
+<span style="color: #008080;">42</span>      arr+="{'signDay':'&lt;?php echo <span style="color: #800080;">$vo</span>['day'];?&gt;'},"<span style="color: #000000;">;
+</span><span style="color: #008080;">43</span>     &lt;?php }?&gt;
+<span style="color: #008080;">44</span>     arr = arr.<span style="color: #008080;">substr</span>(0,arr.length-1<span style="color: #000000;">);
+</span><span style="color: #008080;">45</span>     arr ="["+arr+"]"<span style="color: #000000;">;
+</span><span style="color: #008080;">46</span>     <span style="color: #0000ff;">var</span> signList = <span style="color: #0000ff;">eval</span>('(' + arr + ')'<span style="color: #000000;">);
+</span><span style="color: #008080;">47</span>  &lt;?php }<span style="color: #0000ff;">else</span>{?&gt;
+<span style="color: #008080;">48</span>       <span style="color: #0000ff;">var</span> signList=<span style="color: #000000;">[];
+</span><span style="color: #008080;">49</span>       &lt;?php }?&gt;
+<span style="color: #008080;">50</span> 
+<span style="color: #008080;">51</span>    calUtil.<span style="color: #000000;">init(signList);
+</span><span style="color: #008080;">52</span> <span style="color: #000000;">});
+</span><span style="color: #008080;">53</span> &lt;/script&gt;
+<span style="color: #008080;">54</span> &lt;script type="text/javascript"&gt;
+<span style="color: #008080;">55</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> sign_(){
+</span><span style="color: #008080;">56</span>   $.<span style="color: #000000;">ajax({
+</span><span style="color: #008080;">57</span>       type:'GET',
+<span style="color: #008080;">58</span>       url:"__URL__/checksign.html", 
+<span style="color: #008080;">59</span>       dataType:'json',
+<span style="color: #008080;">60</span>       success:<span style="color: #0000ff;">function</span><span style="color: #000000;">(res){
+</span><span style="color: #008080;">61</span>           <span style="color: #0000ff;">if</span>(res.result==1<span style="color: #000000;">){
+</span><span style="color: #008080;">62</span>             window.location.href="__URL__/sign.html"
+<span style="color: #008080;">63</span>           }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">64</span>               alert(res.<span style="color: #000000;">msg);
+</span><span style="color: #008080;">65</span> <span style="color: #000000;">          }
+</span><span style="color: #008080;">66</span> <span style="color: #000000;">      }
+</span><span style="color: #008080;">67</span> <span style="color: #000000;">  })
+</span><span style="color: #008080;">68</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">69</span> &lt;/script&gt;
+<span style="color: #008080;">70</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<p>插件calendar.js 修改如下：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> <span style="color: #0000ff;">var</span> calUtil =<span style="color: #000000;"> {
+</span><span style="color: #008080;">  2</span>   <span style="color: #008000;">//</span><span style="color: #008000;">当前日历显示的年份</span>
+<span style="color: #008080;">  3</span>   showYear:2015,
+<span style="color: #008080;">  4</span>   <span style="color: #008000;">//</span><span style="color: #008000;">当前日历显示的月份</span>
+<span style="color: #008080;">  5</span>   showMonth:1,
+<span style="color: #008080;">  6</span>   <span style="color: #008000;">//</span><span style="color: #008000;">当前日历显示的天数</span>
+<span style="color: #008080;">  7</span>   showDays:1,
+<span style="color: #008080;">  8</span>   eventName:"load",
+<span style="color: #008080;">  9</span>   <span style="color: #008000;">//</span><span style="color: #008000;">初始化日历</span>
+<span style="color: #008080;"> 10</span>   init:<span style="color: #0000ff;">function</span>(signList,s=''<span style="color: #000000;">){
+</span><span style="color: #008080;"> 11</span>     calUtil.<span style="color: #000000;">setMonthAndDay();
+</span><span style="color: #008080;"> 12</span>     <span style="color: #0000ff;">if</span> (typeof(s) == 'undefined'<span style="color: #000000;">){
+</span><span style="color: #008080;"> 13</span>     }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 14</span>       signList.splice('','',<span style="color: #000000;">s);
+</span><span style="color: #008080;"> 15</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 16</span>     calUtil.<span style="color: #000000;">draw(signList);
+</span><span style="color: #008080;"> 17</span>     calUtil.<span style="color: #000000;">bindEnvent(signList);
+</span><span style="color: #008080;"> 18</span>   },
+<span style="color: #008080;"> 19</span>   draw:<span style="color: #0000ff;">function</span><span style="color: #000000;">(signList){
+</span><span style="color: #008080;"> 20</span>     <span style="color: #008000;">//</span><span style="color: #008000;">绑定日历
+</span><span style="color: #008080;"> 21</span> <span style="color: #008000;">    //alert(signList.length);
+</span><span style="color: #008080;"> 22</span> <span style="color: #008000;">    // console.log(signList);</span>
+<span style="color: #008080;"> 23</span>     <span style="color: #0000ff;">if</span>(signList.length &gt; 21<span style="color: #000000;">){
+</span><span style="color: #008080;"> 24</span>       <span style="color: #008000;">//</span><span style="color: #008000;">alert(21);</span>
+<span style="color: #008080;"> 25</span>       $("#sign_note").<span style="color: #0000ff;">empty</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 26</span>       $("#sign_note").html('&lt;button class="sign_contener" type="button"&gt;&lt;i class="fa fa-calendar-check-o" aria-hidden="true"&gt;&lt;/i&gt;&amp;nbsp;已达标，获取1次抽奖&lt;/button&gt;'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 27</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 28</span>     <span style="color: #0000ff;">var</span> str = calUtil.drawCal(calUtil.showYear,calUtil.showMonth,<span style="color: #000000;">signList);
+</span><span style="color: #008080;"> 29</span>     $("#calendar").<span style="color: #000000;">html(str);
+</span><span style="color: #008080;"> 30</span>     <span style="color: #008000;">//</span><span style="color: #008000;">绑定日历表头</span>
+<span style="color: #008080;"> 31</span>     <span style="color: #0000ff;">var</span> calendarName=calUtil.showYear+"/"+calUtil.showMonth+""<span style="color: #000000;">;
+</span><span style="color: #008080;"> 32</span>     $(".calendar_month_span").<span style="color: #000000;">html(calendarName);  
+</span><span style="color: #008080;"> 33</span>   },
+<span style="color: #008080;"> 34</span>   <span style="color: #008000;">//</span><span style="color: #008000;">绑定事件</span>
+<span style="color: #008080;"> 35</span>   bindEnvent:<span style="color: #0000ff;">function</span><span style="color: #000000;">(signList){
+</span><span style="color: #008080;"> 36</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> //绑定上个月事件
+</span><span style="color: #008080;"> 37</span> <span style="color: #008000;">    // $(".calendar_month_prev").click(function(){
+</span><span style="color: #008080;"> 38</span> <span style="color: #008000;">    //   //ajax获取日历json数据
+</span><span style="color: #008080;"> 39</span> <span style="color: #008000;">    //   //var signList=[{"signDay":"10"},{"signDay":"11"},{"signDay":"12"},{"signDay":"13"}];
+</span><span style="color: #008080;"> 40</span> <span style="color: #008000;">    //   calUtil.eventName="prev";
+</span><span style="color: #008080;"> 41</span> <span style="color: #008000;">    //   calUtil.init(signList);
+</span><span style="color: #008080;"> 42</span> <span style="color: #008000;">    // });
+</span><span style="color: #008080;"> 43</span> <span style="color: #008000;">    // //绑定下个月事件
+</span><span style="color: #008080;"> 44</span> <span style="color: #008000;">    // $(".calendar_month_next").click(function(){
+</span><span style="color: #008080;"> 45</span> <span style="color: #008000;">    //   //ajax获取日历json数据
+</span><span style="color: #008080;"> 46</span> <span style="color: #008000;">    //   //var signList=[{"signDay":"10"},{"signDay":"11"},{"signDay":"12"},{"signDay":"13"}];
+</span><span style="color: #008080;"> 47</span> <span style="color: #008000;">    //   calUtil.eventName="next";
+</span><span style="color: #008080;"> 48</span> <span style="color: #008000;">    //   calUtil.init(signList);
+</span><span style="color: #008080;"> 49</span> <span style="color: #008000;">    // });</span>
+<span style="color: #008080;"> 50</span> 
+<span style="color: #008080;"> 51</span>     $(".calendar_record").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+</span><span style="color: #008080;"> 52</span>       <span style="color: #008000;">//</span><span style="color: #008000;">ajax获取日历json数据
+</span><span style="color: #008080;"> 53</span> <span style="color: #008000;">      // console(typeof(signList)+"yxy");
+</span><span style="color: #008080;"> 54</span> <span style="color: #008000;">        //var signList=[{"signDay":"10"},{"signDay":"11"},{"signDay":"12"},{"signDay":"13"}];
+</span><span style="color: #008080;"> 55</span> <span style="color: #008000;">        //var tmp = {"signDay":$(this).html()};
+</span><span style="color: #008080;"> 56</span> <span style="color: #008000;">      //if (typeof(signList) == 'undefined'){
+</span><span style="color: #008080;"> 57</span> <span style="color: #008000;">        //不做处理
+</span><span style="color: #008080;"> 58</span> <span style="color: #008000;">      //}else{
+</span><span style="color: #008080;"> 59</span> <span style="color: #008000;">      //  signList.splice('','',tmp);
+</span><span style="color: #008080;"> 60</span> <span style="color: #008000;">      //  console.log(signList);
+</span><span style="color: #008080;"> 61</span> <span style="color: #008000;">      //  calUtil.init(signList);
+</span><span style="color: #008080;"> 62</span> <span style="color: #008000;">     // }
+</span><span style="color: #008080;"> 63</span> <span style="color: #008000;">     //alert($(this).html());</span>
+<span style="color: #008080;"> 64</span>     <span style="color: #0000ff;">var</span> tmp = {"signDay":$(this).<span style="color: #000000;">html()};
+</span><span style="color: #008080;"> 65</span>     console.<span style="color: #008080;">log</span>(tmp.<span style="color: #000000;">signDay)
+</span><span style="color: #008080;"> 66</span> 
+<span style="color: #008080;"> 67</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> if(tmp.signDay==11){
+</span><span style="color: #008080;"> 68</span> <span style="color: #008000;">      //执行签到</span>
+<span style="color: #008080;"> 69</span>       $.<span style="color: #000000;">ajax({
+</span><span style="color: #008080;"> 70</span>           type:'POST',
+<span style="color: #008080;"> 71</span>           url:"checksign.html", 
+<span style="color: #008080;"> 72</span>           data:{day:tmp.signDay},
+<span style="color: #008080;"> 73</span>           dataType:'json',
+<span style="color: #008080;"> 74</span>           success:<span style="color: #0000ff;">function</span><span style="color: #000000;">(res){
+</span><span style="color: #008080;"> 75</span>               <span style="color: #008000;">//</span><span style="color: #008000;"> if(res.result==1){
+</span><span style="color: #008080;"> 76</span> <span style="color: #008000;">                // calUtil.init(signList,tmp);
+</span><span style="color: #008080;"> 77</span> <span style="color: #008000;">              // }else{</span>
+<span style="color: #008080;"> 78</span>                   alert(res.<span style="color: #000000;">msg);
+</span><span style="color: #008080;"> 79</span>                   location.reload(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 80</span>               <span style="color: #008000;">//</span><span style="color: #008000;"> }</span>
+<span style="color: #008080;"> 81</span> 
+<span style="color: #008080;"> 82</span> <span style="color: #000000;">          }
+</span><span style="color: #008080;"> 83</span> <span style="color: #000000;">      })
+</span><span style="color: #008080;"> 84</span> 
+<span style="color: #008080;"> 85</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> }else{
+</span><span style="color: #008080;"> 86</span> <span style="color: #008000;">    //   alert("请签到当天日期")
+</span><span style="color: #008080;"> 87</span> <span style="color: #008000;">    // }</span>
+<span style="color: #008080;"> 88</span> <span style="color: #000000;">    });
+</span><span style="color: #008080;"> 89</span>   },
+<span style="color: #008080;"> 90</span>   <span style="color: #008000;">//</span><span style="color: #008000;">获取当前选择的年月</span>
+<span style="color: #008080;"> 91</span>   setMonthAndDay:<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+</span><span style="color: #008080;"> 92</span>     <span style="color: #0000ff;">switch</span>(calUtil.<span style="color: #000000;">eventName)
+</span><span style="color: #008080;"> 93</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 94</span>       <span style="color: #0000ff;">case</span> "load":
+<span style="color: #008080;"> 95</span>         <span style="color: #0000ff;">var</span> <span style="color: #008080;">current</span> = <span style="color: #0000ff;">new</span> <span style="color: #008080;">Date</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 96</span>         calUtil.showYear=<span style="color: #008080;">current</span>.<span style="color: #000000;">getFullYear();
+</span><span style="color: #008080;"> 97</span>         calUtil.showMonth=<span style="color: #008080;">current</span>.getMonth() + 1<span style="color: #000000;">;
+</span><span style="color: #008080;"> 98</span>         <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 99</span>       <span style="color: #0000ff;">case</span> "prev":
+<span style="color: #008080;">100</span>         <span style="color: #0000ff;">var</span> nowMonth=$(".calendar_month_span").html().<span style="color: #008080;">split</span>("年")[1].<span style="color: #008080;">split</span>("月")[0<span style="color: #000000;">];
+</span><span style="color: #008080;">101</span>         calUtil.showMonth=parseInt(nowMonth)-1<span style="color: #000000;">;
+</span><span style="color: #008080;">102</span>         <span style="color: #0000ff;">if</span>(calUtil.showMonth==0<span style="color: #000000;">)
+</span><span style="color: #008080;">103</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">104</span>             calUtil.showMonth=12<span style="color: #000000;">;
+</span><span style="color: #008080;">105</span>             calUtil.showYear-=1<span style="color: #000000;">;
+</span><span style="color: #008080;">106</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">107</span>         <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">108</span>       <span style="color: #0000ff;">case</span> "next":
+<span style="color: #008080;">109</span>         <span style="color: #0000ff;">var</span> nowMonth=$(".calendar_month_span").html().<span style="color: #008080;">split</span>("年")[1].<span style="color: #008080;">split</span>("月")[0<span style="color: #000000;">];
+</span><span style="color: #008080;">110</span>         calUtil.showMonth=parseInt(nowMonth)+1<span style="color: #000000;">;
+</span><span style="color: #008080;">111</span>         <span style="color: #0000ff;">if</span>(calUtil.showMonth==13<span style="color: #000000;">)
+</span><span style="color: #008080;">112</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">113</span>             calUtil.showMonth=1<span style="color: #000000;">;
+</span><span style="color: #008080;">114</span>             calUtil.showYear+=1<span style="color: #000000;">;
+</span><span style="color: #008080;">115</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">116</span>         <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">117</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">118</span>   },
+<span style="color: #008080;">119</span>   getDaysInmonth : <span style="color: #0000ff;">function</span>(iMonth,<span style="color: #000000;"> iYear){
+</span><span style="color: #008080;">120</span>    <span style="color: #0000ff;">var</span> dPrevDate = <span style="color: #0000ff;">new</span> <span style="color: #008080;">Date</span>(iYear, iMonth, 0<span style="color: #000000;">);
+</span><span style="color: #008080;">121</span>    <span style="color: #0000ff;">return</span> dPrevDate.<span style="color: #008080;">getDate</span><span style="color: #000000;">();
+</span><span style="color: #008080;">122</span>   },
+<span style="color: #008080;">123</span>   bulidCal : <span style="color: #0000ff;">function</span>(iYear,<span style="color: #000000;"> iMonth) {
+</span><span style="color: #008080;">124</span>    <span style="color: #0000ff;">var</span> aMonth = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">125</span>    aMonth[0] = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span>(7<span style="color: #000000;">);
+</span><span style="color: #008080;">126</span>    aMonth[1] = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span>(7<span style="color: #000000;">);
+</span><span style="color: #008080;">127</span>    aMonth[2] = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span>(7<span style="color: #000000;">);
+</span><span style="color: #008080;">128</span>    aMonth[3] = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span>(7<span style="color: #000000;">);
+</span><span style="color: #008080;">129</span>    aMonth[4] = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span>(7<span style="color: #000000;">);
+</span><span style="color: #008080;">130</span>    aMonth[5] = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span>(7<span style="color: #000000;">);
+</span><span style="color: #008080;">131</span>    aMonth[6] = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span>(7<span style="color: #000000;">);
+</span><span style="color: #008080;">132</span>    <span style="color: #0000ff;">var</span> dCalDate = <span style="color: #0000ff;">new</span> <span style="color: #008080;">Date</span>(iYear, iMonth - 1, 1<span style="color: #000000;">);
+</span><span style="color: #008080;">133</span>    <span style="color: #0000ff;">var</span> iDayOfFirst = dCalDate.<span style="color: #000000;">getDay();
+</span><span style="color: #008080;">134</span>    <span style="color: #0000ff;">var</span> iDaysInMonth = calUtil.getDaysInmonth(iMonth,<span style="color: #000000;"> iYear);
+</span><span style="color: #008080;">135</span>    <span style="color: #0000ff;">var</span> iVarDate = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">136</span>    <span style="color: #0000ff;">var</span> d,<span style="color: #000000;"> w;
+</span><span style="color: #008080;">137</span>    aMonth[0][0] = "日"<span style="color: #000000;">;
+</span><span style="color: #008080;">138</span>    aMonth[0][1] = "一"<span style="color: #000000;">;
+</span><span style="color: #008080;">139</span>    aMonth[0][2] = "二"<span style="color: #000000;">;
+</span><span style="color: #008080;">140</span>    aMonth[0][3] = "三"<span style="color: #000000;">;
+</span><span style="color: #008080;">141</span>    aMonth[0][4] = "四"<span style="color: #000000;">;
+</span><span style="color: #008080;">142</span>    aMonth[0][5] = "五"<span style="color: #000000;">;
+</span><span style="color: #008080;">143</span>    aMonth[0][6] = "六"<span style="color: #000000;">;
+</span><span style="color: #008080;">144</span>    <span style="color: #0000ff;">for</span> (d = iDayOfFirst; d &lt; 7; d++<span style="color: #000000;">) {
+</span><span style="color: #008080;">145</span>     aMonth[1][d] =<span style="color: #000000;"> iVarDate;
+</span><span style="color: #008080;">146</span>     iVarDate++<span style="color: #000000;">;
+</span><span style="color: #008080;">147</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;">148</span>    <span style="color: #0000ff;">for</span> (w = 2; w &lt; 7; w++<span style="color: #000000;">) {
+</span><span style="color: #008080;">149</span>     <span style="color: #0000ff;">for</span> (d = 0; d &lt; 7; d++<span style="color: #000000;">) {
+</span><span style="color: #008080;">150</span>      <span style="color: #0000ff;">if</span> (iVarDate &lt;=<span style="color: #000000;"> iDaysInMonth) {
+</span><span style="color: #008080;">151</span>       aMonth[w][d] =<span style="color: #000000;"> iVarDate;
+</span><span style="color: #008080;">152</span>       iVarDate++<span style="color: #000000;">;
+</span><span style="color: #008080;">153</span> <span style="color: #000000;">     }
+</span><span style="color: #008080;">154</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">155</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;">156</span>    <span style="color: #0000ff;">return</span><span style="color: #000000;"> aMonth;
+</span><span style="color: #008080;">157</span>   },
+<span style="color: #008080;">158</span>   ifHasSigned : <span style="color: #0000ff;">function</span>(signList,<span style="color: #000000;">day){
+</span><span style="color: #008080;">159</span>    <span style="color: #0000ff;">var</span> signed = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">160</span>    $.<span style="color: #008080;">each</span>(signList,<span style="color: #0000ff;">function</span>(index,<span style="color: #000000;">item){
+</span><span style="color: #008080;">161</span>     <span style="color: #0000ff;">if</span>(item.signDay ==<span style="color: #000000;"> day) {
+</span><span style="color: #008080;">162</span>      signed = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;">163</span>      <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">164</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">165</span> <span style="color: #000000;">   });
+</span><span style="color: #008080;">166</span>    <span style="color: #0000ff;">return</span><span style="color: #000000;"> signed ;
+</span><span style="color: #008080;">167</span>   },
+<span style="color: #008080;">168</span>   drawCal : <span style="color: #0000ff;">function</span>(iYear, iMonth ,<span style="color: #000000;">signList) {
+</span><span style="color: #008080;">169</span>    <span style="color: #0000ff;">var</span> myMonth = calUtil.bulidCal(iYear,<span style="color: #000000;"> iMonth);
+</span><span style="color: #008080;">170</span>    <span style="color: #0000ff;">var</span> htmls = <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">171</span>    htmls.push("&lt;div class='sign_main' id='sign_layer'&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">172</span>    htmls.push("&lt;div class='sign_succ_calendar_title'&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">173</span>    <span style="color: #008000;">//</span><span style="color: #008000;">htmls.push("&lt;div class='calendar_month_next'&gt;下月&lt;/div&gt;");
+</span><span style="color: #008080;">174</span> <span style="color: #008000;">   //htmls.push("&lt;div class='calendar_month_prev'&gt;上月&lt;/div&gt;");</span>
+<span style="color: #008080;">175</span>    htmls.push("&lt;div class='calendar_month_span'&gt;&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">176</span>    htmls.push("&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">177</span>    htmls.push("&lt;div class='sign_equal' id='sign_cal'&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">178</span>    htmls.push("&lt;div class='sign_row'&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">179</span>    htmls.push("&lt;div class='th_1 bold'&gt;" + myMonth[0][0] + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">180</span>    htmls.push("&lt;div class='th_2 bold'&gt;" + myMonth[0][1] + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">181</span>    htmls.push("&lt;div class='th_3 bold'&gt;" + myMonth[0][2] + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">182</span>    htmls.push("&lt;div class='th_4 bold'&gt;" + myMonth[0][3] + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">183</span>    htmls.push("&lt;div class='th_5 bold'&gt;" + myMonth[0][4] + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">184</span>    htmls.push("&lt;div class='th_6 bold'&gt;" + myMonth[0][5] + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">185</span>    htmls.push("&lt;div class='th_7 bold'&gt;" + myMonth[0][6] + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">186</span>    htmls.push("&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">187</span>    <span style="color: #0000ff;">var</span> d,<span style="color: #000000;"> w;
+</span><span style="color: #008080;">188</span>    <span style="color: #0000ff;">for</span> (w = 1; w &lt; 6; w++<span style="color: #000000;">) {
+</span><span style="color: #008080;">189</span>     htmls.push("&lt;div class='sign_row'&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">190</span>     <span style="color: #0000ff;">for</span> (d = 0; d &lt; 7; d++<span style="color: #000000;">) {
+</span><span style="color: #008080;">191</span> 
+<span style="color: #008080;">192</span>      <span style="color: #0000ff;">var</span> ifHasSigned = calUtil.ifHasSigned(signList,<span style="color: #000000;">myMonth[w][d]);
+</span><span style="color: #008080;">193</span>      console.<span style="color: #008080;">log</span>("001:"+<span style="color: #000000;">ifHasSigned);
+</span><span style="color: #008080;">194</span>      <span style="color: #0000ff;">if</span>(ifHasSigned &amp;&amp; typeof(myMonth[w][d]) != 'undefined'<span style="color: #000000;">){
+</span><span style="color: #008080;">195</span>       htmls.push("&lt;div class='td_"+d+" on'&gt;" + (!isNaN(myMonth[w][d]) ? myMonth[w][d] : " ") + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">196</span>      } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">197</span>       htmls.push("&lt;div class='td_"+d+" calendar_record'&gt;" + (!isNaN(myMonth[w][d]) ? myMonth[w][d] : " ") + "&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">198</span> <span style="color: #000000;">     }
+</span><span style="color: #008080;">199</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">200</span>     htmls.push("&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">201</span> <span style="color: #000000;">   }
+</span><span style="color: #008080;">202</span>    htmls.push("&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">203</span>    htmls.push("&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">204</span>    htmls.push("&lt;/div&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">205</span>    <span style="color: #0000ff;">return</span> htmls.<span style="color: #008080;">join</span>(''<span style="color: #000000;">);
+</span><span style="color: #008080;">206</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">207</span> <span style="color: #000000;">};
+</span><span style="color: #008080;">208</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<p>PHP代码的实现</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">签到（status=1）</span>
+<span style="color: #008080;"> 2</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> sign(){
+</span><span style="color: #008080;"> 3</span>     <span style="color: #008000;">//</span><span style="color: #008000;">当月累计签到</span>
+<span style="color: #008080;"> 4</span>     <span style="color: #800080;">$sign</span> = <span style="color: #800080;">$this</span>-&gt;model-&gt;table('praise')-&gt;where('uid='.<span style="color: #800080;">$_SESSION</span>['user']['uid'].' and time&gt;'.<span style="color: #008080;">strtotime</span>(<span style="color: #008080;">date</span>("Y-m-01",<span style="color: #008080;">time</span>())))-&gt;<span style="color: #000000;">select();
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$sign</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 6</span>         <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$sign</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 7</span>             <span style="color: #800080;">$sign</span>[<span style="color: #800080;">$k</span>]['day']=<span style="color: #008080;">date</span>('d',<span style="color: #800080;">$v</span>['time'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">10</span>     <span style="color: #008000;">//</span><span style="color: #008000;">所有签到</span>
+<span style="color: #008080;">11</span>     <span style="color: #800080;">$allsign</span> = <span style="color: #800080;">$this</span>-&gt;model-&gt;table('praise')-&gt;where('uid='.<span style="color: #800080;">$_SESSION</span>['user']['uid'].' and status=1')-&gt;<span style="color: #000000;">select();
+</span><span style="color: #008080;">12</span>     <span style="color: #800080;">$this</span>-&gt;assign('allsign', <span style="color: #800080;">$allsign</span><span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>     <span style="color: #800080;">$this</span>-&gt;assign('sign', <span style="color: #800080;">$sign</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>     <span style="color: #800080;">$this</span>-&gt;assign('user', <span style="color: #800080;">$_SESSION</span>['user'<span style="color: #000000;">]);
+</span><span style="color: #008080;">15</span>     <span style="color: #800080;">$this</span>-&gt;display('member_sign'<span style="color: #000000;">);
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">}   
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">//</span><span style="color: #008000;">点击签到 </span>
+<span style="color: #008080;">18</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> checksign(){
+</span><span style="color: #008080;">19</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$_POST</span>['day'<span style="color: #000000;">]){
+</span><span style="color: #008080;">20</span>         <span style="color: #800080;">$day</span>=<span style="color: #008080;">intval</span>(<span style="color: #800080;">$_POST</span>['day'<span style="color: #000000;">]);
+</span><span style="color: #008080;">21</span>     }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">22</span>         <span style="color: #800080;">$day</span>=<span style="color: #008080;">date</span>("d",<span style="color: #008080;">time</span><span style="color: #000000;">());
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">24</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$day</span>!=<span style="color: #008080;">date</span>("d",<span style="color: #008080;">time</span><span style="color: #000000;">())){
+</span><span style="color: #008080;">25</span>         <span style="color: #800080;">$data</span>['msg']="请在当前日期点击签到"<span style="color: #000000;">;
+</span><span style="color: #008080;">26</span>         <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #008080;">27</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">29</span>     <span style="color: #800080;">$condition2</span>  = 'uid='.<span style="color: #800080;">$_SESSION</span>['user']['uid'<span style="color: #000000;">];
+</span><span style="color: #008080;">30</span>     <span style="color: #800080;">$condition2</span> .= " AND DATE_FORMAT(FROM_UNIXTIME(time),'%Y-%m-%d') = '".<span style="color: #008080;">date</span>("Y-m-d",<span style="color: #008080;">time</span>())."'"<span style="color: #000000;">;
+</span><span style="color: #008080;">31</span>     <span style="color: #800080;">$sign</span> = <span style="color: #800080;">$this</span>-&gt;model-&gt;table('praise')-&gt;where(<span style="color: #800080;">$condition2</span>)-&gt;<span style="color: #000000;">find();
+</span><span style="color: #008080;">32</span>     <span style="color: #008000;">//</span><span style="color: #008000;">判断是否已经签到</span>
+<span style="color: #008080;">33</span>     <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$sign</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">34</span>         <span style="color: #008000;">//</span><span style="color: #008000;">新增积分</span>
+<span style="color: #008080;">35</span>         <span style="color: #800080;">$this</span>-&gt;model-&gt;table('member')-&gt;data('integral=integral+'.<span style="color: #800080;">$this</span>-&gt;config['site_praise'].',allintegral=allintegral+'.<span style="color: #800080;">$this</span>-&gt;config['site_praise'])-&gt;where('uid='.<span style="color: #800080;">$_SESSION</span>['user']['uid'])-&gt;update();<span style="color: #008000;">//</span><span style="color: #008000;">增加积分</span>
+<span style="color: #008080;">36</span>         <span style="color: #800080;">$arr</span>['subject']="签到赠送积分"<span style="color: #000000;">;
+</span><span style="color: #008080;">37</span>         <span style="color: #800080;">$arr</span>['uid'] = <span style="color: #800080;">$_SESSION</span>['user']['uid'<span style="color: #000000;">];
+</span><span style="color: #008080;">38</span>         <span style="color: #800080;">$arr</span>['integral'] = <span style="color: #800080;">$this</span>-&gt;config['site_praise'<span style="color: #000000;">];
+</span><span style="color: #008080;">39</span>         <span style="color: #800080;">$arr</span>['time']=<span style="color: #008080;">time</span><span style="color: #000000;">();
+</span><span style="color: #008080;">40</span>         <span style="color: #800080;">$this</span>-&gt;model-&gt;table('member_integral')-&gt;data(<span style="color: #800080;">$arr</span>)-&gt;<span style="color: #000000;">insert();
+</span><span style="color: #008080;">41</span> 
+<span style="color: #008080;">42</span>         <span style="color: #800080;">$updateuser</span> = <span style="color: #800080;">$this</span>-&gt;model-&gt;table('member')-&gt;where('uid='.<span style="color: #800080;">$_SESSION</span>['user']['uid'])-&gt;find();<span style="color: #008000;">//</span><span style="color: #008000;">购物后更新session积分</span>
+<span style="color: #008080;">43</span>         <span style="color: #800080;">$_SESSION</span>['user']['integral'] = <span style="color: #800080;">$updateuser</span>['integral'<span style="color: #000000;">];
+</span><span style="color: #008080;">44</span>         <span style="color: #800080;">$_SESSION</span>['user']['allintegral'] = <span style="color: #800080;">$updateuser</span>['allintegral'<span style="color: #000000;">];
+</span><span style="color: #008080;">45</span> 
+<span style="color: #008080;">46</span> 
+<span style="color: #008080;">47</span>         <span style="color: #800080;">$data</span>['uid'] = <span style="color: #800080;">$_SESSION</span>['user']['uid'<span style="color: #000000;">];
+</span><span style="color: #008080;">48</span>         <span style="color: #008000;">//</span><span style="color: #008000;">$data['pid'] = $item;</span>
+<span style="color: #008080;">49</span>         <span style="color: #800080;">$data</span>['status'] = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">50</span>         <span style="color: #800080;">$data</span>['time'] = <span style="color: #008080;">time</span><span style="color: #000000;">();
+</span><span style="color: #008080;">51</span>         <span style="color: #800080;">$this</span>-&gt;model-&gt;table('praise')-&gt;data(<span style="color: #800080;">$data</span>)-&gt;<span style="color: #000000;">insert();
+</span><span style="color: #008080;">52</span>         <span style="color: #008000;">//</span><span style="color: #008000;">$this-&gt;model-&gt;table('post')-&gt;data("digg=digg+1")-&gt;where('id='.$id)-&gt;update();
+</span><span style="color: #008080;">53</span> <span style="color: #008000;">        //$this-&gt;model-&gt;table('member_comment')-&gt;data("praise=praise+1")-&gt;where('id='.$item)-&gt;update();</span>
+<span style="color: #008080;">54</span>         <span style="color: #800080;">$this</span>-&gt;jssuccess('签到成功！'<span style="color: #000000;">);
+</span><span style="color: #008080;">55</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">56</span>         <span style="color: #800080;">$this</span>-&gt;jserror('已经签过到了。'<span style="color: #000000;">);
+</span><span style="color: #008080;">57</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">58</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">59</span> 
+<span style="color: #008080;">60</span> 
+<span style="color: #008080;">61</span> <span style="color: #008000;">//</span><span style="color: #008000;">判断是否已经签到</span>
+<span style="color: #008080;">62</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> is_sign_now(){
+</span><span style="color: #008080;">63</span>     <span style="color: #800080;">$condition2</span>  = 'uid='.<span style="color: #800080;">$_SESSION</span>['user']['uid'<span style="color: #000000;">];
+</span><span style="color: #008080;">64</span>     <span style="color: #800080;">$condition2</span> .= " AND DATE_FORMAT(FROM_UNIXTIME(time),'%Y-%m-%d') = '".<span style="color: #008080;">date</span>("Y-m-d",<span style="color: #008080;">time</span>())."'"<span style="color: #000000;">;
+</span><span style="color: #008080;">65</span>     <span style="color: #800080;">$sign</span> = module('common')-&gt;model-&gt;table('praise')-&gt;where(<span style="color: #800080;">$condition2</span>)-&gt;<span style="color: #000000;">find();
+</span><span style="color: #008080;">66</span>     <span style="color: #008000;">//</span><span style="color: #008000;">判断是否已经签到</span>
+<span style="color: #008080;">67</span>     <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$sign</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">68</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;">69</span>     }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">70</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">71</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">72</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

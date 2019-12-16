@@ -1,0 +1,243 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoft2.x 小白学习笔记 (二) --- mysql、redis' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoft2.x 小白学习笔记 (二) --- mysql、redis</center></div><div class='banquan'>原文出处:本文由博客园博主Foto_CShow提供。<br/>
+原文连接:https://www.cnblogs.com/cj8988/p/11607555.html</div><br>
+    <p>介绍swoft中</p>
+<p>　　1、mysql、</p>
+<p>　　2、Redis</p>
+<p>&nbsp;</p>
+<p>一、mysql使用：</p>
+<p>　　1、配置,在&nbsp;<code>app\bean.php</code>文件中</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800000;">   '</span><span style="color: #800000;">db</span><span style="color: #800000;">'</span> =&gt;<span style="color: #000000;"> [
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">class</span><span style="color: #800000;">'</span>    =&gt; Database::<span style="color: #0000ff;">class</span><span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">dsn</span><span style="color: #800000;">'</span>      =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">mysql:dbname=webdemo;host=localhost</span><span style="color: #800000;">'</span><span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">username</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">root</span><span style="color: #800000;">'</span><span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">password</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">foto_cj1</span><span style="color: #800000;">'</span><span style="color: #000000;">,
+    ],<br />//链接池配置
+    </span><span style="color: #800000;">'</span><span style="color: #800000;">db2.pool</span><span style="color: #800000;">'</span> =&gt;<span style="color: #000000;"> [
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">class</span><span style="color: #800000;">'</span>    =&gt; Pool::<span style="color: #0000ff;">class</span><span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">database</span><span style="color: #800000;">'</span> =&gt; bean(<span style="color: #800000;">'</span><span style="color: #800000;">db</span><span style="color: #800000;">'</span><span style="color: #000000;">),
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">minActive</span><span style="color: #800000;">'</span>   =&gt; 10<span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">maxActive</span><span style="color: #800000;">'</span>   =&gt; 20<span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">maxWait</span><span style="color: #800000;">'</span>     =&gt;<span style="color: #000000;"> 0,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">maxWaitTime</span><span style="color: #800000;">'</span> =&gt;<span style="color: #000000;"> 0,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">maxIdleTime</span><span style="color: #800000;">'</span> =&gt; 60<span style="color: #000000;">,
+    ],</span></code></pre>
+
+<p>　　2、生成Model，一个Model对应一张表。在 /App/Model/Entity/ 文件夹下新建文件</p>
+<src class="cnblogs_code" onclick="cnblogs_code_show('c93ceb1b-fa79-47a6-bd39-b98a74eab99c')"><img id="code_img_closed_c93ceb1b-fa79-47a6-bd39-b98a74eab99c" class="code_img_closed" src="./images/Swoft2.x 小白学习笔记 (二) --- mysql、redis0.jpg" alt="" /><img id="code_img_opened_c93ceb1b-fa79-47a6-bd39-b98a74eab99c" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('c93ceb1b-fa79-47a6-bd39-b98a74eab99c',event)" src="./images/Swoft2.x 小白学习笔记 (二) --- mysql、redis1.jpg" alt="" />
+<src id="cnblogs_code_open_c93ceb1b-fa79-47a6-bd39-b98a74eab99c" class="cnblogs_code_hide">
+<pre><code>&lt;?php declare(strict_types=1<span style="color: #000000;">);
+
+namespace App\Model\Entity;
+
+use Swoft\Db\Annotation\Mapping\Column;
+use Swoft\Db\Annotation\Mapping\Entity;
+use Swoft\Db\Annotation\Mapping\Id;
+use Swoft\Db\Eloquent\Model;
+
+</span>/**
+ *
+ *<span style="color: #000000;"> Class Demo
+ </span>*
+ * @since 2.0
+ *
+ * @Entity(table=<span style="color: #800000;">"</span><span style="color: #800000;">demo</span><span style="color: #800000;">"</span>,pool=<span style="color: #800000;">"</span><span style="color: #800000;">db2.pool</span><span style="color: #800000;">"</span>)  //<span style="color: #000000;">定义Model,参数是对应的表和连接池(选填)
+ </span>*/
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Demo extends Model
+{
+    </span>/**
+     *<span style="color: #000000;">默认自动添加 created_at 和 updated_at,不需要时设置为false
+     </span>*<span style="color: #000000;"> @var bool
+     </span>*/<span style="color: #000000;">
+    public $modelTimestamps </span>=<span style="color: #000000;"> false;
+
+    </span>/**
+     *
+     * @Id(incrementing=<span style="color: #000000;">false)
+     </span>* @Column(name=<span style="color: #800000;">"</span><span style="color: #800000;">id</span><span style="color: #800000;">"</span>)    //<span style="color: #000000;">定义列
+     </span>*
+     *<span style="color: #000000;"> @var int
+     </span>*/<span style="color: #000000;">
+    private $id;
+
+    </span>/**
+     * @Column(name=<span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span><span style="color: #000000;">)
+     </span>*
+     * @var string|<span style="color: #000000;">null
+     </span>*/<span style="color: #000000;">
+    private $name;
+
+    </span>/**
+     *<span style="color: #000000;"> @param int $id
+     </span>*
+     * @<span style="color: #0000ff;">return</span><span style="color: #000000;"> void
+     </span>*/<span style="color: #000000;">
+    public function setId(int $id): void
+    {
+        $this</span>-&gt;id =<span style="color: #000000;"> $id;
+    }
+
+    </span>/**
+     * @param string|<span style="color: #000000;">null $name
+     </span>*
+     * @<span style="color: #0000ff;">return</span><span style="color: #000000;"> void
+     </span>*/<span style="color: #000000;">
+    public function setName(?string $name): void
+    {
+        $this</span>-&gt;name =<span style="color: #000000;"> $name;
+    }
+
+    </span>/**
+     * @<span style="color: #0000ff;">return</span><span style="color: #000000;"> int
+     </span>*/<span style="color: #000000;">
+    public function getId(): ?int
+    {
+        </span><span style="color: #0000ff;">return</span> $this-&gt;<span style="color: #000000;">id;
+    }
+
+    </span>/**
+     * @<span style="color: #0000ff;">return</span> string|<span style="color: #000000;">null
+     </span>*/<span style="color: #000000;">
+    public function getName(): ?string
+    {
+        </span><span style="color: #0000ff;">return</span> $this-&gt;<span style="color: #000000;">name;
+    }
+}</span></code></pre>
+
+<span class="cnblogs_code_collapse">View Code</span>
+<p>&nbsp;</p>
+<p>&nbsp;　3、使用(Model)&nbsp; &nbsp;&nbsp;</p>
+<src class="cnblogs_code" onclick="cnblogs_code_show('e9771c32-6690-4a47-b260-89cb7320f60f')"><img id="code_img_closed_e9771c32-6690-4a47-b260-89cb7320f60f" class="code_img_closed" src="./images/Swoft2.x 小白学习笔记 (二) --- mysql、redis0.jpg" alt="" /><img id="code_img_opened_e9771c32-6690-4a47-b260-89cb7320f60f" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('e9771c32-6690-4a47-b260-89cb7320f60f',event)" src="./images/Swoft2.x 小白学习笔记 (二) --- mysql、redis1.jpg" alt="" />
+<src id="cnblogs_code_open_e9771c32-6690-4a47-b260-89cb7320f60f" class="cnblogs_code_hide">
+<pre><code>//<span style="color: #000000;">查询
+    $user </span>= Demo::find($)-&gt;<span style="color: #000000;">toArray();
+
+</span>//<span style="color: #000000;">修改
+    $sdbuser </span>=<span style="color: #000000;"> Demo::find($id);
+    $sdbuser</span>-&gt;setName(<span style="color: #800000;">"</span><span style="color: #800000;">cjcjcjccj</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+</span>//<span style="color: #000000;">或者
+    $sdbuser</span>-&gt;update([<span style="color: #800000;">'</span><span style="color: #800000;">name</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800000;">"</span><span style="color: #800000;">dddddd</span><span style="color: #800000;">"</span><span style="color: #000000;">]);
+
+
+  </span>//<span style="color: #000000;">删除
+        $result </span>= Demo::where(<span style="color: #800000;">'</span><span style="color: #800000;">id</span><span style="color: #800000;">'</span>, 1)-&gt;<span style="color: #000000;">delete();
+
+        $user </span>= Demo::find($data[<span style="color: #800000;">"</span><span style="color: #800000;">uid</span><span style="color: #800000;">"</span><span style="color: #000000;">]);
+        $result </span>= $user-&gt;<span style="color: #000000;">delete();
+
+</span>//<span style="color: #000000;">插入
+        $count </span>=<span style="color: #000000;"> new Demo();
+        $count</span>-&gt;setId(mt_rand(1, 100<span style="color: #000000;">));
+        $count</span>-&gt;setName(<span style="color: #800000;">'</span><span style="color: #800000;">attr</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+        $result </span>= $count-&gt;<span style="color: #000000;">save();
+        $nId </span>= $count-&gt;<span style="color: #000000;">getId();
+
+</span>//<span style="color: #000000;">批量插入
+     $insArr </span>=<span style="color: #000000;"> [
+            [
+                </span><span style="color: #800000;">'</span><span style="color: #800000;">id</span><span style="color: #800000;">'</span>      =&gt; random_int(1, 100<span style="color: #000000;">),
+                </span><span style="color: #800000;">'</span><span style="color: #800000;">name</span><span style="color: #800000;">'</span>  =&gt;<span style="color: #000000;"> md5(uniqid())
+            ],
+            [
+                </span><span style="color: #800000;">'</span><span style="color: #800000;">id</span><span style="color: #800000;">'</span>      =&gt; random_int(1, 100<span style="color: #000000;">),
+                </span><span style="color: #800000;">'</span><span style="color: #800000;">name</span><span style="color: #800000;">'</span>  =&gt;<span style="color: #000000;"> md5(uniqid())
+            ]
+        ];
+
+    $result </span>= Demo::insert($insArr);</code></pre>
+
+<span class="cnblogs_code_collapse">View Code</span>
+<p>&nbsp; &nbsp;4、DB原生使用：<a href="https://www.swoft.org/docs/2.x/zh-CN/db/builder.html">https://www.swoft.org/docs/2.x/zh-CN/db/builder.html</a></p>
+<p>&nbsp;</p>
+<p>二：Redis简单使用：</p>
+<p>1、配置：在&nbsp;<code>app\bean.php</code>文件中</p>
+<src class="cnblogs_code" onclick="cnblogs_code_show('c6a36835-be03-49fe-9c2e-73c91f9d14e3')"><img id="code_img_closed_c6a36835-be03-49fe-9c2e-73c91f9d14e3" class="code_img_closed" src="./images/Swoft2.x 小白学习笔记 (二) --- mysql、redis0.jpg" alt="" /><img id="code_img_opened_c6a36835-be03-49fe-9c2e-73c91f9d14e3" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('c6a36835-be03-49fe-9c2e-73c91f9d14e3',event)" src="./images/Swoft2.x 小白学习笔记 (二) --- mysql、redis1.jpg" alt="" />
+<src id="cnblogs_code_open_c6a36835-be03-49fe-9c2e-73c91f9d14e3" class="cnblogs_code_hide">
+<pre><code><span style="color: #800000;">'</span><span style="color: #800000;">redis</span><span style="color: #800000;">'</span>             =&gt;<span style="color: #000000;"> [
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">class</span><span style="color: #800000;">'</span>    =&gt; RedisDb::<span style="color: #0000ff;">class</span><span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">host</span><span style="color: #800000;">'</span>     =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">127.0.0.1</span><span style="color: #800000;">'</span><span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">port</span><span style="color: #800000;">'</span>     =&gt; 6379<span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">database</span><span style="color: #800000;">'</span> =&gt;<span style="color: #000000;"> 0,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">option</span><span style="color: #800000;">'</span>   =&gt;<span style="color: #000000;"> [
+            </span><span style="color: #800000;">'</span><span style="color: #800000;">prefix</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">swoft:</span><span style="color: #800000;">'</span><span style="color: #000000;">
+        ]
+    ],
+    </span><span style="color: #800000;">'</span><span style="color: #800000;">redis.pool</span><span style="color: #800000;">'</span>     =&gt;<span style="color: #000000;"> [
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">class</span><span style="color: #800000;">'</span>   =&gt; \Swoft\Redis\Pool::<span style="color: #0000ff;">class</span><span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">redisDb</span><span style="color: #800000;">'</span> =&gt; \bean(<span style="color: #800000;">'</span><span style="color: #800000;">redis</span><span style="color: #800000;">'</span><span style="color: #000000;">),
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">minActive</span><span style="color: #800000;">'</span>   =&gt; 10<span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">maxActive</span><span style="color: #800000;">'</span>   =&gt; 20<span style="color: #000000;">,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">maxWait</span><span style="color: #800000;">'</span>     =&gt;<span style="color: #000000;"> 0,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">maxWaitTime</span><span style="color: #800000;">'</span> =&gt;<span style="color: #000000;"> 0,
+        </span><span style="color: #800000;">'</span><span style="color: #800000;">maxIdleTime</span><span style="color: #800000;">'</span> =&gt; 40<span style="color: #000000;">,
+    ]</span></code></pre>
+
+<span class="cnblogs_code_collapse">View Code</span>
+<p>2、使用</p>
+<p>　　（1）、直接使用</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">Redis::set($key, $setData，$time);
+Redis::get($key);</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; (2)、通过 @Inject注入连接池方式使用</p>
+<p>　　　　在/App/Http/Controller/中新建文件&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>/**
+ *<span style="color: #000000;"> Class RedisController
+ </span>*
+ * @since 2.0
+ * @Controller(<span style="color: #800000;">"</span><span style="color: #800000;">redis</span><span style="color: #800000;">"</span><span style="color: #000000;">)
+ </span>*/
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> RedisController
+{
+    </span>/**
+     * <span style="font-size: 14px;"><strong><span style="color: #ff0000;">@Inject("redis.pool"</span><span style="color: #000000;"><span style="color: #ff0000;">)  </span> 
+     </span></strong></span>*
+     *<span style="color: #000000;"> @var Pool
+     </span>*/<span style="color: #000000;">
+    private $redis;
+
+    </span>/**
+     * @<span style="color: #0000ff;">return</span><span style="color: #000000;"> array
+     </span>* @RequestMapping(<span style="color: #800000;">"</span><span style="color: #800000;">find</span><span style="color: #800000;">"</span><span style="color: #000000;">)  //访问路由:  /redis/find
+     </span>*<span style="color: #000000;"> @throws \Throwable
+     </span>*/<span style="color: #000000;">
+    public function find()
+    {
+        $us </span>= $this-&gt;redis-&gt;get(<span style="color: #800000;">'</span><span style="color: #800000;">user</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span><span style="color: #000000;">($us)
+            $this</span>-&gt;redis-&gt;set(<span style="color: #800000;">'</span><span style="color: #800000;">user</span><span style="color: #800000;">'</span>, [<span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span> =&gt; <span style="color: #800000;">"</span><span style="color: #800000;">gimi</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">age</span><span style="color: #800000;">"</span> =&gt; <span style="color: #800000;">"</span><span style="color: #800000;">18</span><span style="color: #800000;">"</span>],120<span style="color: #000000;">);
+
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> $us;
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>查看文档：&nbsp;</p>
+<p>　　　　<a href="https://www.swoft.org/docs/2.x/zh-CN/db/index.html">https://www.swoft.org/docs/2.x/zh-CN/db/index.html</a></p>
+<p>　　　　<a href="https://www.swoft.org/docs/2.x/zh-CN/redis/index.html">https://www.swoft.org/docs/2.x/zh-CN/redis/index.html</a>　　</p>
+<p>&nbsp; &nbsp;&nbsp;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

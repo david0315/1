@@ -1,0 +1,363 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP代码安全有必要了解下' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP代码安全有必要了解下</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11862663.html</div><br>
+    <p>攻击者通过构造恶意SQL命令发送到数据库，如果程序未对用户输入的 SQL命令执行判断过滤，那么生成的SQL语句可能会绕过安全性检查，插入其他用于修改后端数据库的语句，并可能执行系统命令，从而对系统造成危害</p>
+<p>例如删除 id 为 1 的帖子，sql 如下：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="19">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$post_id</span> = <span style="color: #800080;">$_POST</span>['post_id'<span style="color: #000000;">];
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #800080;">$sql</span> = "DELETE FROM posts WHERE user_id = 1 AND id = <span style="color: #800080;">$post_id</span>"<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> \DB::statement(<span style="color: #800080;">$sql</span>);</code></pre>
+
+<p>&nbsp;</p>
+
+<p>如果有人在提交 post_id 时输入 1 OR 1 ，你的语句会组合成这样：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="18">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$sql</span> = "DELETE FROM posts WHERE user_id = 1 AND id = 1 OR 1";</code></pre>
+
+<p><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></p>
+
+<p>一般比较常出现在原生的 SQL 操作，框架一般会解决这方面的问题。通常采用参数控制或过滤特殊字符避免上述的问题。</p>
+<h3>越权漏洞</h3>
+<p>1. 水平越权</p>
+<p>水平越权就是同等角色下的用户，不但能够访问和操作自己私有的数据，还能访问其他人私有的数据，其根本是基于数据的访问权限。</p>
+<p>删除用户收款方式的场景如下：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="17">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;graph LR\n用户登录--&amp;gt;token\ntoken--&amp;gt;获取收款方式列表\n获取收款方式列表--token--&amp;gt;通过id删除\n&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">graph LR
+用户登录--&gt;token
+token--&gt;获取收款方式列表
+获取收款方式列表--token--&gt;通过id删除
+</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>通过收款方式 {id} 执行 delete 请求的路由为：&nbsp;<code>localhost/api/payments/{id}</code></p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="16">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;假如用户A的收款方式有{1,2,3}    用户B的收款方式有{4,5}\n&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">假如用户A的收款方式有{1,2,3}    用户B的收款方式有{4,5}
+</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>如果没有做数据控制，A 登录后携带 A 的 token 执行删除的接口&nbsp;<code>localhost/api/payments/4</code>，则会删除 B 的，所以需要对&nbsp;<code>destory</code>&nbsp;方法做数据控制</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="15">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">#</span><span style="color: #008000;"> 1 删除前鉴权处理</span>
+<span style="color: #008080;"> 2</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> destory(<span style="color: #800080;">$id</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 3</span>     <span style="color: #800080;">$payment</span> = Payment::find(<span style="color: #800080;">$id</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$payment</span>-&gt;user_id != <span style="color: #800080;">$this</span>-&gt;currentUser-&gt;<span style="color: #000000;">id) {
+</span><span style="color: #008080;"> 5</span>             <span style="color: #0000ff;">return</span> ...
+<span style="color: #008080;"> 6</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 7</span>     <span style="color: #800080;">$payment</span>-&gt;<span style="color: #000000;">delete();
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span> <span style="color: #008000;">#</span><span style="color: #008000;"> 2 参入id查询删除</span>
+<span style="color: #008080;">11</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> destory(<span style="color: #800080;">$id</span><span style="color: #000000;">){
+</span><span style="color: #008080;">12</span>     Payment::whereUserId(<span style="color: #800080;">$this</span>-&gt;currentUser-&gt;id)-&gt;whereId(<span style="color: #800080;">$id</span>)-&gt;<span style="color: #000000;">delete();
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span> <span style="color: #008000;">#</span><span style="color: #008000;"> 3 模型关联查询</span>
+<span style="color: #008080;">16</span> <span style="color: #0000ff;">class</span> User <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Model{
+</span><span style="color: #008080;">17</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> payments()
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">19</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;hasMany('App\Payment'<span style="color: #000000;">);
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span> <span style="color: #0000ff;">class</span> PaymentController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller{
+</span><span style="color: #008080;">24</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> destory(<span style="color: #800080;">$id</span><span style="color: #000000;">)
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">26</span>             <span style="color: #800080;">$this</span>-&gt;currentUser-&gt;payments()-&gt;whereId(<span style="color: #800080;">$id</span>)-&gt;<span style="color: #000000;">delete();
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">28</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>推荐使用第三种方式做数据控制，不然面向对象白学了。获取收款方式的列表同样需要数据权限控制，用户和收款方式存在一对多的关联关系，模型关联后，获取用户收款方式列表可以写成</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="14">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span> PaymentController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller{
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> index(<span style="color: #800080;">$id</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 4</span>         <span style="color: #008000;">#</span><span style="color: #008000;">带条件的查询</span>
+<span style="color: #008080;"> 5</span>         <span style="color: #800080;">$payments</span> = <span style="color: #800080;">$this</span>-&gt;currentUser-&gt;payments()-&gt;where(<span style="color: #0000ff;">function</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 6</span>                 ...
+<span style="color: #008080;"> 7</span>         })-&gt;<span style="color: #000000;">get();
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span>         <span style="color: #008000;">#</span><span style="color: #008000;">不带条件的查询</span>
+<span style="color: #008080;">10</span>         <span style="color: #800080;">$payments</span> = <span style="color: #800080;">$this</span>-&gt;currentUser-&gt;<span style="color: #000000;">payments;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">12</span> }</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>2. 垂直越权</p>
+<p>低权限的角色通过一些途径，获得高权限的能力，就发生了越权访问。如普通用户 guest 修改 admin 用户的密码；guest 可直接进入后台取得域名管理、用户管理等所有权限</p>
+<p>解决这个问题，需要把权限职责以最小颗粒细分，基于 RBAC 设计权限管理系统。分为以下关联模型</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="13">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;graph LR \n用户--多对多--&amp;gt;角色\n用户--多对多--&amp;gt;权限\n角色--多对多--&amp;gt;权限\n&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">graph LR 
+用户--多对多--&gt;角色
+用户--多对多--&gt;权限
+角色--多对多--&gt;权限
+</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>每次执行请求时，在前置中间件判断这个用户是否永远该执行请求的权限，无权限则驳回。</p>
+<p>3. 上下文越权</p>
+<p>攻击者能够利用应用程序状态机中的漏洞获得关键资源的访问权限，这就存在上下文相关的越权。上下文相关的越权漏洞一般属于业务逻辑漏洞。 如在找回密码过程中，攻击者使用自己的账户信息通过验证，将他人的密码进行了修改。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="12">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;graph LR\n1.邮箱验证--&amp;gt;2.找回密码\n&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">graph LR
+1.邮箱验证--&gt;2.找回密码
+</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>在步骤1之后，执行找回密码，路由为 。如果此时没有校验当前找回密码的账户是否为进行邮箱校验后的账户，由可能产生越权漏洞.</p>
+<p>路由 : 【PUT 】<code>localhost/api/users/find-password</code>，接收参数 email,new_password.</p>
+<p>错误：校验和修改分成 2 步&nbsp;<code>localhost/api/email/check</code>&nbsp;-&gt;&nbsp;<code>localhost/api/users/password</code></p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="11">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span> UserController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller{
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> check(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">if</span> (checkEmail(<span style="color: #800080;">$data</span>['email'], <span style="color: #800080;">$data</span>['code'<span style="color: #000000;">])) {
+</span><span style="color: #008080;"> 5</span>                 <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 7</span>         ...
+<span style="color: #008080;"> 8</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> findPassword()
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #800080;">$user</span> = User::whereEmail(<span style="color: #800080;">$data</span>['email'])-&gt;<span style="color: #000000;">first();
+</span><span style="color: #008080;">13</span>         <span style="color: #800080;">$user</span>-&gt;password = bcrypt(<span style="color: #800080;">$data</span>['new_password'<span style="color: #000000;">]);
+</span><span style="color: #008080;">14</span>         <span style="color: #800080;">$user</span>-&gt;<span style="color: #000000;">save();
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">16</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>正确：在 findPassword 里面再次验证完成邮箱校验的账户是否为当前找回密码的账号</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="10">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span> UserController <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller{
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> check(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">if</span> (checkEmail(<span style="color: #800080;">$data</span>['email'], <span style="color: #800080;">$data</span>['code'<span style="color: #000000;">])) {
+</span><span style="color: #008080;"> 6</span>                 <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 8</span>         ...
+<span style="color: #008080;"> 9</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> findPassword(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">13</span>         <span style="color: #0000ff;">if</span> (checkEmail(<span style="color: #800080;">$data</span>['email'], <span style="color: #800080;">$data</span>['code'<span style="color: #000000;">])) {
+</span><span style="color: #008080;">14</span>                 <span style="color: #800080;">$user</span> = User::whereEmail(<span style="color: #800080;">$data</span>['email'])-&gt;<span style="color: #000000;">first();
+</span><span style="color: #008080;">15</span>                 <span style="color: #800080;">$user</span>-&gt;password = <span style="color: #800080;">$data</span>['new_password'<span style="color: #000000;">];
+</span><span style="color: #008080;">16</span>                 <span style="color: #800080;">$user</span>-&gt;<span style="color: #000000;">save();
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">18</span>         ...
+<span style="color: #008080;">19</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">20</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>限制分页条目范围，防止恶意请求</p>
+<p>如获文章列表的接口&nbsp;<code>localhost/api/articles</code></p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="9">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> index(<span style="color: #800080;">$params</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$pageId</span> = <span style="color: #800080;">$params</span>['pageid'] ?? PAGE_ID;    <span style="color: #008000;">//</span><span style="color: #008000;">页码</span>
+<span style="color: #008080;"> 3</span>     <span style="color: #800080;">$pageSize</span> = <span style="color: #800080;">$params</span>['pagesize'] ?? 15;  <span style="color: #008000;">//</span><span style="color: #008000;">条码</span>
+<span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span>     <span style="color: #800080;">$articles</span> = Article::where(<span style="color: #0000ff;">function</span> (<span style="color: #800080;">$query</span>) <span style="color: #0000ff;">use</span> (<span style="color: #800080;">$params</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 6</span>             ...
+<span style="color: #008080;"> 7</span>     })-&gt;take(<span style="color: #800080;">$pageSize</span>)-&gt;skip(<span style="color: #800080;">$pageId</span> * <span style="color: #800080;">$pageSize</span>)-&gt;orderby('id', 'desc')-&gt;<span style="color: #000000;">get();
+</span><span style="color: #008080;"> 8</span>     ...
+<span style="color: #008080;"> 9</span>     ...
+<span style="color: #008080;">10</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>以上代码如果没有限制 pagesize 的范围，恶意请求者请求把 pagesize 输入 5000,10000 等甚至更大的数，会给数据库带来一定的压力，<code>localhost/api/articles?pageid=0&amp;pagesize=10000</code></p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="8">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;">用框架自带的分页方法</span>
+<span style="color: #008080;">2</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> index(){
+</span><span style="color: #008080;">3</span>     <span style="color: #800080;">$builder</span> = Article::with('category:id,name')-&gt;orderBy('id', 'desc')-&gt;paginate(8<span style="color: #000000;">);
+</span><span style="color: #008080;">4</span>     <span style="color: #0000ff;">return</span> response()-&gt;json(['status' =&gt; <span style="color: #0000ff;">true</span>, 'count' =&gt; <span style="color: #800080;">$builder</span>-&gt;total(), 'articles' =&gt; <span style="color: #800080;">$builder</span>-&gt;<span style="color: #000000;">items()]);
+</span><span style="color: #008080;">5</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>JWT 的 Token 需要二次加密</p>
+<p>许多拓展包加密出的token并不十分安全，用base64_decode可以解密获取 加密主键、载荷等重要信息，所以通常需要对JWT的token进行二次加密</p>
+<p>限制上传文件的类型</p>
+<p>对于一个图片上传的接口，如果没有对上传文件的格式做限制，攻击者很有可能把 .php后缀的文件上传到public/images目录下，然后通过根目录执行这个文件。</p>
+<p>需要设计安全的文件上传功能避免上述问题</p>
+<ol>
+<li>文件上传的目录设置为不可执行</li>
+<li>判断文件类型</li>
+<li>使用随机数改写文件名和文件路径</li>
+<li>单独设置文件服务器的域名</li>
+</ol>
+<p>禁止或者避免写自动解压.zip 等压缩文件的代码</p>
+<p>单纯地限制文件或压缩包大小并没有用，一个ZIP炸弹的.zip文件仅有 42 KB，但在解压后会占用 4718592 GB</p>
+<p>避免登录密码被暴力破解</p>
+<ol>
+<li>设定严格的速率限制，如登录次数限制，登录错误次数达 x 次时暂停登录 n 分钟</li>
+<li>密码加上随机盐</li>
+</ol>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="7">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> reg(){
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$user</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> User;
+</span><span style="color: #008080;">3</span>     <span style="color: #800080;">$salt</span> = radom(6<span style="color: #000000;">);
+</span><span style="color: #008080;">4</span>     <span style="color: #800080;">$user</span>-&gt;password = bcrypt(<span style="color: #800080;">$data</span>['password'] . <span style="color: #800080;">$salt</span><span style="color: #000000;">);
+</span><span style="color: #008080;">5</span>     ...
+<span style="color: #008080;">6</span> }</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>做好异常处理，避免在生产环境中不正确的错误报告暴露敏感数据</p>
+<p>如果你不小心，可能会在生产环境中因为不正确的错误报告泄露了敏感信息，例如：文件夹结构、数据库结构、连接信息与用户信息。</p>
+<ol>
+<li>在.env 文件中关闭调试模式<br />APP_DEBUG=true</li>
+<li>php 错误控制 error_reporting、display_errors<br />
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 关闭错误报告</span>
+<span style="color: #008080;"> 3</span> <span style="color: #008080;">error_reporting</span>(0<span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 报告 runtime 错误</span>
+<span style="color: #008080;"> 6</span> <span style="color: #008080;">error_reporting</span>(<span style="color: #ff00ff;">E_ERROR</span> | <span style="color: #ff00ff;">E_WARNING</span> | <span style="color: #ff00ff;">E_PARSE</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 报告所有错误</span>
+<span style="color: #008080;"> 9</span> <span style="color: #008080;">error_reporting</span>(<span style="color: #ff00ff;">E_ALL</span><span style="color: #000000;">);
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 等同 error_reporting(E_ALL);</span>
+<span style="color: #008080;">12</span> <span style="color: #008080;">ini_set</span>("error_reporting", <span style="color: #ff00ff;">E_ALL</span><span style="color: #000000;">);
+</span><span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 报告 E_NOTICE 之外的所有错误</span>
+<span style="color: #008080;">15</span> <span style="color: #008080;">error_reporting</span>(<span style="color: #ff00ff;">E_ALL</span> &amp; ~<span style="color: #ff00ff;">E_NOTICE</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span> ?&gt;
+<span style="color: #008080;">17</span> 
+<span style="color: #008080;">18</span> display_errors = Off</code></pre>
+
+<p>&nbsp;</p>
+</li>
+
+</ol>
+<p>php 弱语言的设计缺陷如：in_array</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="6">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$array</span>=[0,1,2,'3'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #008080;">var_dump</span>(<span style="color: #008080;">in_array</span>('abc', <span style="color: #800080;">$array</span>)); <span style="color: #008000;">//</span><span style="color: #008000;">true</span>
+<span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #008080;">var_dump</span>(<span style="color: #008080;">in_array</span>('1bc', <span style="color: #800080;">$array</span>)); <span style="color: #008000;">//</span><span style="color: #008000;">true</span>
+<span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> <span style="color: #008000;">#</span><span style="color: #008000;"> 上面的情况返回的都是 true, 因为&rsquo;abc&rsquo;会转换为 0，&rsquo;1bc&rsquo;转换为 1</span>
+<span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #800080;">$a</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> <span style="color: #800080;">$b</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$a</span>==<span style="color: #800080;">$b</span>;  <span style="color: #008000;">//</span><span style="color: #008000;">true</span>
+<span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> <span style="color: #800080;">$c</span> = ""<span style="color: #000000;">;
+</span><span style="color: #008080;">14</span> <span style="color: #800080;">$d</span> = 0<span style="color: #000000;">;
+</span><span style="color: #008080;">15</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$c</span>==<span style="color: #800080;">$d</span>   <span style="color: #008000;">//</span><span style="color: #008000;">true</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>在一些重要的地方需要使用&nbsp;<code>===</code>&nbsp;来作数据判断。</p>
+<p>LFI (本地文件包含)</p>
+<p>LFI （本地文件包含） 是一个用户未经验证从磁盘读取文件的漏洞。</p>
+<p>不验证过滤用户的输入 将它要渲染的模板文件用 GET 请求加载。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="5">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;body&gt;
+<span style="color: #008080;">2</span>     &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">3</span>       <span style="color: #800080;">$page</span> = <span style="color: #800080;">$_GET</span>['page'<span style="color: #000000;">];
+</span><span style="color: #008080;">4</span>       <span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$page</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">5</span>         <span style="color: #800080;">$page</span> = 'main.php'<span style="color: #000000;">;
+</span><span style="color: #008080;">6</span> <span style="color: #000000;">      }
+</span><span style="color: #008080;">7</span>       <span style="color: #0000ff;">include</span>(<span style="color: #800080;">$page</span><span style="color: #000000;">);
+</span><span style="color: #008080;">8</span>     ?&gt;&lt;/body&gt;</code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>由于 Include 可以加载任何文件，不仅仅是 PHP，攻击者可以将系统上的任何文件作为包含目标传递。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="4">
+<src class="cnblogs_code">
+<pre><code>index.php?page=../../etc/passwd</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这将导致 /etc/passwd 文件被读取并展示在浏览器上。</p>
+<p>要防御此类攻击，你必须仔细考虑允许用户输入的类型，并删除可能有害的字符，如输入字符中的 &ldquo;.&rdquo; &ldquo;/&rdquo; &ldquo;\&rdquo;。</p>
+<p>XSS</p>
+<blockquote>XSS 又叫 CSS (Cross Site Script) ，跨站脚本攻击。它指的是恶意攻击者往 Web 页面里插入恶意 html 代码，当用户浏览该页之时，嵌入其中 Web 里面的 html 代码会被执行，从而达到恶意攻击用户的特殊目的。</blockquote>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="3">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;body&gt;
+<span style="color: #008080;">2</span>     &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">3</span>         <span style="color: #800080;">$searchQuery</span> = <span style="color: #800080;">$_GET</span>['q'<span style="color: #000000;">];
+</span><span style="color: #008080;">4</span>         <span style="color: #008000;">/*</span><span style="color: #008000;"> some search magic here </span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">5</span>     ?&gt;&lt;h1&gt;You searched <span style="color: #0000ff;">for</span>: &lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$searchQuery</span>; ?&gt;&lt;/h1&gt;&lt;/body&gt;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>因为我们把用户的内容直接打印出来，不经过任何过滤，非法用户可以拼接 URL： search.php?q=%3Cscript%3Ealert(1)%3B%3C%2Fscript%3E</p>
+<p>PHP 渲染出来的内容如下，可以看到 Javascript 代码会被直接执行：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="2">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;body&gt;
+<span style="color: #008080;">2</span> &lt;h1&gt;You searched <span style="color: #0000ff;">for</span>: &lt;script&gt;alert(1);&lt;/script&gt;&lt;/h1&gt;
+<span style="color: #008080;">3</span> &lt;p&gt;We found: Absolutely nothing because this is a demo&lt;/p&gt;
+<span style="color: #008080;">4</span> &lt;/body&gt;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>Javascript 可以:</p>
+<ul>
+<li>偷走你用户浏览器里的 Cookie；</li>
+<li>通过浏览器的记住密码功能获取到你的站点登录账号和密码；</li>
+<li>盗取用户的机密信息；</li>
+<li>你的用户在站点上能做到的事情，有了 JS 权限执行权限就都能做，也就是说 A 用户可以模拟成为任何用户；</li>
+<li>在你的网页中嵌入恶意代码；</li>
+</ul>
+<p>使用&nbsp;<code>htmlentities()</code>&nbsp;过滤特殊字符，防止大部分的 xss 攻击</p>
+<p>CSRF (跨站请求伪造)</p>
+<p>例如网站上有用户可以用来注销账户的链接。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<src class="cnblogs_code">
+<pre><code>&lt;a href="http://your-website.com/delete-account"&gt;销毁账户&lt;/a&gt;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>如果某个用户评论：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="0">
+<src class="cnblogs_code">
+<pre><code>&lt;img src=&rdquo;http:<span style="color: #008000;">//</span><span style="color: #008000;">your-website.com/delete-account&rdquo;&gt; wow</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>用户将在查看此评论的时候删除他们的账号。</p>
+<p>laravel 的 web 路由默认开启了 csrf 验证，原理是在客户端产生一个随机的 token，在表单校验时判断这个 token 是否是这个页面上的请求</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

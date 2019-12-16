@@ -1,0 +1,65 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP+jQuery.photoClip.js支持手势的图片裁剪上传实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP+jQuery.photoClip.js支持手势的图片裁剪上传实例</center></div><div class='banquan'>原文出处:本文由博客园博主我乐意啊提供。<br/>
+原文连接:https://www.cnblogs.com/woleyia/p/10991749.html</div><br>
+    <p>PHP+jQuery.photoClip.js支持手势的图片裁剪上传实例，在手机上双指捏合为缩放，双指旋转可根据旋转方向每次旋转90度，在电脑上鼠标滚轮为缩放，双击则顺时针旋转90度。</p>
+<p><img src="https://img.sucaihuo.com/jquery/6/684/big.jpg" alt="" width="687" height="401" /></p>
+<p><strong>下面让我们来看看核心代码：</strong></p>
+<p>post的是base64，后端处理base64转存图片。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> $("#clipArea").<span style="color: #000000;">photoClip({ 
+</span><span style="color: #008080;"> 2</span>     width: 200, 
+<span style="color: #008080;"> 3</span>     height: 200, 
+<span style="color: #008080;"> 4</span>     <span style="color: #008080;">file</span>: "#file", 
+<span style="color: #008080;"> 5</span>     view: "#view", 
+<span style="color: #008080;"> 6</span>     ok: "#clipBtn", 
+<span style="color: #008080;"> 7</span>     loadStart: <span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;"> 8</span>         $(".photo-clip-rotateLayer").html("&lt;img src='images/loading.gif'/&gt;"<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 9</span>         console.<span style="color: #008080;">log</span>("照片读取中"<span style="color: #000000;">); 
+</span><span style="color: #008080;">10</span>     }, 
+<span style="color: #008080;">11</span>     loadComplete: <span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;">12</span>         console.<span style="color: #008080;">log</span>("照片读取完成"<span style="color: #000000;">); 
+</span><span style="color: #008080;">13</span>     }, 
+<span style="color: #008080;">14</span>     clipFinish: <span style="color: #0000ff;">function</span><span style="color: #000000;">(dataURL) { 
+</span><span style="color: #008080;">15</span>         $.<span style="color: #000000;">ajax({ 
+</span><span style="color: #008080;">16</span>             url: "upload.php", 
+<span style="color: #008080;">17</span>             data: {str: dataURL}, 
+<span style="color: #008080;">18</span>             type: 'post', 
+<span style="color: #008080;">19</span>             dataType: 'html', 
+<span style="color: #008080;">20</span> <span style="color: #000000;">        }) 
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">22</span> });</code></pre>
+
+<p><br />upload.php图片上传</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$base64</span> = <span style="color: #008080;">htmlspecialchars</span>(<span style="color: #800080;">$_POST</span>['str'<span style="color: #000000;">]); 
+</span><span style="color: #008080;">2</span> <span style="color: #0000ff;">if</span> (<span style="color: #008080;">preg_match</span>('/^(data:\s*image\/(\w+);base64,)/', <span style="color: #800080;">$base64</span>, <span style="color: #800080;">$result</span><span style="color: #000000;">)) { 
+</span><span style="color: #008080;">3</span>     <span style="color: #800080;">$type</span> = <span style="color: #800080;">$result</span>[2<span style="color: #000000;">]; 
+</span><span style="color: #008080;">4</span>     <span style="color: #800080;">$new_file</span> = "./uploads/" . <span style="color: #008080;">time</span>() . ".{<span style="color: #800080;">$type</span>}"<span style="color: #000000;">; 
+</span><span style="color: #008080;">5</span>     <span style="color: #0000ff;">if</span> (<span style="color: #008080;">file_put_contents</span>(<span style="color: #800080;">$new_file</span>, <span style="color: #008080;">base64_decode</span>(<span style="color: #008080;">str_replace</span>(<span style="color: #800080;">$result</span>[1], '', <span style="color: #800080;">$base64</span><span style="color: #000000;">)))) { 
+</span><span style="color: #008080;">6</span>         <span style="color: #0000ff;">echo</span> '新文件保存成功：', <span style="color: #800080;">$new_file</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">7</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">8</span> }</code></pre>
+
+<p>本实例源码下载：<a href="https://www.sucaihuo.com/php/684.html" target="_blank">https://www.sucaihuo.com/php/684.html</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

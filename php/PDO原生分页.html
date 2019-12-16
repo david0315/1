@@ -1,0 +1,38 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PDO原生分页' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PDO原生分页</center></div><div class='banquan'>原文出处:本文由博客园博主小果汁提供。<br/>
+原文连接:https://www.cnblogs.com/laoliuBlog/p/11206783.html</div><br>
+    <p>**</p>
+<p><span style="font-size: 18pt;"><strong>PDO分页</strong></span><br />**</p>
+<p><strong>1.PDO连接数据库</strong><br />	<span style="background-color: #ffffff;">$dbh=new PDO('mysql:host=127.0.0.1;dbname=03a','root','root');//使用pdo</span><br /><br /><strong>2.接收页码</strong></p>
+<p> 	$page=isset($_GET['page'])?$_GET['page']:1;//接收页码<br /><br /><strong>3.sql查询数据</strong></p>
+<p>	$sql="select * from title";//查询数据<br /><br /><strong>4.PDO执行sql语句</strong></p>
+<p>	$res=$dbh-&gt;query($sql);//执行sql语句<br /><br /><strong>5.计算条数</strong></p>
+<p>	$count=$res-&gt;rowCount();//计算条数<br /><br /><strong>6.设置每页显示条数</strong></p>
+<p>	 $size=5;//设置每页显示条数<br /><br /><strong>7.总页数</strong></p>
+<p>    $sum=ceil($count/$size);//总页数<br /><br /><strong>8.上一页和下一页</strong></p>
+<p>    $prev=$page-1&lt;1?1:$page-1;//上一页<br />    $next=$page+1&gt;$sum?$sum:$page+1;//下一页<br /><br /><br /><strong>9.限制</strong></p>
+<p>  $limit=($page-1)*$size;<br /><br /><strong>10.计算分页数据</strong></p>
+<p>   $sql1="select * from title limit $limit,$size";<br />   $res1=$dbh-&gt;query($sql1);<br />   $data=$res1-&gt;fetchAll(2);//用fetchAll  返回   参数为2  返回一个数组    fetchAll  返回所有数据      fetch  返回一条数据<br /><br /><br /><strong>分页前台代码</strong></p>
+<p>&lt;center&gt;<br />    &lt;table border="1"&gt;<br />        &lt;tr&gt;<br />            &lt;td&gt;多选&lt;/td&gt;<br />            &lt;td&gt;编号&lt;/td&gt;<br />            &lt;td&gt;标题&lt;/td&gt;<br />            &lt;td&gt;时间&lt;/td&gt;<br />            &lt;td&gt;图片&lt;/td&gt;<br />            &lt;td&gt;操作&lt;/td&gt;<br />        &lt;/tr&gt;<br />        &lt;?php foreach ($data as $k=&gt;$v) {?&gt;<br />            &lt;tr&gt;<br />                &lt;td&gt;&lt;input type="checkbox" name="chec"&gt;&lt;/td&gt;<br />                &lt;td&gt;&lt;?php echo $v['id']?&gt;&lt;/td&gt;<br />                &lt;td&gt;&lt;?php echo $v['t_title']?&gt;&lt;/td&gt;<br />                &lt;td&gt;&lt;?php echo $v['t_cont']?&gt;&lt;/td&gt;<br />                &lt;td&gt;&lt;?php echo $v['t_img']?&gt;&lt;/td&gt;<br />                &lt;td&gt;&lt;a href="del.php?id=&lt;?php echo $v['id']?&gt;"&gt;删除&lt;/a&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;||&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a<br />                            href="xq.php?id=&lt;?php echo $v['id']?&gt;"&gt;详情页&lt;/a&gt;&lt;/td&gt;<br />            &lt;/tr&gt;<br />        &lt;?php }?&gt;<br />    &lt;/table&gt;<br />    &lt;div&gt;<br />        &lt;a href="show.php?page=1"&gt;首页&lt;/a&gt;<br />        &lt;a href="show.php?page=&lt;?php echo $prev?&gt;"&gt;上一页&lt;/a&gt;<br />        &lt;a href="show.php?page=&lt;?php echo $next?&gt;"&gt;下一页&lt;/a&gt;<br />        &lt;a href="show.php?page=&lt;?php echo $sum?&gt;"&gt;尾页&lt;/a&gt;<br />    &lt;/div&gt;<br />&lt;/center&gt;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

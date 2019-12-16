@@ -1,0 +1,128 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Jsonp跨域原理及简单应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Jsonp跨域原理及简单应用</center></div><div class='banquan'>原文出处:本文由博客园博主早上六点半遇见五月天提供。<br/>
+原文连接:https://www.cnblogs.com/pawn-i/p/11899120.html</div><br>
+    <p><span style="font-size: 18px;"><strong>浏览器的同源策略：</strong></span></p>
+<p><span style="font-size: 12px;">同源策略(Same Origin Policy)是一种约定，它是由Netscape提出的一个著名的安全策略，它限制了从同一个源加载的文档或脚本如何与来自另一个源的资源进行交互。这是一个用于隔离潜在恶意文件的重要安全机制。</span></p>
+<p><span style="font-size: 12px;">同源的定义：<strong>如果两个页面的<span style="background-color: #ffff00;">协议</span>，<span style="background-color: #ffff00;">端口（如果有指定</span>）和<span style="background-color: #ffff00;">主机</span>都相同，则两个页面具有相同的源。</strong>我们也可以把它称为&ldquo;协议/主机/端口 tuple&rdquo;，或简单地叫做&ldquo;tuple". ("tuple" ，&ldquo;元&rdquo;，是指一些事物组合在一起形成一个整体，比如（1，2）叫二元，（1，2，3）叫三元)</span></p>
+<p><span style="font-size: 12px;"><strong>如果协议、端口、主机（域名或IP地址，如果是IP地址则看做一个根域名）、子域名，当其中一个不同，则我们的请求即会发生跨域问题。</strong></span></p>
+<p><span style="font-size: 12px;">下表给出了相对http://store.company.com/dir/page.html同源检测的示例:&nbsp;</span></p>
+<table border="0" align="left">
+<tbody>
+<tr>
+<td>URL</td>
+<td>结果</td>
+<td>原因</td>
+</tr>
+<tr>
+<td>http://store.company.com/dir2/other.html</td>
+<td>同源</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>http://store.company.com/dir/inner/another.html</td>
+<td>同源</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>https://store.company.com/secure.html</td>
+<td>不同源</td>
+<td>协议不同</td>
+</tr>
+<tr>
+<td>http://store.company.com:81/dir/etc.html</td>
+<td>不同源</td>
+<td>端口不同</td>
+</tr>
+<tr>
+<td>http://news.company.com/dir/other.html</td>
+<td>不同源</td>
+<td>主机域名不同</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<hr />
+<p><span style="font-size: 18px;"><strong>突破同源策略限制：<br /></strong><span style="font-size: 12px;">1、<strong>script标签的src/img标签的src，或者说link标签的href他们没有被通源策略所限制</strong><br /></span></span>2、src或href链接的静态资源，本质上来说也是一个<strong>get请求</strong></p>
+<p><br /><strong><span style="font-size: 18px;">JSONP是什么？和json有关系吗?</span></strong></p>
+<p><span style="font-size: 12px;">Json(JavaScript Object Notation) 是一种轻量级的数据交换格式。</span></p>
+<p><span style="font-size: 12px;">JSONP是JSON with Padding的略称。它是一个非官方非正式的传输的协议，它允许在服务器端集成Script tags返回至客户端，通过javascript callback的形式实现跨域访问。</span></p>
+<p><span style="font-size: 18px;"><strong>JSONP的简单实现：</strong></span></p>
+<p><span style="font-size: 18px;"><span style="font-size: 12px;">html代码：（运行在本地http://zrcloud.com/test.html）</span></span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html </span><span style="color: #ff0000;">xmlns</span><span style="color: #0000ff;">="http://www.w3.org/1999/xhtml"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">http-equiv</span><span style="color: #0000ff;">="Content-Type"</span><span style="color: #ff0000;"> content</span><span style="color: #0000ff;">="text/html; charset=UTF-8"</span> <span style="color: #0000ff;">/&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>Jsonp简单实例<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">script </span><span style="color: #ff0000;">src</span><span style="color: #0000ff;">="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">h3</span><span style="color: #0000ff;">&gt;</span>JSONP简单实例<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">h3</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">script </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text/javascript"</span><span style="color: #0000ff;">&gt;</span><span style="background-color: #f5f5f5; color: #000000;">
+  $(</span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;">() {
+    $.ajax({
+      type:</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">get</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">,
+      async:</span><span style="background-color: #f5f5f5; color: #0000ff;">false</span><span style="background-color: #f5f5f5; color: #000000;">,</span><span style="background-color: #f5f5f5; color: #008000;">//</span><span style="background-color: #f5f5f5; color: #008000;">同步请求</span>
+<span style="background-color: #f5f5f5; color: #000000;">      url:</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">http://mqcms.com/test.php</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">,
+      dataType:</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">jsonp</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">,
+      jsonp:</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">callback</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">,</span><span style="background-color: #f5f5f5; color: #008000;">//</span><span style="background-color: #f5f5f5; color: #008000;">传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)</span>
+<span style="background-color: #f5f5f5; color: #000000;">      jsonpCallback:</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">test</span><span style="background-color: #f5f5f5; color: #000000;">'</span><span style="background-color: #f5f5f5; color: #000000;">,</span><span style="background-color: #f5f5f5; color: #008000;">//</span><span style="background-color: #f5f5f5; color: #008000;">自定义的jsonp回调函数名称，默认为jQuery自动生成的随机函数名，也可以写"?"，jQuery会自动为你处理数据</span>
+<span style="background-color: #f5f5f5; color: #000000;">      success:</span><span style="background-color: #f5f5f5; color: #0000ff;">function</span><span style="background-color: #f5f5f5; color: #000000;">(data){
+          console.log(data);
+      }
+    })
+  })
+</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">script</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 12px;">PHP服务器端代码：</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">header</span>('Content-Type:application/json; charset=utf-8'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$callback</span> =<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_GET</span>['callback']) ? <span style="color: #008080;">trim</span>(<span style="color: #800080;">$_GET</span>['callback']) : ''<span style="color: #000000;">;
+</span><span style="color: #800080;">$arr</span>=['name'=&gt;'test','age'=&gt;18,'sex'=&gt;1<span style="color: #000000;">];
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$callback</span>.'('.json_encode(<span style="color: #800080;">$arr</span>).')'<span style="color: #000000;">;
+
+</span>?&gt;</code></pre>
+
+<p>运行结果：&nbsp;</p>
+<p><img src="./images/Jsonp跨域原理及简单应用0.jpg" alt="" width="990" height="568" /></p>
+<p><span style="font-size: 12px;">&nbsp;注：为什么我这次没有写test这个函数呢？而且竟然也运行成功了！</span></p>
+<p><span style="font-size: 12px;">这就是jQuery的功劳了，jquery在处理jsonp类型的ajax时（，虽然jquery也把jsonp归入了ajax，但其实它们真的不是一回事儿），自动帮你生成回调函数并把数据取出来供success属性方法来调用。</span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

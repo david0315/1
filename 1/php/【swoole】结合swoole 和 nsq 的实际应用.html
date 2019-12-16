@@ -1,0 +1,62 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【swoole】结合swoole 和 nsq 的实际应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【swoole】结合swoole 和 nsq 的实际应用</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11950788.html</div><br>
+    <blockquote>集合 swoole 的框架设计
+<p>为了减少理解度，我尽量的从源头开始引入</p>
+</blockquote>
+<h2 id="item-1">1. nsq</h2>
+<p>案例中是使用 swoole 结合一个php 框架实现的是 NSQ 订阅功能。</p>
+<p>启动命令:</p>
+<blockquote>sudo bash /www/webserver/bin/swoole.sh start nsq adminexport</blockquote>
+<p>解释上面一个指令，使用 bash 执行一个项目中的脚本。</p>
+<p>start 对应启动命令<br />nsq ： 代表对应使用NSQ 服务<br />adminexport ： 对应的是NSQ 的topic</p>
+<p>脚本的本质，通过框架的入口文件，根据传参，进入到的不同的消息中间件，及对应的服务</p>
+<p><img src="./images/【swoole】结合swoole 和 nsq 的实际应用0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2 id="item-2">&nbsp;php 订阅</h2>
+<p>AdminexportService 继承封装好的 SwooleService。 在init方法中，初始化 swoole服务。并且注册回调函数。</p>
+<p><img src="./images/【swoole】结合swoole 和 nsq 的实际应用1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;AdminexportService 在重写的 swooleWorkerStart 回调函数中，实现了NSQ 的订阅功能</p>
+<p><img src="./images/【swoole】结合swoole 和 nsq 的实际应用2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;NSQ 消息的处理</p>
+<p><img src="./images/【swoole】结合swoole 和 nsq 的实际应用3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<ol>
+<li>简单封装了重复消息的判断</li>
+<li>requeue 没有消费消息的重新投递</li>
+</ol>
+<h2 id="item-3">3. 引入 swoole</h2>
+<p>就是构造方法引入 swoole 的实例化<br />同时，重写 workerStart 的方法。</p>
+<p>所以当执行脚本的时候，也就是启动了 对应的swoole 服务。启动了订阅者的客户端。<br />不断的消费来自nsq topic 的消息</p>
+<p>看吧，swoole 其实也很简单。 把它当做一个工具类，拿来用就可以了。 在实现的时候引入它，通过 WorkerStart 处理分发的消息即可。</p>
+<blockquote>当然更好的是使用协程。<br />另外吹一波，协程就是厉害</blockquote>
+<blockquote>
+<p>以上是文章全部内容，有需要学习交流的友人请加入交流群的咱们一起，有问题一起交流，一起进步！前提是你是学技术的。感谢阅读！</p>
+<p><a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//jq.qq.com/%3F_wv%3D1027%26k%3D5mcCu53" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">点此加入该群</a></p>
+</blockquote>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

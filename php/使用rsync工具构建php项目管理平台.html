@@ -1,0 +1,63 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修使用rsync工具构建php项目管理平台' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>使用rsync工具构建php项目管理平台</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10847061.html</div><br>
+    <p>对于phper来说部署项目和更新项目是很方便的，只要直接将写好的项目覆盖到项目的根目录就可以啦。但是平时项目开发的时候肯定不是只部署一个环境，一般是三套环境（开发环境、测试环境、生产环境），我们每次在开发环境开发完之后要将项目更新到测试环境和生产环境上，如果每次更新的话都是将项目复制然后手动的去覆盖到项目的根目录下的话就太麻烦啦，而且也容易出错所以我们应该有一套项目管理系统来方便的管理项目的更新迭代，大致结构如下：</p>
+<p><img src="./images/使用rsync工具构建php项目管理平台0.jpg" alt="" width="349" height="229" /></p>
+<p>画的不好但是意思是对的，这样的话就可以通过一个脚本文件直接更新代码啦，更重要的是我们可以通过php中的 exec() 函数来操作脚本，这意味着我们可以使用php来开发这个项目管理平台，今天只说如何配置rsync。</p>
+<p>实验环境：</p>
+<p>docker（ubuntu镜像）实例化两台虚拟器</p>
+<p><img src="./images/使用rsync工具构建php项目管理平台1.jpg" alt="" /></p>
+<p>在两台虚拟机上都安装好 rsync 工具，rsync 使用分两种情况，一种是客户端使用（直接执行 rsync 相关命令）另一种是服务器端使用（以daemon模式执行）</p>
+<p>配置 rsync 服务端</p>
+<p>首先要在 `/etc` 目录下手动添加个 rsyncd.conf 文件并填写相关配置，配置选项解释如下：</p>
+<src class="cnblogs_code">
+<pre><code>port=837  <span style="color: #008000;">#</span><span style="color: #008000;">监听端口默认 873</span>
+log file=/var/log/rsync.log  <span style="color: #008000;">#</span><span style="color: #008000;">rsync日志</span>
+pid file=/var/run/rsync.pid  <span style="color: #008000;">#</span><span style="color: #008000;">rsync运行时生成的pid存放目录</span>
+[abc]  <span style="color: #008000;">#</span><span style="color: #008000;">模块名称</span>
+path=/var/www/html  <span style="color: #008000;">#</span><span style="color: #008000;">模块对应的目录</span>
+use chroot=yes   <span style="color: #008000;">#</span><span style="color: #008000;">是否限定为模块默认目录</span>
+max nonections=4 <span style="color: #008000;">#</span><span style="color: #008000;">指定最大可以连接的客户端数</span>
+read only=no  <span style="color: #008000;">#</span><span style="color: #008000;">yes 为改模块内容只允许读，no 为该模块允许读写</span>
+list=yes <span style="color: #008000;">#</span><span style="color: #008000;">是否允许 使用 `rsync ip地址::` 列出模块名</span>
+uid=root  <span style="color: #008000;">#</span><span style="color: #008000;">以哪个用户的身份来传输</span>
+gid=root  <span style="color: #008000;">#</span><span style="color: #008000;">以哪个组的身份来传输</span>
+auth users=root  <span style="color: #008000;">#</span><span style="color: #008000;">指定验证用户名，如果不设置则可以不用密码进行传输</span>
+secrets file=/etc/rsync.passwd  <span style="color: #008000;">#</span><span style="color: #008000;">指定用户名和密码的存放文件  注：文件需要以 "用户名:密码"的形式存储   并且需要设置权限 chmod 600 rsync.passwd</span></code></pre>
+
+<p><span style="background-color: #ff0000;">&nbsp;<span style="background-color: #ffffff;">&nbsp;</span></span>从客户端读取服务器端文件</p>
+<src class="cnblogs_code">
+<pre><code>rsync --port=837 -avz root@192.168.99.100::abc /myweb</code></pre>
+
+<p><img src="./images/使用rsync工具构建php项目管理平台2.jpg" alt="" /></p>
+<p>这时会将服务端 /var/www/html 目录下的文件同步到 客户端的 /web 目录下</p>
+<p><span style="background-color: #ff0000;">&nbsp;</span> 从客户端推送文件到服务端</p>
+<src class="cnblogs_code">
+<pre><code>rsync --port=837 -avzH /myweb/ root@192.168.99.100::abc</code></pre>
+
+<p><img src="./images/使用rsync工具构建php项目管理平台3.jpg" alt="" /></p>
+<p>&nbsp;这时会将客户端的 /web 目录下的文件同步到 服务端 /var/www/html 目录下</p>
+<p>对于 rsync 命令各个选项的含义 建议看下这篇文章吧，这哥们写的翻译的挺详细的&nbsp; @<strong><a href="http://www.cnblogs.com/f-ck-need-u/">骏马金龙</a>&nbsp;&nbsp;</strong><span style="font-size: 15px;"><a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/f-ck-need-u/p/7221713.html">man rsync翻译(rsync命令中文手册)</a></span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,110 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修如何通过swoole加速laravel的问题？' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>如何通过swoole加速laravel的问题？</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11809210.html</div><br>
+    <p>这篇文章主要介绍了关于如何使用swoole加速laravel，有着一定的参考价值，现在分享给大家，有需要的朋友可以参考一下</p>
+<p>&nbsp;</p>
+<p>再来复习一下吧，导致 php 慢的各种因素中解析性语言的特性可以说是罪魁祸首，再加上，每次请求完都释放请求时所加载的全部文件，因此也就显得更慢了。</p>
+<p>后来我们有了 opcache，使用这个的话，请求时间大概会缩短到原来的一半，但是我们会发现其实花的时间看起来还是很多。</p>
+<p>这是为什么呢？原因在于，opcache 只是省去了解析文件的时间，实际运行的时候，我们还是需要去把相同的代码又跑一遍，具体我们可以看下图：</p>
+<p><img src="./images/如何通过swoole加速laravel的问题？0.jpg" alt="" /></p>
+<p>我们假设一下，如果我们的代码跑了一遍，不释放的话，那么下次再跑的时候不就可以节省了这重复的时间？的确是的。</p>
+<h1>下面开始正题：</h1>
+<p>1、安装 laravel-swoole 扩展</p>
+<p class="cnblogs_Highlighter">&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">composer </code><code class="php keyword">require</code> <code class="php plain">swooletw/laravel-swoole</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>2、swoole 扩展当然是必不可少的</p>
+<p class="cnblogs_Highlighter">&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">pecl install swoole</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>　　需要在安装完 swoole 扩展之后加到 php.ini 中，不赘述</p>
+<p>3、在 config/app.php 服务提供者数组添加该服务提供者：</p>
+<p class="cnblogs_Highlighter">&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">SwooleTW\Http\LaravelServiceProvider::</code><code class="php keyword">class</code><code class="php plain">,</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>4、现在，你可以执行以下的命令来启动 Swoole HTTP 服务。</p>
+<p class="cnblogs_Highlighter">&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">php artisan swoole:http start</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<h1>ab 测试</h1>
+<p>测试环境：ubuntu 18.04，4核8线程 2.7～3.5GHz cpu，8G内存，120G SSD</p>
+<p>测试结果：</p>
+<p>ab参数：ab -n 1000 -c 100</p>
+<p><img src="./images/如何通过swoole加速laravel的问题？1.jpg" alt="" /></p>
+<p>我们发现 Time per request 是 2.512ms，当然，这只是一个简单的请求，不涉及数据库查询。总的来说，表现是要比 opcache 要好的，但这个毕竟是野路子，有多少坑我们不得而知，目前也不太了解是否有把这个用于生产环境的，但是这个思路其实真的很不错，最后期待一下 php 官方把这个作为研究方向</p>
+<p><img src="./images/如何通过swoole加速laravel的问题？2.jpg" alt="" /></p>
+<p><strong>明确的学习思路能更高效的学习</strong></p>
+<p><strong><img src="./images/如何通过swoole加速laravel的问题？3.jpg" alt="" /></strong></p>
+<p>&nbsp;</p>
+<p><a href="https://jq.qq.com/?_wv=1027&amp;k=5Spo1ah" target="_blank"><strong>点击加入该群学习</strong></a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

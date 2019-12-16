@@ -1,0 +1,78 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修以环形角度理解php数组索引' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>以环形角度理解php数组索引</center></div><div class='banquan'>原文出处:本文由博客园博主hellozxcv提供。<br/>
+原文连接:https://www.cnblogs.com/zxcv123/p/11687825.html</div><br>
+    <src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008080;">array_slice</span> ( <span style="color: #0000ff;">array</span> <span style="color: #800080;">$array</span> , int <span style="color: #800080;">$offset</span> [, int <span style="color: #800080;">$length</span> = <span style="color: #0000ff;">NULL</span> [, bool <span style="color: #800080;">$preserve_keys</span> = <span style="color: #0000ff;">false</span> ]] ) : <span style="color: #0000ff;">array</span></code></pre>
+
+<p>array_slice（）这个从数组中取出一段的函数，需要传递一些整型数字来指明使用者需要目标数组中的哪一个段。</p>
+<p>当第二参数&nbsp;<span class="cnblogs_code"><span style="color: #800080;">$offset</span></span>&nbsp;，和第三参数&nbsp;<span class="cnblogs_code"><span style="color: #800080;">$length</span></span>&nbsp;长度都是整型正整数的时候，用环形角度理解数组索引还是线段角度理解数组的索引，事实上没什么太大区别。</p>
+<p>但当这两个参数中有一个是整型负整数时，用环形角度来理解数组索引更为统一。</p>
+<p>人类理解抽象事物总是设法与其脑海中建立的形象模型关联，于是我们首先得有下面图中的这两种概念，图中的数字代表了数组的索引。</p>
+<p>第一幅图是环形，起点为0，顺时针为正方向，逆时针为负方向</p>
+<p><img src="./images/以环形角度理解php数组索引0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;第二幅图是线段形，起点为0，朝右为正方向，朝左为负方向</p>
+<p><img src="./images/以环形角度理解php数组索引1.jpg" alt="" /></p>
+<p>然后再考虑这两种形象模型在具体的例子中的表现。</p>
+<p>第一种情况：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$arr_long</span> = [1,  2, 3, 4, 2, 6, 2, 8<span style="color: #000000;">];//没有贴上打印输出，自然不是忘了
+</span><span style="color: #008080;">2</span> <span style="color: #008080;">var_dump</span>(<span style="color: #008080;">array_slice</span>(<span style="color: #800080;">$arr_long</span>, 2, 3));</code></pre>
+
+<p>环形和线段形都可以这样描述：从偏移量为2的地方，向正方向截取3个长度，然后返回这一段所组成的数组。</p>
+<p>&nbsp;第二种情况：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$arr_long</span> = [1,  2, 3, 4, 2, 6, 2, 8<span style="color: #000000;">];//没有贴上打印输出，自然不是忘了
+</span><span style="color: #008080;">2</span> <span style="color: #008080;">var_dump</span>(<span style="color: #008080;">array_slice</span>(<span style="color: #800080;">$arr_long</span>, -2, 3));//这种情况下返回的数组只有两个元素</code></pre>
+
+<p>环形描述：从偏移量为-2的地方，向正方向截取3个长度，然后返回这一段所组成的数组。（偏移量-2，只是为了理解而统一化的说法，具体有没有类似的编程概念，该问谁呢？）</p>
+<p>线段形描述：从倒数第二个元素，向正方向截取3个长度，然后返回这一段所组成的数组。</p>
+<p>第三种情况：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$arr_long</span> = [1,  2, 3, 4, 2, 6, 2, 8<span style="color: #000000;">];//没有贴上打印输出，自然不是忘了
+</span><span style="color: #008080;">2</span> <span style="color: #008080;">var_dump</span>(<span style="color: #008080;">array_slice</span>(<span style="color: #800080;">$arr_long</span>, 2, -3));</code></pre>
+
+<p>环形描述：从偏移量为2的地方，向着正方向一直截到偏移量为-3的地方（不包括偏移量为-3的元素），然后返回这一段所组成的数组。（偏移量-3，这样的说法目的同上。）</p>
+<p>线段形描述：从偏移量为2的地方，向着正方向一直截到倒数第三个元素的地方（不包括倒数第三个元素），然后返回这一段所组成的数组。</p>
+<p><strong>推论</strong>：</p>
+<p>从环形的角度来理解数组，更为的方便快捷，因为环形描述的套路是一致的。</p>
+<p><strong>备注：</strong></p>
+<p>虽然还有类似这样的情况：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$arr_long</span> = [1,  2, 3, 4, 2, 6, 2, 8<span style="color: #000000;">];
+</span><span style="color: #008080;">2</span> <span style="color: #008080;">var_dump</span>(<span style="color: #008080;">array_slice</span>(<span style="color: #800080;">$arr_long</span>, -2, -3));</code></pre>
+
+<p>输出为：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> [Running] php "d:\workspace\test.php"
+<span style="color: #008080;">2</span> D:\workspace\test.php:3:
+<span style="color: #008080;">3</span> <span style="color: #0000ff;">array</span>(0<span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">5</span> 
+<span style="color: #008080;">6</span> [<span style="color: #0000ff;">Done</span>] exited with code=0 in 0.512 seconds</code></pre>
+
+<p>有哪个家伙会自找麻烦，用这种方法搞来搞去？</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

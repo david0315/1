@@ -1,0 +1,68 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP查询附近的人及其距离的实现方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP查询附近的人及其距离的实现方法</center></div><div class='banquan'>原文出处:本文由博客园博主下页、再停留提供。<br/>
+原文连接:https://www.cnblogs.com/zxf100/p/11813396.html</div><br>
+    <p>1、附近的人</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">获取该点周围的4个点</span>
+<span style="color: #800080;">$distance</span> = 1;<span style="color: #008000;">//</span><span style="color: #008000;">范围（单位千米）</span>
+<span style="color: #800080;">$lat</span> = 113.873643<span style="color: #000000;">;
+</span><span style="color: #800080;">$lng</span> = 22.573969<span style="color: #000000;">;
+</span><span style="color: #008080;">define</span>('EARTH_RADIUS', 6371);<span style="color: #008000;">//</span><span style="color: #008000;">地球半径，平均半径为6371km</span>
+<span style="color: #800080;">$dlng</span> = 2 * <span style="color: #008080;">asin</span>(<span style="color: #008080;">sin</span>(<span style="color: #800080;">$distance</span> / (2 * EARTH_RADIUS)) / <span style="color: #008080;">cos</span>(<span style="color: #008080;">deg2rad</span>(<span style="color: #800080;">$lat</span><span style="color: #000000;">)));
+</span><span style="color: #800080;">$dlng</span> = <span style="color: #008080;">rad2deg</span>(<span style="color: #800080;">$dlng</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$dlat</span> = <span style="color: #800080;">$distance</span>/<span style="color: #000000;">EARTH_RADIUS;
+</span><span style="color: #800080;">$dlat</span> = <span style="color: #008080;">rad2deg</span>(<span style="color: #800080;">$dlat</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$squares</span> = <span style="color: #0000ff;">array</span>('left-top'=&gt;<span style="color: #0000ff;">array</span>('lat'=&gt;<span style="color: #800080;">$lat</span> + <span style="color: #800080;">$dlat</span>,'lng'=&gt;<span style="color: #800080;">$lng</span>-<span style="color: #800080;">$dlng</span>),
+        'right-top'=&gt;<span style="color: #0000ff;">array</span>('lat'=&gt;<span style="color: #800080;">$lat</span> + <span style="color: #800080;">$dlat</span>, 'lng'=&gt;<span style="color: #800080;">$lng</span> + <span style="color: #800080;">$dlng</span>),
+        'left-bottom'=&gt;<span style="color: #0000ff;">array</span>('lat'=&gt;<span style="color: #800080;">$lat</span> - <span style="color: #800080;">$dlat</span>, 'lng'=&gt;<span style="color: #800080;">$lng</span> - <span style="color: #800080;">$dlng</span>),
+        'right-bottom'=&gt;<span style="color: #0000ff;">array</span>('lat'=&gt;<span style="color: #800080;">$lat</span> - <span style="color: #800080;">$dlat</span>, 'lng'=&gt;<span style="color: #800080;">$lng</span> + <span style="color: #800080;">$dlng</span><span style="color: #000000;">)
+        );
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$squares</span>['left-top']['lat'<span style="color: #000000;">]);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">从数库查询匹配的记录</span>
+<span style="color: #800080;">$info_sql</span> = "select * from `A` where lat&lt;&gt;0 and lat&gt;{<span style="color: #800080;">$squares</span>['right-bottom']['lat']} and lat&lt;{<span style="color: #800080;">$squares</span>['left-top']['lat']} and lng&gt;{<span style="color: #800080;">$squares</span>['left-top']['lng']} and lng&lt;{<span style="color: #800080;">$squares</span>['right-bottom']['lng']} ";</code></pre>
+
+<p>&nbsp;</p>
+<p>2、两点之间的距离</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span> getDistanceBetweenPointsNew(<span style="color: #800080;">$latitude1</span>, <span style="color: #800080;">$longitude1</span>, <span style="color: #800080;">$latitude2</span>, <span style="color: #800080;">$longitude2</span><span style="color: #000000;">) {
+  </span><span style="color: #800080;">$theta</span> = <span style="color: #800080;">$longitude1</span> - <span style="color: #800080;">$longitude2</span><span style="color: #000000;">;
+  </span><span style="color: #800080;">$miles</span> = (<span style="color: #008080;">sin</span>(<span style="color: #008080;">deg2rad</span>(<span style="color: #800080;">$latitude1</span>)) * <span style="color: #008080;">sin</span>(<span style="color: #008080;">deg2rad</span>(<span style="color: #800080;">$latitude2</span>))) + (<span style="color: #008080;">cos</span>(<span style="color: #008080;">deg2rad</span>(<span style="color: #800080;">$latitude1</span>)) * <span style="color: #008080;">cos</span>(<span style="color: #008080;">deg2rad</span>(<span style="color: #800080;">$latitude2</span>)) * <span style="color: #008080;">cos</span>(<span style="color: #008080;">deg2rad</span>(<span style="color: #800080;">$theta</span><span style="color: #000000;">)));
+  </span><span style="color: #800080;">$miles</span> = <span style="color: #008080;">acos</span>(<span style="color: #800080;">$miles</span><span style="color: #000000;">);
+  </span><span style="color: #800080;">$miles</span> = <span style="color: #008080;">rad2deg</span>(<span style="color: #800080;">$miles</span><span style="color: #000000;">);
+  </span><span style="color: #800080;">$miles</span> = <span style="color: #800080;">$miles</span> * 60 * 1.1515<span style="color: #000000;">;
+  </span><span style="color: #800080;">$feet</span> = <span style="color: #800080;">$miles</span> * 5280<span style="color: #000000;">;
+  </span><span style="color: #800080;">$yards</span> = <span style="color: #800080;">$feet</span> / 3<span style="color: #000000;">;
+  </span><span style="color: #800080;">$kilometers</span> = <span style="color: #800080;">$miles</span> * 1.609344<span style="color: #000000;">;
+  </span><span style="color: #800080;">$meters</span> = <span style="color: #800080;">$kilometers</span> * 1000<span style="color: #000000;">;
+  </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">compact</span>('miles','feet','yards','kilometers','meters'<span style="color: #000000;">); 
+}
+</span><span style="color: #800080;">$point1</span> = <span style="color: #0000ff;">array</span>('lat' =&gt; 40.770623, 'long' =&gt; -73.964367<span style="color: #000000;">);
+</span><span style="color: #800080;">$point2</span> = <span style="color: #0000ff;">array</span>('lat' =&gt; 40.758224, 'long' =&gt; -73.917404<span style="color: #000000;">);
+</span><span style="color: #800080;">$distance</span> = getDistanceBetweenPointsNew(<span style="color: #800080;">$point1</span>['lat'], <span style="color: #800080;">$point1</span>['long'], <span style="color: #800080;">$point2</span>['lat'], <span style="color: #800080;">$point2</span>['long'<span style="color: #000000;">]);
+</span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$distance</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$unit</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+  </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$unit</span>.': '.<span style="color: #008080;">number_format</span>(<span style="color: #800080;">$value</span>,4).'&lt;br /&gt;'<span style="color: #000000;">;
+}</span></code></pre>
+
+<p>转&ldquo;https://www.php.cn/php-weizijiaocheng-316.html&rdquo;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

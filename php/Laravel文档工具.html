@@ -1,0 +1,433 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel文档工具' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel文档工具</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11765110.html</div><br>
+    <h1>laravel-doc</h1>
+<p>⛵<code>laravel-doc</code>&nbsp;是一个用来生成文档，通过markdown来撰写文档，并提供web访问文档的项目</p>
+<h2>安装要求</h2>
+<ul>
+<li>PHP &gt;= 7.0.0</li>
+<li>Laravel &gt;= 5</li>
+</ul>
+<h1>安装</h1>
+<src class="cnblogs_Highlighter">
+<pre><code>composer require foryoufeng/laravel-doc
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>如果你是运行的Laravel 5.5以下的版本，需要在<code>config/app.php</code>的service provider中添加：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>Foryoufeng\Doc\DocServiceProvider::class
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>运行如下命令来发布资源文件</p>
+<src class="cnblogs_Highlighter">
+<pre><code>php artisan doc:install
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>发布资源之后会多出很多文件</p>
+<src class="cnblogs_Highlighter">
+<pre><code>/public/vendor/laravel-doc  //样式文件
+
+ 
+
+/resources/views/docs   //界面文件
+
+ 
+
+/resources/mds/docs  //文档文件
+
+ 
+
+/resources/mds/apidocs  //api文件
+
+ 
+
+/app/Http/Controllers/Docs  //增加了控制器文件
+
+ 
+
+config/laravel_doc.php  //文档配置文件
+
+ 
+
+routes/web.php中增加了路由文件
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<h1>访问<code>/doc</code>,即可看到本项目的说明文档</h1>
+<h1>访问<code>/apidoc</code>,即可看到本项目的接口说明文档</h1>
+<h1>如何使用</h1>
+<h2>普通文档的编写</h2>
+<p>在<code>resources/mds/docs</code>中创建你的md文件,如<code>demo.md</code>,加入你需要的内容，<br />然后到<code>app/Http/Controllers/Docs/LaravelDocController.php</code>的<code>index_md</code>中加入数据即可访问，例如：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>//默认已经加入了2个例子
+
+private function index_md()
+
+    {
+
+        return  [
+
+            [
+
+                'name' =&gt; config('laravel_doc.languages.install'),
+
+                'doc_link' =&gt; 'install.md',
+
+            ],
+
+            [
+
+                'name' =&gt; config('laravel_doc.languages.how_use'),
+
+                'doc_link' =&gt; 'how_use.md',
+
+            ],
+
+            [
+
+                'name' =&gt; 'demo',
+
+                'doc_link' =&gt; 'demo.md',
+
+            ],
+
+        ];
+
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>然后访问<code>/doc</code>,即可看到效果</p>
+<p><img src="./images/Laravel文档工具0.jpg" alt="" /><img src="./images/Laravel文档工具1.jpg" alt="" /><img src="./images/Laravel文档工具2.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<h1>控制器说明</h1>
+<p>默认文档的路径</p>
+<src class="cnblogs_Highlighter">
+<pre><code>$this-&gt;mds_path=resource_path('mds/docs/');
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p><code>getMenu()</code>里面的代码是文档显示的菜单,这个是写文档需要用到的</p>
+<ul>
+<li>配置多个菜单示例</li>
+<li>
+<src class="cnblogs_Highlighter">
+<pre><code>protected function getMenu()
+
+return [
+
+            [
+
+                'name'=&gt;config('laravel_doc.languages.project_doc'),
+
+                'spread'=&gt;true,//菜单是否展开，false不展开
+
+                'children'=&gt;[
+
+                        'name'=&gt;config('laravel_doc.languages.install'),
+
+                        'doc_link'=&gt;'install.md',
+
+                     ],
+
+            ],
+
+            [
+
+                'name'=&gt;config('laravel_doc.languages.project_doc'),
+
+                'spread'=&gt;false,//不展开菜单
+
+                'children'=&gt;[
+
+                        'name'=&gt;config('laravel_doc.languages.install'),
+
+                        'doc_link'=&gt;'install.md',
+
+                 ],
+
+            ],
+
+        ];
+
+}
+</code></pre>
+
+<p>&nbsp;</p>
+</li>
+<li>配置好菜单后可以在<code>resources/mds/docs</code>中新建<code>doc_link</code>中指定的md文件，然后进行文档的编写</li>
+</ul>
+<hr />
+<h2>api接口文档的编写</h2>
+<p>在<code>resources/mds/apidocs</code>中创建你的md文件,如<code>demo.md</code>,加入你需要的内容，<br />然后到<code>app/Http/Controllers/Docs/LaravelApiDocController.php</code>的<code>index_md</code>中加入数据即可访问，例如：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>private function index_md()
+
+    {
+
+        return  [
+
+            [
+
+                'name' =&gt; 'apidoc_html',
+
+                'doc_link' =&gt; 'apidoc_html.md',
+
+                //可自行修改你的$this-&gt;host来使用你自己定义的访问地址
+
+                'url' =&gt; $this-&gt;host.'apidoc/html',
+
+                'request_type' =&gt; 'get',//请求方式 get或者post
+
+                //请求参数
+
+                'params'=&gt;[
+
+                    'name'=&gt;'apidoc_html.md',
+
+                ]
+
+            ],
+
+            [
+
+                'name' =&gt; 'demo',
+
+                'doc_link' =&gt; 'demo.md',
+
+                'url' =&gt; $this-&gt;host.'apidoc/html',
+
+                'request_type' =&gt; 'get',//请求方式 get或者post
+
+                //给定一些需要请求的参数
+
+                'params'=&gt;[
+
+                    'name'=&gt;'',
+
+                    'user_id'=&gt;'',
+
+                ]
+
+            ],
+
+        ];
+
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>然后访问<code>/apidoc</code>,即可看到效果</p>
+<p>点击提供的demo:<code>apidoc_html</code>,即可看到上面的请求路径和需要的请求参数，以及下面的参数文档</p>
+<p>点击<code>发送请求</code>按钮，可以执行ajax请求，如果接口没有问题的话，就会返回ajax数据了<br />这个时候点击<code>生成文档</code>，会打开一个<code>markdown</code>的编辑框和右侧的效果图，该界面获取了当前点击页面<br />中定义的请求路径，参数，返回值等，在预览效果中你可以修改<code>接口人</code>，<code>参数说明</code>中对每个参数进行说明，<br />以及返回值的说明等，然后点击<code>生成</code>按钮，会根据你定义的<code>$this-&gt;mds_path</code>.你配置的<code>doc_link</code>，<br />如：<code>resources/mds/apidocs/demo.md</code>，来产生文件</p>
+<hr />
+<h1><code>laravel_doc.php</code>&nbsp;配置文件说明</h1>
+<src class="cnblogs_Highlighter">
+<pre><code>//laravel-doc的名字
+
+'name' =&gt; 'Laravel-doc',
+
+//用在了定义撰写接口人的名字
+
+'author' =&gt; env('DOC_AUTHOR','foryoufeng'),
+
+//接口请求发送了这个token
+
+'token' =&gt; env('DOC_TOKEN','doc'),
+
+//做国际化时可以用到
+
+'languages'=&gt;[
+
+    'search'=&gt;'搜索',
+
+    'search_result'=&gt;'搜索结果',
+
+    'project_doc'=&gt;'项目文档',
+
+    'doc_name'=&gt;'文档名称',
+
+    'install'=&gt;'安装',
+
+    'how_use'=&gt;'使用说明',
+
+    'request_type'=&gt;'http请求方式',
+
+    'request_url'=&gt;'请求地址',
+
+    'send_request'=&gt;'发送请求',
+
+    'generate_doc'=&gt;'生成文档',
+
+    'welcome_use'=&gt;'欢迎使用',
+
+    'param'=&gt;'参数',
+
+    'value'=&gt;'值',
+
+    'generate'=&gt;'生成',
+
+]
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<h1>进阶</h1>
+<ul>
+<li>
+<h2>多项目</h2>
+<p>如果你的项目比较小，只用写一个文档和一个api接口文档，那么在<code>app/Http/Controllers/Docs/LaravelApiDocController.php</code>和<code>app/Http/Controllers/Docs/LaravelDocController.php</code><br />中加入你的文档应该基本满足要求</p>
+
+
+</li>
+
+
+</ul>
+<p>如果有多个项目，可以复制<code>app/Http/Controllers/Docs</code>、<code>resources/views/docs</code>,可以在<code>resources/mds/</code>目录中新建你准备写文档的目录<br />然后在路由文件中定义好需要的路由，需要复制下面的这些路由</p>
+<src class="cnblogs_Highlighter">
+<pre><code>//doc route
+
+Route::group(['namespace'=&gt;'Docs'],function (){
+
+    Route::get('doc', 'LaravelDocController@index')-&gt;name('doc.index');
+
+    //md文件返回到html
+
+    Route::get('doc/html', 'LaravelDocController@html')-&gt;name('doc.html');
+
+    Route::get('apidoc', 'LaravelApiDocController@index')-&gt;name('doc.apidoc');
+
+    //md文件返回到html
+
+    Route::get('apidoc/html', 'LaravelApiDocController@html')-&gt;name('doc.apidoc.html');
+
+    //预览api文档
+
+    Route::post('apidoc/markdown', 'LaravelApiDocController@markdown')-&gt;name('doc.apidoc.markdown');
+
+    //生成api文档
+
+    Route::post('apidoc/save', 'LaravelApiDocController@save')-&gt;name('doc.apidoc.save');
+
+ 
+
+});
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>
+<h2>国际化</h2>
+<p>可以修改<code>config/laravel_doc.php</code>中的<code>languages</code>来更换语言，默认提供的是<code>中文</code></p>
+</li>
+<li>
+<h2>接口拦截</h2>
+<p>在<code>config/laravel_doc.php</code>中有一个<code>token</code>的配置，接口做ajax请求时在<code>header</code>中带了<code>Access-Token</code>,接口可以根据这个配置，<br />做一个<code>中间件</code>的处理，比如使用指定的<code>token</code>就可以获取对应用户的信息，进行接口的请求和赋值等</p>
+
+
+</li>
+<li>
+<p>tips</p>
+
+
+</li>
+
+
+</ul>
+<p><code>项目为了通用，我并没有提供中间件进行文档和接口的拦截，出于安全考虑，建议使用者可以根据自身需求编写中间件进行文档的保护</code></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

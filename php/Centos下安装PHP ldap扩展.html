@@ -1,0 +1,346 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Centos下安装PHP ldap扩展' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Centos下安装PHP ldap扩展</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11812304.html</div><br>
+    <p>Centos下安装PHP ldap扩展,有两种方法，仅供参考。</p>
+<p>&nbsp;</p>
+<p><strong>一、在线安装</strong></p>
+<p>执行下面命令：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">yum install PHP-ldap</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>可能出现的问题：</p>
+<p>Error: php70w-common-.. conflicts with php-common-5.4.... 就是版本冲突的意思。</p>
+<p>解决办法：</p>
+<p>查看php的版本：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">php -v</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>搜索版本匹配的ldap：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">yum search ldap</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>找到匹配的版本安装（我的是php70w-ldap.x86-64）</p>
+<p>重新安装:</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">yum install php70w-ldap.x86-64</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>中途会让输一个 y ，来确定。</p>
+<p><img src="./images/Centos下安装PHP ldap扩展0.jpg" alt="" /></p>
+<p>然后打开php.ini 中ldap 扩展：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">vi /usr/local/php/lib/php.ini</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">extension=ldap.so</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>完成，重启Apache2：service httpd restart 。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">/usr/local/apache/bin/httpd -k restart</code></p>
+<p class="line number2 index1 alt1"><code class="php comments">// 或这条命令</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">service httpd restart</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>完成后，查看info.php页面，会有ldap的模块，显示enabled.</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">ldap</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">LDAP Support&nbsp;&nbsp;&nbsp; enabled</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">RCS Version&nbsp;&nbsp;&nbsp; </code><code class="php variable">$Id</code><code class="php plain">: 109508bbbecf73ca923b37138cbac56802f1231b $</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">Total Links&nbsp;&nbsp;&nbsp; 0/unlimited</code></p>
+<p class="line number5 index4 alt2"><code class="php plain">API Version&nbsp;&nbsp;&nbsp; 3001</code></p>
+<p class="line number6 index5 alt1"><code class="php plain">Vendor Name&nbsp;&nbsp;&nbsp; OpenLDAP</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">Vendor Version&nbsp;&nbsp;&nbsp; 20440</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">SASL Support&nbsp;&nbsp;&nbsp; Enabled</code></p>
+<p class="line number9 index8 alt2"><code class="php plain">Directive&nbsp;&nbsp;&nbsp; Local Value&nbsp;&nbsp;&nbsp; Master Value</code></p>
+<p class="line number10 index9 alt1"><code class="php plain">ldap.max_links&nbsp;&nbsp;&nbsp; Unlimited&nbsp;&nbsp;&nbsp; Unlimited</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>二、编译安装</strong></p>
+<p>对于LDAP的安装得先安装</p>
+<p>检查下面是不是已经安装，如果没有安装之：</p>
+<p>检查：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">yum list openldap</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">yum list openldap-devel</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>安装 ：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain"># yum install openldap</code></p>
+<p class="line number2 index1 alt1"><code class="php plain"># yum install openldap-devel</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p>一定要执行这条命令：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain"># cp -frp /usr/lib64/libldap* /usr/lib/</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>进入安装目录下</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain"># cd /root/lnmp1.0-full/php-5.2.17/ext/ldap</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>（不知道安装目录的可以用find -name "php-*" 来查找，找到你安装的对应版本的目录）</p>
+<p>然后运行</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain"># /usr/local/php/bin/phpize</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">Configuring </code><code class="php keyword">for</code><code class="php plain">:</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">PHP Api Version:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 20090626</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">Zend Module Api No:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 20090626</code></p>
+<p class="line number5 index4 alt2"><code class="php plain">Zend Extension Api No:&nbsp;&nbsp; 220090626</code></p>
+<p class="line number6 index5 alt1"><code class="php plain"># ./configure --with-php-config=/usr/local/php/bin/php-config --with-ldap</code></p>
+<p class="line number7 index6 alt2"><code class="php plain"># make</code></p>
+<p class="line number8 index7 alt1"><code class="php plain"># make install</code></p>
+<p class="line number9 index8 alt2"><code class="php plain">Installing shared extensions:&nbsp;&nbsp;&nbsp;&nbsp; /usr/local/php/lib/php/extensions/no-debug-non-zts-20131226/</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>生成这样一个扩展，我们进入到该目录下，将ldap.so 放在extensions目录下：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">[root@openldap ldap]# make install</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">Installing shared extensions:&nbsp;&nbsp;&nbsp;&nbsp; /usr/local/php/lib/php/extensions/no-debug-non-zts-20131226/</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">[root@openldap ldap]# cd /usr/local/php/lib/php/extensions/no-debug-non-zts-20131226/</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">[root@openldap no-debug-non-zts-20131226]# ls -l</code></p>
+<p class="line number5 index4 alt2"><code class="php plain">total 748</code></p>
+<p class="line number6 index5 alt1"><code class="php plain">-rwxr-xr-x 1 root root 173086 Jul 16 16:05 ldap.so</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">-rwxr-xr-x 1 root root 586024 Jul 16 12:04 opcache.so</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">[root@openldap no-debug-non-zts-20131226]# cp ldap.so /usr/local/php/lib/php/extensions/ldap.so</code></p>
+<p class="line number9 index8 alt2"><code class="php plain">[root@openldap no-debug-non-zts-20131226]# cd ..</code></p>
+<p class="line number10 index9 alt1"><code class="php plain">[root@openldap extensions]# ls -l</code></p>
+<p class="line number11 index10 alt2"><code class="php plain">total 176</code></p>
+<p class="line number12 index11 alt1"><code class="php plain">-rwxr-xr-x 1 root root 173086 Jul 16 16:08 ldap.so</code></p>
+<p class="line number13 index12 alt2"><code class="php plain">drwxr-xr-x 2 root root&nbsp;&nbsp; 4096 Jul 16 16:05 no-debug-non-zts-20131226</code></p>
+<p class="line number14 index13 alt1"><code class="php plain">[root@openldap extensions]#</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>修改 vi /usr/local/php/etc/php.ini （你的php配置文件，不一定是这个目录，可以在info.php页面查看）</p>
+<p>添加：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">extension=ldap.so</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>重启apache</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">/usr/local/apache/bin/httpd -k restart</code></p>
+<p class="line number2 index1 alt1"><code class="php comments">// 或这条命令</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">service httpd restart</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./images/Centos下安装PHP ldap扩展1.jpg" alt="" /></p>
+<p><img src="./images/Centos下安装PHP ldap扩展2.jpg" alt="" /></p>
+<p>&nbsp;<strong><span style="font-size: 15px;">拥有明确的学习思路能更高效的学习</span></strong></p>
+<p><strong><span style="font-size: 15px;"><img src="./images/Centos下安装PHP ldap扩展3.jpg" alt="" /></span></strong></p>
+<p>&nbsp;</p>
+<p><a href="https://jq.qq.com/?_wv=1027&amp;k=5Spo1ah" target="_blank"><strong><span style="font-size: 16px;">点此加入该群学习&nbsp;</span></strong></a></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

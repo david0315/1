@@ -1,0 +1,77 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修TP5 查询mysql数据库时的find_in_set用法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>TP5 查询mysql数据库时的find_in_set用法</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/11022713.html</div><br>
+    <src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$where</span>['class_id'] = ['in', '$cid_all'<span style="color: #000000;">];
+</span><span style="color: #800080;">$where</span>['id'] = ['in', <span style="color: #800080;">$all_user_id</span>];<span style="color: #008000;">//</span><span style="color: #008000;">或这样子</span>
+<span style="color: #800080;">$where</span>['title'] = ['like', '%php%'<span style="color: #000000;">];
+</span><span style="color: #800080;">$where</span>['id'] = ['&lt;&gt;', <span style="color: #800080;">$id</span><span style="color: #000000;">];
+</span><span style="color: #800080;">$where</span>['id'] = ['notin', <span style="color: #800080;">$all_user_id</span>];<span style="color: #008000;">//</span><span style="color: #008000;">不等于</span></code></pre>
+
+<pre name="code" class="has"><code class="hljs php"><span class="hljs-string"><span class="hljs-string"><span class="hljs-string"><span class="hljs-string"><span class="hljs-string"><span class="hljs-comment"><span class="hljs-string"><span class="hljs-string"><span class="hljs-string"><span class="hljs-string"><span class="hljs-string"><span class="hljs-string"><span class="hljs-string"><span class="hljs-comment"><span style="font-size: 18px; color: #ff0000;">与find_in_set()相反的函数可以用!find_in_set()</span>
+<span class="hljs-comment">//值为数字
+$id=<span class="hljs-number">419;
+$where[] = [<span class="hljs-string">'exp',Db::raw(<span class="hljs-string">"FIND_IN_SET($id,category)")];<span class="hljs-comment">//category值为数字，例子：419,415,414
+<span class="hljs-comment">//值为字符串
+$id值等于dfd 要注意<span class="hljs-string">'引号</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$where</span>[] = ['exp',Db::raw("FIND_IN_SET('<span style="color: #800080;">$id</span>',category)")];<span style="color: #008000;">//</span><span style="color: #008000;">category值为数字，例子：'349/417/419','349/413/415','349/413/416'</span>
+Db::name('menu')-&gt;where('FIND_IN_SET(:id,pid_all)',['id' =&gt; <span style="color: #800080;">$id</span>])-&gt;update([<span style="color: #800080;">$field</span> =&gt; <span style="color: #800080;">$title</span>]);</code></pre>
+
+<p>type 字段在数据库是以 1,2,3 形式存在 已说到FIND_IN_SET函数的使用</p>
+<p>&nbsp;</p>
+<p>对于一些实在复杂的查询，比如find_in_set，也可以直接使用原生SQL语句进行查询，例如：</p>
+<src class="cnblogs_code">
+<pre><code>Db::table('think_user'<span style="color: #000000;">)
+    </span>-&gt;where('find_in_set(1,sids)'<span style="color: #000000;">)
+    </span>-&gt;select();::table('think_user'<span style="color: #000000;">)
+    </span>-&gt;where('find_in_set(1,sids)'<span style="color: #000000;">)
+    </span>-&gt;select();</code></pre>
+
+<p>&nbsp;</p>
+<p>为了安全起见，我们可以对字符串查询条件使用参数绑定，例如：</p>
+<src class="cnblogs_code">
+<pre><code>Db::table('think_user'<span style="color: #000000;">)
+    </span>-&gt;where('find_in_set(:id,sids)',['id'=&gt;<span style="color: #800080;">$id</span><span style="color: #000000;">])
+    </span>-&gt;select();::table('think_user'<span style="color: #000000;">)
+    </span>-&gt;where('find_in_set(:id,sids)',['id'=&gt;<span style="color: #800080;">$id</span><span style="color: #000000;">])
+    </span>-&gt;select();</code></pre>
+
+<p>自己的实例：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$gonggaolist</span> = Db::table("fa_cms_archives"<span style="color: #000000;">)
+            </span>-&gt;alias('a'<span style="color: #000000;">)
+            </span>-&gt;<span style="color: #008080;">join</span>("fa_cms_channel w","a.channel_id=w.id"<span style="color: #000000;">)
+            </span>-&gt;where("w.parent_id=20 and a.status='normal'"<span style="color: #000000;">)
+            </span>-&gt;where("FIND_IN_SET('recommend',a.flag)"<span style="color: #000000;">)
+            </span>-&gt;order("a.id desc"<span style="color: #000000;">)
+            </span>-&gt;field("a.id,a.channel_id,a.title,a.likes,a.image,w.diyname,a.updatetime,a.flag"<span style="color: #000000;">)
+            </span>-&gt;limit("4"<span style="color: #000000;">)
+            </span>-&gt;<span style="color: #000000;">select();
+        dump(</span><span style="color: #800080;">$gonggaolist</span>);</code></pre>
+
+<p>效果图</p>
+<p><img src="https://img2018.cnblogs.com/blog/1482937/201906/1482937-20190614123737443-1670623265.png" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,33 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[Linux] nginx的try_files指令实现隐藏index.php的重写' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[Linux] nginx的try_files指令实现隐藏index.php的重写</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11403857.html</div><br>
+    <p>1.nginx的try_files指令 ，核心功能是替代rewrite，并且比rewrite更强大的是可以按顺序查找文件是否存在，如果文件都找不到才会执行最后的重定向<br />解决的问题是，如果一个网站的部署是如下结构：</p>
+<p>css/<br />js/<br />index.php<br />login.php<br />setting.php</p>
+<p>2.当有接口的地址是 index.php/article/2 ,这样的path_info模式时，需要隐藏掉index.php,变成/article/2<br />直接使用rewrite会影响到当前目录的其他文件因为如果访问/login.php  ,会被重定向成index.php/login.php，访问目录的时候/css/,会被重定向成index.php/css/</p>
+<p>3.此时使用try_files就能解决，它会先检查前两个是否存在，如果存在就直接访问文件和目录，如果不存在才会执行后面的重定向</p>
+<p>try_files $uri $uri/ /index.php?q=$uri&amp;$args;</p>
+<p>4.当部署wordpress在网站子目录时  /wordpress/ ,可以配合location,实现上面的try_files重定向到/wordpress/ 目录里的index.php上<br />location /wordpress {<br />  try_files $uri $uri/ /wordpress/index.php?q=$uri&amp;$args;<br />}</p>
+<p>5.$uri变量和$request_uri变量的区别，</p>
+<p>例如访问这个路径 www.baidu.com/document?x=1<br />$uri是 /document<br />$request_uri是&nbsp; /document?x=1 带参数</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

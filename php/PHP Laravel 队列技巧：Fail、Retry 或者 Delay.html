@@ -1,0 +1,306 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP Laravel 队列技巧：Fail、Retry 或者 Delay' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP Laravel 队列技巧：Fail、Retry 或者 Delay</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11831867.html</div><br>
+    <p>当创建队列jobs、监听器或订阅服务器以推送到队列中时，您可能会开始认为，一旦分派，队列工作器决定如何处理您的逻辑就完全由您自己决定了。</p>
+<p>嗯&hellip;&hellip;并不是说你不能从作业内部与队列工作器交互，但是通常情况下，哪怕你做了，也是没必要的。</p>
+<p>这个神奇的骚操作的出现是因为&ldquo;InteractsWithQueue&rdquo;这个trait。.当排队作业正在从队列中拉出, 这个 [CallQueuedListener](https://github.com/laravel/framework/blob/5.8/src/Illuminate/Events/CallQueuedListener.php#L90-L104) 会检查它是否在使用 InteractsWithQueue trait, 如果是的话，框架会将底层的&ldquo;队列jobs&rdquo;实例注入到内部。</p>
+<p>这个 &ldquo;任务&rdquo; 实例类似于一个包装了真正的 Job 类的驱动，其中包含队列连接和尝试等信息。</p>
+<p><strong>背景</strong><br />我将以一个转码 Job 为例。 这是一个将广播音频文件转换成192kbps MP3格式的任务。因为这是在自由转码队列中设置的，所以它的作用有限。</p>
+<p>&nbsp;</p>
+<p>检查尝试次数<br />attempts()是被调用的第一个方法, 顾名思义，它返回尝试次数,一个队列 job总是伴随着一个attempt启动。</p>
+<p>此方法旨在与其他方法一起使用 ..., 类似 fail() 或者 release() (delay). 为了便于说明，我们将通知用户第几次重试: 每次我们尝试在空闲队列中转换（转换代码）时，我们都会通知用户我们正在第几次重试，让他可以选择取消将来的转换（转换代码）。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Jobs;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Podcast;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Transcoder\Transcoder;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Bus\Queueable;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Queue\SerializesModels;
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\PodcastTranscoded;
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Queue\InteractsWithQueue;
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Foundation\Bus\Dispatchable;
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\RetyingPodcastTranscode;
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> TranscodePodcast
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">use</span> Dispatchable, InteractsWithQueue, Queueable,<span style="color: #000000;"> SerializesModels;
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">15</span> <span style="color: #008000;">* Transcoder Instance
+</span><span style="color: #008080;">16</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">* @var \App\Podcast
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">19</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$podcast</span><span style="color: #000000;">;
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">* 创建一个新的转码podcast实例。
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">23</span> <span style="color: #008000;">* @param \App\Podcast $podcast
+</span><span style="color: #008080;">24</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;">25</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">26</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Podcast <span style="color: #800080;">$podcast</span><span style="color: #000000;">)
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">28</span> <span style="color: #800080;">$this</span>-&gt;podcast = <span style="color: #800080;">$podcast</span><span style="color: #000000;">;
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">30</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">31</span> <span style="color: #008000;">* 执行队列job.
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">* @param \Transcoder\Transcoder $podcast
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">36</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> handle(Transcoder <span style="color: #800080;">$transcoder</span><span style="color: #000000;">)
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 告诉用户我们第几次重试</span>
+<span style="color: #008080;">39</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;attempts() &gt; 1<span style="color: #000000;">) {
+</span><span style="color: #008080;">40</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> RetryingPodcastTranscode(<span style="color: #800080;">$this</span>-&gt;podcast, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">attempts());
+</span><span style="color: #008080;">41</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">42</span> <span style="color: #800080;">$transcoded</span> = <span style="color: #800080;">$this</span>-&gt;transcoder-&gt;setFile(<span style="color: #800080;">$event</span>-&gt;<span style="color: #000000;">podcast)
+</span><span style="color: #008080;">43</span> -&gt;format('mp3'<span style="color: #000000;">)
+</span><span style="color: #008080;">44</span> -&gt;bitrate(192<span style="color: #000000;">)
+</span><span style="color: #008080;">45</span> -&gt;<span style="color: #000000;">start();
+</span><span style="color: #008080;">46</span> 
+<span style="color: #008080;">47</span> 
+<span style="color: #008080;">48</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 将转码podcast与原始podcast关联</span>
+<span style="color: #008080;">49</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;transcode()-&gt;associate(<span style="color: #800080;">$transcoded</span><span style="color: #000000;">);
+</span><span style="color: #008080;">50</span> 
+<span style="color: #008080;">51</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 通知podcast的发布者他的podcast已经准备好了</span>
+<span style="color: #008080;">52</span> 
+<span style="color: #008080;">53</span> <span style="color: #800080;">$this</span>-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> PodcastTranscoded(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">podcast));
+</span><span style="color: #008080;">54</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">55</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><br />告诉用户我们将在第几次时重试某些内容，这在逻辑预先失败时很有用，让用户（或开发人员）检查出了什么问题，但当然您可以做更多的事情。</p>
+<p>就我个人而言，我喜欢在&ldquo;Job作业&rdquo;失败后再这样做，如果还有重试时间，告诉他我们稍后会重试当然，这个例子只是为了举例说明。</p>
+<p>删除作业队列 Job<br />第二个方法就是 delete(). 跟你猜想的一样，您可以从队列中删除当前的&ldquo;队列 Job&rdquo;。 当队列 Job或侦听器由于多种原因排队后不应处理时，这将会很方便，例如，考虑一下这个场景：在转码发生之前，上传podcast的发布者由于任何原因（比如TOS冲突）被停用，我们应该不处理podcast。</p>
+<p>我们将在前面的示例中添加该代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Jobs;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Podcast;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Transcoder\Transcoder;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Bus\Queueable;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Queue\SerializesModels;
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\PodcastTranscoded;
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Queue\InteractsWithQueue;
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Foundation\Bus\Dispatchable;
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\RetyingPodcastTranscode;
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> TranscodePodcast
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">use</span> Dispatchable, InteractsWithQueue, Queueable,<span style="color: #000000;"> SerializesModels;
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">15</span> <span style="color: #008000;">* Transcoder Instance
+</span><span style="color: #008080;">16</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">* @var \App\Podcast
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">19</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$podcast</span><span style="color: #000000;">;
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">* 创建一个新的转码podcast实例。
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">23</span> <span style="color: #008000;">* @param \App\Podcast $podcast
+</span><span style="color: #008080;">24</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;">25</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">26</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Podcast <span style="color: #800080;">$podcast</span><span style="color: #000000;">)
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">28</span> <span style="color: #800080;">$this</span>-&gt;podcast = <span style="color: #800080;">$podcast</span><span style="color: #000000;">;
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">30</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">31</span> <span style="color: #008000;">* 执行队列 job.
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">* @param \Transcoder\Transcoder $podcast
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">36</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> handle(Transcoder <span style="color: #800080;">$transcoder</span><span style="color: #000000;">)
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 如果发布服务器已被停用，请删除此队列job</span>
+<span style="color: #008080;">39</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;podcast-&gt;publisher-&gt;<span style="color: #000000;">isDeactivated()) {
+</span><span style="color: #008080;">40</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">delete();
+</span><span style="color: #008080;">41</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">42</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 告诉用户我们第几次重试</span>
+<span style="color: #008080;">43</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;attempts() &gt; 1<span style="color: #000000;">) {
+</span><span style="color: #008080;">44</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> RetryingPodcastTranscode(<span style="color: #800080;">$this</span>-&gt;podcast, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">attempts());
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">46</span> <span style="color: #800080;">$transcoded</span> = <span style="color: #800080;">$this</span>-&gt;transcoder-&gt;setFile(<span style="color: #800080;">$event</span>-&gt;<span style="color: #000000;">podcast)
+</span><span style="color: #008080;">47</span> -&gt;format('mp3'<span style="color: #000000;">)
+</span><span style="color: #008080;">48</span> -&gt;bitrate(192<span style="color: #000000;">)
+</span><span style="color: #008080;">49</span> -&gt;<span style="color: #000000;">start();
+</span><span style="color: #008080;">50</span> 
+<span style="color: #008080;">51</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 将转码podcast与原始podcast关联</span>
+<span style="color: #008080;">52</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;transcode()-&gt;associate(<span style="color: #800080;">$transcoded</span><span style="color: #000000;">);
+</span><span style="color: #008080;">53</span> 
+<span style="color: #008080;">54</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 通知podcast的发布者他的podcast已经准备好了</span>
+<span style="color: #008080;">55</span> <span style="color: #800080;">$this</span>-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> PodcastTranscoded(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">podcast));
+</span><span style="color: #008080;">56</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">57</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><br />如果需要删除可能已删除的模型上的作业，则可能需要 设置 [$deleteWhenMissingModels](https://laravel.com/docs/5.8/queues#ignoring-missing-models) 为真 t避免处理不存在的东西。</p>
+<p>失败的队列job<br />当您需要控制人为破坏逻辑时，这非常非常方便, 因为使用空的&ldquo;return&rdquo;语句会将&ldquo;Job&rdquo;标记为已成功完成。您可以强制使排队的作业失败，希望出现异常，允许处理程序在可能的情况下稍后重试。</p>
+<p>这使您在作业失败时可以更好地控制在任何情况下，也可以使用&ldquo;failed（）&rdquo;方法, 它允许你 失败后执行任何清洁操纵, 比如通知用户或者删除一些东西。</p>
+<p>在此示例中，如果由于任何原因（如 CDN 关闭时）无法从存储中检索podcast ，则作业将失败，并引发自定义异常。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Jobs;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Podcast;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Transcoder\Transcoder;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Bus\Queueable;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Queue\SerializesModels;
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Exceptions\PodcastUnretrievable;
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\PodcastTranscoded;
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Queue\InteractsWithQueue;
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Foundation\Bus\Dispatchable;
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\RetyingPodcastTranscode;
+</span><span style="color: #008080;">12</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> TranscodePodcast
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">14</span> <span style="color: #0000ff;">use</span> Dispatchable, InteractsWithQueue, Queueable,<span style="color: #000000;"> SerializesModels;
+</span><span style="color: #008080;">15</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">16</span> <span style="color: #008000;">* 转码器实例
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">* @var \App\Podcast
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">20</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$podcast</span><span style="color: #000000;">;
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">* 创建一个新的转码Podcast实例。
+</span><span style="color: #008080;">23</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">24</span> <span style="color: #008000;">* @param \App\Podcast $podcast
+</span><span style="color: #008080;">25</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;">26</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">27</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Podcast <span style="color: #800080;">$podcast</span><span style="color: #000000;">)
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">29</span> <span style="color: #800080;">$this</span>-&gt;podcast = <span style="color: #800080;">$podcast</span><span style="color: #000000;">;
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">31</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">* 执行队列 job.
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">* @param \Transcoder\Transcoder $podcast
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">37</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> handle(Transcoder <span style="color: #800080;">$transcoder</span><span style="color: #000000;">)
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 如果发布服务器已被停用，请删除此队列job</span>
+<span style="color: #008080;">40</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;podcast-&gt;publisher-&gt;<span style="color: #000000;">isDeactivated()) {
+</span><span style="color: #008080;">41</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">delete();
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">43</span> <span style="color: #008000;">//</span><span style="color: #008000;">如果podcast不能从storage存储中检索，我们就会失败。</span>
+<span style="color: #008080;">44</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;podcast-&gt;<span style="color: #000000;">fileDoesntExists()) {
+</span><span style="color: #008080;">45</span> <span style="color: #800080;">$this</span>-&gt;fail(<span style="color: #0000ff;">new</span> PodcastUnretrievable(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">podcast));
+</span><span style="color: #008080;">46</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">47</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 告诉用户我们第几次重试</span>
+<span style="color: #008080;">48</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;attempts() &gt; 1<span style="color: #000000;">) {
+</span><span style="color: #008080;">49</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> RetryingPodcastTranscode(<span style="color: #800080;">$this</span>-&gt;podcast, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">attempts());
+</span><span style="color: #008080;">50</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">51</span> 
+<span style="color: #008080;">52</span> <span style="color: #800080;">$transcoded</span> = <span style="color: #800080;">$this</span>-&gt;transcoder-&gt;setFile(<span style="color: #800080;">$event</span>-&gt;<span style="color: #000000;">podcast)
+</span><span style="color: #008080;">53</span> -&gt;format('mp3'<span style="color: #000000;">)
+</span><span style="color: #008080;">54</span> -&gt;bitrate(192<span style="color: #000000;">)
+</span><span style="color: #008080;">55</span> -&gt;<span style="color: #000000;">start();
+</span><span style="color: #008080;">56</span> 
+<span style="color: #008080;">57</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 将转码podcast与原始podcast关联</span>
+<span style="color: #008080;">58</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;transcode()-&gt;associate(<span style="color: #800080;">$transcoded</span><span style="color: #000000;">);
+</span><span style="color: #008080;">59</span> 
+<span style="color: #008080;">60</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 通知podcast的发布者他的podcast已经准备好了</span>
+<span style="color: #008080;">61</span> <span style="color: #800080;">$this</span>-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> PodcastTranscoded(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">podcast));
+</span><span style="color: #008080;">62</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">63</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><br />现在，进入最后的方法。</p>
+<p>释放（延迟）队列job<br />这可能是trait性状的最有用的方法, 因为它可以让你在未来进一步推动这项队列job. 此方法用于 队列job速率限制.</p>
+<p>除了速率限制之外，您还可以在某些不可用但希望在不久的将来使用它的情况下使用它同时，避免先发制人地失败。</p>
+<p>在最后一个示例中，我们将延迟转码以备稍后使用：如果转码器正在大量使用，我们将延迟转码5分钟直到负载降低。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Jobs;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Podcast;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Transcoder\Transcoder;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Bus\Queueable;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Queue\SerializesModels;
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Exceptions\PodcastUnretrievable;
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\PodcastTranscoded;
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Queue\InteractsWithQueue;
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\TranscoderHighUsage;
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Foundation\Bus\Dispatchable;
+</span><span style="color: #008080;">12</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> App\Notifications\RetyingPodcastTranscode;
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> TranscodePodcast
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">15</span> <span style="color: #0000ff;">use</span> Dispatchable, InteractsWithQueue, Queueable,<span style="color: #000000;"> SerializesModels;
+</span><span style="color: #008080;">16</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">* Transcoder Instance
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">* @var \App\Podcast
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">21</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$podcast</span><span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">23</span> <span style="color: #008000;">* 创建一个新的转码podcast实例。
+</span><span style="color: #008080;">24</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">25</span> <span style="color: #008000;">* @param \App\Podcast $podcast
+</span><span style="color: #008080;">26</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;">27</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">28</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(Podcast <span style="color: #800080;">$podcast</span><span style="color: #000000;">)
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">30</span> <span style="color: #800080;">$this</span>-&gt;podcast = <span style="color: #800080;">$podcast</span><span style="color: #000000;">;
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">* 执行队列job.
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">* @param \Transcoder\Transcoder $podcast
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">38</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> handle(Transcoder <span style="color: #800080;">$transcoder</span><span style="color: #000000;">)
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 如果发布服务器已被停用，请删除此队列job</span>
+<span style="color: #008080;">41</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;podcast-&gt;publisher-&gt;<span style="color: #000000;">isDeactivated()) {
+</span><span style="color: #008080;">42</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">delete();
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">44</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 如果podcast不能从storage存储中检索，我们就会失败。</span>
+<span style="color: #008080;">45</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;podcast-&gt;<span style="color: #000000;">fileDoesntExists()) {
+</span><span style="color: #008080;">46</span> <span style="color: #800080;">$this</span>-&gt;fail(<span style="color: #0000ff;">new</span> PodcastUnretrievable(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">podcast));
+</span><span style="color: #008080;">47</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">48</span> 
+<span style="color: #008080;">49</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 如果转码器使用率很高,我们将
+</span><span style="color: #008080;">50</span> <span style="color: #008000;">// t延迟转码5分钟. 否则我们可能会有拖延转码器进程的危险 
+</span><span style="color: #008080;">51</span> <span style="color: #008000;">// 它会把所有的转码子进程都记录下来。</span>
+<span style="color: #008080;">52</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$transcoder</span>-&gt;getLoad()-&gt;<span style="color: #000000;">isHigh()) {
+</span><span style="color: #008080;">53</span> <span style="color: #800080;">$delay</span> = 60 * 5<span style="color: #000000;">;
+</span><span style="color: #008080;">54</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> TranscoderHighUsage(<span style="color: #800080;">$this</span>-&gt;podcast, <span style="color: #800080;">$delay</span><span style="color: #000000;">));
+</span><span style="color: #008080;">55</span> <span style="color: #800080;">$this</span>-&gt;release(<span style="color: #800080;">$delay</span><span style="color: #000000;">);
+</span><span style="color: #008080;">56</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">57</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 告诉用户我们第几次重试</span>
+<span style="color: #008080;">58</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;attempts() &gt; 1<span style="color: #000000;">) {
+</span><span style="color: #008080;">59</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> RetryingPodcastTranscode(<span style="color: #800080;">$this</span>-&gt;podcast, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">attempts());
+</span><span style="color: #008080;">60</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">61</span> 
+<span style="color: #008080;">62</span> <span style="color: #800080;">$transcoded</span> = <span style="color: #800080;">$this</span>-&gt;transcoder-&gt;setFile(<span style="color: #800080;">$event</span>-&gt;<span style="color: #000000;">podcast)
+</span><span style="color: #008080;">63</span> -&gt;format('mp3'<span style="color: #000000;">)
+</span><span style="color: #008080;">64</span> -&gt;bitrate(192<span style="color: #000000;">)
+</span><span style="color: #008080;">65</span> -&gt;<span style="color: #000000;">start();
+</span><span style="color: #008080;">66</span> 
+<span style="color: #008080;">67</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 将转码podcast与原始podcast关联</span>
+<span style="color: #008080;">68</span> <span style="color: #800080;">$this</span>-&gt;podcast-&gt;transcode()-&gt;associate(<span style="color: #800080;">$transcoded</span><span style="color: #000000;">);
+</span><span style="color: #008080;">69</span> 
+<span style="color: #008080;">70</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 通知podcast的发布者他的podcast已经准备好了</span>
+<span style="color: #008080;">71</span> <span style="color: #800080;">$this</span>-&gt;publisher-&gt;notify(<span style="color: #0000ff;">new</span> PodcastTranscoded(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">podcast));
+</span><span style="color: #008080;">72</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">73</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><br />我们可以使用一些特殊方法，例如，获得分配给转码器的一些时隙，如果转码器时隙已满，则延迟作业。 在排队的工作中，你能做的就只有这些了。排队愉快。<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

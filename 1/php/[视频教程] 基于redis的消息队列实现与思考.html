@@ -1,0 +1,65 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[视频教程] 基于redis的消息队列实现与思考' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[视频教程] 基于redis的消息队列实现与思考</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11729746.html</div><br>
+    <p>使用redis的list列表来实现消息队列功能，相信大家都听过消息队列，但是在业务中可能并没有真正去使用它。在公司项目中正好有个场景使用到了消息队列，因此就来说一下流程。<br />在web界面上有个功能是群发邮件，用户可以创建一个5000邮箱的邮件列表，编辑完邮件内容后可以给这个邮件列表发信。如果使用同步的方式，直接在浏览器-服务器模式下调用smtp服务发信，肯定速度非常慢，也有可能会超时。现在就是在点完发信后，进入到redis的一个list中，然后直接给用户返回发送成功。至于这些信什么时候发送和完成，都是对用户透明的。在后台进程任务中会去消费list数据，逐条进行发信。</p>
+<p>web点击后的入队列很简单，就是单纯的for循环，然后使用lPush在队列的头部增加元素。<br />后台使用定时任务每隔30分钟启动php进程，去消费list中的数据，并且kill掉之前的php进程。这样做是为了防止PHP进程僵死，定时重启进程来进行操作。</p>
+<p>在kill掉进程的时候，有可能会导致正在发信的过程被结束，取出的数据没有被发送成功。redis有提供一个功能是在弹出数据的同时，可以插入到另一个队列中，并且这个操作是原子性的，这样就使用另一个备用队列来存储发送失败的数据，重新进行补偿发送</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 模拟web入队列
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #800080;">$redis</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #800080;">$redis</span>-&gt;connect('192.168.1.114', 6379<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;5000;<span style="color: #800080;">$i</span>++<span style="color: #000000;">){
+    </span><span style="color: #800080;">$message</span>="mes {<span style="color: #800080;">$i</span>}"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$redis</span>-&gt;lPush("emails",<span style="color: #800080;">$message</span><span style="color: #000000;">);
+}
+</span><span style="color: #0000ff;">echo</span> "ok";</code></pre>
+
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">后台进程</span>
+<span style="color: #800080;">$redis</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #800080;">$redis</span>-&gt;connect('192.168.1.114', 6379<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">while</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$email</span>=<span style="color: #800080;">$redis</span>-&gt;bRPopLPush ("emails","emails_bak",20<span style="color: #000000;">);
+    
+    </span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$email</span><span style="color: #000000;">);
+    </span><span style="color: #008080;">usleep</span>(100);<span style="color: #008000;">//</span><span style="color: #008000;">模拟发信耗时</span>
+    <span style="color: #800080;">$redis</span>-&gt;lRem("emails_bak",<span style="color: #800080;">$email</span><span style="color: #000000;">);
+}</span></code></pre>
+
+<p>redis提供的所以关于list的函数</p>
+<p>blPop, brPop 阻塞式读取和删除第一个/最后一个元素<br />bRPopLPush 从列表中弹出一个值，并把它推到另一个列表中<br />rPopLPush 弹出列表中的最后一个元素，并把他推到另一个列表中<br />lRange, lGetRange 获取列表中一系列元素<br />lIndex, lGet 从其索引中获取元素<br />lSet 通过索引设置元素<br />lRem, lRemove 通过索引删除元素<br />lInsert 在列表中一个元素之前或之后插入一个元素<br />lLen, lSize 获取列表的长度/大小<br />lPop 弹出列表中的第一个元素<br />lPush 在列表前添加一个元素<br />rPop 弹出列表最后一个元素<br />rPush 在列表末尾增加一个元素<br />lPushx 仅在列表存在时才在列表前添加元素<br />rPushX 仅在列表存在时，才在列表结尾增加元素<br />lTrim, listTrim 将列表修剪到指定范围</p>
+<p>&nbsp;</p>
+<p>cron的规则：</p>
+<p>*/30 * * * * root ps -ef |grep SendMassMail | grep -v ps |awk '{print $2}' | xargs kill -9&nbsp; ;php /usr/local/sinamail/tools/SendMassMailAndMonitor.php</p>
+<p><span style="font-size: 16px;"><strong>我的视频教程</strong></span></p>
+<p><a href="https://www.bilibili.com/video/av73188455/" target="_blank"><span style="font-size: 16px;"><strong>https://www.bilibili.com/video/av73188455/</strong></span></a></p>
+<p><span style="font-size: 16px;"><strong><img src="./images/[视频教程] 基于redis的消息队列实现与思考0.jpg" alt="" /></strong></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

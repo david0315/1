@@ -1,0 +1,273 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修微信小程序+php 授权登陆，完整代码' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>微信小程序+php 授权登陆，完整代码</center></div><div class='banquan'>原文出处:本文由博客园博主下页、再停留提供。<br/>
+原文连接:https://www.cnblogs.com/zxf100/p/11849878.html</div><br>
+    <p>先上图</p>
+<p><img src="./images/微信小程序+php 授权登陆，完整代码0.jpg" alt="" />&nbsp;&nbsp;<img src="./images/微信小程序+php 授权登陆，完整代码1.jpg" alt="" />&nbsp;&nbsp;<img src="./images/微信小程序+php 授权登陆，完整代码2.jpg" alt="" />&nbsp;&nbsp;<img src="./images/微信小程序+php 授权登陆，完整代码3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>实现流程：</p>
+<p>1、授权登陆按钮和正文信息放到了同一个页面，未授权的时候显示登陆按钮，已授权的时候隐藏登陆按钮，显示正文信息，当然也可以授权和正文分开成两个页面，在授权页面的onload里判断是否已授权，若已授权就直接跳转正文的页面。这里只说授权按钮和正文在同一页面的情况。</p>
+<p>2、在onload里先判断是否已授权，如果已授权，就隐藏授权登陆按钮，显示正文信息，如果没有授权，显示授权登陆按钮。</p>
+<p>3、前端使用button的open-type="getUserInfo"来操作，点击授权按钮之后，&ldquo;e&rdquo;中会携带userInfo，用户的基本信息（和使用wx.getUserInfo接口获取的数据一样，所以我是在"e"里面直接取的，没有调用wx.getUserInfo接口）</p>
+<p>4、使用wx.login接口获取登陆凭证code，使用code去后解密换取openid，传输code的时候带上第3步获取的用户信息一块发送给后台解密（也可以不携带，携带的目的是为了验证签名，这样安全一些，不验证也可以）</p>
+<p>5、后台解密使用的是&ldquo;auth.code2Session&rdquo;接口，解密用到的SDK下载地址&ldquo;<a href="https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/signature.html" target="_blank">https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/signature.html</a>&rdquo;。</p>
+<p>5、后台解密之后（后台语言用的是php），会返回openid等敏感信息，就还可以把这些信息存起来了。</p>
+<p>6、获取授权成功之后，再隐藏授权登陆按钮，显示正文信息。</p>
+<p>7、如果用户点击拒绝授权，提示引导用户再次授权。</p>
+<p><span style="color: #ff0000;">注意，要考虑到授权失败的情况</span></p>
+<p>&nbsp;</p>
+<p><strong>以下是详细代码</strong></p>
+<p>wxml</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">view </span><span style="color: #ff0000;">wx:if</span><span style="color: #0000ff;">="{{isHide}}"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">view </span><span style="color: #ff0000;">wx:if</span><span style="color: #0000ff;">="{{canIUse}}"</span> <span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">view </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">='header'</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">image </span><span style="color: #ff0000;">src</span><span style="color: #0000ff;">='/images/icon/wx_login.png'</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">image</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>
+ 
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">view </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">='content'</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>申请获取以下权限<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">text</span><span style="color: #0000ff;">&gt;</span>获得你的公开信息(昵称，头像等)<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">text</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>
+ 
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">button </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">='bottom' </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">='primary' </span><span style="color: #ff0000;">open-type</span><span style="color: #0000ff;">="getUserInfo"</span><span style="color: #ff0000;"> lang</span><span style="color: #0000ff;">="zh_CN"</span><span style="color: #ff0000;"> bindgetuserinfo</span><span style="color: #0000ff;">="bindGetUserInfo"</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+            授权登录
+        </span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">button</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">view </span><span style="color: #ff0000;">wx:else</span><span style="color: #0000ff;">&gt;</span>请升级微信版本<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>
+ 
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">view </span><span style="color: #ff0000;">wx:else</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>我的首页内容<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">view</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>wxss</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800000;">.header </span>{<span style="color: #ff0000;">
+    margin</span>:<span style="color: #0000ff;"> 90rpx 0 90rpx 50rpx</span>;<span style="color: #ff0000;">
+    border-bottom</span>:<span style="color: #0000ff;"> 1px solid #ccc</span>;<span style="color: #ff0000;">
+    text-align</span>:<span style="color: #0000ff;"> center</span>;<span style="color: #ff0000;">
+    width</span>:<span style="color: #0000ff;"> 650rpx</span>;<span style="color: #ff0000;">
+    height</span>:<span style="color: #0000ff;"> 300rpx</span>;<span style="color: #ff0000;">
+    line-height</span>:<span style="color: #0000ff;"> 450rpx</span>;
+}<span style="color: #800000;">
+ 
+.header image </span>{<span style="color: #ff0000;">
+    width</span>:<span style="color: #0000ff;"> 200rpx</span>;<span style="color: #ff0000;">
+    height</span>:<span style="color: #0000ff;"> 200rpx</span>;
+}<span style="color: #800000;">
+ 
+.content </span>{<span style="color: #ff0000;">
+    margin-left</span>:<span style="color: #0000ff;"> 50rpx</span>;<span style="color: #ff0000;">
+    margin-bottom</span>:<span style="color: #0000ff;"> 90rpx</span>;
+}<span style="color: #800000;">
+ 
+.content text </span>{<span style="color: #ff0000;">
+    display</span>:<span style="color: #0000ff;"> block</span>;<span style="color: #ff0000;">
+    color</span>:<span style="color: #0000ff;"> #9d9d9d</span>;<span style="color: #ff0000;">
+    margin-top</span>:<span style="color: #0000ff;"> 40rpx</span>;
+}<span style="color: #800000;">
+ 
+.bottom </span>{<span style="color: #ff0000;">
+    border-radius</span>:<span style="color: #0000ff;"> 80rpx</span>;<span style="color: #ff0000;">
+    margin</span>:<span style="color: #0000ff;"> 70rpx 50rpx</span>;<span style="color: #ff0000;">
+    font-size</span>:<span style="color: #0000ff;"> 35rpx</span>;
+}</code></pre>
+
+<p>js</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> pages/test1/test1.js</span>
+<span style="color: #0000ff;">var</span> app =<span style="color: #000000;"> getApp();
+Page({
+
+  </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+   * 页面的初始数据
+   </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+  data: {
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">判断小程序的API，回调，参数，组件等是否在当前版本可用。</span>
+    canIUse: wx.canIUse('button.open-type.getUserInfo'<span style="color: #000000;">),
+    isHide: </span><span style="color: #0000ff;">false</span><span style="color: #000000;">
+  },
+
+  </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+   * 生命周期函数--监听页面加载
+   </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+  onLoad: </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> (options) {
+    </span><span style="color: #0000ff;">var</span> that = <span style="color: #0000ff;">this</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 查看是否授权</span>
+<span style="color: #000000;">    wx.getSetting({
+      success: </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> (res) {
+        </span><span style="color: #0000ff;">if</span> (!res.authSetting['scope.userInfo'<span style="color: #000000;">]) {
+          </span><span style="color: #008000;">//</span><span style="color: #008000;"> 还未授权，显示授权按钮</span>
+<span style="color: #000000;">          that.setData({
+            isHide: </span><span style="color: #0000ff;">true</span><span style="color: #000000;">
+          });
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+          </span><span style="color: #008000;">//</span><span style="color: #008000;"> 已授权，隐藏授权按钮，显示正文</span>
+<span style="color: #000000;">          that.setData({
+            isHide: </span><span style="color: #0000ff;">false</span><span style="color: #000000;">
+          });
+        }
+      }
+    })
+  },
+
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">授权登陆按钮</span>
+  bindGetUserInfo: <span style="color: #0000ff;">function</span><span style="color: #000000;"> (e) {
+    </span><span style="color: #0000ff;">var</span> that = <span style="color: #0000ff;">this</span><span style="color: #000000;">;
+    console.log(e)
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (e.detail.userInfo) {
+      </span><span style="color: #008000;">//</span><span style="color: #008000;">用户授权登陆，并跳转首页</span>
+      <span style="color: #008000;">//</span><span style="color: #008000;"> that.getOpenid()</span>
+<span style="color: #000000;">      wx.login({
+        success: </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> (res) {
+          </span><span style="color: #008000;">//</span><span style="color: #008000;"> 请求自己后台获取用户openid</span>
+<span style="color: #000000;">          wx.request({
+            url: app.domain </span>+ 'teacherapi/Wx_Decode/WxDecode'<span style="color: #000000;">,
+            method: </span>'POST'<span style="color: #000000;">,
+            header: { </span>'content-type': 'application/x-www-form-urlencoded'<span style="color: #000000;"> },
+            data: {
+              encryptedData: e.detail.encryptedData,
+              signature: e.detail.signature,
+              rawData: e.detail.rawData,
+              iv: e.detail.iv,
+              code: res.code
+            },
+            success: </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> (res_user) {
+              </span><span style="color: #0000ff;">if</span> (res_user.data.status == 0<span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">var</span> data = JSON.parse(res_user.data.msg)　　　　<span style="color: #008000;">//</span><span style="color: #008000;">json转对象</span>
+                <span style="color: #008000;">//</span><span style="color: #008000;">授权成功返回的数据，根据自己需求操作</span>
+<span style="color: #000000;">                console.log(data)
+
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">授权成功后，隐藏授权按钮，显示正文</span>
+<span style="color: #000000;">                that.setData({
+                  isHide: </span><span style="color: #0000ff;">false</span><span style="color: #000000;">
+                });
+              }
+            }, fail: </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+              that.showModal(</span>'获取授权信息失败'<span style="color: #000000;">)
+            }
+          })
+        }
+      })
+    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+      </span><span style="color: #008000;">//</span><span style="color: #008000;">用户按了拒绝授权按钮，提示引导授权</span>
+      that.showModal('请授权后使用小程序'<span style="color: #000000;">)
+    }
+  },
+
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">未授权弹窗</span>
+  showModal: <span style="color: #0000ff;">function</span><span style="color: #000000;"> (e) {
+    wx.showModal({
+      title: </span>'提示'<span style="color: #000000;">,
+      content: e,
+      showCancel: </span><span style="color: #0000ff;">false</span><span style="color: #000000;">,
+      confirmText: </span>'返回授权'<span style="color: #000000;">,
+      success: </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> (res) {
+        </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (res.confirm) {
+          console.log(</span>'用户点击了&ldquo;返回授权&rdquo;'<span style="color: #000000;">)
+        }
+      }
+    })
+  },
+
+})</span></code></pre>
+
+<p>php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+namespace app\teacherapi\controller;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Controller;
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+* @date: 2018-12
+* 微信操作类
+</span><span style="color: #008000;">*/</span>
+
+<span style="color: #0000ff;">class</span> WxDecode <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller
+{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> httpGet(<span style="color: #800080;">$url</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$curl</span> =<span style="color: #000000;"> curl_init();
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_RETURNTRANSFER, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_TIMEOUT, 500<span style="color: #000000;">);
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">false</span><span style="color: #000000;">);
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_SSL_VERIFYHOST, <span style="color: #0000ff;">false</span><span style="color: #000000;">);
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_URL, <span style="color: #800080;">$url</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$res</span> = curl_exec(<span style="color: #800080;">$curl</span><span style="color: #000000;">);
+        curl_close(</span><span style="color: #800080;">$curl</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$res</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * @author: zxf
+     * @date: 2018-12-08
+     * @description: 解密微信用户敏感数据
+     * @return array
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> WxDecode()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 接收参数</span>
+        <span style="color: #800080;">$data</span> = request() -&gt;<span style="color: #000000;"> param();
+        
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 引入解密文件 在微信小程序开发文档下载</span>
+        vendor('wx.WXBizDataCrypt'<span style="color: #000000;">);
+        vendor(</span>'wx.ErrorCode'<span style="color: #000000;">);
+
+        </span><span style="color: #800080;">$appid</span> = config('TESTPPID'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$appsecret</span> = config('TESTSECREET'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$grant_type</span> = "authorization_code"; <span style="color: #008000;">//</span><span style="color: #008000;">授权（必填）</span>
+
+        <span style="color: #800080;">$code</span> = <span style="color: #800080;">$data</span>['code'];        <span style="color: #008000;">//</span><span style="color: #008000;">有效期5分钟 登录会话</span>
+
+        <span style="color: #800080;">$encryptedData</span>=<span style="color: #800080;">$data</span>['encryptedData'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$iv</span> = <span style="color: #800080;">$data</span>['iv'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$signature</span> = <span style="color: #800080;">$data</span>['signature'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$rawData</span> = <span style="color: #800080;">$data</span>['rawData'<span style="color: #000000;">];
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 拼接url</span>
+        <span style="color: #800080;">$url</span> = "https://api.weixin.qq.com/sns/jscode2session?"."appid=".<span style="color: #800080;">$appid</span>."&amp;secret=".<span style="color: #800080;">$appsecret</span>."&amp;js_code=".<span style="color: #800080;">$code</span>."&amp;grant_type=".<span style="color: #800080;">$grant_type</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$res</span> = json_decode(<span style="color: #800080;">$this</span>-&gt;httpGet(<span style="color: #800080;">$url</span>),<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+
+
+        </span><span style="color: #800080;">$sessionKey</span> = <span style="color: #800080;">$res</span>['session_key']; <span style="color: #008000;">//</span><span style="color: #008000;">取出json里对应的值</span>
+        <span style="color: #800080;">$signature2</span> =  <span style="color: #008080;">sha1</span>(htmlspecialchars_decode(<span style="color: #800080;">$rawData</span>).<span style="color: #800080;">$sessionKey</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 验证签名</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$signature2</span> !== <span style="color: #800080;">$signature</span><span style="color: #000000;">){
+            </span><span style="color: #0000ff;">return</span> json("验签失败"<span style="color: #000000;">);
+        } 
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 获取解密后的数据</span>
+        <span style="color: #800080;">$pc</span> = <span style="color: #0000ff;">new</span> \WXBizDataCrypt(<span style="color: #800080;">$appid</span>, <span style="color: #800080;">$sessionKey</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$errCode</span> = <span style="color: #800080;">$pc</span>-&gt;decryptData(<span style="color: #800080;">$encryptedData</span>, <span style="color: #800080;">$iv</span>, <span style="color: #800080;">$data</span><span style="color: #000000;"> );
+
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$errCode</span> == 0<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> return_succ(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">return</span> return_error(<span style="color: #800080;">$errCode</span><span style="color: #000000;">);
+        }
+    }
+        
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

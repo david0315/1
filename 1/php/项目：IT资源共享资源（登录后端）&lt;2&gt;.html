@@ -1,0 +1,86 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修项目：IT资源共享资源（登录后端）&lt;2&gt;' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>项目：IT资源共享资源（登录后端）&lt;2&gt;</center></div><div class='banquan'>原文出处:本文由博客园博主鸡鸣星提供。<br/>
+原文连接:https://www.cnblogs.com/fengyongxian/p/10834888.html</div><br>
+    <p><code>公众号技术标签</code>&nbsp;<code>小程序</code>&nbsp;<code>PHP</code>&nbsp;<code>源码</code>&nbsp;<code>项目</code></p>
+<p>ThinkPHP5.0目录结构，新建一个模块api，该模块下面有controller、model 目录，前者放控制器，写API接口（这里是简单的api写法）。后者是模型，进行数据库处理。我们先说一下数据库的搭建。</p>
+<ul>
+<li>
+<p>数据库名称：ziliao</p>
+</li>
+<li>
+<p>表前缀：ziliao_</p>
+</li>
+<li>
+<p>需要在ThinkPHP数据库配置里面填写相应的数据库信息</p>
+</li>
+<li>
+<p>下面是目录结构图</p>
+</li>
+</ul>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="289" data-height="457"><img src="./images/项目：IT资源共享资源（登录后端）&lt;2&gt;0.jpg" alt="" data-original-src="//upload-images.jianshu.io/upload_images/5328790-a023eff47d118fbf" data-original-width="289" data-original-height="457" data-original-format="image/png" data-original-filesize="22538" />
+
+<src class="image-caption">image
+
+<p>SQL（表ziliao_user）</p>
+<src class="cnblogs_code">
+<pre><code>CREATE TABLE `ziliao_user` (`id` int(6) NOT <span style="color: #0000ff;">NULL</span> AUTO_INCREMENT COMMENT 'id',`openid` varchar(100) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT '小程序openid',`nickname` varchar(50) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT '微信名称',`sex` tinyint(1) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT '性别：1男0女',`image` varchar(255) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT '头像',`jifen` int(6) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT '积分',`create_time` int(11) <span style="color: #0000ff;">DEFAULT</span> <span style="color: #0000ff;">NULL</span> COMMENT '加入时间',PRIMARY <span style="color: #008080;">KEY</span> (`id`)) ENGINE=MyISAM AUTO_INCREMENT=2 <span style="color: #0000ff;">DEFAULT</span> CHARSET=utf8;</code></pre>
+
+<p>&nbsp;</p>
+<p>Common控制器（获取openid和access_token等公共类）</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php namespace app\api\controller;<span style="color: #0000ff;">use</span> think\Controller;<span style="color: #008000;">/*</span><span style="color: #008000;">* * 用户类 </span><span style="color: #008000;">*/</span><span style="color: #0000ff;">class</span> Common <span style="color: #0000ff;">extends</span> Controller{<span style="color: #0000ff;">private</span> <span style="color: #800080;">$appid</span> = '你小程序的appid';<span style="color: #0000ff;">private</span> <span style="color: #800080;">$secret</span> = 'xxxxxx';<span style="color: #008000;">//</span><span style="color: #008000;">获取openidpublic function getOpenid()    {$code = input('code');//小程序传来的code值  $url = 'https://api.weixin.qq.com/sns/jscode2session?appid='.$this-&gt;appid.'&amp;secret='.$this-&gt;secret.'&amp;js_code='.$code.'&amp;grant_type=authorization_code';  //yourAppid为开发者appid.appSecret为开发者的appsecret,都可以从微信公众平台获取；  $info = file_get_contents($url);//发送HTTPs请求并获取返回的数据，推荐使用curl  return json(['code'=&gt;200,'msg'=&gt;'获取openid成功','data'=&gt;$info]);}//获取// getAccessToken.phppublic function getAccessToken () {     $url='https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&amp;appid='.$this-&gt;$this-&gt;secret.'&amp;secret='.$appsecret;$html = file_get_contents($url);$output = json_decode($html, true);$access_token = $output['access_token'];return $access_token;}}?&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+<p>User控制器（进行有关于用户的接口）</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php namespace app\api\controller;<span style="color: #0000ff;">use</span> think\Controller;<span style="color: #008000;">/*</span><span style="color: #008000;">* * 用户类 </span><span style="color: #008000;">*/</span><span style="color: #0000ff;">class</span> User <span style="color: #0000ff;">extends</span> Controller{<span style="color: #0000ff;">private</span> <span style="color: #800080;">$resp</span> = ['code'=&gt;-100,'msg'=&gt;''];<span style="color: #008000;">//</span><span style="color: #008000;">首次授权登录插入用户数据public function insert_user( )    {$data = input();$model = model('User');if (empty($model-&gt;user_is_exit($data['openid']))) {$data['jifen'] = 20;//新用户积分20$data['create_time'] = time();$result = $model-&gt;frist_insert_user($data);if ($result) {$this-&gt;resp['code'] = 200;$this-&gt;resp['msg'] = '新用户插入成功';$this-&gt;resp['status'] = true;}else{$this-&gt;resp['msg'] = '新用户插入失败';$this-&gt;resp['status'] = false;}}else{$this-&gt;resp['code'] = 200;$this-&gt;resp['msg'] = '该用户已存在';$this-&gt;resp['status'] = 'exit';}return json($this-&gt;resp);}}?&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+<p>User模型</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php namespace app\api\model;<span style="color: #0000ff;">use</span> think\Model;<span style="color: #008000;">/*</span><span style="color: #008000;">* * User </span><span style="color: #008000;">*/</span><span style="color: #0000ff;">class</span> User <span style="color: #0000ff;">extends</span> Model{<span style="color: #008000;">//</span><span style="color: #008000;">判断用户是否存在public function user_is_exit($openid)    {$is_exit = db('user')-&gt;where('openid',$openid)-&gt;find();return $is_exit;}//插入数据库public function frist_insert_user($where)    {$res = db('user')-&gt;data($where)-&gt;insert();return $res;}}?&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+<ul>
+<li>
+<p>如果推送的文章中，大家认可的，别忘了转发分享;</p>
+</li>
+<li>
+<p>为了大家更好的长久查看源码及讲解，阅读后可以收藏</p>
+</li>
+<li>
+<p>长按下图二维码，与小编携手编程之美</p>
+</li>
+</ul>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="258" data-height="258"><img src="./images/项目：IT资源共享资源（登录后端）&lt;2&gt;1.jpg" alt="" data-original-src="//upload-images.jianshu.io/upload_images/5328790-34c050122ec38f76" data-original-width="258" data-original-height="258" data-original-format="image/jpeg" data-original-filesize="17865" />
+
+<src class="image-caption">image
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

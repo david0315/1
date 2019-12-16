@@ -1,0 +1,239 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP在无限分类时注意的一些问题(不保证代码完全正确哦)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP在无限分类时注意的一些问题(不保证代码完全正确哦)</center></div><div class='banquan'>原文出处:本文由博客园博主Blog_Lee提供。<br/>
+原文连接:https://www.cnblogs.com/Super-Lee/p/10847651.html</div><br>
+    <src>
+<src style="margin-left: 0in;">
+<src style="margin-left: 0in;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-size: 18px;"><span style="background-color: #ffffff; color: #ff0000;"><strong>转自：</strong></span><a href="http://lxiaoke.cn" target="_blank">PHP在无限分类时注意的一些问题(http://lxiaoke.cn)</a></span></span></span>
+<src style="margin-left: 0in;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-family: Calibri; font-size: 14px;">(<span style="font-family: 微软雅黑; font-size: 14px;">注意：代码使用的是原生<span style="font-family: Calibri; font-size: 14px;">PHP<span style="font-family: 微软雅黑; font-size: 14px;">，旨在提供解决思路<span style="font-family: Calibri; font-size: 14px;">)<br /><span style="font-family: 微软雅黑; font-size: 11.0pt; font-weight: normal; font-style: normal;">1 无限分类的查找（获取所有节点）</span></span></span></span></span></span></span>
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">代码：</p>
+<pre><code>/**
+ * 无限分类查询，默认 pid 为 0
+ * @param $pid
+ * @return array $res
+ */
+protected function selectTree($pid = 0)
+{
+    $res = [];
+    $sql = "SELECT * FROM " . $this-&gt;tbname . " WHERE pid=" . $pid;
+    $result = @mysqli_query($this-&gt;link, $sql);
+    if ($result) {
+        $count = mysqli_num_rows($result);
+        if ($count &gt; 0) {
+            while ($rows = mysqli_fetch_assoc($result)) {
+                $rows['children'] = $this-&gt;selectTree($rows['id']);
+                $res[] = $rows;
+            }
+        }
+        mysqli_free_result($result);
+    }
+    return $res;
+}</code></pre>
+<p>&nbsp;</p>
+<span style="font-family: Calibri; font-size: 14px;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-family: 微软雅黑; font-size: 14px;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-family: 微软雅黑; font-size: 14px;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-family: 微软雅黑; font-size: 11.0pt; font-weight: normal; font-style: normal;"><span style="font-family: 微软雅黑; font-size: 11.0pt; font-weight: normal; font-style: normal;">2 无限分类节点的删除，不能单纯地删除当前节点，需要查找到当前节点下的所有子节点，一并删除</span></span></span></span></span></span></span></span>
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">代码：</p>
+<pre><code>/**
+ * 删除目录树
+ * @param $id
+ */
+protected function deleteTree($id)
+{
+    $res = $this-&gt;selectTree($id);
+    if (!empty($res)) {
+        foreach ($res as $v) {
+            $this-&gt;deleteTree($v['id']);
+        }
+    }
+    $sql = "DELETE FROM " . $this-&gt;tbname . " WHERE id=" . $id;
+    mysqli_query($this-&gt;link, $sql);
+}</code></pre>
+<span style="font-family: Calibri; font-size: 14px;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-family: 微软雅黑; font-size: 14px;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-family: 微软雅黑; font-size: 14px;"><span style="font-family: Calibri; font-size: 14px;"><span style="font-family: 微软雅黑; font-size: 11.0pt; font-weight: normal; font-style: normal;"><span style="font-family: 微软雅黑; font-size: 11.0pt; font-weight: normal; font-style: normal;"><span style="font-family: Calibri; font-size: 11.0pt; font-weight: bold; font-style: normal; color: red;">3 **<span style="font-family: 微软雅黑; font-size: 11.0pt; font-weight: normal; font-style: normal;">无限分类的编辑，由于在编辑的时候其父级是可选择的，所以有可能造成用户选择到当前节点的子节点<span style="font-family: Calibri; font-size: 11.0pt; font-weight: normal; font-style: normal;">(<span style="font-family: 微软雅黑; font-size: 11.0pt; font-weight: normal; font-style: normal;">们<span style="font-family: Calibri; font-size: 11.0pt; font-weight: normal; font-style: normal;">)<span style="font-family: 微软雅黑; font-size: 11.0pt; font-weight: normal; font-style: normal;">，所以要进行判断。虽说是无限分类，但正常情况下目录深度是会有限度的，如果给定了目录深度，还要判断选择父级之后的目录深度是否超出范围。</span></span></span></span></span></span></span></span></span></span></span></span></span></span>
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">如果将编辑的元素放在其子元素下，所造成的问题：在查询的时候<span style="font-weight: bold; color: red;">无限循环！！</span></p>
+<src>
+<table style="border-collapse: collapse; width: 241px; height: 100px;" border="1" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">id</p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">pid</p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">name</p>
+</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">1</p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">0</p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">test1</p>
+</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">2</p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">1</p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">test2</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">修改之后：</p>
+<src>
+<table style="border-collapse: collapse; width: 239px; height: 100px;" border="1" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">id</p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">pid</p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">name</p>
+</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt; color: red;"><span style="font-weight: bold;">1</span></p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt; color: red;"><span style="font-weight: bold;">2</span></p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">test1</p>
+</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt; color: red;"><span style="font-weight: bold;">2</span></p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt; color: red;"><span style="font-weight: bold;">1</span></p>
+</td>
+<td style="vertical-align: top;">
+<p style="font-family: Calibri; font-size: 11.0pt;">test2</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">如上表所示，在进行无限分类查询时，就会陷入<span style="font-weight: bold; color: red;">死循环！</span></p>
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">所以，针对可能会出现的问题，给出下面的解决办法，在用户修改时进行判断，通过则可以修改，未通过则给出提示。</p>
+<p style="margin-left: .375in; font-size: 11.0pt;"><span style="font-family: 微软雅黑;">3.1 <span style="font-family: 微软雅黑;">判断用户选择的是否是当前节点（这个只需要判断选择的节点和当前编辑节点的<span style="font-family: Calibri;">ID<span style="font-family: 微软雅黑;">是否相同即可）</span></span></span></span></p>
+<p style="margin-left: .375in; font-size: 11.0pt;"><span style="font-family: 微软雅黑;">3.2 <span style="font-family: 微软雅黑;">判断用户选择的是否是子节点（如果是的话返回<span style="font-family: Calibri;">true<span style="font-family: 微软雅黑;">）<span style="font-weight: bold; font-family: Calibri; color: #0070c0;">&nbsp;&nbsp;&nbsp; <br /></span></span></span></span></span></p>
+<p style="margin-left: .375in; font-size: 11.0pt;">&nbsp;</p>
+<pre><code>/**
+ * 判断id所对应的元素是否是pid所对应元素的子元素，是的话返回true
+ * @param $id
+ * @param $pid
+ * @return boolean $result
+ */
+protected function isChild($id, $pid)
+{
+    $result = false;
+    $sql = "SELECT pid FROM " . $this-&gt;tbname . " WHERE id=" . $id;
+    $res = @mysqli_query($this-&gt;link, $sql);
+    if ($res) {
+        while ($rows = mysqli_fetch_assoc($res)) {
+            $result = ($pid === $rows['pid']) ? true : (($rows['pid'] !== 0) ? $this-&gt;isChild($rows['pid'], $pid) : false);
+        }
+    }
+    return $result;
+}</code></pre>
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">3.3 判断用户选择的节点是否已经达到目录深度</p>
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">在做完后面的一步之后，这一步就比较好实现了：</p>
+<pre><code>/**
+ * 判断所选元素是否达到目录深度，达到返回true
+ * @param $id
+ * @return mixed
+ */
+protected function isMaxDeep($id)
+{
+    return $this-&gt;deepUp($id) &gt;= $this-&gt;maxDeep;
+}</code></pre>
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">3.4 判断修改之后的目录深度是否超出限定范围</p>
+<p style="margin-left: .375in; font-family: 微软雅黑; font-size: 11.0pt;">&nbsp;</p>
+<pre><code>/**
+ * 修改之后的最终深度，如果深度大于规定深度，返回true
+ * @param $pid
+ * @param $id
+ * @return mixed
+ */
+protected function lastDeep($pid, $id)
+{
+    return ($this-&gt;deepUp($pid) + $this-&gt;deepDown($id)) &gt; $this-&gt;maxDeep;
+}
+
+/**
+ * 向上查找父元素的深度
+ * @param $id
+ * @param int $k
+ * @return int
+ */
+protected function deepUp($id, $k = 1)
+{
+    $sql = "SELECT pid FROM " . $this-&gt;tbname . "WHERE id=" . $id;
+    $res = @mysqli_query($this-&gt;link, $sql);
+    if ($res) {
+        while ($rows = mysqli_fetch_assoc($res)) {
+            ($rows['pid'] !== 0) &amp;&amp; $k = $this-&gt;deepUp($rows['pid'], $k+1);
+        }
+    }
+    return $k;
+}
+
+/**
+ * 向下查找子元素的深度
+ * @param $id
+ * @param int $k
+ * @return int
+ */
+protected function deepDown($id, $k = 0)
+{
+    $sql = "SELECT * FROM " . $this-&gt;tbname . "WHERE pid=" . $id;
+    $res = @mysqli_query($this-&gt;link, $sql);
+    if ($res &amp;&amp; mysqli_num_rows($res) &gt; 0) {
+        $k++;
+        while ($rows = mysqli_fetch_assoc($res)) {
+            $k = max($k, $this-&gt;deepDown($rows['id'], $k))
+        }
+    }
+    return $k;
+}</code></pre>
+<p><span style="font-family: 微软雅黑;">经过上面的判断之后，根据返回的结果就能判断是否可以修改，如果返回<span style="font-family: Calibri;">true<span style="font-family: 微软雅黑;">，则不可以修改，如果是<span style="font-family: Calibri;">false<span style="font-family: 微软雅黑;">则可以进行修改。</span></span></span></span></span></p>
+<p>（如果不用无限分类查询，只是普通的查询，让前端去实现结果的显示会怎么样呢？？不懂那些框架是怎么实现的，感觉也是在用递归）</p>
+
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

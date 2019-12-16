@@ -1,0 +1,126 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修2019-07-23 用类写一个简单验证码' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>2019-07-23 用类写一个简单验证码</center></div><div class='banquan'>原文出处:本文由博客园博主筏愫提供。<br/>
+原文连接:https://www.cnblogs.com/zhangxu-fasu/p/11232856.html</div><br>
+    <p>1.验证码代码如下，新建一个含如下代码的PHP文件，此处取名为ValidateCode.php：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">
+ * ValidateCode.php
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> ValidateCode {
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$charset</span> = '0123456789'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$code</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$codelen</span> = 4<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$width</span> = 163<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$height</span> = 30<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$img</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$font</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$fontsize</span> = 20<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$fontcolor</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$size</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$this</span>-&gt;font = <span style="color: #008080;">dirname</span>(<span style="color: #ff00ff;">__file__</span>) . '/t1.ttf'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;codelen = <span style="color: #800080;">$size</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;charset = <span style="color: #008080;">str_repeat</span>(<span style="color: #800080;">$this</span>-&gt;charset, 4<span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> createCode() {
+        </span><span style="color: #800080;">$_len</span> = <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$this</span>-&gt;charset)-1<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;<span style="color: #800080;">$this</span>-&gt;codelen;<span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;code .= <span style="color: #800080;">$this</span>-&gt;charset[<span style="color: #008080;">mt_rand</span>(0,<span style="color: #800080;">$_len</span><span style="color: #000000;">)];
+        }
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> createBg() {
+        </span><span style="color: #800080;">$this</span>-&gt;img = imagecreatetruecolor(<span style="color: #800080;">$this</span>-&gt;width , <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">height);
+        </span><span style="color: #800080;">$color</span> = imagecolorallocate(<span style="color: #800080;">$this</span>-&gt;img, <span style="color: #008080;">mt_rand</span>(157,255), <span style="color: #008080;">mt_rand</span>(157,255), <span style="color: #008080;">mt_rand</span>(157,255<span style="color: #000000;">));
+        imagefilledrectangle(</span><span style="color: #800080;">$this</span>-&gt;img, 0, <span style="color: #800080;">$this</span>-&gt;height, <span style="color: #800080;">$this</span>-&gt;width, 0, <span style="color: #800080;">$color</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> createFont() {
+        </span><span style="color: #800080;">$_x</span> = (<span style="color: #800080;">$this</span>-&gt;width - 10) / <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">codelen;
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;<span style="color: #800080;">$this</span>-&gt;codelen;<span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$this</span>-&gt;fontcolor = imagecolorallocate(<span style="color: #800080;">$this</span>-&gt;img,<span style="color: #008080;">mt_rand</span>(0,156),<span style="color: #008080;">mt_rand</span>(0,156),<span style="color: #008080;">mt_rand</span>(0,156<span style="color: #000000;">));
+            imagettftext(</span><span style="color: #800080;">$this</span>-&gt;img,<span style="color: #800080;">$this</span>-&gt;fontsize,<span style="color: #008080;">mt_rand</span>(-30,30),<span style="color: #800080;">$_x</span>*<span style="color: #800080;">$i</span>+<span style="color: #008080;">mt_rand</span>(1,5),<span style="color: #800080;">$this</span>-&gt;height / 1.4,<span style="color: #800080;">$this</span>-&gt;fontcolor,<span style="color: #800080;">$this</span>-&gt;font,<span style="color: #800080;">$this</span>-&gt;code[<span style="color: #800080;">$i</span><span style="color: #000000;">]);
+        }
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> createLine() {
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;6;<span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$color</span> = imagecolorallocate(<span style="color: #800080;">$this</span>-&gt;img,<span style="color: #008080;">mt_rand</span>(0,156),<span style="color: #008080;">mt_rand</span>(0,156),<span style="color: #008080;">mt_rand</span>(0,156<span style="color: #000000;">));
+            imageline(</span><span style="color: #800080;">$this</span>-&gt;img,<span style="color: #008080;">mt_rand</span>(0,<span style="color: #800080;">$this</span>-&gt;width),<span style="color: #008080;">mt_rand</span>(0,<span style="color: #800080;">$this</span>-&gt;height),<span style="color: #008080;">mt_rand</span>(0,<span style="color: #800080;">$this</span>-&gt;width),<span style="color: #008080;">mt_rand</span>(0,<span style="color: #800080;">$this</span>-&gt;height),<span style="color: #800080;">$color</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;100;<span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$color</span> = imagecolorallocate(<span style="color: #800080;">$this</span>-&gt;img,<span style="color: #008080;">mt_rand</span>(200,255),<span style="color: #008080;">mt_rand</span>(200,255),<span style="color: #008080;">mt_rand</span>(200,255<span style="color: #000000;">));
+            imagestring(</span><span style="color: #800080;">$this</span>-&gt;img,<span style="color: #008080;">mt_rand</span>(1,5),<span style="color: #008080;">mt_rand</span>(0,<span style="color: #800080;">$this</span>-&gt;width),<span style="color: #008080;">mt_rand</span>(0,<span style="color: #800080;">$this</span>-&gt;height),'*',<span style="color: #800080;">$color</span><span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> outPut() {
+        </span><span style="color: #008080;">header</span>('Content-type:image/png'<span style="color: #000000;">);
+        imagepng(</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">img);
+        imagedestroy(</span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">img);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> doimg() {
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">createBg();
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">createCode();
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">createLine();
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">createFont();
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">outPut();
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getCode() {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">strtolower</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">code);
+    }
+}
+</span>?&gt;</code></pre>
+
+<p>2.新建一个生成验证码的页面，此处取名为Code.php，然后引入上面的php代码，实例化类，调用上面的doimg方法。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #0000ff;">include</span>("ValidateCode.php"<span style="color: #000000;">);
+</span><span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span> ValidateCode(4<span style="color: #000000;">);
+</span><span style="color: #800080;">$obj</span>-&gt;<span style="color: #000000;">doimg(); 
+
+</span>?&gt;</code></pre>
+
+<p>3.上面的步骤做完后，就可以在其它页面通过img标签的src属性调用Code.php。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">=utf8</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>验证码<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">=""</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+        用户名：</span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="username"</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+        用户密码：</span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="userpwd"</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+        验证码：</span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="code"</span><span style="color: #0000ff;">&gt;&lt;</span><span style="color: #800000;">img </span><span style="color: #ff0000;">src</span><span style="color: #0000ff;">="code.php"</span><span style="color: #ff0000;"> alt</span><span style="color: #0000ff;">="yzm"</span><span style="color: #ff0000;"> onclick</span><span style="color: #0000ff;">="this.src='code.php?id='+Math.random()"</span><span style="color: #ff0000;"> width</span><span style="color: #0000ff;">="90px"</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>这样就完成了。</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

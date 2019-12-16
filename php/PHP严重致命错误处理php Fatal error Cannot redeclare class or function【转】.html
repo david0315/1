@@ -1,0 +1,86 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP严重致命错误处理php Fatal error Cannot redeclare class or function【转】' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP严重致命错误处理php Fatal error Cannot redeclare class or function【转】</center></div><div class='banquan'>原文出处:本文由博客园博主小猿笔记提供。<br/>
+原文连接:https://www.cnblogs.com/KillBugMe/p/11819355.html</div><br>
+    <p>这篇文章主要介绍了PHP严重致命错误处理:php Fatal error: Cannot redeclare class or function,需要的朋友可以参考下<br />
+<strong>1、错误类型:PHP致命错误</strong><br />
+Error type: PHP Fatal error<br />
+Fatal error: Cannot redeclare (a) (previously declared in (b)) in (c) on line (d)<br />
+<strong>2、错误描述:</strong><br />
+该错误报告表示你正企图对已经定义过的函数进行再次定义，其中<br />
+a----表示重复定义的函数名；<br />
+b----第一次定义该函数时的文件名称及行号；<br />
+c----第二次定义该函数时的文件名称；<br />
+d----第二次定义该函数时的行号。<br />
+<strong>3、原因及解决方法:</strong><br />
+原因：你连续两次使用相同名称来定义一个函数，例如</p>
+<pre><code><code>function myFunction(){}  
+function myFunction(){}</code></code></pre>
+<p>结果如下<br />
+<strong>Fatal error:Cannot redeclare myfunction()(previously declared in(path):2)in(path) on line 1</strong><br />
+解决：<br />
+找到已经声明过的函数，看看是什么需要导致你再次定义了它。如果只是单纯的忘记之前已经定义过，那么将其中一个声明删除掉就是。比如你的脚本文件排列异常混乱，并且你可能使用了大量的include()之类的函数，这将导致你很难从混乱的代码当中理清思路。不过，如果你的PHP版本比较新（PHP 5.3.8+）貌似就可以用命名空间来解决那种的确有重复定义函数必要的情况。<br />
+<strong>4 PHP严重致命错误处理解决举例说明如下</strong><br />
+1)在同一个文件中重复声明了两次同名的类：<br />
+例如：</p>
+<pre><code><code>&lt;?php 
+class Foo {} 
+// some code here 
+class Foo {} 
+?&gt;</code></code></pre>
+<p>在第二个 Foo 的地方就会报错。<br />
+解决：去掉第二个Foo，或者重命名。<br />
+为了防止重复定义，可以在定义一个新的类的时候判断一下这个类是否已经存在：</p>
+<pre><code><code>if(class_exists(&#39;SomeClass&#39;) != true) 
+{ 
+ //put class SomeClass here 
+}</code></code></pre>
+<p>2)重复包含相同的类文件：<br />
+例如：对于某个类文件some_class.php，在a.php中</p>
+<pre><code><code>include &quot;some\_class.php&quot;; 
+include &quot;some\_class.php&quot;;</code></code></pre>
+<p>在b.php中</p>
+<pre><code><code>include &quot;a.php&quot;;   
+include &quot;some\_class.php&quot;;   
+include &quot;a.php&quot;;  
+include &quot;some\_class.php&quot;;</code></code></pre>
+<p>就会报错。<br />
+解决：将上述的<strong>include</strong>全部替换为<strong>include_once</strong><br />
+3)该类为PHP类库中内置的类。<br />
+判断方法：在一个空文件中写入</p>
+<pre><code><code>&lt;?php 
+class Com 
+{ 
+    // some  code
+} 
+?&gt;</code></code></pre>
+<p>这时候提示<strong>Cannot redeclare class Com</strong>，说明这个类就是PHP内置的类。不能使用。<br />
+另外，要避免使用太大众化的类名，比如Com，这个类在Linux使用可能是正常的，在Windows环境却无法运行。<br />
+再记一个网上找到的解决方法，可能在某些场合有用，先记着</p>
+<pre><code><code>if (!class_exists(&#39;pageModule&#39;)){ 
+    require_once(PATH_site.&#39;fileadmin/scripts/class.page.php&#39;);
+}</code></code></pre>
+<p>上面的办法不适用于使用了php __autoload类加载的方法 ,但己经可以解决办法问题了，__autoload是自动加载的我们只要把相同类名找出来然后重命名即可。</p>
+<p>原文链接：<a href="https://www.jb51.net/article/104677.htm" class="uri">https://www.jb51.net/article/104677.htm</a></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

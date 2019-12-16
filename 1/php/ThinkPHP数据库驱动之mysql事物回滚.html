@@ -1,0 +1,139 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP数据库驱动之mysql事物回滚' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP数据库驱动之mysql事物回滚</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/11684358.html</div><br>
+    <p>1、开启事务方法 startTrans()<br />2、事务提交方法 commit()<br />3、事务回滚方法 rollback()</p>
+<p>用法例子:</p>
+<src class="cnblogs_code">
+<pre><code>$order =<span style="color: #000000;"> M(&lsquo;order&rsquo;);
+$allAdded </span>= <span style="color: #0000ff;">true</span>; <span style="color: #008000;">//</span><span style="color: #008000;">先设定一个值为 true;</span>
+$data[<span style="color: #800000;">'</span><span style="color: #800000;">name</span><span style="color: #800000;">'</span>] = <span style="color: #800000;">'</span><span style="color: #800000;">winter</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+$order</span>-&gt;startTrans(); <span style="color: #008000;">//</span><span style="color: #008000;">开启事物</span>
+<span style="color: #0000ff;">for</span>($i = <span style="color: #800080;">1</span>;$i&lt;<span style="color: #800080;">3</span>;$i++<span style="color: #000000;">){ 
+    $sign </span>= $order-&gt;add($data); <span style="color: #008000;">//</span><span style="color: #008000;">添加一条数据到order表</span>
+    <span style="color: #0000ff;">if</span>(!<span style="color: #000000;">$sign){
+        $order</span>-&gt;rollback(); <span style="color: #008000;">//</span><span style="color: #008000;">如果order添加失败事物回滚</span>
+        $allAdded = <span style="color: #0000ff;">false</span>; <span style="color: #008000;">//</span><span style="color: #008000;">并且把allAdded设置为 false</span>
+<span style="color: #000000;">    }
+}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">回滚</span>
+<span style="color: #0000ff;">if</span><span style="color: #000000;">($allAdded){
+    $order</span>-&gt;<span style="color: #000000;">commit(); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 如果allAdded为真则两条数据都成功；那么 commit事物提交</span>
+    echo <span style="color: #800000;">'</span><span style="color: #800000;">添加成功</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+}</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+    echo </span><span style="color: #800000;">'</span><span style="color: #800000;">添加失败</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>如果commit了。那么就提交插入数据。如果发现alladded为假说明有条数据没插入正确。那么就rollback回滚就会取消事物开启之后操作数据库的所有行为。</p>
+<p>提供一个例子助于大家加深理解</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span><span style="color: #000000;"> function insertdata(){
+    $model </span>=<span style="color: #000000;"> M();
+    $model</span>-&gt;<span style="color: #000000;">startTrans();
+    $data[</span><span style="color: #800000;">'</span><span style="color: #800000;">name</span><span style="color: #800000;">'</span>] = <span style="color: #800000;">'</span><span style="color: #800000;">winter</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">增加一条用户信息</span>
+    $si = $model-&gt;table(C(<span style="color: #800000;">'</span><span style="color: #800000;">DB_PREFIX</span><span style="color: #800000;">'</span>).<span style="color: #800000;">'</span><span style="color: #800000;">user</span><span style="color: #800000;">'</span>)-&gt;<span style="color: #000000;">add($data);
+    </span><span style="color: #0000ff;">if</span>(!<span style="color: #000000;">$si){
+        $model</span>-&gt;<span style="color: #000000;">rollback();
+        exit();
+    }
+    $car[</span><span style="color: #800000;">'</span><span style="color: #800000;">brand</span><span style="color: #800000;">'</span>] =<span style="color: #000000;"> $si;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">增加一条用户id</span>
+    $c = $model-&gt;table(C(<span style="color: #800000;">'</span><span style="color: #800000;">DB_PREFIX</span><span style="color: #800000;">'</span>).<span style="color: #800000;">'</span><span style="color: #800000;">car</span><span style="color: #800000;">'</span>)-&gt;<span style="color: #000000;">add($car);
+    </span><span style="color: #0000ff;">if</span>($si &amp;&amp;<span style="color: #000000;"> $c){
+        $model</span>-&gt;<span style="color: #000000;">commit();
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        $model</span>-&gt;<span style="color: #000000;">rollback();
+    }
+}
+复制代码</span></code></pre>
+
+<p>&nbsp;例子二：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">提现操作</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> ajax_tx()
+    {
+         </span><span style="color: #008000;">//</span><span style="color: #008000;">判断是否登录</span>
+        <span style="color: #0000ff;">if</span>(session('uid') == <span style="color: #0000ff;">NULL</span> || session('uid') == "" || session('uid') == <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+           </span><span style="color: #0000ff;">echo</span> "300"<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">接受提现提交来的数据</span>
+            
+            <span style="color: #800080;">$txnumber</span> = <span style="color: #008080;">intval</span>(<span style="color: #008080;">trim</span>(<span style="color: #800080;">$_POST</span>['txnumber'<span style="color: #000000;">]));
+
+            </span><span style="color: #800080;">$name</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$_POST</span>['name'<span style="color: #000000;">]);
+            </span><span style="color: #800080;">$alipay_number</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$_POST</span>['alipay_number'<span style="color: #000000;">]);
+            </span><span style="color: #800080;">$data</span> = M("fanxian_new")-&gt;where("f_uid='".session('uid')."'")-&gt;<span style="color: #000000;">find();
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$txnumber</span><span style="color: #000000;">)){
+                </span><span style="color: #0000ff;">echo</span> "301";<span style="color: #0000ff;">exit</span>;<span style="color: #008000;">//</span><span style="color: #008000;">提现金豆不能为空</span>
+            }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>) || <span style="color: #008080;">intval</span>(<span style="color: #800080;">$data</span>['f_fan_fee'])==0<span style="color: #000000;">){
+                    </span><span style="color: #0000ff;">echo</span> "302";<span style="color: #0000ff;">exit</span>;<span style="color: #008000;">//</span><span style="color: #008000;">无可提现金豆</span>
+                }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$data</span>['f_fan_fee']&lt;<span style="color: #008080;">number_format</span>(<span style="color: #800080;">$txnumber</span>,2<span style="color: #000000;">)){
+                        </span><span style="color: #0000ff;">echo</span> "303";<span style="color: #0000ff;">exit</span>;<span style="color: #008000;">//</span><span style="color: #008000;">提现金豆数请勿大于持有金豆数</span>
+                    }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                        </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$alipay_number</span><span style="color: #000000;">)){
+                            </span><span style="color: #0000ff;">echo</span> "304";<span style="color: #0000ff;">exit</span>;<span style="color: #008000;">//</span><span style="color: #008000;">提现者支付宝账号不能为空</span>
+<span style="color: #000000;">                        }
+                        </span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$name</span><span style="color: #000000;">)){
+                            </span><span style="color: #0000ff;">echo</span> "305";<span style="color: #0000ff;">exit</span>;<span style="color: #008000;">//</span><span style="color: #008000;">提现者真实姓名不能为空</span>
+<span style="color: #000000;">                        }
+
+                        </span><span style="color: #800080;">$model</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> \Think\Model();
+                        </span><span style="color: #800080;">$model</span>-&gt;startTrans(); <span style="color: #008000;">//</span><span style="color: #008000;">开启事物
+                        //操作提现记录</span>
+                        <span style="color: #800080;">$fanxian_new_log</span> = M("fanxian_new_log"<span style="color: #000000;">);
+                        </span><span style="color: #800080;">$fanxian_new_log</span>-&gt;f_num_fee = <span style="color: #008080;">number_format</span>(<span style="color: #800080;">$txnumber</span>,2<span style="color: #000000;">);
+                        </span><span style="color: #800080;">$fanxian_new_log</span>-&gt;f_lmId = session("uid"<span style="color: #000000;">);
+                        </span><span style="color: #800080;">$fanxian_new_log</span>-&gt;f_create_time = <span style="color: #008080;">time</span><span style="color: #000000;">();
+                        </span><span style="color: #800080;">$fanxian_new_log</span>-&gt;f_name = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+                        </span><span style="color: #800080;">$fanxian_new_log</span>-&gt;f_alipay = <span style="color: #800080;">$alipay_number</span><span style="color: #000000;">;
+                        </span><span style="color: #800080;">$fanxian_new_log</span>-&gt;f_status = 1;<span style="color: #008000;">//</span><span style="color: #008000;">1表示提现记录 0表示返现记录</span>
+                        <span style="color: #800080;">$jdtx</span> = <span style="color: #800080;">$fanxian_new_log</span>-&gt;<span style="color: #000000;">add();
+
+                        </span><span style="color: #800080;">$fanxian_new</span> = M("fanxian_new"<span style="color: #000000;">);
+                        </span><span style="color: #800080;">$fanxian_new</span>-&gt;f_uid    = <span style="color: #800080;">$data</span>['f_uid'<span style="color: #000000;">];
+                        </span><span style="color: #800080;">$fanxian_new</span>-&gt;f_fan_fee = <span style="color: #800080;">$data</span>['f_fan_fee']-<span style="color: #008080;">number_format</span>(<span style="color: #800080;">$txnumber</span>,2<span style="color: #000000;">);
+                        </span><span style="color: #800080;">$jd</span> = <span style="color: #800080;">$fanxian_new</span>-&gt;<span style="color: #000000;">save();
+                        </span><span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$jdtx</span>) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$jd</span><span style="color: #000000;">)){
+                            </span><span style="color: #008000;">//</span><span style="color: #008000;">提交</span>
+                            <span style="color: #800080;">$model</span>-&gt;<span style="color: #000000;">commit();
+                            </span><span style="color: #0000ff;">echo</span> "200";<span style="color: #0000ff;">exit</span>;<span style="color: #008000;">//</span><span style="color: #008000;">提现成功</span>
+                        }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                            </span><span style="color: #008000;">//</span><span style="color: #008000;">回滚</span>
+                            <span style="color: #800080;">$model</span>-&gt;<span style="color: #000000;">rollback();
+                            </span><span style="color: #0000ff;">echo</span> "306";<span style="color: #0000ff;">exit</span>;<span style="color: #008000;">//</span><span style="color: #008000;">提现失败</span>
+<span style="color: #000000;">                        }
+                        
+                    }
+                }
+            }
+            
+        }
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

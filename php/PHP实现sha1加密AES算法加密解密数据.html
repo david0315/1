@@ -1,0 +1,57 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现sha1加密AES算法加密解密数据' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现sha1加密AES算法加密解密数据</center></div><div class='banquan'>原文出处:本文由博客园博主dreams7433提供。<br/>
+原文连接:https://www.cnblogs.com/phperlinxinlan/p/11867809.html</div><br>
+    <p>一、加密代码如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     *
+     * @param string $string 需要加密的字符串
+     * @param string $key 密钥
+     * @return string
+     </span><span style="color: #008000;">*/</span> 
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> encrypts(<span style="color: #800080;">$string</span>, <span style="color: #800080;">$key</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$key</span> = <span style="color: #008080;">substr</span>(openssl_digest(openssl_digest(<span style="color: #800080;">$key</span>, 'sha1', <span style="color: #0000ff;">true</span>), 'sha1', <span style="color: #0000ff;">true</span>), 0, 16<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> openssl_encrypt 加密不同Mcrypt，对秘钥长度要求，超出16加密结果不变</span>
+        <span style="color: #800080;">$data</span> = openssl_encrypt(<span style="color: #800080;">$string</span>, 'AES-128-ECB', <span style="color: #800080;">$key</span>,<span style="color: #000000;"> OPENSSL_RAW_DATA);
+        </span><span style="color: #800080;">$encrypted</span> = <span style="color: #008080;">strtolower</span>(<span style="color: #008080;">bin2hex</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">));
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$encrypted</span><span style="color: #000000;">;
+    }   </span></code></pre>
+
+<p>二、解密代码如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * @param string $string 需要解密的字符串
+     * @param string $key 密钥
+     * @return string
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> decrypts(<span style="color: #800080;">$string</span>, <span style="color: #800080;">$key</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$key</span> = <span style="color: #008080;">substr</span>(openssl_digest(openssl_digest(<span style="color: #800080;">$key</span>, 'sha1', <span style="color: #0000ff;">true</span>), 'sha1', <span style="color: #0000ff;">true</span>), 0, 16<span style="color: #000000;">);
+        </span><span style="color: #800080;">$decrypted</span> = openssl_decrypt(hex2bin(<span style="color: #800080;">$string</span>), 'AES-128-ECB', <span style="color: #800080;">$key</span>,<span style="color: #000000;"> OPENSSL_RAW_DATA);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$decrypted</span><span style="color: #000000;">;
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

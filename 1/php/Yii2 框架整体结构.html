@@ -1,0 +1,163 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Yii2 框架整体结构' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Yii2 框架整体结构</center></div><div class='banquan'>原文出处:本文由博客园博主LastSun提供。<br/>
+原文连接:https://www.cnblogs.com/wudanyang/p/11567954.html</div><br>
+    <p>Yii2框架是一个非常庞大但是并不臃肿的 php 框架。使用 Yii2 框架，可以极大的提升开发效率。<br />
+秉持着要知其然也要知其所以然的思想，花了一周的时间，看了 linuor 的 <a href="http://www.digpage.com">《深入理解Yii2.0》</a><br />
+根据我的理解梳理了一下 Yii2 框架的整体结构。此后简称框架。</p>
+<h1 id="yii-框架基础">Yii 框架基础</h1>
+<p>此框架的三个基础概念：</p>
+<ul>
+<li>属性</li>
+<li>事件</li>
+<li>行为</li>
+</ul>
+<p>毕竟三生万物。</p>
+<h2 id="属性">属性</h2>
+<p>一看到这个词可能很迷惑，那么什么是属性呢。<br />
+比如说，你现在正在玩一款角色扮演的游戏，角色双手分别有一把 <code>十方大剑</code> ，一个 <code>十方盾牌</code>。<br />
+那么从面向对象的角度而言，你的角色类需要有 <code>左手武器</code> 和 <code>右手武器</code> 两个成员变量。<br />
+并且角色类可以从 <code>左手武器</code> 和 <code>右手武器</code> 中获得 力量属性。</p>
+<p>这么一说属性这一概念，就很容易理解了。</p>
+<h2 id="事件">事件</h2>
+<p>还是以角色扮演游戏为例（这里要对不起不玩游戏的朋友了，原谅我匮乏的想象力，或者你有好的比喻也可以跟我说），游戏里面都有任务系统，而任务会分为主线任务和支线任务，在做主线任务是通常会触发一系列的支线任务。这些支线任务的触发就可以认为是一系列的事件。</p>
+<h2 id="行为">行为</h2>
+<p>框架的行为也可以使用角色扮演游戏来举例，你在 无尽荒原 捡到了一本魔法书，学会了禁咒魔法，<code>召唤神龙</code>。<br />
+于是你把程序一改，给你的类加一个召唤魔法的方法，这是不可能的。我们必须让你的类拥有一个动态添加方法的功能，于是所有拿到魔法书的人或者限定职业的人，都能学会这个禁咒这就是行为的作用，动态给类增加方法。</p>
+<p>以上，有了这三个 框架 实现的武器，我们才能更快速和灵活的搭建上层的程序。</p>
+<h1 id="设计模式">设计模式</h1>
+<h2 id="依赖注入">依赖注入</h2>
+<p>框架采用了现在世面上面最常见的一种模式， MVC 模式，具体细节不在阐述，现在网上关于 MVC 的介绍可以说是烂大街了。<br />
+但是 MVC 只是一种大框架上的设计模式，其核心思想是分层，最终目的是解耦。框架在 MVC 的基础上，应用了很多经典的设计模式以及后来发展的设计模式。</p>
+<p>其中最重要的就是：</p>
+<ul>
+<li>依赖注入</li>
+<li>服务定位器。</li>
+</ul>
+<p>那么什么是依赖注入呢<br />
+先来一段没有依赖注入的代码：</p>
+<pre><code><code>&lt;?php
+// 这段代码将 db1 中的t1表的数据备份到 db2 库的 t2 中。
+// 所使用的变量都在逻辑过程中申请。
+class Archive {
+    public function doArchive() {
+        $dataDB = new DB1();
+        
+        $data = $dataDB-&gt;query(&quot;select * from t1&quot;);
+
+        $backDB = new DB2();
+
+        foreach ($data as $key =&gt; $value) {
+            $backDB-&gt;query(&quot;insert into t2 values &quot;. implode(&#39;,&#39;, $value));
+        }
+
+        die(&quot;备份完成&quot;);
+    }
+}</code></code></pre>
+<p>那么如果再来一个需求，让你把 db3 的数据备份到 db4 中，逻辑相同，那么你该怎么办呢？<br />
+有道友就说了，那还不简单， copy &amp; paste，搞定。<br />
+于是，你多了一个方法或者一个类。<br />
+一直到你的方法和类增加到10个以上时，你都不会有什么感觉。<br />
+直到产品说现在需求变了，让你把所有的备份库都改成 db3，那么，你就要把手头的工作都停下来，然后将代码中的备份库全改成 db3。</p>
+<p>而且，如果你使用的是静态语言，那么，你就要把代码再重新编译一遍。关于静态语言的编译时长：<a href="https://www.it-swarm.net/zh/c%2B%2B/为什么c编译需要这么长时间？/958066158/">为什么c编译需要这么长时间</a></p>
+<p>那么就有了下面这种：</p>
+<pre class="php"><code>class ArchiveNew {
+    private $originDb;
+    private $backDb;
+
+    public function doArchive() {
+        $dataDB = new $this-&gt;originDb();
+        
+        $data = $dataDB-&gt;query(&quot;select * from t1&quot;);
+
+        $backDB = new $this-&gt;backDb();
+
+        foreach ($data as $key =&gt; $value) {
+            $backDB-&gt;query(&quot;insert into t2 values &quot;. implode(&#39;,&#39;, $value));
+        }
+
+        die(&quot;备份完成&quot;);
+    }
+
+    /**
+     * @param mixed $originDb
+     */
+    public function setOriginDb($originDb)
+    {
+        $this-&gt;originDb = $originDb;
+    }
+
+    /**
+     * @param mixed $backDb
+     */
+    public function setBackDb($backDb)
+    {
+        $this-&gt;backDb = $backDb;
+    }
+}</code></code></pre>
+<p>这个方法，把所有的需要用到的数据库都放到了外面来进行管理，那么我们称这几个数据库为依赖，称在外部设置数据库的行为为依赖注入。<br />
+这只是一种很原始的使用方式，你可以继续延伸，将外部依赖放到统一的地方去管理，那么就有了注入容器（di Container）</p>
+<h2 id="服务定位器">服务定位器</h2>
+<p>服务定位器像是一个注册中心，向服务定位器中注册一个 a 服务，可以使用 a 这个名字从服务定位器中取出这个服务。</p>
+<pre class="php"><code>$locator = new ServiceLocator;
+$locator-&gt;set(&#39;a&#39;);
+$locator-&gt;get(&#39;a&#39;);</code></code></pre>
+<p>服务定位器是基于依赖注入的，在获取服务时，其实会在容器中先注册一个服务。</p>
+<h1 id="请求与响应">请求与响应</h1>
+<p>这一节其实主要讲的就是请求。<br />
+请求的内容会比较多，还涉及到网络协议等知识，这里不再展开。<br />
+列举一下重要的几点：</p>
+<ol>
+<li>路由美化 （将原始的路由修改成比较美观的地址，见导图 请求部分）</li>
+<li>url 解析（将美化过的路由解析成原始请求）</li>
+<li>请求管理 （包括请求头部，请求体，解析器等等）</li>
+</ol>
+<h1 id="数据库">数据库</h1>
+<p><img src="./images/Yii2 框架整体结构0.jpg" /></p>
+<p>虽然这张图有些搞笑，但是无疑说明了 数据库（MySQL）对于 PHP 的重要性。</p>
+<h2 id="类型转换">类型转换</h2>
+<p>框架为了兼容各种数据库，对数据类型做了多层封装，并且做了一系列的转换规则：<br />
+<img src="./images/Yii2 框架整体结构1.jpg" /></p>
+<h2 id="事务">事务</h2>
+<p>框架支持事务嵌套，但是嵌套的事务必须成对出现（注意！！！）。<br />
+看到事务这一节的时候，正巧同事出了一个 bug ，在脚本的循环中，出错之后没有 commit 或者 rollback ，导致，接下来的生成的事务都成了这个事务的子事务。而框架的嵌套事务，实际上是使用代码模拟的，如果父事务没有提交，那么子事务永远不会提交。</p>
+<h2 id="事件-1">事件</h2>
+<pre><code><code>const EVENT_INIT = &#39;init&#39;;                      // 初始化对象时触发
+const EVENT_AFTER_FIND = &#39;afterFind&#39;;           // 执行查询结束时触发
+const EVENT_BEFORE_INSERT = &#39;beforeInsert&#39;;     // 插入结束时触发
+const EVENT_AFTER_INSERT = &#39;afterInsert&#39;;       // 插入之前触发
+const EVENT_BEFORE_UPDATE = &#39;beforeUpdate&#39;;     // 更新记录前触发
+const EVENT_AFTER_UPDATE = &#39;afterUpdate&#39;;       // 更新记录后触发
+const EVENT_BEFORE_DELETE = &#39;beforeDelete&#39;;     // 删除记录前触发
+const EVENT_AFTER_DELETE = &#39;afterDelete&#39;;       // 删除记录后触发</code></code></pre>
+<p>这些事件和其他事件没有什么分别，都是在特定的时候会执行，就不一一阐述了。</p>
+<h2 id="乐观锁和悲观锁">乐观锁和悲观锁</h2>
+<p>框架自带了乐观锁的实现，如果有类似需求，可以在重载yii\db\ActiveRecord::optimisticLock() 方法，返回数据库中的版本号字段即可。在更新与删除时，框架会做相应的操作，来保证，更新的数据是自己拿到的数据，而不是被别人给修改过了。<br />
+因为悲观锁不适用于 web 应用，所以框架并没有实现悲观锁。</p>
+<h1 id="总结">总结</h1>
+<p>Yii2 框架的整体架构要比 1 版本提升了一个逼格。并且得益于 namespace 特性，框架的目录结构清晰了很多。<br />
+对于不想了解框架底层实现的程序员，可以仅仅了解基本使用，就可以上手写业务代码，而不会影响你的开发效率。<br />
+只有当你遇见一个很蛋疼的框架内部报错或者 bug 的时候，你才会想到，我去，这怎么这么蛋疼，怎么框架还会有 bug ，但是很多时候是环境、配置或者特定的代码导致的。如果不了解框架的内部逻辑，这个报错或者 bug 会耽误你很长时间。</p>
+<p><img src="./images/Yii2 框架整体结构2.jpg" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

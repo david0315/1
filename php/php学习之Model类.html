@@ -1,0 +1,927 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php学习之Model类' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php学习之Model类</center></div><div class='banquan'>原文出处:本文由博客园博主随缘盛世提供。<br/>
+原文连接:https://www.cnblogs.com/shengChristine/p/10966007.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #800080;">$config</span> = <span style="color: #0000ff;">include</span> 'config.php'; <span style="color: #008000;">//</span><span style="color: #008000;">引入数据库配置文件</span>
+<span style="color: #800080;">$model</span> = <span style="color: #0000ff;">new</span> Model(<span style="color: #800080;">$config</span><span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">测试案例
+// $saveData=['username'=&gt;'张三','mobile'=&gt;12334123];
+// echo $model-&gt;table('user')-&gt;insert($saveData);
+// var_dump($model-&gt;table('user')-&gt;where('id=5')-&gt;delete());
+// var_dump($model-&gt;table('user')-&gt;limit('0,6')-&gt;field('username,mobile')-&gt;where('id&gt;1')-&gt;order('id desc')-&gt;select());
+// $updateData=['username'=&gt;'张三'];
+// var_dump($model-&gt;table('user')-&gt;where('id=3')-&gt;update($updateData));
+// var_dump($model-&gt;table('user')-&gt;max('mobile'));
+// var_dump($model-&gt;table('user')-&gt;getByUserName('张三'));
+// var_dump($model-&gt;sql);</span>
+
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Model
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">主机名</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$host</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">用户名</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$user</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">密码</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$pwd</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">数据库名</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$dbname</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">字符集</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$charset</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">数据库前缀</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$prefix</span><span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">数据库连接资源</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$link</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">数据表名       这里可以自己指定表名</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$tableName</span><span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">sql语句</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$sql</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">操作数组   存放的就是所有的查询条件</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$options</span><span style="color: #000000;">;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 构造方法，对成员变量进行初始化
+     *
+     * @param [type] $config
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$config</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">对成员变量一一进行初始化</span>
+        <span style="color: #800080;">$this</span>-&gt;host = <span style="color: #800080;">$config</span>['DB_HOST'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$this</span>-&gt;user = <span style="color: #800080;">$config</span>['DB_USER'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$this</span>-&gt;pwd = <span style="color: #800080;">$config</span>['DB_PWD'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$this</span>-&gt;dbname = <span style="color: #800080;">$config</span>['DB_NAME'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$this</span>-&gt;charset = <span style="color: #800080;">$config</span>['DB_CHARSET'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$this</span>-&gt;prefix = <span style="color: #800080;">$config</span>['DB_PREFIX'<span style="color: #000000;">];
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">连接数据库</span>
+        <span style="color: #800080;">$this</span>-&gt;link = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">connect();
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到数据表名  user===&gt;UserModel</span>
+        <span style="color: #800080;">$this</span>-&gt;tableName = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getTableName();
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">初始化option数组</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">initOptions();
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 连接数据库
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> connect()
+    {
+        </span><span style="color: #800080;">$link</span> = <span style="color: #008080;">mysqli_connect</span>(<span style="color: #800080;">$this</span>-&gt;host, <span style="color: #800080;">$this</span>-&gt;user, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">pwd);
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$link</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">die</span>('数据库连接失败'<span style="color: #000000;">);
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">选择数据库</span>
+        <span style="color: #008080;">mysqli_select_db</span>(<span style="color: #800080;">$link</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">dbname);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">设置字符集</span>
+        mysqli_set_charset(<span style="color: #800080;">$link</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">charset);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">返回连接成功的资源</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$link</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 得到数据表名
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getTableName()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">第一种，如果设置了成员变量，那么通过成员变量来得到表名</span>
+        <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">tableName)) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;prefix . <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">tableName;
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">第二种，如果没有设置成员变量，那么通过类名来得到表名
+        //得到当前类名字符串</span>
+        <span style="color: #800080;">$className</span> = <span style="color: #008080;">get_class</span>(<span style="color: #800080;">$this</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">user  UserModel   goods  GoodsModel</span>
+        <span style="color: #800080;">$table</span> = <span style="color: #008080;">strtolower</span>(<span style="color: #008080;">substr</span>(<span style="color: #800080;">$className</span>, 0, -5<span style="color: #000000;">));
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;prefix . <span style="color: #800080;">$table</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 初始化option数组
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> initOptions()
+    {
+        </span><span style="color: #800080;">$arr</span> = ['where', 'table', 'field', 'order', 'group', 'having', 'limit'<span style="color: #000000;">];
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">将options数组中这些键对应的值全部清空</span>
+            <span style="color: #800080;">$this</span>-&gt;options[<span style="color: #800080;">$value</span>] = ''<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$value</span> === 'table'<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;options[<span style="color: #800080;">$value</span>] = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">tableName;
+            } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$value</span> == 'field'<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$this</span>-&gt;options[<span style="color: #800080;">$value</span>] = '*'<span style="color: #000000;">;
+            }
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * field方法
+     *
+     * @param [type] $field
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> field(<span style="color: #800080;">$field</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">如果不为空，再进行处理</span>
+        <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$field</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_string</span>(<span style="color: #800080;">$field</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$this</span>-&gt;options['field'] = <span style="color: #800080;">$field</span><span style="color: #000000;">;
+            } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$field</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$this</span>-&gt;options['field'] = <span style="color: #008080;">join</span>(',', <span style="color: #800080;">$field</span><span style="color: #000000;">);
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * //table方法
+     *
+     * @param [type] $table
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> table(<span style="color: #800080;">$table</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$table</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$this</span>-&gt;options['table'] = <span style="color: #800080;">$this</span>-&gt;prefix . <span style="color: #800080;">$table</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * where方法
+     *
+     * @param [type] $where
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> where(<span style="color: #800080;">$where</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$where</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$this</span>-&gt;options['where'] = 'where ' . <span style="color: #800080;">$where</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * group方法
+     *
+     * @param [type] $group
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> group(<span style="color: #800080;">$group</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$group</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$this</span>-&gt;options['group'] = 'group by ' . <span style="color: #800080;">$group</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * having方法
+     *
+     * @param [type] $having
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> having(<span style="color: #800080;">$having</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$having</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$this</span>-&gt;options['having'] = 'having ' . <span style="color: #800080;">$having</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * order方法
+     *
+     * @param [type] $order
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> order(<span style="color: #800080;">$order</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$order</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$this</span>-&gt;options['order'] = 'order by ' . <span style="color: #800080;">$order</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * limit方法
+     *
+     * @param [type] $limit
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> limit(<span style="color: #800080;">$limit</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$limit</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_string</span>(<span style="color: #800080;">$limit</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$this</span>-&gt;options['limit'] = 'limit ' . <span style="color: #800080;">$limit</span><span style="color: #000000;">;
+            } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$limit</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$this</span>-&gt;options['limit'] = 'limit ' . <span style="color: #008080;">join</span>(',', <span style="color: #800080;">$limit</span><span style="color: #000000;">);
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * select方法
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span><span style="color: #000000;"> select()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">先预写一个带占位符的sql语句</span>
+        <span style="color: #800080;">$sql</span> = 'select %FIELD% from %TABLE% %WHERE% %GROUP% %HAVING% %ORDER% %LIMIT%'<span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">将options中对应的值依次的替换上面的占位符</span>
+        <span style="color: #800080;">$sql</span> = <span style="color: #008080;">str_replace</span><span style="color: #000000;">(
+            [</span>'%FIELD%', '%TABLE%', '%WHERE%', '%GROUP%', '%HAVING%', '%ORDER%', '%LIMIT%'],<span style="color: #000000;">
+            [
+                </span><span style="color: #800080;">$this</span>-&gt;options['field'], <span style="color: #800080;">$this</span>-&gt;options['table'], <span style="color: #800080;">$this</span>-&gt;options['where'], <span style="color: #800080;">$this</span>-&gt;options['group'],
+                <span style="color: #800080;">$this</span>-&gt;options['having'], <span style="color: #800080;">$this</span>-&gt;options['order'], <span style="color: #800080;">$this</span>-&gt;options['limit'<span style="color: #000000;">]
+            ]</span>,
+            <span style="color: #800080;">$sql</span><span style="color: #000000;">
+        );
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">保存一份sql语句</span>
+        <span style="color: #800080;">$this</span>-&gt;sql = <span style="color: #800080;">$sql</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">执行sql语句</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;query(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * query
+     *
+     * @param [type] $sql
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> query(<span style="color: #800080;">$sql</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">清空option数组中的值</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">initOptions();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">执行sql语句</span>
+        <span style="color: #800080;">$result</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$this</span>-&gt;link, <span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">提取结果集存放到数组中</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> &amp;&amp; <span style="color: #008080;">mysqli_affected_rows</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">link)) {
+            </span><span style="color: #0000ff;">while</span> (<span style="color: #800080;">$data</span> = <span style="color: #008080;">mysqli_fetch_assoc</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$newData</span>[] = <span style="color: #800080;">$data</span><span style="color: #000000;">;
+            }
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">返回结果集</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$newData</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * exec
+     *
+     * @param [type] $sql
+     * @param boolean $isInsert
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> <span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span>, <span style="color: #800080;">$isInsert</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">清空option数组中的值</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">initOptions();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">执行sql语句</span>
+        <span style="color: #800080;">$result</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$this</span>-&gt;link, <span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> &amp;&amp; <span style="color: #008080;">mysqli_affected_rows</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">link)) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">判断是否是插入语句，根据不同的语句返回不同的结果</span>
+            <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$isInsert</span><span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">mysqli_insert_id</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">link);
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">mysqli_affected_rows</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">link);
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">function</span> __get(<span style="color: #800080;">$name</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$name</span> == 'sql'<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">sql;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * insert函数
+     * insert into 表名(字段) value(值)
+     *
+     * @param [type] $data  关联数组，键就是字段名，值是字段值
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> insert(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">处理值是字符串问题，两边需要添加单或双引号</span>
+        <span style="color: #800080;">$data</span> = <span style="color: #800080;">$this</span>-&gt;parseValue(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">提取所有的键，即就是所有的字段</span>
+        <span style="color: #800080;">$keys</span> = <span style="color: #008080;">array_keys</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">提取所有的值</span>
+        <span style="color: #800080;">$values</span> = <span style="color: #008080;">array_values</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">增加数据的sql语句</span>
+        <span style="color: #800080;">$sql</span> = 'insert into %TABLE%(%FIELD%) values(%VALUES%)'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$sql</span> = <span style="color: #008080;">str_replace</span>(['%TABLE%', '%FIELD%', '%VALUES%'], [<span style="color: #800080;">$this</span>-&gt;options['table'], <span style="color: #008080;">join</span>(',', <span style="color: #800080;">$keys</span>), <span style="color: #008080;">join</span>(',', <span style="color: #800080;">$values</span>)], <span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;sql = <span style="color: #800080;">$sql</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 传递进来一个数组，将数组中值为字符串的两边加上引号
+     *
+     * @param [type] $data
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> parseValue(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">遍历数组，判断是否为字符串，若是字符串，将其两边添加引号</span>
+        <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_string</span>(<span style="color: #800080;">$value</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$value</span> = '"' . <span style="color: #800080;">$value</span> . '"'<span style="color: #000000;">;
+            }
+            </span><span style="color: #800080;">$newData</span>[<span style="color: #800080;">$key</span>] = <span style="color: #800080;">$value</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">返回处理后的数组</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$newData</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 删除函数
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span><span style="color: #000000;"> delete()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">拼接sql语句</span>
+        <span style="color: #800080;">$sql</span> = 'delete from %TABLE% %WHERE%'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$sql</span> = <span style="color: #008080;">str_replace</span>(['%TABLE%', '%WHERE%'], [<span style="color: #800080;">$this</span>-&gt;options['table'], <span style="color: #800080;">$this</span>-&gt;options['where']], <span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">保存sql语句</span>
+        <span style="color: #800080;">$this</span>-&gt;sql = <span style="color: #800080;">$sql</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">执行sql语句</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 更新函数
+     * update 表名 set 字段名=字段值，字段名=字段值 where
+     *
+     * @param [type] $data
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> update(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">处理$data数组中值为字符串加引号的问题</span>
+        <span style="color: #800080;">$data</span> = <span style="color: #800080;">$this</span>-&gt;parseValue(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">将关联数组拼接为固定的格式  键=值，键=值</span>
+        <span style="color: #800080;">$value</span> = <span style="color: #800080;">$this</span>-&gt;parseUpdate(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">准备sql语句</span>
+        <span style="color: #800080;">$sql</span> = 'update %TABLE% set %VALUE% %WHERE%'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$sql</span> = <span style="color: #008080;">str_replace</span>(['%TABLE%', '%VALUE%', '%WHERE%'], [<span style="color: #800080;">$this</span>-&gt;options['table'], <span style="color: #800080;">$value</span>, <span style="color: #800080;">$this</span>-&gt;options['where']], <span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">保存sql语句</span>
+        <span style="color: #800080;">$this</span>-&gt;sql = <span style="color: #800080;">$sql</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">执行sql语句</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 将关联数组拼接为固定的格式
+     *
+     * @param [type] $data
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> parseUpdate(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$newData</span>[] = <span style="color: #800080;">$key</span> . '=' . <span style="color: #800080;">$value</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">join</span>(',', <span style="color: #800080;">$newData</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * max函数
+     *
+     * @param [type] $field
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> <span style="color: #008080;">max</span>(<span style="color: #800080;">$field</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">通过调用自己封装的方法进行查询</span>
+        <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;field('max(' . <span style="color: #800080;">$field</span> . ') as max')-&gt;<span style="color: #000000;">select();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">select方法返回的是一个二维数组</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span>[0]['max'<span style="color: #000000;">];
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 析构方法
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct()
+    {
+        </span><span style="color: #008080;">mysqli_close</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">link);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * getByName   getByAge
+     *
+     * @param [type] $name
+     * @param [type] $args
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">function</span> __call(<span style="color: #800080;">$name</span>, <span style="color: #800080;">$args</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">获取前5个字符</span>
+        <span style="color: #800080;">$str</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$name</span>, 0, 5<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">获取后面的字段名</span>
+        <span style="color: #800080;">$field</span> = <span style="color: #008080;">strtolower</span>(<span style="color: #008080;">substr</span>(<span style="color: #800080;">$name</span>, 5<span style="color: #000000;">));
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">判断前五个字符是否是getby</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$str</span> === 'getBy'<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;where(<span style="color: #800080;">$field</span> . '="' . <span style="color: #800080;">$args</span>[0] . '"')-&gt;<span style="color: #000000;">select();
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    }
+}</span></code></pre>
+
+<p>confing数据库配置文件，confing.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">return</span><span style="color: #000000;"> [
+    </span>'DB_HOST'=&gt;'localhost',
+    'DB_USER'=&gt;'root',
+    'DB_PWD'=&gt;'123456',
+    'DB_NAME'=&gt;'test',
+    'DB_CHARSET'=&gt;'utf8',
+    'DB_PREFIX'=&gt;'t_',<span style="color: #000000;">
+];</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src style="color: #d4d4d4; background-color: #1e1e1e; font-family: Consolas, 'Courier New', monospace; font-size: 20px; line-height: 27px; white-space: pre;">
+<src><span style="color: #569cd6;">&lt;?php</span>
+<br />
+<src><span style="color: #9cdcfe;">$config</span> = <span style="color: #c586c0;">include</span> <span style="color: #ce9178;">'config.php'</span>; <span style="color: #6a9955;">//引入数据库配置文件</span>
+<src><span style="color: #9cdcfe;">$model</span> = <span style="color: #569cd6;">new</span> <span style="color: #4ec9b0;">Model</span>(<span style="color: #9cdcfe;">$config</span>);
+<src><span style="color: #6a9955;">//测试案例</span>
+<src><span style="color: #6a9955;">// $saveData=['username'=&gt;'张三','mobile'=&gt;12334123];</span>
+<src><span style="color: #6a9955;">// echo $model-&gt;table('user')-&gt;insert($saveData);</span>
+<src><span style="color: #6a9955;">// var_dump($model-&gt;table('user')-&gt;where('id=5')-&gt;delete());</span>
+<src><span style="color: #6a9955;">// var_dump($model-&gt;table('user')-&gt;limit('0,6')-&gt;field('username,mobile')-&gt;where('id&gt;1')-&gt;order('id desc')-&gt;select());</span>
+<src><span style="color: #6a9955;">// $updateData=['username'=&gt;'张三'];</span>
+<src><span style="color: #6a9955;">// var_dump($model-&gt;table('user')-&gt;where('id=3')-&gt;update($updateData));</span>
+<src><span style="color: #6a9955;">// var_dump($model-&gt;table('user')-&gt;max('mobile'));</span>
+<src><span style="color: #6a9955;">// var_dump($model-&gt;table('user')-&gt;getByUserName('张三'));</span>
+<src><span style="color: #6a9955;">// var_dump($model-&gt;sql);</span>
+<br />
+<src><span style="color: #569cd6;">class</span> <span style="color: #4ec9b0;">Model</span>
+<src>{
+<src>    <span style="color: #6a9955;">//主机名</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$host</span>;
+<src>    <span style="color: #6a9955;">//用户名</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$user</span>;
+<src>    <span style="color: #6a9955;">//密码</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$pwd</span>;
+<src>    <span style="color: #6a9955;">//数据库名</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$dbname</span>;
+<src>    <span style="color: #6a9955;">//字符集</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$charset</span>;
+<src>    <span style="color: #6a9955;">//数据库前缀</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$prefix</span>;
+<br />
+<src>    <span style="color: #6a9955;">//数据库连接资源</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$link</span>;
+<src>    <span style="color: #6a9955;">//数据表名       这里可以自己指定表名</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$tableName</span>;
+<br />
+<src>    <span style="color: #6a9955;">//sql语句</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$sql</span>;
+<src>    <span style="color: #6a9955;">//操作数组   存放的就是所有的查询条件</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #9cdcfe;">$options</span>;
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 构造方法，对成员变量进行初始化</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $config</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">__construct</span>(<span style="color: #9cdcfe;">$config</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//对成员变量一一进行初始化</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">host</span> = <span style="color: #9cdcfe;">$config</span>[<span style="color: #ce9178;">'DB_HOST'</span>];
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">user</span> = <span style="color: #9cdcfe;">$config</span>[<span style="color: #ce9178;">'DB_USER'</span>];
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">pwd</span> = <span style="color: #9cdcfe;">$config</span>[<span style="color: #ce9178;">'DB_PWD'</span>];
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">dbname</span> = <span style="color: #9cdcfe;">$config</span>[<span style="color: #ce9178;">'DB_NAME'</span>];
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">charset</span> = <span style="color: #9cdcfe;">$config</span>[<span style="color: #ce9178;">'DB_CHARSET'</span>];
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">prefix</span> = <span style="color: #9cdcfe;">$config</span>[<span style="color: #ce9178;">'DB_PREFIX'</span>];
+<br />
+<src>        <span style="color: #6a9955;">//连接数据库</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">link</span> = <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">connect</span>();
+<br />
+<src>        <span style="color: #6a9955;">//得到数据表名  user===&gt;UserModel</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">tableName</span> = <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">getTableName</span>();
+<br />
+<src>        <span style="color: #6a9955;">//初始化option数组</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">initOptions</span>();
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 连接数据库</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">connect</span>()
+<src>    {
+<src>        <span style="color: #9cdcfe;">$link</span> = <span style="color: #dcdcaa;">mysqli_connect</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">host</span>, <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">user</span>, <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">pwd</span>);
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #9cdcfe;">$link</span>) {
+<src>            <span style="color: #c586c0;">die</span>(<span style="color: #ce9178;">'数据库连接失败'</span>);
+<src>        }
+<src>        <span style="color: #6a9955;">//选择数据库</span>
+<src>        <span style="color: #dcdcaa;">mysqli_select_db</span>(<span style="color: #9cdcfe;">$link</span>, <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">dbname</span>);
+<src>        <span style="color: #6a9955;">//设置字符集</span>
+<src>        <span style="color: #dcdcaa;">mysqli_set_charset</span>(<span style="color: #9cdcfe;">$link</span>, <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">charset</span>);
+<src>        <span style="color: #6a9955;">//返回连接成功的资源</span>
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #9cdcfe;">$link</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 得到数据表名</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">getTableName</span>()
+<src>    {
+<src>        <span style="color: #6a9955;">//第一种，如果设置了成员变量，那么通过成员变量来得到表名</span>
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #dcdcaa;">empty</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">tableName</span>)) {
+<src>            <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">prefix</span> . <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">tableName</span>;
+<src>        }
+<src>        <span style="color: #6a9955;">//第二种，如果没有设置成员变量，那么通过类名来得到表名</span>
+<src>        <span style="color: #6a9955;">//得到当前类名字符串</span>
+<src>        <span style="color: #9cdcfe;">$className</span> = <span style="color: #dcdcaa;">get_class</span>(<span style="color: #569cd6;">$this</span>);
+<src>        <span style="color: #6a9955;">//user  UserModel   goods  GoodsModel</span>
+<src>        <span style="color: #9cdcfe;">$table</span> = <span style="color: #dcdcaa;">strtolower</span>(<span style="color: #dcdcaa;">substr</span>(<span style="color: #9cdcfe;">$className</span>, <span style="color: #b5cea8;">0</span>, -<span style="color: #b5cea8;">5</span>));
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">prefix</span> . <span style="color: #9cdcfe;">$table</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 初始化option数组</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">initOptions</span>()
+<src>    {
+<src>        <span style="color: #9cdcfe;">$arr</span> = [<span style="color: #ce9178;">'where'</span>, <span style="color: #ce9178;">'table'</span>, <span style="color: #ce9178;">'field'</span>, <span style="color: #ce9178;">'order'</span>, <span style="color: #ce9178;">'group'</span>, <span style="color: #ce9178;">'having'</span>, <span style="color: #ce9178;">'limit'</span>];
+<src>        <span style="color: #c586c0;">foreach</span> (<span style="color: #9cdcfe;">$arr</span> as <span style="color: #9cdcfe;">$value</span>) {
+<src>            <span style="color: #6a9955;">//将options数组中这些键对应的值全部清空</span>
+<src>            <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #9cdcfe;">$value</span>] = <span style="color: #ce9178;">''</span>;
+<src>            <span style="color: #c586c0;">if</span> (<span style="color: #9cdcfe;">$value</span> === <span style="color: #ce9178;">'table'</span>) {
+<src>                <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #9cdcfe;">$value</span>] = <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">tableName</span>;
+<src>            } <span style="color: #c586c0;">elseif</span> (<span style="color: #9cdcfe;">$value</span> == <span style="color: #ce9178;">'field'</span>) {
+<src>                <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #9cdcfe;">$value</span>] = <span style="color: #ce9178;">'*'</span>;
+<src>            }
+<src>        }
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * field方法</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $field</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">field</span>(<span style="color: #9cdcfe;">$field</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//如果不为空，再进行处理</span>
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #dcdcaa;">empty</span>(<span style="color: #9cdcfe;">$field</span>)) {
+<src>            <span style="color: #c586c0;">if</span> (<span style="color: #dcdcaa;">is_string</span>(<span style="color: #9cdcfe;">$field</span>)) {
+<src>                <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'field'</span>] = <span style="color: #9cdcfe;">$field</span>;
+<src>            } <span style="color: #c586c0;">elseif</span> (<span style="color: #dcdcaa;">is_array</span>(<span style="color: #9cdcfe;">$field</span>)) {
+<src>                <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'field'</span>] = <span style="color: #dcdcaa;">join</span>(<span style="color: #ce9178;">','</span>, <span style="color: #9cdcfe;">$field</span>);
+<src>            }
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * //table方法</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $table</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">table</span>(<span style="color: #9cdcfe;">$table</span>)
+<src>    {
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #dcdcaa;">empty</span>(<span style="color: #9cdcfe;">$table</span>)) {
+<src>            <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'table'</span>] = <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">prefix</span> . <span style="color: #9cdcfe;">$table</span>;
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * where方法</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $where</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">where</span>(<span style="color: #9cdcfe;">$where</span>)
+<src>    {
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #dcdcaa;">empty</span>(<span style="color: #9cdcfe;">$where</span>)) {
+<src>            <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'where'</span>] = <span style="color: #ce9178;">'where '</span> . <span style="color: #9cdcfe;">$where</span>;
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * group方法</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $group</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">group</span>(<span style="color: #9cdcfe;">$group</span>)
+<src>    {
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #dcdcaa;">empty</span>(<span style="color: #9cdcfe;">$group</span>)) {
+<src>            <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'group'</span>] = <span style="color: #ce9178;">'group by '</span> . <span style="color: #9cdcfe;">$group</span>;
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * having方法</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $having</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">having</span>(<span style="color: #9cdcfe;">$having</span>)
+<src>    {
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #dcdcaa;">empty</span>(<span style="color: #9cdcfe;">$having</span>)) {
+<src>            <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'having'</span>] = <span style="color: #ce9178;">'having '</span> . <span style="color: #9cdcfe;">$having</span>;
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * order方法</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $order</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">order</span>(<span style="color: #9cdcfe;">$order</span>)
+<src>    {
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #dcdcaa;">empty</span>(<span style="color: #9cdcfe;">$order</span>)) {
+<src>            <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'order'</span>] = <span style="color: #ce9178;">'order by '</span> . <span style="color: #9cdcfe;">$order</span>;
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * limit方法</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $limit</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">limit</span>(<span style="color: #9cdcfe;">$limit</span>)
+<src>    {
+<src>        <span style="color: #c586c0;">if</span> (!<span style="color: #dcdcaa;">empty</span>(<span style="color: #9cdcfe;">$limit</span>)) {
+<src>            <span style="color: #c586c0;">if</span> (<span style="color: #dcdcaa;">is_string</span>(<span style="color: #9cdcfe;">$limit</span>)) {
+<src>                <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'limit'</span>] = <span style="color: #ce9178;">'limit '</span> . <span style="color: #9cdcfe;">$limit</span>;
+<src>            } <span style="color: #c586c0;">elseif</span> (<span style="color: #dcdcaa;">is_array</span>(<span style="color: #9cdcfe;">$limit</span>)) {
+<src>                <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'limit'</span>] = <span style="color: #ce9178;">'limit '</span> . <span style="color: #dcdcaa;">join</span>(<span style="color: #ce9178;">','</span>, <span style="color: #9cdcfe;">$limit</span>);
+<src>            }
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * select方法</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">select</span>()
+<src>    {
+<src>        <span style="color: #6a9955;">//先预写一个带占位符的sql语句</span>
+<src>        <span style="color: #9cdcfe;">$sql</span> = <span style="color: #ce9178;">'select %FIELD% from %TABLE% %WHERE% %GROUP% %HAVING% %ORDER% %LIMIT%'</span>;
+<src>        <span style="color: #6a9955;">//将options中对应的值依次的替换上面的占位符</span>
+<src>        <span style="color: #9cdcfe;">$sql</span> = <span style="color: #dcdcaa;">str_replace</span>(
+<src>            [<span style="color: #ce9178;">'%FIELD%'</span>, <span style="color: #ce9178;">'%TABLE%'</span>, <span style="color: #ce9178;">'%WHERE%'</span>, <span style="color: #ce9178;">'%GROUP%'</span>, <span style="color: #ce9178;">'%HAVING%'</span>, <span style="color: #ce9178;">'%ORDER%'</span>, <span style="color: #ce9178;">'%LIMIT%'</span>],
+<src>            [
+<src>                <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'field'</span>], <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'table'</span>], <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'where'</span>], <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'group'</span>],
+<src>                <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'having'</span>], <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'order'</span>], <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'limit'</span>]
+<src>            ],
+<src>            <span style="color: #9cdcfe;">$sql</span>
+<src>        );
+<src>        <span style="color: #6a9955;">//保存一份sql语句</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">sql</span> = <span style="color: #9cdcfe;">$sql</span>;
+<src>        <span style="color: #6a9955;">//执行sql语句</span>
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">query</span>(<span style="color: #9cdcfe;">$sql</span>);
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * query</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $sql</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">query</span>(<span style="color: #9cdcfe;">$sql</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//清空option数组中的值</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">initOptions</span>();
+<src>        <span style="color: #6a9955;">//执行sql语句</span>
+<src>        <span style="color: #9cdcfe;">$result</span> = <span style="color: #dcdcaa;">mysqli_query</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">link</span>, <span style="color: #9cdcfe;">$sql</span>);
+<src>        <span style="color: #6a9955;">//提取结果集存放到数组中</span>
+<src>        <span style="color: #c586c0;">if</span> (<span style="color: #9cdcfe;">$result</span> &amp;&amp; <span style="color: #dcdcaa;">mysqli_affected_rows</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">link</span>)) {
+<src>            <span style="color: #c586c0;">while</span> (<span style="color: #9cdcfe;">$data</span> = <span style="color: #dcdcaa;">mysqli_fetch_assoc</span>(<span style="color: #9cdcfe;">$result</span>)) {
+<src>                <span style="color: #9cdcfe;">$newData</span>[] = <span style="color: #9cdcfe;">$data</span>;
+<src>            }
+<src>        }
+<src>        <span style="color: #6a9955;">//返回结果集</span>
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #9cdcfe;">$newData</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * exec</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $sql</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #569cd6;">boolean</span><span style="color: #6a9955;"> $isInsert</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">exec</span>(<span style="color: #9cdcfe;">$sql</span>,<span style="color: #9cdcfe;"> $isInsert</span> = <span style="color: #569cd6;">false</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//清空option数组中的值</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">initOptions</span>();
+<src>        <span style="color: #6a9955;">//执行sql语句</span>
+<src>        <span style="color: #9cdcfe;">$result</span> = <span style="color: #dcdcaa;">mysqli_query</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">link</span>, <span style="color: #9cdcfe;">$sql</span>);
+<src>        <span style="color: #c586c0;">if</span> (<span style="color: #9cdcfe;">$result</span> &amp;&amp; <span style="color: #dcdcaa;">mysqli_affected_rows</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">link</span>)) {
+<src>            <span style="color: #6a9955;">//判断是否是插入语句，根据不同的语句返回不同的结果</span>
+<src>            <span style="color: #c586c0;">if</span> (<span style="color: #9cdcfe;">$isInsert</span>) {
+<src>                <span style="color: #c586c0;">return</span> <span style="color: #dcdcaa;">mysqli_insert_id</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">link</span>);
+<src>            } <span style="color: #c586c0;">else</span> {
+<src>                <span style="color: #c586c0;">return</span> <span style="color: #dcdcaa;">mysqli_affected_rows</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">link</span>);
+<src>            }
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">false</span>;
+<src>    }
+<br />
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">__get</span>(<span style="color: #9cdcfe;">$name</span>)
+<src>    {
+<src>        <span style="color: #c586c0;">if</span> (<span style="color: #9cdcfe;">$name</span> == <span style="color: #ce9178;">'sql'</span>) {
+<src>            <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">sql</span>;
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">false</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * insert函数</span>
+<src><span style="color: #6a9955;">     * insert into 表名(字段) value(值)</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $data  关联数组，键就是字段名，值是字段值</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">insert</span>(<span style="color: #9cdcfe;">$data</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//处理值是字符串问题，两边需要添加单或双引号</span>
+<src>        <span style="color: #9cdcfe;">$data</span> = <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">parseValue</span>(<span style="color: #9cdcfe;">$data</span>);
+<src>        <span style="color: #6a9955;">//提取所有的键，即就是所有的字段</span>
+<src>        <span style="color: #9cdcfe;">$keys</span> = <span style="color: #dcdcaa;">array_keys</span>(<span style="color: #9cdcfe;">$data</span>);
+<src>        <span style="color: #6a9955;">//提取所有的值</span>
+<src>        <span style="color: #9cdcfe;">$values</span> = <span style="color: #dcdcaa;">array_values</span>(<span style="color: #9cdcfe;">$data</span>);
+<src>        <span style="color: #6a9955;">//增加数据的sql语句</span>
+<src>        <span style="color: #9cdcfe;">$sql</span> = <span style="color: #ce9178;">'insert into %TABLE%(%FIELD%) values(%VALUES%)'</span>;
+<src>        <span style="color: #9cdcfe;">$sql</span> = <span style="color: #dcdcaa;">str_replace</span>([<span style="color: #ce9178;">'%TABLE%'</span>, <span style="color: #ce9178;">'%FIELD%'</span>, <span style="color: #ce9178;">'%VALUES%'</span>], [<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'table'</span>], <span style="color: #dcdcaa;">join</span>(<span style="color: #ce9178;">','</span>, <span style="color: #9cdcfe;">$keys</span>), <span style="color: #dcdcaa;">join</span>(<span style="color: #ce9178;">','</span>, <span style="color: #9cdcfe;">$values</span>)], <span style="color: #9cdcfe;">$sql</span>);
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">sql</span> = <span style="color: #9cdcfe;">$sql</span>;
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">exec</span>(<span style="color: #9cdcfe;">$sql</span>, <span style="color: #569cd6;">true</span>);
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 传递进来一个数组，将数组中值为字符串的两边加上引号</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $data</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">parseValue</span>(<span style="color: #9cdcfe;">$data</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//遍历数组，判断是否为字符串，若是字符串，将其两边添加引号</span>
+<src>        <span style="color: #c586c0;">foreach</span> (<span style="color: #9cdcfe;">$data</span> as <span style="color: #9cdcfe;">$key</span> =&gt; <span style="color: #9cdcfe;">$value</span>) {
+<src>            <span style="color: #c586c0;">if</span> (<span style="color: #dcdcaa;">is_string</span>(<span style="color: #9cdcfe;">$value</span>)) {
+<src>                <span style="color: #9cdcfe;">$value</span> = <span style="color: #ce9178;">'"'</span> . <span style="color: #9cdcfe;">$value</span> . <span style="color: #ce9178;">'"'</span>;
+<src>            }
+<src>            <span style="color: #9cdcfe;">$newData</span>[<span style="color: #9cdcfe;">$key</span>] = <span style="color: #9cdcfe;">$value</span>;
+<src>        }
+<src>        <span style="color: #6a9955;">//返回处理后的数组</span>
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #9cdcfe;">$newData</span>;
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 删除函数</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">delete</span>()
+<src>    {
+<src>        <span style="color: #6a9955;">//拼接sql语句</span>
+<src>        <span style="color: #9cdcfe;">$sql</span> = <span style="color: #ce9178;">'delete from %TABLE% %WHERE%'</span>;
+<src>        <span style="color: #9cdcfe;">$sql</span> = <span style="color: #dcdcaa;">str_replace</span>([<span style="color: #ce9178;">'%TABLE%'</span>, <span style="color: #ce9178;">'%WHERE%'</span>], [<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'table'</span>], <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'where'</span>]], <span style="color: #9cdcfe;">$sql</span>);
+<src>        <span style="color: #6a9955;">//保存sql语句</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">sql</span> = <span style="color: #9cdcfe;">$sql</span>;
+<src>        <span style="color: #6a9955;">//执行sql语句</span>
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">exec</span>(<span style="color: #9cdcfe;">$sql</span>);
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 更新函数</span>
+<src><span style="color: #6a9955;">     * update 表名 set 字段名=字段值，字段名=字段值 where</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $data</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">update</span>(<span style="color: #9cdcfe;">$data</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//处理$data数组中值为字符串加引号的问题</span>
+<src>        <span style="color: #9cdcfe;">$data</span> = <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">parseValue</span>(<span style="color: #9cdcfe;">$data</span>);
+<src>        <span style="color: #6a9955;">//将关联数组拼接为固定的格式  键=值，键=值</span>
+<src>        <span style="color: #9cdcfe;">$value</span> = <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">parseUpdate</span>(<span style="color: #9cdcfe;">$data</span>);
+<src>        <span style="color: #6a9955;">//准备sql语句</span>
+<src>        <span style="color: #9cdcfe;">$sql</span> = <span style="color: #ce9178;">'update %TABLE% set %VALUE% %WHERE%'</span>;
+<src>        <span style="color: #9cdcfe;">$sql</span> = <span style="color: #dcdcaa;">str_replace</span>([<span style="color: #ce9178;">'%TABLE%'</span>, <span style="color: #ce9178;">'%VALUE%'</span>, <span style="color: #ce9178;">'%WHERE%'</span>], [<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'table'</span>], <span style="color: #9cdcfe;">$value</span>, <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">options</span>[<span style="color: #ce9178;">'where'</span>]], <span style="color: #9cdcfe;">$sql</span>);
+<src>        <span style="color: #6a9955;">//保存sql语句</span>
+<src>        <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">sql</span> = <span style="color: #9cdcfe;">$sql</span>;
+<src>        <span style="color: #6a9955;">//执行sql语句</span>
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">exec</span>(<span style="color: #9cdcfe;">$sql</span>);
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 将关联数组拼接为固定的格式</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $data</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">protected</span> <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">parseUpdate</span>(<span style="color: #9cdcfe;">$data</span>)
+<src>    {
+<src>        <span style="color: #c586c0;">foreach</span> (<span style="color: #9cdcfe;">$data</span> as <span style="color: #9cdcfe;">$key</span> =&gt; <span style="color: #9cdcfe;">$value</span>) {
+<src>            <span style="color: #9cdcfe;">$newData</span>[] = <span style="color: #9cdcfe;">$key</span> . <span style="color: #ce9178;">'='</span> . <span style="color: #9cdcfe;">$value</span>;
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #dcdcaa;">join</span>(<span style="color: #ce9178;">','</span>, <span style="color: #9cdcfe;">$newData</span>);
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * max函数</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $field</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">max</span>(<span style="color: #9cdcfe;">$field</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//通过调用自己封装的方法进行查询</span>
+<src>        <span style="color: #9cdcfe;">$result</span> = <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">field</span>(<span style="color: #ce9178;">'max('</span> . <span style="color: #9cdcfe;">$field</span> . <span style="color: #ce9178;">') as max'</span>)-&gt;<span style="color: #dcdcaa;">select</span>();
+<src>        <span style="color: #6a9955;">//select方法返回的是一个二维数组</span>
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #9cdcfe;">$result</span>[<span style="color: #b5cea8;">0</span>][<span style="color: #ce9178;">'max'</span>];
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * 析构方法</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">__destruct</span>()
+<src>    {
+<src>        <span style="color: #dcdcaa;">mysqli_close</span>(<span style="color: #569cd6;">$this</span>-&gt;<span style="color: #9cdcfe;">link</span>);
+<src>    }
+<br />
+<src>    <span style="color: #6a9955;">/**</span>
+<src><span style="color: #6a9955;">     * getByName   getByAge</span>
+<src><span style="color: #6a9955;">     *</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $name</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@param</span><span style="color: #6a9955;"> [type] $args</span>
+<src><span style="color: #6a9955;">     * </span><span style="color: #569cd6;">@return</span><span style="color: #569cd6;">void</span>
+<src><span style="color: #6a9955;">     */</span>
+<src>    <span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">__call</span>(<span style="color: #9cdcfe;">$name</span>,<span style="color: #9cdcfe;"> $args</span>)
+<src>    {
+<src>        <span style="color: #6a9955;">//获取前5个字符</span>
+<src>        <span style="color: #9cdcfe;">$str</span> = <span style="color: #dcdcaa;">substr</span>(<span style="color: #9cdcfe;">$name</span>, <span style="color: #b5cea8;">0</span>, <span style="color: #b5cea8;">5</span>);
+<src>        <span style="color: #6a9955;">//获取后面的字段名</span>
+<src>        <span style="color: #9cdcfe;">$field</span> = <span style="color: #dcdcaa;">strtolower</span>(<span style="color: #dcdcaa;">substr</span>(<span style="color: #9cdcfe;">$name</span>, <span style="color: #b5cea8;">5</span>));
+<src>        <span style="color: #6a9955;">//判断前五个字符是否是getby</span>
+<src>        <span style="color: #c586c0;">if</span> (<span style="color: #9cdcfe;">$str</span> === <span style="color: #ce9178;">'getBy'</span>) {
+<src>            <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">$this</span>-&gt;<span style="color: #dcdcaa;">where</span>(<span style="color: #9cdcfe;">$field</span> . <span style="color: #ce9178;">'="'</span> . <span style="color: #9cdcfe;">$args</span>[<span style="color: #b5cea8;">0</span>] . <span style="color: #ce9178;">'"'</span>)-&gt;<span style="color: #dcdcaa;">select</span>();
+<src>        }
+<src>        <span style="color: #c586c0;">return</span> <span style="color: #569cd6;">false</span>;
+<src>    }
+<src>}
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

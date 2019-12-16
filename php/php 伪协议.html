@@ -1,0 +1,274 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php 伪协议' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php 伪协议</center></div><div class='banquan'>原文出处:本文由博客园博主PHP程序媛提供。<br/>
+原文连接:https://www.cnblogs.com/993089249a/p/11720012.html</div><br>
+    <p><strong><span style="font-size: 14pt;">最近在做ctf的时候，碰见了好几次关于php伪协议的妙用，所以通过学习整理出相关知识</span></strong><br />文档：<a href="http://cn2.php.net/manual/zh/wrappers.php.php#refsect2-wrappers.php-unknown-descriptioo" target="_blank">http://cn2.php.net/manual/zh/wrappers.php.php#refsect2-wrappers.php-unknown-descriptioo</a></p>
+<p>php伪协议，事实上是其支持的协议与封装协议</p>
+<p>&nbsp;</p>
+<p>支持的种类有这12种<br />*<a href="https://www.php.net/manual/zh/wrappers.file.php" target="_blank"> file:// </a>&mdash; 访问本地文件系统<br /><a href="https://www.php.net/manual/zh/wrappers.http.php" target="_blank">* http://</a> &mdash; 访问 HTTP(s) 网址<br /><a href="https://www.php.net/manual/zh/wrappers.ftp.php" target="_blank">* ftp:// </a>&mdash; 访问 FTP(s) URLs<br />*<a href="https://www.php.net/manual/zh/wrappers.php.php" target="_blank"> php://</a> &mdash; 访问各个输入/输出流（I/O streams）<br /><a href="https://www.php.net/manual/zh/wrappers.compression.php" target="_blank">* zlib:// </a>&mdash; 压缩流<br /><a href="https://www.php.net/manual/zh/wrappers.data.php" target="_blank">* data://</a> &mdash; 数据（RFC 2397）<br /><a href="https://www.php.net/manual/zh/wrappers.glob.php" target="_blank">* glob://</a> &mdash; 查找匹配的文件路径模式<br /><a href="https://www.php.net/manual/zh/wrappers.phar.php" target="_blank">* phar://</a> &mdash; PHP 归档<br /><a href="https://www.php.net/manual/zh/wrappers.ssh2.php" target="_blank">* ssh2://</a> &mdash; Secure Shell 2<br /><a href="https://www.php.net/manual/zh/wrappers.rar.php" target="_blank">* rar://</a> &mdash; RAR<br /><a href="https://www.php.net/manual/zh/wrappers.audio.php" target="_blank">* ogg://</a> &mdash; 音频流<br /><a href="https://www.php.net/manual/zh/wrappers.expect.php" target="_blank">* expect:// </a>&mdash; 处理交互式的流</p>
+<p>先整理一下关于php://的用法</p>
+<p><strong><span style="font-size: 14pt;">php://</span></strong><br />PHP 提供了一些杂项输入/输出（IO）流，允许访问 PHP 的输入输出流、标准输入输出和错误描述符， 内存中、磁盘备份的临时文件流以及可以操作其他读取写入文件资源的过滤器。</p>
+<p>php://stdin, php://stdout 和 php://stderr<br />php://stdin、php://stdout 和 php://stderr 允许直接访问 PHP 进程相应的输入或者输出流。 数据流引用了复制的文件描述符，所以如果你打开php://stdin并在之后关了它， 仅是关闭了复制品，真正被引用的 STDIN 并不受影响。 推荐简单使用常量 STDIN、 STDOUT 和 STDERR 来代替手工打开这些封装器。</p>
+<p>php://stdin是只读的，php://stdout 和 php://stderr 是只写的。</p>
+<p>举例：<br />php://stdin</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> <span style="color: #0000ff;">while</span>(<span style="color: #800080;">$line</span> = <span style="color: #008080;">fopen</span>('php://stdin','r'<span style="color: #000000;">))
+</span><span style="color: #008080;">3</span> {<span style="color: #008000;">//</span><span style="color: #008000;">open our file pointer to read from stdin</span>
+<span style="color: #008080;">4</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$line</span>."\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">5</span> <span style="color: #0000ff;">echo</span> <span style="color: #008080;">fgets</span>(<span style="color: #800080;">$line</span>);<span style="color: #008000;">//</span><span style="color: #008000;">读取</span>
+<span style="color: #008080;">6</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">7</span> ?&gt;</code></pre>
+
+<p><img src="./images/php 伪协议0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>可以看到打开了一个文件指针进行读取</strong></p>
+<p><strong>php://stdout</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$fd</span> = <span style="color: #008080;">fopen</span>('php://stdout', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$fd</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$fd</span>."\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">5</span> <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fd</span>, "这是一个测试"<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span> <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fd</span>, "\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">7</span> <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fd</span><span style="color: #000000;">);
+</span><span style="color: #008080;">8</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">9</span> ?&gt;</code></pre>
+
+<p><img src="./images/php 伪协议1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>可以看到打开了一个文件指针进行写入</strong></p>
+<p><strong>php://stderr</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$stderr</span> = <span style="color: #008080;">fopen</span>( 'php://stderr', 'w'<span style="color: #000000;"> );
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$stderr</span>."\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$stderr</span>, "lalala"<span style="color: #000000;"> );
+</span><span style="color: #008080;">5</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$stderr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">6</span> ?&gt;</code></pre>
+
+<p><img src="./images/php 伪协议2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>可以看到打开了一个文件指针进行写入</strong></p>
+<p><strong>php://input</strong><br />php://input 是个可以访问请求的原始数据的只读流。因为它不依赖于特定的 php.ini 指令。<br />注：enctype=&rdquo;multipart/form-data&rdquo; 的时候 php://input 是无效的。</p>
+<p>举例：<br />就拿最近的HBCTF的一道题吧</p>
+<p><strong>相关源码：</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;!--
+<span style="color: #008080;"> 2</span> <span style="color: #800080;">$user</span> = <span style="color: #800080;">$_GET</span>["user"<span style="color: #000000;">];
+</span><span style="color: #008080;"> 3</span> <span style="color: #800080;">$file</span> = <span style="color: #800080;">$_GET</span>["file"<span style="color: #000000;">];
+</span><span style="color: #008080;"> 4</span> <span style="color: #800080;">$pass</span> = <span style="color: #800080;">$_GET</span>["pass"<span style="color: #000000;">];
+</span><span style="color: #008080;"> 5</span> 
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$user</span>)&amp;&amp;(<span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$user</span>,'r')==="the user is admin"<span style="color: #000000;">)){
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">echo</span> "hello admin!&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">include</span>(<span style="color: #800080;">$file</span>); <span style="color: #008000;">//</span><span style="color: #008000;">class.php</span>
+<span style="color: #008080;"> 9</span> }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">echo</span> "you are not admin ! "<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><img src="./images/php 伪协议3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>php://output<br />php://output 是一个只写的数据流， 允许你以 print 和 echo 一样的方式 写入到输出缓冲区。</p>
+<p>举例：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$out</span>=<span style="color: #008080;">fopen</span>("php://stdout", 'w'<span style="color: #000000;">); 
+</span><span style="color: #008080;">3</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$out</span>."\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span> <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$out</span> , "this is a test"<span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$out</span><span style="color: #000000;">);
+</span><span style="color: #008080;">6</span> ?&gt;</code></pre>
+
+<p><img src="./images/php 伪协议4.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>php://fd<br />php://fd 允许直接访问指定的文件描述符。 例如 php://fd/3 引用了文件描述符 3。</p>
+<p>php://memory 和 php://temp<br />php://memory 和 php://temp 是一个类似文件 包装器的数据流，允许读写临时数据。 两者的唯一区别是 php://memory 总是把数据储存在内存中， 而 php://temp 会在内存量达到预定义的限制后（默认是 2MB）存入临时文件中。 临时文件位置的决定和 sys_get_temp_dir() 的方式一致。</p>
+<p>php://temp 的内存限制可通过添加 /maxmemory:NN 来控制，NN 是以字节为单位、保留在内存的最大数据量，超过则使用临时文件。</p>
+<p>php://filter<br />可以说这是最常使用的一个伪协议，一般可以利用进行任意文件读取。<br />php://filter 是一种元封装器， 设计用于数据流打开时的筛选过滤应用。 这对于一体式（all-in-one）的文件函数非常有用，类似 readfile()、 file() 和 file_get_contents()， 在数据流内容读取之前没有机会应用其他过滤器。</p>
+<p><span style="font-size: 14pt;"><strong>php://filter 参数</strong></span><br /><br /></p>
+<p><span style="font-size: 14pt;"><strong><img src="./images/php 伪协议5.jpg" alt="" /></strong></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;"><strong>&nbsp;封装协议摘要（针对&nbsp;<em>php://filter</em>，参考被筛选的封装器。）</strong></span></p>
+<p><span style="font-size: 14pt;"><strong><img src="./images/php 伪协议6.jpg" alt="" /></strong></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h4 id="举例-3"><span style="font-size: 14pt;">举例：</span></h4>
+<p><strong>依旧拿HBCTF举例好啦</strong></p>
+<p><strong><img src="./images/php 伪协议7.jpg" alt="" /></strong></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;"><strong>明显将<code>class.php</code>的代码以base64的形式输出，当然也可以试试字符转成rot13形式</strong></span></p>
+<p><strong>　　</strong></p>
+<p><strong><img src="./images/php 伪协议8.jpg" alt="" /></strong></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;"><strong>这就涉及过滤器的灵活使用</strong></span><br /><span style="font-size: 14pt;"><strong>php://filter/read=&lt;读链需要应用的过滤器列表&gt;</strong></span><br /><span style="font-size: 14pt;"><strong>这个参数采用一个或以管道符&nbsp;<em>|</em>&nbsp;分隔的多个过滤器名称。</strong></span></p>
+<p><span style="font-size: 14pt;"><strong><img src="./images/php 伪协议9.jpg" alt="" /></strong></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3 id="过滤器">过滤器</h3>
+<p><strong>过滤器有很多种，有字符串过滤器、转换过滤器、压缩过滤器、加密过滤器</strong></p>
+<h4 id="字符串过滤器"><strong>字符串过滤器</strong></h4>
+<p><strong>&nbsp;</strong></p>
+<p>&nbsp;</p>
+<ul>
+<ul>
+<li><strong>string.rot13</strong></li>
+<li>
+<p>进行rot13转换<br />string.toupper<br />将字符全部大写<br />string.tolower<br />将字符全部小写<br />string.strip_tags<br />去除空字符、HTML 和 PHP 标记后的结果<br />着重介绍一下这个，功能类似于strip_tags()函数，若不想某些字符不被消除，后面跟上字符，可利用字符串或是数组两种方式</p>
+
+
+
+</li>
+
+
+
+</ul>
+
+
+
+</ul>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h4 id="举例-4"><span style="font-size: 18pt;">举例</span></h4>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'string.rot13'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">echo</span> "rot13:"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "This is a test.\n"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'string.toupper'<span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">echo</span> "Upper:"<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "This is a test.\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">12</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">15</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'string.tolower'<span style="color: #000000;">);
+</span><span style="color: #008080;">16</span>     <span style="color: #0000ff;">echo</span> "Lower:"<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "This is a test.\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">18</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">19</span> 
+<span style="color: #008080;">20</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">21</span>     <span style="color: #0000ff;">echo</span> "Del1:"<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'string.strip_tags',<span style="color: #000000;"> STREAM_FILTER_WRITE);
+</span><span style="color: #008080;">23</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "&lt;b&gt;This is a test.&lt;/b&gt;!!!!&lt;h1&gt;~~~~&lt;/h1&gt;\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">24</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">27</span>     <span style="color: #0000ff;">echo</span> "Del2:"<span style="color: #000000;">;
+</span><span style="color: #008080;">28</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'string.strip_tags', STREAM_FILTER_WRITE, "&lt;b&gt;"<span style="color: #000000;">);
+</span><span style="color: #008080;">29</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "&lt;b&gt;This is a test.&lt;/b&gt;!!!!&lt;h1&gt;~~~~&lt;/h1&gt;\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">30</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">31</span> 
+<span style="color: #008080;">32</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">33</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'string.strip_tags', STREAM_FILTER_WRITE, <span style="color: #0000ff;">array</span>('b','h1'<span style="color: #000000;">));
+</span><span style="color: #008080;">34</span>     <span style="color: #0000ff;">echo</span> "Del3:"<span style="color: #000000;">;
+</span><span style="color: #008080;">35</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "&lt;b&gt;This is a test.&lt;/b&gt;!!!!&lt;h1&gt;~~~~&lt;/h1&gt;\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">36</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">37</span> ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p><img src="./images/php 伪协议10.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h4 id="转换过滤器"><span style="font-size: 14pt;">转换过滤器</span></h4>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<ul>
+<ul>
+<li><strong>convert.base64-encode &amp; convert.base64-decode</strong></li>
+</ul>
+</ul>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>base64 编码解码</strong><br /><strong>convert.base64-encode和convert.base64-decode使用这两个过滤器等同于分别用 base64_encode()和 base64_decode()函数处理所有的流数据。 convert.base64-encode支持以一个关联数组给出的参数。如果给出了line-length，base64 输出将被用 line-length个字符为长度而截成块。如果给出了* line-break-chars*，每块将被用给出的字符隔开。这些参数的效果和用 base64_encode()再加上 chunk_split()相同。</strong><br /><strong>convert.quoted-printable-encode &amp; convert.quoted-printable-decode</strong><br /><strong>quoted-printable 编码解码</strong><br /><strong>convert.quoted-printable-encode和 convert.quoted-printable-decode等同于用 quoted_printable_decode()函数处理所有的流数据。没有和* convert.quoted-printable-encode*相对应的函数。* convert.quoted-printable-encode*支持以一个关联数组给出的参数。除了支持和 convert.base64-encode一样的附加参数外，* convert.quoted-printable-encode*还支持布尔参数 binary和 force-encode-first。 convert.base64-decode只支持 line-break-chars参数作为从编码载荷中剥离的类型提示。</strong></p>
+<p>&nbsp;</p>
+<h4 id="举例-5"><span style="font-size: 18pt;">举例：</span></h4>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'convert.base64-encode'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">echo</span> "base64-encode:"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "This is a test.\n"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>     <span style="color: #800080;">$param</span> = <span style="color: #0000ff;">array</span>('line-length' =&gt; 8, 'line-break-chars' =&gt; "\n"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'convert.base64-encode', STREAM_FILTER_WRITE, <span style="color: #800080;">$param</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>     <span style="color: #0000ff;">echo</span> "\nbase64-encode-split:\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">12</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "This is a test.\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">16</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'convert.base64-decode'<span style="color: #000000;">);
+</span><span style="color: #008080;">17</span>     <span style="color: #0000ff;">echo</span> "\nbase64-decode:"<span style="color: #000000;">;
+</span><span style="color: #008080;">18</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "VGhpcyBpcyBhIHRlc3QuCg==\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">19</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">22</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'convert.quoted-printable-encode'<span style="color: #000000;">);
+</span><span style="color: #008080;">23</span>     <span style="color: #0000ff;">echo</span> "quoted-printable-encode:"<span style="color: #000000;">;
+</span><span style="color: #008080;">24</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "This is a test.\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">25</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">26</span> 
+<span style="color: #008080;">27</span>     <span style="color: #800080;">$fp</span> = <span style="color: #008080;">fopen</span>('php://output', 'w'<span style="color: #000000;">);
+</span><span style="color: #008080;">28</span>     <span style="color: #008080;">stream_filter_append</span>(<span style="color: #800080;">$fp</span>, 'convert.quoted-printable-decode'<span style="color: #000000;">);
+</span><span style="color: #008080;">29</span>     <span style="color: #0000ff;">echo</span> "\nquoted-printable-decode:"<span style="color: #000000;">;
+</span><span style="color: #008080;">30</span>     <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$fp</span>, "This is a test.=0A"<span style="color: #000000;">);
+</span><span style="color: #008080;">31</span>     <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fp</span><span style="color: #000000;">);
+</span><span style="color: #008080;">32</span> ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p><img src="./images/php 伪协议11.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>压缩过滤器</strong></p>
+<p>zlib.deflate和 zlib.inflate<br />zlib.deflate（压缩）和 zlib.inflate（解压）实现了定义与 &raquo; RFC 1951的压缩算法。 deflate过滤器可以接受以一个关联数组传递的最多三个参数。* level*定义了压缩强度（1-9）。数字更高通常会产生更小的载荷，但要消耗更多的处理时间。存在两个特殊压缩等级：0（完全不压缩）和 -1（zlib 内部默认值，目前是 6）。 window是压缩回溯窗口大小，以二的次方表示。更高的值（大到 15 &mdash;&mdash; 32768 字节）产生更好的压缩效果但消耗更多内存，低的值（低到 9 &mdash;&mdash; 512 字节）产生产生较差的压缩效果但内存消耗低。目前默认的 window大小是 15。 memory用来指示要分配多少工作内存。合法的数值范围是从 1（最小分配）到 9（最大分配）。内存分配仅影响速度，不会影响生成的载荷的大小。<br />Note: 因为最常用的参数是压缩等级，也可以提供一个整数值作为此参数（而不用数组）。<br />bzip2.compress和 bzip2.decompress<br />bzip2.compress过滤器接受以一个关联数组给出的最多两个参数：* blocks*是从 1 到 9 的整数值，指定分配多少个 100K 字节的内存块作为工作区。 work是 0 到 250 的整数值，指定在退回到一个慢一些，但更可靠的算法之前做多少次常规压缩算法的尝试。调整此参数仅影响到速度，压缩输出和内存使用都不受此设置的影响。将此参数设为 0 指示 bzip 库使用内部默认算法。 bzip2.decompress过滤器仅接受一个参数，可以用普通的布尔值传递，或者用一个关联数组中的* small*单元传递。当* small*设为&amp;true; 值时，指示 bzip 库用最小的内存占用来执行解压缩，代价是速度会慢一些。<br />phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，<strong>需要的请点击（&rarr;）</strong><a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群</a></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;"><strong>加密过滤器</strong></span><br />_mcrypt.*_和 _mdecrypt.*_使用 libmcrypt 提供了对称的加密和解密。这两组过滤器都支持 mcrypt 扩展库中相同的算法，格式为_mcrypt.ciphername_，其中 ciphername是密码的名字，将被传递给 mcrypt_module_open()。有以下五个过滤器参数可用：</p>
+<p><strong><span style="font-size: 18px;">mcrypt 过滤器参数</span></strong><br /><br /></p>
+<p><strong><span style="font-size: 18px;"><img src="./images/php 伪协议12.jpg" alt="" /></span></strong></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong><span style="font-size: 18pt;">&nbsp;</span></strong></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

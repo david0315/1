@@ -1,0 +1,463 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP操作Redis数据库常用方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP操作Redis数据库常用方法</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11911950.html</div><br>
+    <src>
+<p>Redis是一个开源的使用ANSI C语言编写、支持网络、可基于内存亦可持久化的日志型、Key-Value数据库，并提供多种语言的API。</p>
+<p>Redis支持的数据类型有 Stirng(字符串), List(列表), Hash(字典), Set(集合), Sorted Set(有序集合);</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p><strong>要让php能用上redis，首先就得安装redis扩展。</strong></p>
+<p>1.安装redis</p>
+<p>git下载地址<a class=" external" href="http://link.zhihu.com/?target=https%3A//github.com/MSOpenTech/redis/releases" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">github.com/MSOpenTech/r<span class="invisible">edis/releases</span></span></span></a></p>
+<p>2.测试redis</p>
+<p>windows 运行（快捷键：windows键+R键），输入【cmd】命令，进入DOC操作系统窗口；</p>
+<p>进入redis安装目录使用命令</p>
+<p>2.1开启redis守护进程(进入redis安装目录)</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>redis-server.exe redis-windows-conf</code></pre>
+
+<p>&nbsp;</p>
+
+<p>2.2进入redis客户端(进入redis安装目录)</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>redis-cli.<span style="color: #000000;">exe 
+ </span></code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>3.安装php的redis扩展</strong></p>
+<p>下载地址<a class=" external" href="http://link.zhihu.com/?target=https%3A//pecl.php.net/package/redis" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">pecl.php.net/package/re<span class="invisible">dis</span></span></span></a> <br />根据phpinfo()信息选择适当的redis扩展压缩包</p>
+
+
+
+<p>&nbsp;</p>
+<src><br />
+<src>
+<p><strong>4.将redis扩展包的php_redis.dll和php_redis.pdb两个文件放在ext文件夹  </strong><br /><strong>5.修改php.ini文件</strong></p>
+<src class="highlight">
+<pre><code><code class="language-text">extension=php_redis.dll
+</code></code></pre>
+
+<p><strong>6.验证是否开启redis扩展</strong><br />查看phpinfo()信息，搜索redis</p>
+<p><strong>7.php连接并测试redis数据库(记得开启redis服务)</strong><br />新建test.php</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">2</span>  <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;">3</span>  <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1',6379<span style="color: #000000;">); 
+</span><span style="color: #008080;">4</span>  <span style="color: #800080;">$redis</span>-&gt;set('name','klc'<span style="color: #000000;">);
+</span><span style="color: #008080;">5</span>  <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;get('name'<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span> ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>对数据类型的操作</strong></p>
+<p><strong>Strng(字符串):</strong></p>
+<src class="highlight">
+<pre><code><code class="language-text">&lt;?php</code></code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> 设置一个字符串的值</span>
+<span style="color: #800080;">$redis</span>-&gt;set('cat', 111<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">获取一个字符串的值</span>
+<span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;get('cat'); <span style="color: #008000;">//</span><span style="color: #008000;"> 111
+// 重复set</span>
+<span style="color: #800080;">$redis</span>-&gt;set('cat', 222<span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;get('cat'); <span style="color: #008000;">//</span><span style="color: #008000;"> 222</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>List(列表):</strong></p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">列表
+//存储数据到列表中</span>
+<span style="color: #800080;">$redis</span>-&gt;lpush('list', 'html'<span style="color: #000000;">);
+</span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'css'<span style="color: #000000;">);
+</span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'php'<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">获取列表中所有的值</span>
+<span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">; 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">从右侧加入一个</span>
+<span style="color: #800080;">$redis</span>-&gt;rpush('list', 'mysql'<span style="color: #000000;">);
+</span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">从左侧弹出一个</span>
+<span style="color: #800080;">$redis</span>-&gt;lpop('list'<span style="color: #000000;">);
+</span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">从右侧弹出一个</span>
+<span style="color: #800080;">$redis</span>-&gt;rpop('list'<span style="color: #000000;">);
+</span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 结果
+// Array ( [0] =&gt; php [1] =&gt; css [2] =&gt; html )
+// Array ( [0] =&gt; php [1] =&gt; css [2] =&gt; html [3] =&gt; mysql )
+// Array ( [0] =&gt; css [1] =&gt; html [2] =&gt; mysql )
+// Array ( [0] =&gt; css [1] =&gt; html )</span>
+
+
+&lt;?<span style="color: #000000;">php
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">实例化redis</span>
+  <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">连接</span>
+  <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379<span style="color: #000000;">);
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">列表
+  //存储数据到列表中</span>
+  <span style="color: #800080;">$redis</span>-&gt;lpush('list', 'html'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'css'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'php'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'mysql'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'javascript'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'ajax'<span style="color: #000000;">);
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">获取列表中所有的值</span>
+  <span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">; 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">获取列表的长度</span>
+  <span style="color: #800080;">$length</span> = <span style="color: #800080;">$redis</span>-&gt;lsize('list'<span style="color: #000000;">);
+  </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$length</span>;<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">返回列表key中index位置的值</span>
+  <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;lget('list', 2);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;lindex('list', 2);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">设置列表中index位置的值</span>
+  <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;lset('list', 2, 'linux');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">返回key中从start到end位置间的元素</span>
+  <span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, 2<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lgetrange('list', 0, 2<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">截取链表中start到end的元素
+//截取列表后列表发生变化,列表保留截取的元素,其余的删除</span>
+  <span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;<span style="color: #008080;">ltrim</span>('list', 0, 1<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #008000;">//</span><span style="color: #008000;"> 结果
+  // Array ( [0] =&gt; ajax [1] =&gt; javascript [2] =&gt; mysql [3] =&gt; php [4] =&gt; css [5] =&gt; html )
+  // 6
+  // mysql
+  // mysql
+  // 1
+  // Array ( [0] =&gt; ajax [1] =&gt; javascript [2] =&gt; linux [3] =&gt; php [4] =&gt; css [5] =&gt; html )
+  // Array ( [0] =&gt; ajax [1] =&gt; javascript [2] =&gt; linux )
+  // Array ( [0] =&gt; ajax [1] =&gt; javascript [2] =&gt; linux )
+  // 1
+  // Array ( [0] =&gt; ajax [1] =&gt; javascript )</span>
+
+
+&lt;?<span style="color: #000000;">php
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">实例化redis</span>
+  <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">连接</span>
+  <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379<span style="color: #000000;">);
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">列表
+  //存储数据到列表中</span>
+  <span style="color: #800080;">$redis</span>-&gt;lpush('list', 'html'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'html'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'html'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'css'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'php'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'mysql'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'javascript'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'html'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'html'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'html'<span style="color: #000000;">);
+  </span><span style="color: #800080;">$redis</span>-&gt;lpush('list', 'ajax'<span style="color: #000000;">);
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">获取列表中所有的值</span>
+  <span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">; 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">删除列表中count个值为value的元素
+  //从左向右删</span>
+  <span style="color: #800080;">$redis</span>-&gt;lrem('list', 'html', 2<span style="color: #000000;">);
+  </span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">; 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">从右向左删</span>
+  <span style="color: #800080;">$redis</span>-&gt;lrem('list', 'html', -2<span style="color: #000000;">);
+  </span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">; 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">删除所有</span>
+  <span style="color: #800080;">$redis</span>-&gt;lrem('list', 'html', 0<span style="color: #000000;">);
+  </span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$redis</span>-&gt;lrange('list', 0, -1<span style="color: #000000;">);
+  </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$list</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+  </span><span style="color: #008000;">//</span><span style="color: #008000;"> 结果
+  // Array ( [0] =&gt; ajax [1] =&gt; html [2] =&gt; html [3] =&gt; html [4] =&gt; javascript [5] =&gt; mysql [6] =&gt; php [7] =&gt; css [8] =&gt; html [9] =&gt; html [10] =&gt; html )
+  // Array ( [0] =&gt; ajax [1] =&gt; html [2] =&gt; javascript [3] =&gt; mysql [4] =&gt; php [5] =&gt; css [6] =&gt; html [7] =&gt; html [8] =&gt; html )
+  // Array ( [0] =&gt; ajax [1] =&gt; html [2] =&gt; javascript [3] =&gt; mysql [4] =&gt; php [5] =&gt; css [6] =&gt; html )
+  // Array ( [0] =&gt; ajax [1] =&gt; javascript [2] =&gt; mysql [3] =&gt; php [4] =&gt; css )</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p><strong>Hash(字典):</strong></p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>   <span style="color: #008000;">//</span><span style="color: #008000;">实例化redis</span>
+<span style="color: #008080;"> 3</span>   <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;"> 4</span>   <span style="color: #008000;">//</span><span style="color: #008000;">连接</span>
+<span style="color: #008080;"> 5</span>   <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span>   <span style="color: #008000;">//</span><span style="color: #008000;">字典
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">  //给hash表中某个key设置value
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">  //如果没有则设置成功,返回1,如果存在会替换原有的值,返回0,失败返回0</span>
+<span style="color: #008080;"> 9</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hset('hash', 'cat', 'cat');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hset('hash', 'cat', 'cat');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hset('hash', 'cat', 'cat1');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">12</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hset('hash', 'dog', 'dog');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">13</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hset('hash', 'bird', 'bird');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">14</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hset('hash', 'monkey', 'monkey');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">15</span>   <span style="color: #008000;">//</span><span style="color: #008000;">获取hash中某个key的值</span>
+<span style="color: #008080;">16</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hget('hash', 'cat');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span>   <span style="color: #008000;">//</span><span style="color: #008000;">获取hash中所有的keys</span>
+<span style="color: #008080;">18</span>   <span style="color: #800080;">$arr</span> = <span style="color: #800080;">$redis</span>-&gt;hkeys('hash'<span style="color: #000000;">);
+</span><span style="color: #008080;">19</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$arr</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">20</span>   <span style="color: #008000;">//</span><span style="color: #008000;">获取hash中所有的值 顺序是随机的</span>
+<span style="color: #008080;">21</span>   <span style="color: #800080;">$arr</span> = <span style="color: #800080;">$redis</span>-&gt;hvals('hash'<span style="color: #000000;">);
+</span><span style="color: #008080;">22</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$arr</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">23</span>   <span style="color: #008000;">//</span><span style="color: #008000;">获取一个hash中所有的key和value 顺序是随机的</span>
+<span style="color: #008080;">24</span>   <span style="color: #800080;">$arr</span> = <span style="color: #800080;">$redis</span>-&gt;hgetall('hash'<span style="color: #000000;">);
+</span><span style="color: #008080;">25</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$arr</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">26</span>   <span style="color: #008000;">//</span><span style="color: #008000;">获取hash中key的数量</span>
+<span style="color: #008080;">27</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hlen('hash');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">28</span>   <span style="color: #008000;">//</span><span style="color: #008000;">删除hash中一个key 如果表不存在或key不存在则返回false</span>
+<span style="color: #008080;">29</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hdel('hash', 'dog');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">30</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$redis</span>-&gt;hdel('hash', 'rabbit'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">31</span>   <span style="color: #008000;">//</span><span style="color: #008000;"> 结果
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">  // 0
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">  // 0
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">  // cat1
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">  // Array ( [0] =&gt; cat [1] =&gt; dog [2] =&gt; bird [3] =&gt; monkey )
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">  // Array ( [0] =&gt; cat1 [1] =&gt; dog [2] =&gt; bird [3] =&gt; monkey )
+</span><span style="color: #008080;">41</span> <span style="color: #008000;">  // Array ( [cat] =&gt; cat1 [dog] =&gt; dog [bird] =&gt; bird [monkey] =&gt; monkey )
+</span><span style="color: #008080;">42</span> <span style="color: #008000;">  // 4
+</span><span style="color: #008080;">43</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">44</span> <span style="color: #008000;">  // int(0)</span>
+<span style="color: #008080;">45</span>  
+<span style="color: #008080;">46</span> 
+<span style="color: #008080;">47</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">48</span>   <span style="color: #008000;">//</span><span style="color: #008000;">实例化redis</span>
+<span style="color: #008080;">49</span>   <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;">50</span>   <span style="color: #008000;">//</span><span style="color: #008000;">连接</span>
+<span style="color: #008080;">51</span>   <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379<span style="color: #000000;">);
+</span><span style="color: #008080;">52</span>   <span style="color: #008000;">//</span><span style="color: #008000;">字典
+</span><span style="color: #008080;">53</span> <span style="color: #008000;">  //批量设置多个key的值</span>
+<span style="color: #008080;">54</span>   <span style="color: #800080;">$arr</span> = [1=&gt;1, 2=&gt;2, 3=&gt;3, 4=&gt;4, 5=&gt;5<span style="color: #000000;">];
+</span><span style="color: #008080;">55</span>   <span style="color: #800080;">$redis</span>-&gt;hmset('hash', <span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">56</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;hgetall('hash'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">57</span>   <span style="color: #008000;">//</span><span style="color: #008000;"> 批量获得额多个key的值</span>
+<span style="color: #008080;">58</span>   <span style="color: #800080;">$arr</span> = [1, 2, 3, 5<span style="color: #000000;">];
+</span><span style="color: #008080;">59</span>   <span style="color: #800080;">$hash</span> = <span style="color: #800080;">$redis</span>-&gt;hmget('hash', <span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">60</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$hash</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">61</span>   <span style="color: #008000;">//</span><span style="color: #008000;">检测hash中某个key知否存在</span>
+<span style="color: #008080;">62</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;hexists('hash', '1');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">63</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$redis</span>-&gt;hexists('hash', 'cat'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">64</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;hgetall('hash'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">65</span>   <span style="color: #008000;">//</span><span style="color: #008000;">给hash表中key增加一个整数值</span>
+<span style="color: #008080;">66</span>   <span style="color: #800080;">$redis</span>-&gt;hincrby('hash', '1', 1<span style="color: #000000;">);
+</span><span style="color: #008080;">67</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;hgetall('hash'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">68</span>   <span style="color: #008000;">//</span><span style="color: #008000;">给hash中的某个key增加一个浮点值</span>
+<span style="color: #008080;">69</span>   <span style="color: #800080;">$redis</span>-&gt;hincrbyfloat('hash', 2, 1.3<span style="color: #000000;">);
+</span><span style="color: #008080;">70</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;hgetall('hash'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">71</span>   <span style="color: #008000;">//</span><span style="color: #008000;">结果
+</span><span style="color: #008080;">72</span> <span style="color: #008000;">  // Array ( [1] =&gt; 1 [2] =&gt; 2 [3] =&gt; 3 [4] =&gt; 4 [5] =&gt; 5 )
+</span><span style="color: #008080;">73</span> <span style="color: #008000;">  // Array ( [1] =&gt; 1 [2] =&gt; 2 [3] =&gt; 3 [5] =&gt; 5 )
+</span><span style="color: #008080;">74</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">75</span> <span style="color: #008000;">  // bool(false)
+</span><span style="color: #008080;">76</span> <span style="color: #008000;">  // Array ( [1] =&gt; 1 [2] =&gt; 2 [3] =&gt; 3 [4] =&gt; 4 [5] =&gt; 5 )
+</span><span style="color: #008080;">77</span> <span style="color: #008000;">  // Array ( [1] =&gt; 2 [2] =&gt; 2 [3] =&gt; 3 [4] =&gt; 4 [5] =&gt; 5 )
+</span><span style="color: #008080;">78</span> <span style="color: #008000;">  // Array ( [1] =&gt; 2 [2] =&gt; 3.3 [3] =&gt; 3 [4] =&gt; 4 [5] =&gt; 5 )</span>
+<span style="color: #008080;">79</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>Set(集合):</strong></p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>   <span style="color: #008000;">//</span><span style="color: #008000;">实例化redis</span>
+<span style="color: #008080;"> 3</span>   <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;"> 4</span>   <span style="color: #008000;">//</span><span style="color: #008000;">连接</span>
+<span style="color: #008080;"> 5</span>   <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span>   <span style="color: #008000;">//</span><span style="color: #008000;">集合
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">  // 添加一个元素</span>
+<span style="color: #008080;"> 8</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'cat');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'cat');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'dog');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'rabbit');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">12</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'bear');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">13</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'horse');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">14</span>   <span style="color: #008000;">//</span><span style="color: #008000;"> 查看集合中所有的元素</span>
+<span style="color: #008080;">15</span>   <span style="color: #800080;">$set</span> = <span style="color: #800080;">$redis</span>-&gt;smembers('set'<span style="color: #000000;">);
+</span><span style="color: #008080;">16</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$set</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span>   <span style="color: #008000;">//</span><span style="color: #008000;">删除集合中的value</span>
+<span style="color: #008080;">18</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;srem('set', 'cat');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">19</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$redis</span>-&gt;srem('set', 'bird'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">20</span>   <span style="color: #800080;">$set</span> = <span style="color: #800080;">$redis</span>-&gt;smembers('set'<span style="color: #000000;">);
+</span><span style="color: #008080;">21</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$set</span>);<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span>   <span style="color: #008000;">//</span><span style="color: #008000;">判断元素是否是set的成员</span>
+<span style="color: #008080;">23</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$redis</span>-&gt;sismember('set', 'dog'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">24</span>   <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$redis</span>-&gt;sismember('set', 'bird'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">25</span>   <span style="color: #008000;">//</span><span style="color: #008000;">查看集合中成员的数量</span>
+<span style="color: #008080;">26</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;scard('set');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">27</span>   <span style="color: #008000;">//</span><span style="color: #008000;">移除并返回集合中的一个随机元素(返回被移除的元素)</span>
+<span style="color: #008080;">28</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;spop('set');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">29</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;smembers('set'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">30</span>   <span style="color: #008000;">//</span><span style="color: #008000;"> 结果
+</span><span style="color: #008080;">31</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">  // 0
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">  // Array ( [0] =&gt; rabbit [1] =&gt; cat [2] =&gt; bear [3] =&gt; dog [4] =&gt; horse )
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">  // int(0)
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">  // Array ( [0] =&gt; dog [1] =&gt; rabbit [2] =&gt; horse [3] =&gt; bear )
+</span><span style="color: #008080;">41</span> <span style="color: #008000;">  // bool(true)
+</span><span style="color: #008080;">42</span> <span style="color: #008000;">  // bool(false)
+</span><span style="color: #008080;">43</span> <span style="color: #008000;">  // 4
+</span><span style="color: #008080;">44</span> <span style="color: #008000;">  // bear
+</span><span style="color: #008080;">45</span> <span style="color: #008000;">  // Array ( [0] =&gt; dog [1] =&gt; rabbit [2] =&gt; horse )</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>   <span style="color: #008000;">//</span><span style="color: #008000;">实例化redis</span>
+<span style="color: #008080;"> 3</span>   <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;"> 4</span>   <span style="color: #008000;">//</span><span style="color: #008000;">连接</span>
+<span style="color: #008080;"> 5</span>   <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span>   <span style="color: #008000;">//</span><span style="color: #008000;">集合</span>
+<span style="color: #008080;"> 7</span>   <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'horse'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 8</span>   <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'cat'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>   <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'dog'<span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>   <span style="color: #800080;">$redis</span>-&gt;sadd('set', 'bird'<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>   <span style="color: #800080;">$redis</span>-&gt;sadd('set2', 'fish'<span style="color: #000000;">);
+</span><span style="color: #008080;">12</span>   <span style="color: #800080;">$redis</span>-&gt;sadd('set2', 'dog'<span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>   <span style="color: #800080;">$redis</span>-&gt;sadd('set2', 'bird'<span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;smembers('set'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">15</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;smembers('set2'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">16</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回集合的交集</span>
+<span style="color: #008080;">17</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;sinter('set', 'set2'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">18</span>   <span style="color: #008000;">//</span><span style="color: #008000;">执行交集操作 并结果放到一个集合中</span>
+<span style="color: #008080;">19</span>   <span style="color: #800080;">$redis</span>-&gt;sinterstore('output', 'set', 'set2'<span style="color: #000000;">);
+</span><span style="color: #008080;">20</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;smembers('output'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">21</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回集合的并集</span>
+<span style="color: #008080;">22</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;sunion('set', 'set2'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">23</span>   <span style="color: #008000;">//</span><span style="color: #008000;">执行并集操作 并结果放到一个集合中</span>
+<span style="color: #008080;">24</span>   <span style="color: #800080;">$redis</span>-&gt;sunionstore('output', 'set', 'set2'<span style="color: #000000;">);
+</span><span style="color: #008080;">25</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;smembers('output'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">26</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回集合的差集</span>
+<span style="color: #008080;">27</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;sdiff('set', 'set2'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">28</span>   <span style="color: #008000;">//</span><span style="color: #008000;">执行差集操作 并结果放到一个集合中</span>
+<span style="color: #008080;">29</span>   <span style="color: #800080;">$redis</span>-&gt;sdiffstore('output', 'set', 'set2'<span style="color: #000000;">);
+</span><span style="color: #008080;">30</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;smembers('output'));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">31</span>   <span style="color: #008000;">//</span><span style="color: #008000;"> 结果
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">  // Array ( [0] =&gt; cat [1] =&gt; dog [2] =&gt; bird [3] =&gt; horse )
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">  // Array ( [0] =&gt; bird [1] =&gt; dog [2] =&gt; fish )
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">  // Array ( [0] =&gt; bird [1] =&gt; dog )
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">  // Array ( [0] =&gt; dog [1] =&gt; bird )
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">  // Array ( [0] =&gt; cat [1] =&gt; dog [2] =&gt; bird [3] =&gt; horse [4] =&gt; fish )
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">  // Array ( [0] =&gt; cat [1] =&gt; dog [2] =&gt; bird [3] =&gt; horse [4] =&gt; fish )
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">  // Array ( [0] =&gt; horse [1] =&gt; cat )
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">  // Array ( [0] =&gt; horse [1] =&gt; cat )</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p><strong>Sorted Set(有序集合):</strong></p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>   <span style="color: #008000;">//</span><span style="color: #008000;">实例化redis</span>
+<span style="color: #008080;"> 3</span>   <span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();
+</span><span style="color: #008080;"> 4</span>   <span style="color: #008000;">//</span><span style="color: #008000;">连接</span>
+<span style="color: #008080;"> 5</span>   <span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span>   <span style="color: #008000;">//</span><span style="color: #008000;">有序集合
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">  //添加元素</span>
+<span style="color: #008080;"> 8</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zadd('set', 1, 'cat');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zadd('set', 2, 'dog');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zadd('set', 3, 'fish');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zadd('set', 4, 'dog');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">12</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zadd('set', 4, 'bird');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">13</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回集合中的所有元素</span>
+<span style="color: #008080;">14</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrange('set', 0, -1));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">15</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrange('set', 0, -1, <span style="color: #0000ff;">true</span>));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">16</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回元素的score值</span>
+<span style="color: #008080;">17</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zscore('set', 'dog');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">18</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回存储的个数</span>
+<span style="color: #008080;">19</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zcard('set');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">20</span>   <span style="color: #008000;">//</span><span style="color: #008000;">删除指定成员</span>
+<span style="color: #008080;">21</span>   <span style="color: #800080;">$redis</span>-&gt;zrem('set', 'cat'<span style="color: #000000;">);
+</span><span style="color: #008080;">22</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrange('set', 0, -1));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">23</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回集合中介于min和max之间的值的个数</span>
+<span style="color: #008080;">24</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zcount('set', 3, 5));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">25</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回有序集合中score介于min和max之间的值</span>
+<span style="color: #008080;">26</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrangebyscore('set', 3, 5));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">27</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrangebyscore('set', 3, 5, ['withscores'=&gt;<span style="color: #0000ff;">true</span>]));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">28</span>   <span style="color: #008000;">//</span><span style="color: #008000;">返回集合中指定区间内所有的值</span>
+<span style="color: #008080;">29</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrevrange('set', 1, 2));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">30</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrevrange('set', 1, 2, <span style="color: #0000ff;">true</span>));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">31</span>   <span style="color: #008000;">//</span><span style="color: #008000;">有序集合中指定值的socre增加</span>
+<span style="color: #008080;">32</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zscore('set', 'dog');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">33</span>   <span style="color: #800080;">$redis</span>-&gt;zincrby('set', 2, 'dog'<span style="color: #000000;">);
+</span><span style="color: #008080;">34</span>   <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$redis</span>-&gt;zscore('set', 'dog');<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">35</span>   <span style="color: #008000;">//</span><span style="color: #008000;">移除score值介于min和max之间的元素</span>
+<span style="color: #008080;">36</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrange('set', 0, -1, <span style="color: #0000ff;">true</span>));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">37</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zremrangebyscore('set', 3, 4));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">38</span>   <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$redis</span>-&gt;zrange('set', 0, -1, <span style="color: #0000ff;">true</span>));<span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">39</span>   <span style="color: #008000;">//</span><span style="color: #008000;">结果
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">  // 1
+</span><span style="color: #008080;">41</span> <span style="color: #008000;">  // 0
+</span><span style="color: #008080;">42</span> <span style="color: #008000;">  // 0
+</span><span style="color: #008080;">43</span> <span style="color: #008000;">  // 0
+</span><span style="color: #008080;">44</span> <span style="color: #008000;">  // 0
+</span><span style="color: #008080;">45</span> <span style="color: #008000;">  // Array ( [0] =&gt; cat [1] =&gt; fish [2] =&gt; bird [3] =&gt; dog )
+</span><span style="color: #008080;">46</span> <span style="color: #008000;">  // Array ( [cat] =&gt; 1 [fish] =&gt; 3 [bird] =&gt; 4 [dog] =&gt; 4 )
+</span><span style="color: #008080;">47</span> <span style="color: #008000;">  // 4
+</span><span style="color: #008080;">48</span> <span style="color: #008000;">  // 4
+</span><span style="color: #008080;">49</span> <span style="color: #008000;">  // Array ( [0] =&gt; fish [1] =&gt; bird [2] =&gt; dog )
+</span><span style="color: #008080;">50</span> <span style="color: #008000;">  // 3
+</span><span style="color: #008080;">51</span> <span style="color: #008000;">  // Array ( [0] =&gt; fish [1] =&gt; bird [2] =&gt; dog )
+</span><span style="color: #008080;">52</span> <span style="color: #008000;">  // Array ( [fish] =&gt; 3 [bird] =&gt; 4 [dog] =&gt; 4 )
+</span><span style="color: #008080;">53</span> <span style="color: #008000;">  // Array ( [0] =&gt; bird [1] =&gt; fish )
+</span><span style="color: #008080;">54</span> <span style="color: #008000;">  // Array ( [bird] =&gt; 4 [fish] =&gt; 3 )
+</span><span style="color: #008080;">55</span> <span style="color: #008000;">  // 4
+</span><span style="color: #008080;">56</span> <span style="color: #008000;">  // 6
+</span><span style="color: #008080;">57</span> <span style="color: #008000;">  // Array ( [fish] =&gt; 3 [bird] =&gt; 4 [dog] =&gt; 6 )
+</span><span style="color: #008080;">58</span> <span style="color: #008000;">  // 2
+</span><span style="color: #008080;">59</span> <span style="color: #008000;">  // Array ( [dog] =&gt; 6 )</span></code></pre>
+
+<p>&nbsp;很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></p>
+
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

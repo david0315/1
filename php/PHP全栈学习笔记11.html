@@ -1,0 +1,410 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP全栈学习笔记11' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP全栈学习笔记11</center></div><div class='banquan'>原文出处:本文由博客园博主达达前端小酒馆提供。<br/>
+原文连接:https://www.cnblogs.com/dashucoding/p/10775639.html</div><br>
+    <p><img src="./images/PHP全栈学习笔记110.jpg" alt="PHP全栈学习笔记11" /></p>
+<p><img src="./images/PHP全栈学习笔记111.jpg" alt="image.png" /></p>
+<p>连接MySQL</p>
+<pre><code><code>mysql_connect(servername,username,password);</code></code></pre>
+<p>面向对象：</p>
+<pre><code><code>&lt;?php
+$servername = &quot;localhost&quot;;
+$username = &quot;username&quot;;
+$password = &quot;password&quot;; 
+// 创建连接
+$conn = new mysqli($servername, $username, $password); 
+// 检测连接
+if ($conn-&gt;connect_error) {
+    die(&quot;连接失败: &quot; . $conn-&gt;connect_error);
+} 
+echo &quot;连接成功&quot;;
+?&gt;</code></code></pre>
+<p>面向过程：</p>
+<pre><code><code>&lt;?php
+$servername = &quot;localhost&quot;;
+$username = &quot;username&quot;;
+$password = &quot;password&quot;; 
+// 创建连接
+$conn = mysqli_connect($servername, $username, $password); 
+// 检测连接
+if (!$conn) {
+    die(&quot;Connection failed: &quot; . mysqli_connect_error());
+}
+echo &quot;连接成功&quot;;
+?&gt;</code></code></pre>
+<p>PDO：</p>
+<pre><code><code>&lt;?php
+$servername = &quot;localhost&quot;;
+$username = &quot;username&quot;;
+$password = &quot;password&quot;; 
+try {
+    $conn = new PDO(&quot;mysql:host=$servername;dbname=myDB&quot;, $username, $password); 
+    echo &quot;连接成功&quot;; 
+}
+catch(PDOException $e){
+    echo $e-&gt;getMessage();
+}
+?&gt;</code></code></pre>
+<p>连接在脚本执行完成后会自动关闭</p>
+<pre><code><code>//面向对象
+$conn-&gt;close();
+ 
+//面向过程
+mysqli_close($conn);
+ 
+//PDO
+$conn = null;</code></code></pre>
+<p>创建数据库</p>
+<pre><code><code>CREATE DATABASE database_name</code></code></pre>
+<pre><code><code>INSERT INTO table_name
+VALUES (value1, value2,....)</code></code></pre>
+<pre><code><code>SELECT column_name(s) FROM table_name</code></code></pre>
+<p>order by关键词用于对于记录集中的数据进行排序</p>
+<pre><code><code>SELECT column_name(s)
+FROM table_name
+ORDER BY column_name</code></code></pre>
+<pre><code><code>SELECT column_name(s)
+FROM table_name
+ORDER BY column_name DESC</code></code></pre>
+<pre><code><code>UPDATE table_name
+SET column1=value, column2=value2,...
+WHERE some_column=some_value</code></code></pre>
+<pre><code><code>DELETE FROM table_name
+WHERE some_column = some_value</code></code></pre>
+<p>连接到ODBC<br />
+odbc_connect() 函数用于连接到 ODBC 数据源</p>
+<pre><code><code>$conn=odbc_connect(&#39;northwind&#39;,&#39;&#39;,&#39;&#39;);
+$sql=&quot;SELECT * FROM customers&quot;;
+$rs=odbc_exec($conn,$sql);
+
+odbc_fetch_row($rs)</code></code></pre>
+<p>odbc_fetch_row() 函数用于从结果集中返回记录</p>
+<p>odbc_result() 函数用于从记录中读取字段</p>
+<p>odbc_close() 函数用于关闭 ODBC 连接</p>
+<p>array() 创建数组</p>
+<p>array_change_key_case() 返回均为大写或小写的数组</p>
+<p>array_chunk() 把一个数组分割为新的数组块</p>
+<p>array_column() 返回输入数组中某个单一列的值</p>
+<p>array_combine() 通过合并两个数组来创建新的数组</p>
+<p>array_count_values() 用于统计数组中所有值出现的次数</p>
+<p>array_diff() 比较数组，返回两个数组的差集</p>
+<p>array_diff_assoc() 比较数组，返回两个数组的差集</p>
+<p>array_diff_key() 比较数组，返回两个数组的差集</p>
+<p>array_diff_uassoc() 比较数组，返回两个数组的差集</p>
+<p>array_diff_ukey() 比较数组，返回两个数组的差集</p>
+<p>array_key_exists() 检查指定的键名是否存在于数组中</p>
+<p>array_map() 将用户自定义函数作用到给定数组的每个值上，返回新的值</p>
+<p>array_merge() 把一个或多个数组合并为一个数组</p>
+<p>array_multisort() 对多个数组或多维数组进行排序</p>
+<p>array_pad() 将指定数量的带有指定值的元素插入到数组中</p>
+<p>array_pop() 删除数组中的最后一个元素</p>
+<p>array_product() 计算数组中所有值的乘积</p>
+<p>array_push() 将一个或多个元素插入数组的末尾</p>
+<p>array_rand() 从数组中随机选出一个或多个元素，返回键名</p>
+<p>array_replace() 使用后面数组的值替换第一个数组的值</p>
+<p>array_reverse() 将原数组中的元素顺序翻转，创建新的数组并返回</p>
+<p>array_search() 在数组中搜索给定的值，如果成功则返回相应的键名</p>
+<p>array_shift() 删除数组中的第一个元素，并返回被删除元素的值</p>
+<p>array_slice() 返回数组中的选定部分</p>
+<p>array_splice() 把数组中的指定元素去掉并用其它值取代</p>
+<p>array_sum() 返回数组中所有值的和</p>
+<p>array_unique() 删除数组中重复的值</p>
+<p>array_unshift() 在数组开头插入一个或多个元素</p>
+<p>array_values() 返回数组中所有的值</p>
+<p>arsort() 对关联数组按照键值进行降序排序</p>
+<p>asort() 对关联数组按照键值进行升序排序</p>
+<p>count() 返回数组中元素的数目</p>
+<p>each() 返回数组中当前的键／值对</p>
+<p>current() 返回数组中的当前元素</p>
+<p>end() 将数组的内部指针指向最后一个元素</p>
+<p>extract() 从数组中将变量导入到当前的符号表</p>
+<p>in_array() 检查数组中是否存在指定的值</p>
+<p>key() 从关联数组中取得键名</p>
+<p>krsort() 对关联数组按照键名降序排序</p>
+<p>ksort() 对关联数组按照键名升序排序</p>
+<p>list() 把数组中的值赋给一些数组变量</p>
+<p>next() 将数组中的内部指针向后移动一位</p>
+<p>prev() 将数组的内部指针倒回一位</p>
+<p>range() 创建一个包含指定范围的元素的数组</p>
+<p>reset() 将数组的内部指针指向第一个元素</p>
+<p>rsort() 对数值数组进行降序排序</p>
+<p>sort() 对数值数组进行升序排序</p>
+<p>uasort() 对数组中的键值进行排序</p>
+<p>uksort() 对数组中的键名进行排序</p>
+<p>usort() 使用用户自定义的比较函数对数组进行排序</p>
+<h2 id="php加密函数">PHP加密函数</h2>
+<p><img src="./images/PHP全栈学习笔记112.jpg" alt="image.png" /></p>
+<p>单向加密功能</p>
+<pre><code><code>string crypt(string str[, string salt]);</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记113.jpg" alt="image.png" /></p>
+<p>使用md5()函数进行加密</p>
+<pre><code><code>string md5 ( string str [, bool raw_output] );</code></code></pre>
+<p>使用sha1()函数进行加密</p>
+<pre><code><code>string sha1 ( string str [, bool raw_output] )</code></code></pre>
+<p>1、Mcrypt扩展库<br />
+2、Mhash扩展库</p>
+<p>在php.ini文件中找到“;extension=php_mcrypt.dll”和“;extension=php_mhash.dll”</p>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;使用md5()和sha1()函数进行加密&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div align=&quot;center&quot;&gt;
+&lt;table border=&quot;1&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot;&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;30&quot; colspan=&quot;2&quot; align=&quot;center&quot; valign=&quot;middle&quot; scope=&quot;col&quot;&gt;&lt;?php echo &#39;md5()和shal()函数的对比效果&#39;; ?&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;200&quot; height=&quot;30&quot; align=&quot;right&quot; valign=&quot;middle&quot;&gt;&lt;?php echo &#39;使用md5()函数加密字符串PHPER：&#39; ?&gt;&lt;/td&gt;
+    &lt;td width=&quot;200&quot; height=&quot;30&quot; align=&quot;center&quot; valign=&quot;middle&quot;&gt;&lt;?php echo md5(&#39;PHPER&#39;); ?&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;200&quot; height=&quot;30&quot; align=&quot;right&quot; valign=&quot;middle&quot;&gt;&lt;?php echo &#39;使用shal()函数加密字符串PHPER：&#39;; ?&gt;&lt;/td&gt;
+    &lt;td width=&quot;200&quot; height=&quot;30&quot; align=&quot;center&quot; valign=&quot;middle&quot;&gt;&lt;?php echo sha1(&#39;PHPER&#39;);  ?&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;Mcrypt库支持的加密算法与加密模式&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+    $en_dir = mcrypt_list_algorithms();
+    echo &quot;Mcrypt支持的算法有：&quot;;
+    foreach($en_dir as $en_value){
+        echo $en_value.&quot; &quot;;
+}
+?&gt;
+&lt;?php
+    $mo_dir = mcrypt_list_modes();
+    echo &quot;&lt;p&gt;Mcrypt支持的加密模式有：&quot;;
+    foreach($mo_dir as $mo_value){
+        echo $mo_value.&quot; &quot;;
+}
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;使用mcrypt库加密解密&lt;/title&gt;
+&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+    $str = &quot;被加密的内容：相见时难别亦难 东风无力百花残&quot;;
+    $key = &quot;key:111&quot;;
+    $cipher = MCRYPT_DES;
+    $modes = MCRYPT_MODE_ECB;
+    //初始化向量
+    $iv = mcrypt_create_iv(mcrypt_get_iv_size($cipher,$modes),MCRYPT_RAND);
+    echo &quot;加密前：&quot;.$str.&quot;&lt;p&gt;&quot;;
+    //加密：
+    $str_encrypt = mcrypt_encrypt($cipher,$key,$str,$modes,$iv);
+    echo &quot;加密后：&quot;.$str_encrypt.&quot; &lt;p&gt;&quot;;
+    $str_decrypt = mcrypt_decrypt($cipher,$key,$str_encrypt,$modes,$iv);
+    echo &quot;还原：&quot;.$str_decrypt;
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;Mhash库支持的加密算法&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+$num = mhash_count();                                   //函数返回最大的hash id
+echo &quot;Mhash库支持的算法有：&quot;;
+for($i = 0; $i &lt;= $num; $i++){
+    echo $i.&quot;=&gt;&quot;.mhash_get_hash_name($i).&quot;  &quot;;          //输出每一个hash id 的名称
+}
+?&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<pre><code><code>&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;
+&lt;title&gt;使用mhash库生成校验码&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+    $filename = &#39;08.txt&#39;;
+    $str = file_get_contents($filename);
+    $hash = 2;
+    $password = &#39;111&#39;;
+    $salt = &#39;1234&#39;;
+    $key = mhash_keygen_s2k(1,$password,$salt,10);
+    $str_mhash = bin2hex(mhash($hash,$str,$key));
+    echo &quot;文件08.txt的校验码是：&quot;.$str_mhash;
+?&gt;  
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<p>登录：</p>
+<pre><code><code>&lt;script language=&quot;javascript&quot;&gt;
+function chk(form){
+    if(form.name.value == &#39;&#39; || form.pwd.value == &#39;&#39;){
+        alert(&#39;请输入信息&#39;);
+        return false;
+    }
+}
+&lt;/script&gt;
+&lt;table border=&quot;1&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;
+&lt;form id=&quot;lg&quot; name=&quot;lg&quot; method=&quot;post&quot; action=&quot;index_chk.php&quot; onSubmit=&quot;return chk(lg)&quot;&gt;
+  &lt;tr&gt;
+    &lt;td colspan=&quot;2&quot; height=&quot;25&quot; align=&quot;center&quot; valign=&quot;middle&quot;&gt;用户登录&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td width=&quot;75&quot; height=&quot;25&quot; align=&quot;right&quot; valign=&quot;middle&quot;&gt;用户名：&lt;/td&gt;
+    &lt;td height=&quot;25&quot; align=&quot;left&quot; valign=&quot;middle&quot;&gt;&lt;input name=&quot;name&quot; type=&quot;text&quot; size=&quot;20&quot; maxlength=&quot;20&quot;&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;25&quot; align=&quot;right&quot; valign=&quot;middle&quot;&gt;密码：&lt;/td&gt;
+    &lt;td height=&quot;25&quot; align=&quot;left&quot; valign=&quot;middle&quot;&gt;&lt;input name=&quot;pwd&quot; type=&quot;password&quot; size=&quot;20&quot; maxlength=&quot;20&quot;&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+        &lt;td height=&quot;25&quot; align=&quot;right&quot;&gt;登录方式：&lt;/td&gt;
+        &lt;td align=&quot;left&quot;&gt;
+            &lt;select name=&quot;method&quot;&gt;
+                &lt;option value=&quot;crypt&quot;&gt;crypt加密&lt;/option&gt;
+                &lt;option value=&quot;md5&quot;&gt;md5加密&lt;/option&gt;
+            &lt;/select&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td height=&quot;25&quot; colspan=&quot;2&quot; align=&quot;center&quot; valign=&quot;middle&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;登陆&quot;&gt;&amp;nbsp;&lt;a href=&quot;reg.php&quot;&gt;注册&lt;/a&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/form&gt;
+&lt;/table&gt;
+
+&lt;?php
+    $name = $_POST[&#39;name&#39;];
+    $pwd = $_POST[&#39;pwd&#39;];
+    $meth = $_POST[&#39;method&#39;];
+    $key = &#39;tomorrow&#39;;
+    if($name != &#39;&#39; and $pwd != &#39;&#39;){
+      $conn = mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;) or die(&quot;数据库链接错误&quot;.mysql_error());
+      mysql_select_db(&quot;db_database15&quot;,$conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+      mysql_query(&quot;set names gb2312&quot;);
+      if($meth == &quot;crypt&quot;){
+        $pwd = crypt(trim($pwd),$key);
+      }else{
+        $pwd = md5($pwd);
+      }
+      $sql = &quot;select * from tb_user where user = &#39;&quot;.$name.&quot;&#39; and password = &#39;&quot;.$pwd.&quot;&#39;&quot;;
+      $rst = mysql_query($sql,$conn);
+      if(mysql_num_rows($rst) &gt; 0){
+        echo &quot;&lt;font color=&#39;red&#39;&gt;用户登陆成功&lt;/font&gt;&amp;nbsp;&lt;a href=index.php&gt;返回&lt;/a&gt;&quot;;
+      }else{
+        echo &quot;&lt;script&gt;alert(&#39;密码或帐号输入错误&#39;);history.go(-1);&lt;/script&gt;&quot;;
+      }
+    }
+?&gt;</code></code></pre>
+<pre><code><code>&lt;script language=&quot;javascript&quot;&gt;
+    function rg(form){
+        if(form.name.value == &#39;&#39; || form.pwd.value == &#39;&#39;){
+            alert(&#39;请填写信息&#39;);
+            return false;
+        }
+        if(form.pwd.value != form.pwd2.value){
+            alert(&quot;两次密码不同&quot;);
+            return false;
+        }
+    }
+&lt;/script&gt;
+&lt;table border=&quot;1&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; align=&quot;center&quot;&gt;
+&lt;form id=&quot;reg&quot; name=&quot;reg&quot; method=&quot;post&quot; action=&quot;reg_chk.php&quot; onSubmit=&quot;return rg(reg)&quot;&gt;
+    &lt;tr&gt;
+        &lt;td colspan=&quot;2&quot; align=&quot;center&quot; valign=&quot;middle&quot; height=&quot;25&quot;&gt;用户注册&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td width=&quot;75&quot; height=&quot;25&quot; align=&quot;right&quot;&gt;用户名：&lt;/td&gt;
+        &lt;td align=&quot;left&quot;&gt;&lt;input id=&quot;name&quot; name=&quot;name&quot; type=&quot;text&quot; size=&quot;20&quot; /&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td height=&quot;25&quot; align=&quot;right&quot;&gt;密码：&lt;/td&gt;
+        &lt;td align=&quot;left&quot;&gt;&lt;input id=&quot;pwd&quot; name=&quot;pwd&quot; type=&quot;password&quot; size=&quot;20&quot; /&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td height=&quot;25&quot; align=&quot;right&quot;&gt;确认密码：&lt;/td&gt;
+        &lt;td align=&quot;left&quot;&gt;&lt;input id=&quot;pwd2&quot; name=&quot;pwd2&quot; type=&quot;password&quot; size=&quot;20&quot; /&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td height=&quot;25&quot; align=&quot;right&quot;&gt;加密方式：&lt;/td&gt;
+        &lt;td align=&quot;left&quot;&gt;
+            &lt;select name=&quot;method&quot;&gt;
+                &lt;option value=&quot;crypt&quot;&gt;crypt加密&lt;/option&gt;
+                &lt;option value=&quot;md5&quot;&gt;md5加密&lt;/option&gt;
+            &lt;/select&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td colspan=&quot;2&quot; height=&quot;25&quot; align=&quot;center&quot;&gt;
+            &lt;input type=&quot;submit&quot; value=&quot;注册&quot; /&gt;&amp;nbsp;
+            &lt;a href=&quot;index.php&quot;&gt;登录&lt;/a&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/form&gt;
+&lt;/table&gt;
+
+&lt;?php
+    $name = $_POST[&#39;name&#39;];
+    $pwd = $_POST[&#39;pwd&#39;];
+    $meth = $_POST[&#39;method&#39;];
+    $key = &#39;tomorrow&#39;;
+    if($name != &#39;&#39; and $pwd != &#39;&#39;){
+      $conn = mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;) or die(&quot;数据库链接错误&quot;.mysql_error());
+      mysql_select_db(&quot;db_database15&quot;,$conn) or die(&quot;数据库访问错误&quot;.mysql_error());
+      mysql_query(&quot;set names gb2312&quot;);
+      if($meth == &quot;crypt&quot;){
+        $pwd = crypt(trim($pwd),$key);
+      }else{
+        $pwd = md5($pwd);
+      }
+      $sql = &quot;insert into tb_user(user,password) values(&#39;&quot;.$name.&quot;&#39;,&#39;&quot;.$pwd.&quot;&#39;)&quot;;
+      $rst = mysql_query($sql,$conn);
+      if($rst){
+        echo &quot;&lt;script&gt;alert(&#39;添加成功，请登录&#39;);location=&#39;index.php&#39;;&lt;/script&gt;&quot;;
+      }else{
+        echo &quot;&lt;script&gt;alert(&#39;添加失败&#39;);history.go(-1);&lt;/script&gt;&quot;;
+      }
+    }
+?&gt;</code></code></pre>
+<h2 id="结言">结言</h2>
+<p>好了，欢迎在留言区留言，与大家分享你的经验和心得。</p>
+<p>感谢你学习今天的内容，如果你觉得这篇文章对你有帮助的话，也欢迎把它分享给更多的朋友，感谢。</p>
+<p>感谢！承蒙关照！您真诚的赞赏是我前进的最大动力！</p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-da750878d19e7fa1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-826395d4148483a1?imageMogr2/auto-orient/strip" alt="image" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

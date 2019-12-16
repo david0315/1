@@ -1,0 +1,182 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP学习之PHP trait解析' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP学习之PHP trait解析</center></div><div class='banquan'>原文出处:本文由博客园博主随缘盛世提供。<br/>
+原文连接:https://www.cnblogs.com/shengChristine/p/10856118.html</div><br>
+    <blockquote>
+<src style="-en-clipboard: true;"><span style="font-size: 12pt;">自PHP5.4.0起，PHP实现了一种代码复用的方法，称为trait。</span>
+<src><span style="font-size: 12pt;">众所周知，PHP中是单继承的，trait是为类似PHP的单继承语言而准备得一种代码复用机制。trait为了减少单继承语言的限制，使开发人员能够自由地在不同层次结构内独立的类中复用method。trait和class组合的语义定义了一种减少复杂性的方式，避免传统多继承问题。</span>
+<src><span style="font-size: 12pt;">trait和class相似，但仅仅在用细粒度和一致的方式来组合功能。无法通过trait自身来实例化。它为传统继承增加了水平特性的组合；也就是说，应用的几个class之间不需要继承。</span>
+</blockquote>
+<src><span style="font-size: 18.6667px;"><strong>简单的例子</strong></span>
+<src><span style="font-size: 16px;">首先我们举个例子来介绍trait，和类定义相似，但使用关键字trait定义。在类中使用use组合。</span>
+<src style="box-sizing: border-box; padding: 8px; font-family: Monaco, Menlo, Consolas, 'Courier New', monospace; font-size: 12px; color: #333333; border-radius: 4px; background-color: #fbfaf8; border: 1px solid rgba(0, 0, 0, 0.15); -en-codeblock: true;">
+<src>&lt;?php
+<src>trait T{
+<src>&nbsp;&nbsp;&nbsp;&nbsp;public function t1(){
+<src>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 't1';
+<src>&nbsp;&nbsp;&nbsp;&nbsp;}
+<src>&nbsp;
+<src>&nbsp;
+<src>&nbsp;&nbsp;&nbsp;&nbsp;public function t2(){
+<src>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 't2';
+<src>&nbsp;&nbsp;&nbsp;&nbsp;}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>class Demo{
+<src>&nbsp;&nbsp;&nbsp;&nbsp;use T;
+<src>&nbsp;&nbsp;&nbsp;&nbsp;public function test(){
+<src>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 'test';
+<src>&nbsp;&nbsp;&nbsp;&nbsp;}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>$demo = new Demo;
+<src>echo $demo-&gt;t1(),'&lt;/br&gt;';
+<src>echo $demo-&gt;test();
+
+<src><span style="font-size: 18.6667px;"><strong>输出结果：</strong></span>
+<src><span style="font-size: 14pt;"><strong><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJkAAAA+CAYAAAA4RbnsAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHUSURBVHhe7dzJrcMgAEVROnRZLoVSsvplRC6D+AOeDUagtzH3SCw8ZXVFHA8xf9+vYzCUwzhAjMggR2SQIzLIERnkiAxyRAY5IoMckUGOyCBHZJAjMsgRGeQKIvu40Rg32Cku35isG8w47wlcPUfmA0pFFgI0fhAZ7tVH9hnXsCY7EBmSspF9xmWW2sbdjEZkyGn8ugyIDDlEBjkigxyRQY7IIEdkkHuObE7HX3Ad0wkRGXIKIpv5C69cJ0OdssiABkQGOSKDHJFBjsggR2SQIzLIERnkiAxyBZEVvEhSiTsFfXiOrOAGea3weDeRvR2RQS4b2eOLJDHAdftg3THFydnhZvv5OD+I7a3qZ7LL+hjUGlpc3j8iNB9jd4vMZH2ojOwcVOQfCRqc3zUV5w6R9aEuslRAcX2YvJa3y2N0N4isD02RHc+ptrHue9rv/HAtkfWhKbLME9kn239m7D+HyPrQdk5WXtnsegyR9eE5smUWun7XXWYmH+TuMsV4CPN65yBc8U+fs+EdCiKbpV4k2a334/RrM0S0bT/Ohv/i7Oa3M6O9VVlkQAMigxyRQY7IIEdkkCMyyBEZ5IgMckQGOSKDHJFBjsggR2SQIzLIERnEnPsBdYvlu9bjtbsAAAAASUVORK5CYII=" alt="" /></strong></span>
+<src><span style="font-size: 18.6667px;"><strong>多个trait冲突解决</strong></span>
+<src><span style="font-size: 12pt;">​如果使用多个trait，但是出现了方法名相同，这就出现了冲突，就要手动指定使用哪个trait的方法，使用insteadof关键字实现。<br /></span>
+<src style="box-sizing: border-box; padding: 8px; font-family: Monaco, Menlo, Consolas, 'Courier New', monospace; font-size: 12px; color: #333333; border-radius: 4px; background-color: #fbfaf8; border: 1px solid rgba(0, 0, 0, 0.15); -en-codeblock: true;">
+<src>&lt;?php
+<src>trait T{
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function t1(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 't1';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>&nbsp;
+<src>&nbsp;
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function t2(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 't2';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>trait T2{
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function t1(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 't3';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>class Demo{
+<src><span>&nbsp;&nbsp; &nbsp;</span>use T,T2{
+<src><span>&nbsp;&nbsp; &nbsp;<span>&nbsp;&nbsp; &nbsp;</span></span>//使用T的m1方法
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>T::t1 insteadof T2;
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function test(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 'test';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>$demo = new Demo;
+<src>echo $demo-&gt;t1(),'&lt;/br&gt;';
+<src>echo $demo-&gt;test();
+
+
+
+<src><span style="font-size: 14pt;"><strong>输出结果：</strong></span>
+<src><span style="font-size: 14pt;"><strong><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEsAAAA8CAYAAAAuaUeTAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGASURBVHhe7drNsYMgGEZhO6QsSqEUS7EMYgAVUZLvzd149ZwZF/5l8QwaohkimQNLCCwhsITAEgJLCCwhsITAEgJLCCwhI9YY/TBEF6ayftIUohv8fOR9s2EliB5WhhzSAlYfa/Qr0BQcWKNfRs22nI0wsJY+XoY5sJbASoElBJYQWEJgCdmwZoI08fR9CrDq0gSUeRYZA0sILCGwhMASAksILCGwhMASMmIZXlj82H+a+duwDD+kfy0/tgbL1K2wvr6wKJDrfhfinnSKwZ3sb89Ly7XR/jayDtsLzApW1utHO/M5oVp9yGXYwpTSoxwX06E95KpnYPUgyvY8mJa31QXvpEdh7e8527Ie2xzXPmx9FNaHJ81N238i6s951j3LrjV3POd+WMuoOF5Dh5GSYKvpgd8BH38J5Bl8/552pYxYc70XFtX2tDTfjhlj278fne/KaEv7rz3C7FgElhJYQmAJgSUElhBYQmAJgSUElhBYQmAJgSUElhBYQmCZi/EFRYmEFo0vuckAAAAASUVORK5CYII=" alt="" /></strong></span>
+<src><span style="font-size: 12pt;"><strong>​</strong>​在冲突的时候，也可以使用use定义方法别名解决冲突，例子如下：<br /></span>
+<src style="box-sizing: border-box; padding: 8px; font-family: Monaco, Menlo, Consolas, 'Courier New', monospace; font-size: 12px; color: #333333; border-radius: 4px; background-color: #fbfaf8; border: 1px solid rgba(0, 0, 0, 0.15); -en-codeblock: true;">
+<src>&lt;?php
+<src>trait T{
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function t1(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 't1';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>&nbsp;
+<src>&nbsp;
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function t2(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 't2';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>trait T2{
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function t1(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 't3';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>class Demo{
+<src><span>&nbsp;&nbsp; &nbsp;</span>use T,T2{
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>//使用T的m1方法
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>T::t1 insteadof T2;
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>T2::t1 as new_t1;
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function test(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 'test';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>$demo = new Demo;
+<src>echo $demo-&gt;t1(),'&lt;/br&gt;';
+<src>echo $demo-&gt;new_t1(),'&lt;/br&gt;';
+<src>echo $demo-&gt;test();
+
+
+
+<src><span style="font-size: 18.6667px;"><strong>输出结果：</strong></span>
+<src><span style="font-size: 14pt;"><strong><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAH0AAABNCAYAAACL+muIAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAI1SURBVHhe7dtRloIgAEZhd+iyXIpLcSkugyGgFBUo8wzhf79zfEhrXq5oIdMZyCG6IKILIrogogsiuiCiCyK6IKILIrqgQvTJDF1n+nEOrw/Mo+m7wb4TrchHd0FT0f0J0bmN6C05F30aXqHnsSd6Y5LRp+E5ipftaMQTvT1fXN49oreH6IKILojogoguiOiC8tFtSjcBM6STEr09heiWm4jhd/qdlKPjdoguiOiCiC6I6IKILojogoguiOiCCtHTCyP9TFx+VQ1+Uz566oHLNMT7wlQt4dtwLvrObMY+/2AGvyMZ/d2FkR7RW3LJSOdJW1tOR4+uBIzwplxzT+eLXFMu+iLHJb4ll0X3o703DPbfx0gXlI8eZuTiL2qPn2ebuNzTm1KIboWgcdT1vyk/Ni7rLSlHx+0QXRDRBRFdENEFEV0Q0QURXRDRBRWipxdGfou5+nry0T95yvYhvwiD6DUQXVAyenFhZDghXsf70cSnRlgsuT2+/ZzbiP+fzo303f4Q+BX+YHWs/cy4eslIr+dE9G3gYL1yJnWyrBC9ns+jp4KG/X5wP5+3p5+zE72e09Hje/Kyvd67ed92lTTR6zkd/f2l7ssqm/XfIXo95+/p71e39p8hej356M9Rur8270auO0FWP8uG6ETZz+z5GTnW1tVQiG4dLoy0Vvvdtvk276Mux+OrxUMY/e44I/4/laPjdoguiOiCiC6I6IKILojogoguiOiCiC6I6IKILojocoz5A4pZwsvfZiZfAAAAAElFTkSuQmCC" alt="" /></strong></span>
+<src><span style="font-size: 18.6667px;"><strong>改变访问权限</strong></span>
+<src><span style="font-size: 12pt;"><strong>​</strong>​也可以使用use关键字来改变方法的访问权限。<br /></span>
+<src style="box-sizing: border-box; padding: 8px; font-family: Monaco, Menlo, Consolas, 'Courier New', monospace; font-size: 12px; color: #333333; border-radius: 4px; background-color: #fbfaf8; border: 1px solid rgba(0, 0, 0, 0.15); -en-codeblock: true;">
+<src>&lt;?php
+<src>trait T{
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function t1(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 't1';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>&nbsp;
+<src>&nbsp;
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function t2(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 't2';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>class Demo{
+<src><span>&nbsp;&nbsp; &nbsp;</span>use T{
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>t2 as protected;
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src><span>&nbsp;&nbsp; &nbsp;</span>public function test(){
+<src><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>return 'test';
+<src><span>&nbsp;&nbsp; &nbsp;</span>}
+<src>}
+<src>&nbsp;
+<src>&nbsp;
+<src>$demo = new Demo;
+<src>echo $demo-&gt;t1(),'&lt;/br&gt;';
+<src>echo $demo-&gt;t2(),'&lt;/br&gt;';
+<src>echo $demo-&gt;test();
+
+
+
+<src><span style="font-size: 14pt;"><strong>输出结果：</strong></span>
+<src><span style="font-size: 12pt;"><img src="data:image/png;base64,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" alt="" /></span>
+<p>&nbsp;</p>
+<src><span style="font-size: 18.6667px;"><strong>上面只是介绍了一些常用的特性，详细可参考官方手册：</strong></span> <span style="font-size: 14pt;"><strong><a href="https://php.net/manual/zh/language.oop5.traits.php">https://php.net/manual/zh/language.oop5.traits.php</a></strong></span>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

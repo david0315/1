@@ -1,0 +1,113 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel-admin 消息提醒、播放音频、点击跳转' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel-admin 消息提醒、播放音频、点击跳转</center></div><div class='banquan'>原文出处:本文由博客园博主Wen1109提供。<br/>
+原文连接:https://www.cnblogs.com/Wenxiaopeng/p/11163079.html</div><br>
+    <p><span style="font-size: 18px;">&nbsp;<strong>jquery-toastr 消息提醒、播放音频、点击跳转</strong></span></p>
+<p>&nbsp;</p>
+<p>应用情景，有新的订单生成，后台进行<span style="color: #ff0000;">消息提醒</span>并<span style="color: #ff0000;">播放音频</span>（这里用到轮询简单实现）：下面附代码</p>
+<p>&nbsp;</p>
+<p>1.找到laravel-admin 中的 <span style="color: #ff0000;">index.blade.php</span> 文件进行编辑</p>
+<src class="cnblogs_code">
+<pre><code>{{-- 音频通知 --<span style="color: #000000;">}}
+</span>&lt;audio style=<span style="color: #800000;">"</span><span style="color: #800000;">display:none; height: 0</span><span style="color: #800000;">"</span> id=<span style="color: #800000;">"</span><span style="color: #800000;">bg-music</span><span style="color: #800000;">"</span> preload=<span style="color: #800000;">"</span><span style="color: #800000;">auto</span><span style="color: #800000;">"</span> src=<span style="color: #800000;">"</span><span style="color: #800000;">http://fjdx.sc.chinaz.com/Files/DownLoad/sound1/201511/6571.mp3</span><span style="color: #800000;">"</span> loop=<span style="color: #800000;">"</span><span style="color: #800000;">loop</span><span style="color: #800000;">"</span>&gt;&lt;/audio&gt;
+
+&lt;script&gt;<span style="color: #000000;">
+    function LA() {}
+    LA.token </span>= <span style="color: #800000;">"</span><span style="color: #800000;">{{ csrf_token() }}</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">var</span> getting =<span style="color: #000000;"> {
+        url:</span><span style="color: #800000;">'</span><span style="color: #800000;">/admin/sendNotice</span><span style="color: #800000;">'</span><span style="color: #000000;">,
+        dataType:</span><span style="color: #800000;">'</span><span style="color: #800000;">json</span><span style="color: #800000;">'</span><span style="color: #000000;">,
+        success: function (res) {
+            console.log(res);
+            </span><span style="color: #0000ff;">if</span>(res.code == <span style="color: #800080;">200</span><span style="color: #000000;">){
+　　　　　　　　　　
+                toastr.options.onclick </span>=<span style="color: #000000;"> function(){
+                    location.href</span>=<span style="color: #800000;">'</span><span style="color: #800000;">/admin/order</span><span style="color: #800000;">'</span>;  <span style="color: #008000;">//</span><span style="color: #008000;"> 点击跳转页面</span>
+<span style="color: #000000;">                };
+　　　　　　　　　 toastr.options.timeOut</span>=<span style="color: #800080;">120000</span>; <span style="color: #008000;">//</span><span style="color: #008000;"> 保存2分钟</span>
+　　　　　　　　　 toastr.warning(res.msg); <span style="color: #008000;">//</span><span style="color: #008000;"> 提示文字</span>
+
+                <span style="color: #0000ff;">var</span> audio = document.getElementById(<span style="color: #800000;">'</span><span style="color: #800000;">bg-music</span><span style="color: #800000;">'</span>);  <span style="color: #008000;">//</span><span style="color: #008000;"> 启用音频通知</span>
+<span style="color: #000000;">                audio.play();
+                setTimeout(function(){
+                    audio.load(); </span><span style="color: #008000;">//</span><span style="color: #008000;"> 1.5秒后关闭音频通知</span>
+                },<span style="color: #800080;">1500</span><span style="color: #000000;">);
+            }
+        },
+        error: function (res) {
+            console.log(res);
+        }
+    };
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">关键在这里，Ajax定时访问服务端，不断获取数据 ，这里是5秒请求一次。</span>
+    window.setInterval(function(){$.ajax(getting)},<span style="color: #800080;">5000</span><span style="color: #000000;">);
+
+</span>&lt;/script&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>2.请求路由控制器</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">   /*</span><span style="color: #008000;">*
+     * 轮询判断有没有新订单
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span><span style="color: #000000;"> function sendNotice()
+    {
+　　　　　</span><span style="color: #008000;">//</span><span style="color: #008000;"> 处理逻辑</span>
+　　　　　$count = <span style="color: #800080;">0</span>;   <span style="color: #008000;">//</span><span style="color: #008000;"> 获取的结果<br /><br /></span>
+        $getCount = session()-&gt;<span style="color: #0000ff;">get</span>(<span style="color: #800000;">'</span><span style="color: #800000;">count</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+
+        </span><span style="color: #0000ff;">if</span> ($count &gt;<span style="color: #000000;"> $getCount) {
+            session()</span>-&gt;put(<span style="color: #800000;">'</span><span style="color: #800000;">count</span><span style="color: #800000;">'</span>, $count); <span style="color: #008000;">//</span><span style="color: #008000;"> 存session</span>
+            <span style="color: #0000ff;">return</span> [<span style="color: #800000;">'</span><span style="color: #800000;">code</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800080;">200</span>, <span style="color: #800000;">'</span><span style="color: #800000;">msg</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">您有新的订单请及时处理</span><span style="color: #800000;">'</span><span style="color: #000000;">];
+        }
+　　     </span><span style="color: #008000;">//</span><span style="color: #008000;"> 不成立的话则存最新的值</span>
+        session()-&gt;put(<span style="color: #800000;">'</span><span style="color: #800000;">count</span><span style="color: #800000;">'</span><span style="color: #000000;">, $count);
+        </span><span style="color: #0000ff;">return</span> [<span style="color: #800000;">'</span><span style="color: #800000;">code</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800080;">201</span><span style="color: #000000;">];
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>实现效果：</p>
+<p><img src="./images/Laravel-admin 消息提醒、播放音频、点击跳转0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="background-color: #ff0000;">注意</span>：</p>
+<p>&nbsp; &nbsp; 使用Google 浏览器如果无法播放提示音？&nbsp;&nbsp;</p>
+<h1 class="title"><span style="font-size: 18px;">JS报错:Uncaught（in promise）DOMException:play（）</span></h1>
+<p>　　1、进入&nbsp; chrome://flags/#autoplay-policy</p>
+<p>　　<img src="./images/Laravel-admin 消息提醒、播放音频、点击跳转1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>　　2、找到 Autoplay policy</p>
+<p>　　&nbsp;<img src="./images/Laravel-admin 消息提醒、播放音频、点击跳转2.jpg" alt="" /></p>
+<p>　　</p>
+<p>　　3、修改Default</p>
+<p>&nbsp; &nbsp; &nbsp;<img src="./images/Laravel-admin 消息提醒、播放音频、点击跳转3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>　　使用苹果浏览器无法播放音频？</p>
+<p>　　一、点击浏览器左上角的：Safari浏览器-&gt;此网站的设置<br />　　　　<img src="./images/Laravel-admin 消息提醒、播放音频、点击跳转4.jpg" alt="" width="240" /></p>
+<p>　　二、自动播放 选择 允许全部自动播放，刷新网页完成设置<br />　　　　<img src="./images/Laravel-admin 消息提醒、播放音频、点击跳转5.jpg" alt="" width="400" /></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18pt; color: #ff0000;">&nbsp;如果你觉得本文对你有帮助，欢迎转载，烦请注明出处，谢谢！</span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

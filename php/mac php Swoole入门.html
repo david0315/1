@@ -1,0 +1,103 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修mac php Swoole入门' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>mac php Swoole入门</center></div><div class='banquan'>原文出处:本文由博客园博主MoonyHee提供。<br/>
+原文连接:https://www.cnblogs.com/wangziyue/p/11171597.html</div><br>
+    <h2>&nbsp;</h2>
+<h2>&nbsp;</h2>
+<h2><span style="background-color: #888888;">一、 swoole 扩展安装</span></h2>
+<p>安装前必须保证系统已经安装了下列软件</p>
+<ul>
+<li><code>php-7.0</code>&nbsp;或更高版本</li>
+<li><code>gcc-4.8</code>&nbsp;或更高版本</li>
+<li><code>make</code></li>
+<li><code>autoconf</code></li>
+<li><code>pcre</code>&nbsp;(<code>CentOS</code>系统可以执行命令：<code>yum install pcre-devel</code>)</li>
+</ul>
+<p>下载地址:</p>
+<ul>
+<li><a href="https://github.com/swoole/swoole-src/releases" target="_blank">https://github.com/swoole/swoole-src/releases</a></li>
+<li><a href="http://pecl.php.net/package/swoole" target="_blank">http://pecl.php.net/package/swoole</a></li>
+<li><a href="http://git.oschina.net/swoole/swoole" target="_blank">http://git.oschina.net/swoole/swoole</a></li>
+</ul>
+<p>编译安装:</p>
+<src class="cnblogs_Highlighter">
+<pre><code>cd /usr/local
+wget -c https://github.com/swoole/swoole-src/archive/v2.0.8.tar.gz
+tar -zxvf v2.0.8.tar.gz
+cd swoole-src-2.0.8/
+phpize
+./configure
+make &amp;&amp; make install</code></pre>
+
+<p>修改php.ini文件:</p>
+<src class="cnblogs_code">
+<pre><code>extension=swoole.so</code></pre>
+
+<p>通过<code>php -m</code>或<code>phpinfo()</code>来查看是否成功加载了<code>swoole.so</code>，如果没有可能是<code>php.ini</code>的路径不对，可以使用<code>php --ini</code>来定位到<code>php.ini</code>的绝对路径。</p>
+<p>&nbsp;</p>
+<h2><span style="background-color: #888888;">二、 swoole 应用</span></h2>
+<p>1.打开下载的swoole包,在/swoole/examples/server/echo.php,这个文件创建了一个TCP服务器，监听本机9501 端口</p>
+<p>echo.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+$serv </span>= <span style="color: #0000ff;">new</span> swoole_server(<span style="color: #800000;">"</span><span style="color: #800000;">0.0.0.0</span><span style="color: #800000;">"</span>, <span style="color: #800080;">9501</span><span style="color: #000000;">);
+$serv</span>-&gt;on(<span style="color: #800000;">'</span><span style="color: #800000;">connect</span><span style="color: #800000;">'</span><span style="color: #000000;">, function ($serv, $fd, $reactor_id){
+    echo </span><span style="color: #800000;">"</span><span style="color: #800000;">[#</span><span style="color: #800000;">"</span>.posix_getpid().<span style="color: #800000;">"</span><span style="color: #800000;">]\tClient@[$fd:$reactor_id]: Connect.\n</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+});
+$serv</span>-&gt;<span style="color: #0000ff;">set</span><span style="color: #000000;">(array(
+    </span><span style="color: #800000;">'</span><span style="color: #800000;">worker_num</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800080;">1</span><span style="color: #000000;">,
+
+));
+
+$serv</span>-&gt;on(<span style="color: #800000;">'</span><span style="color: #800000;">receive</span><span style="color: #800000;">'</span><span style="color: #000000;">, function (swoole_server $serv, $fd, $reactor_id, $data) {
+    echo </span><span style="color: #800000;">"</span><span style="color: #800000;">[#</span><span style="color: #800000;">"</span>.$serv-&gt;worker_id.<span style="color: #800000;">"</span><span style="color: #800000;">]\tClient[$fd] client data: $data\n</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">if</span> ($serv-&gt;send($fd, <span style="color: #800000;">"</span><span style="color: #800000;">Server {$data}\n</span><span style="color: #800000;">"</span>) == <span style="color: #0000ff;">false</span><span style="color: #000000;">)
+    {
+        echo </span><span style="color: #800000;">"</span><span style="color: #800000;">error\n</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+    }
+
+});
+
+$serv</span>-&gt;on(<span style="color: #800000;">'</span><span style="color: #800000;">close</span><span style="color: #800000;">'</span><span style="color: #000000;">, function ($serv, $fd, $reactor_id) {
+    echo </span><span style="color: #800000;">"</span><span style="color: #800000;">[#</span><span style="color: #800000;">"</span>.posix_getpid().<span style="color: #800000;">"</span><span style="color: #800000;">]\tClient@[$fd:$reactor_id]: Close.\n</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+});
+
+$serv</span>-&gt;start();</code></pre>
+
+<p>2.启动server,打开终端,运行echo.php&nbsp;</p>
+<p>命令</p>
+<src class="cnblogs_code">
+<pre><code>php echo.php</code></pre>
+
+<p>这个时候，其实Server已经启动了，并且正在运行，监听了本机的9501端口，此时Server处于等待的状态，所以没有任何输出。</p>
+<p>打开一个新窗口,用telnet连接</p>
+<src class="cnblogs_code">
+<pre><code>telnet <span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span> <span style="color: #800080;">9501</span></code></pre>
+
+<p>输入hi,结果如下</p>
+<p><img src="./images/mac php Swoole入门0.jpg" alt="" /></p>
+<p><img src="./images/mac php Swoole入门1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>-------end-----&nbsp;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,137 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修教你如何提高 PHP 代码的质量' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>教你如何提高 PHP 代码的质量</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11995542.html</div><br>
+    <blockquote>
+<p>说实话，在代码质量方面，PHP 的压力非常大。通过阅读本系列文章，您将了解如何提高 PHP 代码的质量。</p>
+<p>我们可以将此归咎于许多原因，但这肯定不仅仅是因为 PHP 生态系统缺乏适当的测试工具。在本文中，我想向您展示一个简单的设置，用于项目的基本质量测试。 我不会详述任何特定的工具，而是专注于设定测试环境。</p>
+<p>本文中有一个演示代码可以在 GitHub 上找到：<a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//github.com/mkosiedowski/php-testing-demo" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">&nbsp;https://github.com/mkosiedowski/php-testing-demo&nbsp;</a>如果你对这篇文章中的例子有任何问题，可以参考。</p>
+</blockquote>
+<h2>1 必备条件</h2>
+<p>我假设您熟悉 PHP 7.1 语法，您可以使用 Composer 和 PSR-4 来进行自动加载和 PSR-1&amp;PSR-2 的编码标准。在我的示例中，vendor 的二进制文件被安装到 ./bin 目录。</p>
+<h2>2 构建工具</h2>
+<p>我们将使用一些不同的测试工具，所以最好有一些能用一个脚本来运行它们的东西。 PHING 为我们提供了解决此问题的绝佳解决方案。 PHing 与 Apache Ant 相似，可以使用 XML 配置轻松自动执行任务。 我们可以通过运行以下命令来安装它：</p>
+<p>复制代码</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$ php composer.phar require --dev phing/phing</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后，在项目的根目录中创建一些基本的 build.xml 文件。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;?xml version=<span style="color: #800000;">"</span><span style="color: #800000;">1.0</span><span style="color: #800000;">"</span> encoding=<span style="color: #800000;">"</span><span style="color: #800000;">UTF-8</span><span style="color: #800000;">"</span>?&gt;&lt;project name=<span style="color: #800000;">"</span><span style="color: #800000;">MyProject</span><span style="color: #800000;">"</span> <span style="color: #0000ff;">default</span>=<span style="color: #800000;">"</span><span style="color: #800000;">run</span><span style="color: #800000;">"</span>&gt;&lt;/project&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+<p>在接下来的步骤中，我们将添加一些由 PHing 运行的目标。</p>
+<h2>3 静态代码分析</h2>
+<p>我为了提高代码质量，您可以做的第一件事就是设置静态代码分析器。他们会在没有真正运行的情况下阅读你的错误代码。这就像在几秒钟内由一个机器人完成了一个代码审查一样。很酷，不是吗?</p>
+<h2>4 代码风格</h2>
+<p>当使用正确的样式编写时，您的代码更容易维护。每个人都知道（如果你不这样做，你至少应该开始阅读 Robert C. Martin 的&ldquo;Clean Code&rdquo;），但仍然有很多团队在遵守他们达成的标准方面存在问题。我们可以用 phpcs - PHP 代码嗅探来自动化这个任务，有没有很神奇。</p>
+<p>我们可以通过运行以下命令来安装：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$ php composer.phar require --dev squizlabs/php_codesniffer</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后添加一个在 build.xml 中运行它的目标。你的 build.xml 现在应该是这样的：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;?xml version=<span style="color: #800000;">"</span><span style="color: #800000;">1.0</span><span style="color: #800000;">"</span> encoding=<span style="color: #800000;">"</span><span style="color: #800000;">UTF-8</span><span style="color: #800000;">"</span>?&gt;&lt;project name=<span style="color: #800000;">"</span><span style="color: #800000;">MyProject</span><span style="color: #800000;">"</span> <span style="color: #0000ff;">default</span>=<span style="color: #800000;">"</span><span style="color: #800000;">run</span><span style="color: #800000;">"</span>&gt;    &lt;target name=<span style="color: #800000;">"</span><span style="color: #800000;">phpcs</span><span style="color: #800000;">"</span> description=<span style="color: #800000;">"</span><span style="color: #800000;">Check code style with PHP_CodeSniffer</span><span style="color: #800000;">"</span>&gt;        &lt;exec executable=<span style="color: #800000;">"</span><span style="color: #800000;">bin/phpcs</span><span style="color: #800000;">"</span> passthru=<span style="color: #800000;">"</span><span style="color: #800000;">true</span><span style="color: #800000;">"</span> checkreturn=<span style="color: #800000;">"</span><span style="color: #800000;">true</span><span style="color: #800000;">"</span>&gt;            &lt;arg line=<span style="color: #800000;">"</span><span style="color: #800000;">--standard=PSR1,PSR2 -extensions=php src</span><span style="color: #800000;">"</span>/&gt;        &lt;/exec&gt;    &lt;/target&gt;    &lt;target name=<span style="color: #800000;">"</span><span style="color: #800000;">run</span><span style="color: #800000;">"</span> depends=<span style="color: #800000;">"</span><span style="color: #800000;">phpcs</span><span style="color: #800000;">"</span>/&gt;&lt;/project&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+<p>现在您可以运行 ./bin/phing 了，phpc 将自动检查您是否在 PSR-1 和 PSR-2 编码标准上有任何错误。</p>
+<p>许多框架，比如 Symfony，定义了它们自己的代码风格规则，我们也可以自动检查这些规则。比如：如果您使用的是 Symfony 框架，请检查&nbsp;<a class=" external" href="https://link.zhihu.com/?target=https%3A//github.com/leaphub/phpcs-symfony2" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">github.com/leaphub/phpc<span class="invisible">s-symfony2</span></span></span></a>&nbsp;标准，以了解如何使用 phpcs 检查 Symfony 的标准。</p>
+<p>错误格式的文件的示例输出：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>MyProject &gt; phpcs:  FILE: /home/maciej/workspace/php-testing/src/Domain/Price.php-------------------------------------------------------------------------FOUND <span style="color: #800080;">1</span> ERROR AFFECTING <span style="color: #800080;">1</span> LINE-------------------------------------------------------------------------<span style="color: #800080;">28</span> | ERROR | Method name <span style="color: #800000;">"</span><span style="color: #800000;">Price::get_value</span><span style="color: #800000;">"</span> <span style="color: #0000ff;">is</span> not <span style="color: #0000ff;">in</span> camel caps format-------------------------------------------------------------------------Time: 67ms; Memory: 6Mb</code></pre>
+
+<p>&nbsp;</p>
+
+<p>在代码评审期间，不再浪费时间检查编码标准，从现在开始，它将自动实现！</p>
+<h2>5 复制 / 粘贴检测器</h2>
+<p>重复的代码是不好的，每个人都知道。有时我们错误地创建了这样的代码，我们从来没有注意到它。有时我们这样做是因为我们懒惰。最好是配备一个工具，它可以在构建时提示这个问题。PHPCPD - PHP 复制 / 粘贴检测器。</p>
+<p>通过运行以下命令来安装它：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$ php composer.phar require --dev sebastian/phpcpd</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后将目标添加到 build.xml：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;target name=<span style="color: #800000;">"</span><span style="color: #800000;">phpcpd</span><span style="color: #800000;">"</span> description=<span style="color: #800000;">"</span><span style="color: #800000;">Generate pmd-cpd.xml using PHPCPD</span><span style="color: #800000;">"</span>&gt;    &lt;exec executable=<span style="color: #800000;">"</span><span style="color: #800000;">bin/phpcpd</span><span style="color: #800000;">"</span> passthru=<span style="color: #800000;">"</span><span style="color: #800000;">true</span><span style="color: #800000;">"</span>&gt;        &lt;arg line=<span style="color: #800000;">"</span><span style="color: #800000;">src</span><span style="color: #800000;">"</span>/&gt;    &lt;/exec&gt;&lt;/target&gt;...&lt;target name=<span style="color: #800000;">"</span><span style="color: #800000;">run</span><span style="color: #800000;">"</span> depends=<span style="color: #800000;">"</span><span style="color: #800000;">phpcs,phpcpd</span><span style="color: #800000;">"</span>/&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+<p>在 vendor 目录上运行的重复代码检查的示例输出：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>phpcpd <span style="color: #800080;">4.0</span>.<span style="color: #800080;">0</span> by Sebastian Bergmann. Found <span style="color: #800080;">74</span> clones with <span style="color: #800080;">2929</span> duplicated lines <span style="color: #0000ff;">in</span> <span style="color: #800080;">97</span> files: - /home/maciej/workspace/php-testing/vendor/phpspec/phpspec/src/PhpSpec/Matcher/TriggerMatcher.php:<span style="color: #800080;">81</span>-<span style="color: #800080;">102</span>     /home/maciej/workspace/php-testing/vendor/phpspec/phpspec/src/PhpSpec/Matcher/TriggerMatcher.php:<span style="color: #800080;">114</span>-<span style="color: #800080;">135</span> - /home/maciej/workspace/php-testing/vendor/squizlabs/php_codesniffer/src/Reports/Full.php:<span style="color: #800080;">81</span>-<span style="color: #800080;">114</span>   /home/maciej/workspace/php-testing/vendor/squizlabs/php_codesniffer/src/Reports/Code.php:<span style="color: #800080;">162</span>-<span style="color: #800080;">195</span> (...)</code></pre>
+
+<p>&nbsp;</p>
+
+<h2>6 想要真正深入的代码分析？</h2>
+<p>如果你从头开始你的项目，你应该看看 Phan - 它是一个非常强大的代码分析器，它会让你的代码变得漂亮。在&nbsp;<a class=" external" href="https://link.zhihu.com/?target=https%3A//github.com/phan/phan" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">github.com/phan/phan</span></span></a>&nbsp;上查看。安装非常简单 - 只需安装 php-ast 扩展（在 Ubuntu 中，您可以尝试运行 sudo apt-get install php-ast）并运行：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$ php composer.phar require --dev phan/phan</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后创建一个配置文件 .phan/config.php 内容为：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;?phpreturn [    <span style="color: #800000;">'</span><span style="color: #800000;">target_php_version</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">7.1</span><span style="color: #800000;">'</span>,    <span style="color: #800000;">'</span><span style="color: #800000;">directory_list</span><span style="color: #800000;">'</span> =&gt; [        <span style="color: #800000;">'</span><span style="color: #800000;">src</span><span style="color: #800000;">'</span>,        <span style="color: #800000;">'</span><span style="color: #800000;">vendor/symfony/console</span><span style="color: #800000;">'</span>,    ],    <span style="color: #800000;">"</span><span style="color: #800000;">exclude_analysis_directory_list</span><span style="color: #800000;">"</span> =&gt; [        <span style="color: #800000;">'</span><span style="color: #800000;">vendor/</span><span style="color: #800000;">'</span>    ],]; </code></pre>
+
+<p>&nbsp;</p>
+
+<p>在 build.xml 文件中也创建 phan 目标：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;target name=<span style="color: #800000;">"</span><span style="color: #800000;">phan</span><span style="color: #800000;">"</span> description=<span style="color: #800000;">"</span><span style="color: #800000;">Check code with phan</span><span style="color: #800000;">"</span>&gt;   &lt;exec executable=<span style="color: #800000;">"</span><span style="color: #800000;">bin/phan</span><span style="color: #800000;">"</span> passthru=<span style="color: #800000;">"</span><span style="color: #800000;">true</span><span style="color: #800000;">"</span> checkreturn=<span style="color: #800000;">"</span><span style="color: #800000;">true</span><span style="color: #800000;">"</span>/&gt;&lt;/target&gt;...&lt;target name=<span style="color: #800000;">"</span><span style="color: #800000;">run</span><span style="color: #800000;">"</span> depends=<span style="color: #800000;">"</span><span style="color: #800000;">phpcs,phpcpd,phan</span><span style="color: #800000;">"</span>/&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+<p>现在，您可以运行您的代码分析，如果您犯了错误（例如&hellip;&hellip;为类属性声明错误的 phpdoc 类型），您应该看到这样的消息：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>MyProject &gt; phan: src/Domain/PriceComparator.php:<span style="color: #800080;">17</span> PhanTypeMismatchProperty Assigning \Domain\PriceConverter to property but \Domain\PriceComparator::priceConverter <span style="color: #0000ff;">is</span> intsrc/Domain/PriceComparator.php:<span style="color: #800080;">35</span> PhanNonClassMethodCall Call to method convert on non-<span style="color: #0000ff;">class</span> type <span style="color: #0000ff;">int</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>Phan 很神奇 - 它读取你的整个代码并对它执行多次检查，包括将 phpdoc 声明与实际使用变量、方法、类等进行比较，你可以查看&nbsp;<a class=" external" href="https://link.zhihu.com/?target=https%3A//github.com/phan/phan%23features" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">github.com/phan/phan#<span class="invisible">features</span></span></span></a>&nbsp;的所有特征列表。</p>
+<p>现在，您的项目中有三个完全自动化的工具，可以保护您的代码的质量。您所需要做的就是手动运行 ./bin/phing，或者将其附加到您的 git-hook 或持续集成中。您的代码将被检查编码标准、重复和正式错误。这些检查应该会导致更可靠的运行时，并且花费在代码审查上的时间更少。</p>
+<p>&nbsp;<strong>很多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c">677079770</a></strong></p>
+<p><span style="font-size: 18pt;">推荐阅读：</span></p>
+<p>&nbsp;</p>
+<h1 class="postTitle"><span style="font-size: 14pt;"><a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/a609251438/p/11995603.html">如何提高 PHP 代码的质量？第二部分 单元测试</a></span></h1>
+<p><span style="font-size: 14pt;"><strong><a class="postTitle2" href="https://www.cnblogs.com/a609251438/p/11995703.html">如何提高 PHP 代码的质量？第三：端到端 / 集成测试</a></strong></span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

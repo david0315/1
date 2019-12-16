@@ -1,0 +1,78 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] curl访问https与CA证书问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] curl访问https与CA证书问题</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10524928.html</div><br>
+    <p>CA证书,用来在调用HTTPS资源的时候,验证对方网站是否是CA颁布的证书,而不是自己随便生成的</p>
+<p>curl命令<br />1.需要下载CA证书 文件地址是 http://curl.haxx.se/ca/cacert.pem<br />2.把下载的文件放到这个位置 /etc/pki/tls/certs/ca-bundle.crt<br />3.curl就可以访问https的资源了</p>
+<p>php代码</p>
+<src class="cnblogs_Highlighter">
+<pre><code>function post($url, $data=array(), $refer = "", $timeout = 30, $header = array()){
+    $curlObj = curl_init();
+    $ssl = stripos($url,'https://') === 0 ? true : false;
+    $options = array(
+        CURLOPT_URL =&gt; $url,
+        CURLOPT_RETURNTRANSFER =&gt; 1,
+        CURLOPT_POST =&gt; 1,
+        CURLOPT_POSTFIELDS =&gt; $data,
+        CURLOPT_FOLLOWLOCATION =&gt; 1,
+        CURLOPT_AUTOREFERER =&gt; 1,
+        CURLOPT_USERAGENT =&gt; 'Webface SelfService Form',
+        CURLOPT_TIMEOUT =&gt; $timeout,
+        CURLOPT_HTTP_VERSION =&gt; CURL_HTTP_VERSION_1_0,
+        CURLOPT_IPRESOLVE =&gt; CURL_IPRESOLVE_V4,
+        CURLOPT_REFERER =&gt; $refer
+    );  
+    if (!empty($header)) {
+        $options[CURLOPT_HTTPHEADER] = $header;
+    }   
+    if ($refer) {
+        $options[CURLOPT_REFERER] = $refer;
+    }   
+    if ($ssl) {
+        //注意看这里就是配置CA证书
+        //只信任CA颁布的证书
+        $options[CURLOPT_SSL_VERIFYPEER]=true;  
+        //本地CA证书,用来验证网站的证书是否是CA颁布的
+        $options[CURLOPT_CAINFO]=getcwd() . '/cacert.pem';
+        //验证域名是否匹配
+        $options[CURLOPT_SSL_VERIFYHOST] = 2;
+        /*  
+        //忽略证书验证,信任任何证书
+        $options[CURLOPT_SSL_VERIFYHOST] = false;
+        $options[CURLOPT_SSL_VERIFYPEER] = false;
+        */
+    }   
+    curl_setopt_array($curlObj, $options);
+    $returnData = curl_exec($curlObj);
+    if (curl_errno($curlObj)) {
+        $returnData = curl_error($curlObj);
+    }   
+    curl_close($curlObj);
+    return $returnData;
+}
+$res=post("https://www.baidu.com");
+var_dump($res);
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

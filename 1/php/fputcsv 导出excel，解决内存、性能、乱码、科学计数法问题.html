@@ -1,0 +1,86 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修fputcsv 导出excel，解决内存、性能、乱码、科学计数法问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>fputcsv 导出excel，解决内存、性能、乱码、科学计数法问题</center></div><div class='banquan'>原文出处:本文由博客园博主扬帆起航，向着远方提供。<br/>
+原文连接:https://www.cnblogs.com/slqgenius/p/11719679.html</div><br>
+    <h1 class="artical-title">&nbsp;</h1>
+<src class="artical-content-bak main-content">
+<src class="con artical-content editor-preview-side">
+<pre><code><code class="hljs">    在PHP的日常开发中，时常会需要导出 excel ，一般我们会使用 PHPExcel ，性能强大，但是在数据量大的时候，phpexcel 性能差、内存溢出等各种不可控问题就会出现。因此，如果对导出样式要求不高，我们可以使用 php 原生的 fputcsv 导出表格，最近项目中，有同事就遇到这个问题，推荐他使用 fputcsv，本着分享的精神，在此记录，希望能够帮助一些新入行的童鞋。</code></code></pre>
+<p>直接上代码：</p>
+<pre><code><code class="hljs xml"><span class="php"><span class="hljs-meta">&lt;?php 
+ob_end_clean();
+
+<span class="hljs-comment">// 文件名
+$filename = $type.<span class="hljs-string">'_order_'.date(<span class="hljs-string">'YmdHis').<span class="hljs-string">'.csv';
+$title = [<span class="hljs-string">'单号', <span class="hljs-string">'状态', <span class="hljs-string">'数量', <span class="hljs-string">'商品名', <span class="hljs-string">'发货人', <span class="hljs-string">'收货人'];
+
+<span class="hljs-comment">// 设置 header 头
+header(<span class="hljs-string">'Content-Type: application/vnd.ms-excel'); <span class="hljs-comment">// 文件格式
+header(<span class="hljs-string">'Content-Type: charset=utf-8'); <span class="hljs-comment">// 文件编码
+header(<span class="hljs-string">'Content-Disposition: attachment; filenaeme='. $filename); <span class="hljs-comment">// 文件名
+header(<span class="hljs-string">'Content-Type: application/octet-stream'); <span class="hljs-comment">// 二进制流
+<span class="hljs-comment">// header("Accept-Ranges:bytes");// 表明范围单位为字节，可不写
+header(<span class="hljs-string">"Pragma: no-cache"); <span class="hljs-comment">// 禁止缓存
+header(<span class="hljs-string">"Expires: 0");<span class="hljs-comment">// 有效期时间
+
+$fp = fopen(<span class="hljs-string">'php://output',<span class="hljs-string">'w+');
+
+fputcsv($fp, transCode($title));
+
+<span class="hljs-comment">// 处理数据 [伪代码]
+<span class="hljs-comment">// 如果从数据库获取数据并处理，可以分批进行查询，也可以使用多个文件进行导出
+<span class="hljs-comment">// $result
+
+$count = <span class="hljs-number">0; <span class="hljs-comment">//计数器
+$limit = <span class="hljs-number">10000; 
+
+<span class="hljs-keyword">while ($row = $result-&gt;fetchRow()) {
+    $count++;
+    <span class="hljs-keyword">if ($count == $limit) {
+        ob_flush(); <span class="hljs-comment">// 刷新 php 缓存
+        flush(); <span class="hljs-comment">// 刷新输出缓存
+        $count = <span class="hljs-number">0; <span class="hljs-comment">// 重置计数器
+    }
+
+    <span class="hljs-comment">// 逐行写入
+    fputcsv($fp, transCode($row));
+    <span class="hljs-keyword">unset($row);
+}
+
+fclose($fp);
+<span class="hljs-comment">// 编码转换
+<span class="hljs-comment">// 代码一般是 utf-8 格式， csv 导出默认也是 utf-8 格式，而 excel 直接打开默认不识别 utf-8 格式，因此，要导出数据都要进行 格式转换
+<span class="hljs-comment">// 每个字段后加上 "\t" 可以防止长数字显示为科学计数法 
+<span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">transCode<span class="hljs-params">(array &amp;$arr){
+    <span class="hljs-keyword">foreach ($arr <span class="hljs-keyword">as &amp;$v) {
+        $v = <span class="hljs-string">"\t".iconv(<span class="hljs-string">'utf-8', <span class="hljs-string">'gb2312//ignore', $v);
+    }
+}</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>可能出现问题：<br />乱码问题：转换编码为 gb2312 或 gbk<br />特殊字符问题：字段后 加 "\t" 或 双引号<br />数据丢失问题：gb2312 可识别的字符比较少，可以换成 gbk<br />csv 时间格式筛选： 文本格式的时间无法进行分组筛选，可在 转码的时候进行过滤，如果是时间格式，不转成 文本格式，即 不加 "\t"</p>
+<p>文章来源：https://blog.51cto.com/12750968/2133076</p>
+
+
+
+
+				
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

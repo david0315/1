@@ -1,0 +1,116 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php gd实现简单图片验证码与图片背景文字水印' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php gd实现简单图片验证码与图片背景文字水印</center></div><div class='banquan'>原文出处:本文由博客园博主宋建明提供。<br/>
+原文连接:https://www.cnblogs.com/songjianming/p/11299624.html</div><br>
+    <p>1、让水印文字铺满图片：</p>
+<p>大致效果：</p>
+<p><img src="./images/php gd实现简单图片验证码与图片背景文字水印0.jpg" alt="" width="1045" height="689" /></p>
+<p>代码：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">function</span> appendSpreadTextMark(<span style="color: #800080;">$imageDir</span>, <span style="color: #800080;">$markText</span><span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$fontFile</span> = "simsun.ttf"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$info</span> = <span style="color: #008080;">getimagesize</span>(<span style="color: #800080;">$imageDir</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$imWidth</span> = <span style="color: #800080;">$info</span>[0<span style="color: #000000;">];
+    </span><span style="color: #800080;">$imHeight</span> = <span style="color: #800080;">$info</span>[1<span style="color: #000000;">];
+    </span><span style="color: #800080;">$type</span> = <span style="color: #800080;">$info</span>[2];<span style="color: #008000;">//</span><span style="color: #008000;">1 = GIF，2 = JPG，3 = PNG，4 = SWF，5 = PSD，6 = BMP，7 = TIFF(intel byte order)，8 = TIFF(motorola byte order)，9 = JPC，10 = JP2，11 = JPX，12 = JB2，13 = SWC，14 = IFF，15 = WBMP，16 = XBM</span>
+    <span style="color: #800080;">$ext</span> = image_type_to_extension(<span style="color: #800080;">$type</span>, <span style="color: #0000ff;">false</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$mime</span> = <span style="color: #800080;">$info</span>['mime'<span style="color: #000000;">];
+    
+    </span><span style="color: #800080;">$imgcrefunc</span> = "imagecreatefrom".<span style="color: #800080;">$ext</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$imgRes</span> = <span style="color: #800080;">$imgcrefunc</span>(<span style="color: #800080;">$imageDir</span><span style="color: #000000;">);
+    
+    </span><span style="color: #800080;">$picRangeLimit</span> = <span style="color: #800080;">$imHeight</span> &gt; <span style="color: #800080;">$imWidth</span> ? <span style="color: #800080;">$imWidth</span> : <span style="color: #800080;">$imHeight</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$fintSize</span> = (int)(<span style="color: #800080;">$picRangeLimit</span> / 50<span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$fintSize</span> &lt; 5<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$fintSize</span> = 5<span style="color: #000000;">;
+    }
+   
+    </span><span style="color: #800080;">$textColor</span> = imagecolorallocatealpha(<span style="color: #800080;">$imgRes</span>, 0, 0, 0, 100<span style="color: #000000;">);
+
+    </span><span style="color: #800080;">$charCount</span> = mb_strlen(<span style="color: #800080;">$markText</span>, 'UTF-8'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$stepLengthX</span> = <span style="color: #800080;">$fintSize</span> * 4<span style="color: #000000;">;
+    </span><span style="color: #800080;">$stepLengthY</span> = (int)(<span style="color: #800080;">$fintSize</span> * <span style="color: #800080;">$charCount</span> * 1.2<span style="color: #000000;">);
+    </span><span style="color: #800080;">$numX</span> = (int)(<span style="color: #800080;">$imWidth</span> / <span style="color: #800080;">$stepLengthX</span>) + 1<span style="color: #000000;">;
+    </span><span style="color: #800080;">$numY</span> = (int)(<span style="color: #800080;">$imHeight</span> / <span style="color: #800080;">$stepLengthY</span>) + 1<span style="color: #000000;">;
+    </span><span style="color: #800080;">$pointLeft</span> = 0<span style="color: #000000;">;
+    </span><span style="color: #800080;">$pointBottom</span> = <span style="color: #800080;">$stepLengthY</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$inY</span> = 0; <span style="color: #800080;">$inY</span> &lt; <span style="color: #800080;">$numY</span>; <span style="color: #800080;">$inY</span> ++<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$pointLeft</span> = 0<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$inX</span> = 1; <span style="color: #800080;">$inX</span> &lt; <span style="color: #800080;">$numX</span>; <span style="color: #800080;">$inX</span> ++<span style="color: #000000;">) {
+            imagettftext(</span><span style="color: #800080;">$imgRes</span>, <span style="color: #800080;">$fintSize</span>, 45, <span style="color: #800080;">$pointLeft</span>, <span style="color: #800080;">$pointBottom</span>, <span style="color: #800080;">$textColor</span>, <span style="color: #800080;">$fontFile</span>, <span style="color: #800080;">$markText</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$pointLeft</span> += <span style="color: #800080;">$stepLengthX</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #800080;">$pointBottom</span> += <span style="color: #800080;">$stepLengthY</span><span style="color: #000000;">;
+    }
+    
+    
+    </span><span style="color: #008080;">header</span>('content-type:' . <span style="color: #800080;">$mime</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$imgrespfunc</span> = 'image' . <span style="color: #800080;">$ext</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$imgrespfunc</span>(<span style="color: #800080;">$imgRes</span><span style="color: #000000;">);
+    imagedestroy(</span><span style="color: #800080;">$imgRes</span><span style="color: #000000;">);
+}
+
+</span><span style="color: #800080;">$imageDir</span> = "pic.jpg"<span style="color: #000000;">;
+</span><span style="color: #800080;">$markText</span> = "水印内容"<span style="color: #000000;">;
+appendSpreadTextMark(</span><span style="color: #800080;">$imageDir</span>, <span style="color: #800080;">$markText</span>);</code></pre>
+
+<p>&nbsp;</p>
+<p>2、简单验证码效果：</p>
+<p><img src="./images/php gd实现简单图片验证码与图片背景文字水印1.jpg" alt="" /></p>
+<p>代码：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">创图像</span>
+<span style="color: #800080;">$im</span> = @imagecreatetruecolor(500, 150) or <span style="color: #0000ff;">die</span>("Cannot Initialize new GD image stream"<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">分配颜色</span>
+<span style="color: #800080;">$backgroundColor</span> = imagecolorallocate(<span style="color: #800080;">$im</span>, 0, 0, 0);<span style="color: #008000;">//</span><span style="color: #008000;">第一个分配的颜色默认为背景</span>
+<span style="color: #800080;">$textColor</span> = imagecolorallocate(<span style="color: #800080;">$im</span>, 0, 0, 255<span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">画像素点</span>
+<span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0; <span style="color: #800080;">$i</span>&lt;500; <span style="color: #800080;">$i</span>++<span style="color: #000000;">)
+{
+    imagesetpixel(</span><span style="color: #800080;">$im</span>, <span style="color: #008080;">rand</span>(0, 500), <span style="color: #008080;">rand</span>(0,150), <span style="color: #800080;">$textColor</span><span style="color: #000000;">);
+}
+</span><span style="color: #800080;">$textStr</span> = '$im = @imagecreatetruecolor(100, 50)'<span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">写字符串(原图像、字体、X坐标、Y坐标、待写字符串、字符串颜色)</span>
+imagestring(<span style="color: #800080;">$im</span>, 4, 10, 10,  <span style="color: #800080;">$textStr</span>, <span style="color: #800080;">$textColor</span><span style="color: #000000;">);
+
+</span><span style="color: #800080;">$textStr</span> = '$backgroundColor = imagecolorallocate($im, 0, 0, 0)'<span style="color: #000000;">;
+imagestring(</span><span style="color: #800080;">$im</span>, 4, 10, 30,  <span style="color: #800080;">$textStr</span>, <span style="color: #800080;">$textColor</span><span style="color: #000000;">);
+
+</span><span style="color: #800080;">$textStr</span> = '$textColor = imagecolorallocate($im, 0, 0, 255)'<span style="color: #000000;">;
+imagestring(</span><span style="color: #800080;">$im</span>, 4, 10, 50,  <span style="color: #800080;">$textStr</span>, <span style="color: #800080;">$textColor</span><span style="color: #000000;">);  
+
+</span><span style="color: #800080;">$textStr</span> = 'imagestring($im, 5, 10, 10,  $textStr, $textColor)'<span style="color: #000000;">;
+imagestring(</span><span style="color: #800080;">$im</span>, 4, 10, 70,  <span style="color: #800080;">$textStr</span>, <span style="color: #800080;">$textColor</span><span style="color: #000000;">);  
+
+
+
+</span><span style="color: #008080;">header</span>("Content-type: image/png"<span style="color: #000000;">);
+imagepng(</span><span style="color: #800080;">$im</span><span style="color: #000000;">);
+imagedestroy(</span><span style="color: #800080;">$im</span><span style="color: #000000;">);
+</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,83 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修通过正则表达式提取泰坦尼克号字幕里的所有台词' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>通过正则表达式提取泰坦尼克号字幕里的所有台词</center></div><div class='banquan'>原文出处:本文由博客园博主大沙漠提供。<br/>
+原文连接:https://www.cnblogs.com/greatdesert/p/11326476.html</div><br>
+    <p>网上搜了一下看看有没有泰坦尼克号完整台词，找了好久也没找到合适的，要么不完整，要么收费，要么数据是错乱的,预期的台词是一个有中英文对照版的，然后按照格式一行行的排列，比如一行英文，一行中文，外加一行对应电影的时间</p>
+<p>怎么办呢，想到了电影里的字幕，字幕里有数据的，数据格式也是统一的，我们利用正则提取一下就好了，开干</p>
+<p>首先下载字幕,我在网上下载了一个，点击这个图片下载字幕文件:<img src="./images/通过正则表达式提取泰坦尼克号字幕里的所有台词0.jpg" alt="" />(<span style="color: #ff0000;">点击这个图片，下载后把后缀名改成ssa就可以了</span>)</p>
+<p>然后查找文件里的规律，如下:</p>
+<p>对于英文和中文有两种格式，对于英语来说，格式如下:</p>
+<p><img src="./images/通过正则表达式提取泰坦尼克号字幕里的所有台词1.jpg" alt="" /></p>
+<p>对于中文来说，格式如下:</p>
+<p><img src="./images/通过正则表达式提取泰坦尼克号字幕里的所有台词2.jpg" alt="" /></p>
+<p>思路</p>
+<p>　　可以看到前面部分差不多的，后面的字幕之前有几个字符不一样，例如英文字幕是0000&amp;}结尾的，而中文字幕是3000&amp;}结尾的</p>
+<p>　　我们可以用两个正则分别提取英语和中文的字幕信息，保存到对应的数组里，数组里的键名为字幕的时间，是个字符串格式，值可以是个数组，分别是对应的字幕</p>
+<p>&nbsp;完整代码如下:</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$str</span> = <span style="color: #008080;">file_get_contents</span>('./zimu.ssa');                        <span style="color: #008000;">//</span><span style="color: #008000;">load ssa file</span>
+<span style="color: #0000ff;">function</span> getResult(<span style="color: #800080;">$preg</span>){                                    <span style="color: #008000;">//</span><span style="color: #008000;">get Subtitle interface</span>
+    <span style="color: #0000ff;">global</span> <span style="color: #800080;">$str</span><span style="color: #000000;">;     
+    </span><span style="color: #800080;">$result</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">preg_match_all</span>(<span style="color: #800080;">$preg</span>,<span style="color: #800080;">$str</span>,<span style="color: #800080;">$match</span>,<span style="color: #000000;">PREG_OFFSET_CAPTURE)){
+        </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$match</span>[1] <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$val</span><span style="color: #000000;">){
+            </span><span style="color: #800080;">$result</span>[<span style="color: #008080;">trim</span>(<span style="color: #800080;">$val</span>[0],',')]=<span style="color: #800080;">$match</span>[2][<span style="color: #800080;">$key</span>][0<span style="color: #000000;">];
+        }
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #800080;">$result_en</span> = getResult('/Marked=([^D]*).*?0000&amp;}(.*)/');    <span style="color: #008000;">//</span><span style="color: #008000;">获取英文字幕</span>
+<span style="color: #800080;">$result_cn</span> = getResult('/Marked=([^D]*).*?3000&amp;}(.*)/');    <span style="color: #008000;">//</span><span style="color: #008000;">获取中文字幕</span>
+
+<span style="color: #800080;">$result</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #800080;">$result_en</span> = <span style="color: #008080;">array_filter</span>(<span style="color: #800080;">$result_en</span>,<span style="color: #0000ff;">function</span>(<span style="color: #800080;">$val</span>,<span style="color: #800080;">$key</span>) <span style="color: #0000ff;">use</span>(&amp;<span style="color: #800080;">$result</span>,&amp;<span style="color: #800080;">$result_cn</span>){    <span style="color: #008000;">//</span><span style="color: #008000;">将字幕合并到$result数组里</span>
+    <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$result_cn</span>[<span style="color: #800080;">$key</span><span style="color: #000000;">])){    
+        </span><span style="color: #800080;">$result</span>[<span style="color: #800080;">$key</span>] = <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$val</span>,<span style="color: #800080;">$result_cn</span>[<span style="color: #800080;">$key</span><span style="color: #000000;">]);
+        </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$result_cn</span>[<span style="color: #800080;">$key</span><span style="color: #000000;">]);
+    }</span><span style="color: #0000ff;">else</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;        
+}</span>,<span style="color: #000000;">ARRAY_FILTER_USE_BOTH );
+
+
+</span><span style="color: #0000ff;">function</span> out(<span style="color: #800080;">$arr</span>,<span style="color: #800080;">$isarr</span>=1){                                <span style="color: #008000;">//</span><span style="color: #008000;">out inteface</span>
+    <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$val</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$isarr</span><span style="color: #000000;">)
+            </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$key</span>."&lt;br/&gt;".<span style="color: #800080;">$val</span>[0]."&lt;br/&gt;".<span style="color: #800080;">$val</span>[1]."&lt;br/&gt;&lt;br/&gt;"<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">else</span>
+            <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$key</span>."&lt;br/&gt;".<span style="color: #800080;">$val</span>."&lt;br/&gt;&lt;br/&gt;"<span style="color: #000000;">;
+    }
+}
+out(</span><span style="color: #800080;">$result</span>);                    <span style="color: #008000;">//</span><span style="color: #008000;">输出中文和英文有对应的字幕</span>
+out(<span style="color: #800080;">$result_en</span>,0);                <span style="color: #008000;">//</span><span style="color: #008000;">输出只有英文的字幕</span>
+out(<span style="color: #800080;">$result_cn</span>,0);                <span style="color: #008000;">//</span><span style="color: #008000;">输出只有中文的字幕</span>
+?&gt;</code></pre>
+
+<p>部分输出如下:</p>
+<p style="display: none;">writer by:大沙漠 QQ:22969969</p>
+<p><img src="./images/通过正则表达式提取泰坦尼克号字幕里的所有台词3.jpg" alt="" /></p>
+<p>OK，It's&nbsp; Perfect~</p>
+<p>下一篇贴出完整的字幕</p>
+<p>正则里也遇到个问题，理想中[^D]改成[^(?:,D)]的话在getResult里就不需要调用trim()过滤掉末尾的,符号了，但是在php里(?:)不能用，可能php的正则引擎不支持这个功能吧，以后如果再深入研究的话再看看。&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

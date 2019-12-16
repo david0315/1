@@ -1,0 +1,167 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修基于JWT的Token登录认证' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>基于JWT的Token登录认证</center></div><div class='banquan'>原文出处:本文由博客园博主行走的阳光提供。<br/>
+原文连接:https://www.cnblogs.com/shineguang/p/11186401.html</div><br>
+    <p><span style="font-size: 18px;"><strong>1.JWT简介</strong></span></p>
+<p>&nbsp; &nbsp; &nbsp; <strong><span style="font-size: 18px;">&nbsp;&nbsp;JSON Web Token（缩写 JWT），是目前最流行的跨域认证解决方案。</span></strong></p>
+<p><strong><span style="font-size: 18px;">2.JWT的原理</span></strong></p>
+<p><strong><span style="font-size: 18px;">&nbsp; &nbsp; &nbsp; &nbsp;JWT的原理是，服务器认证以后，生成一个JSON格式的对象，发回给客户端，就像下面这样.</span></strong></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">{
+  </span>"用户名": "admin",
+  "角色": "超级管理员",
+  "到期时间": "2019-07-13 00:00:00"<span style="color: #000000;">
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 18px;"><strong>&nbsp;以后，客户端与服务端通信的时候，都要发回这个 JSON 对象。服务器完全只靠这个对象认定用户身份。</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp;</strong></span><span style="font-size: 18px;"><strong> &nbsp;</strong><strong><span class="md-line md-end-block"><span class="md-expand">为了防止用户篡改数据，服务器在生成这个对象的时候，会加上签名（详见后文）。</span></span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">&nbsp; &nbsp; &nbsp; &nbsp; 服务器不再保存任何 session 数据，也就是服务器变成无状态了，从而比较容易实现扩展。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">3.JWT的数据结构</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<span class="md-expand">实际的 JWT是一个很长的字符串，中间用点（<span><code>.</code><span>）分隔成三个部分。 就像下面这样：</span></span></span></span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code>eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjNmMmc1N2E5MmFhIn0.eyJpYXQiOjE1NjI4MzM0MDgsImlzcyI6Imh0dHA6XC9cL3d3dy5weWcuY29tIiwiYXVkIjoiaHR0cDpcL1wvd3d3LnB5Zy5jb20iLCJuYmYiOjE1NjI4MzM0MDcsImV4cCI6MTU2MjkxOTgwOCwianRpIjoiM2YyZzU3YTkyYWEiLCJ1c2VyX2lkIjoxfQ.NFq1qQ-Z5c4pwit8ZkyWEwX6SBXmnHJcc6ZDgSD5nhU</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;"><strong>JWT的三个部分依次如下：</strong></span></p>
+<src class="cnblogs_code">
+<pre><code>- <span style="color: #008080;">Header</span><span style="color: #000000;">（头部）
+</span>-<span style="color: #000000;"> Payload（负载）
+</span>- Signature（签名）</code></pre>
+
+<p><span style="font-size: 18px;"><strong>4.JWT的使用方式</strong></span></p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus"><span class="md-expand">客户端收到服务器返回的 JWT，可以储存在 Cookie 里面，也可以储存在 localStorage。</span></span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">此后，客户端每次与服务器通信，都要带上这个 JWT。你可以把它放在 Cookie 里面自动发送，但是这样不能跨域，所以更好的做法是放在 HTTP 请求的头信息<code>Authorization</code>字段里面</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">5.JWT的几个特点</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; （1）JWT 默认是不加密，但也是可以加密的。生成原始 Token 以后，可以用密钥再加密一次。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></strong></span><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus"><span class="md-expand">（2）JWT 不加密的情况下，不能将秘密数据写入 JWT。</span></span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;（3）JWT 不仅可以用于认证，也可以用于交换信息。有效使用 JWT，可以降低服务器查询数据库的次数。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;（4）JWT 的最大缺点是，由于服务器不保存 session 状态，因此无法在使用过程中废止某个 token，或者更改 token 的权限。也就是说，一旦 JWT 签发了，在到期之前就会始终有效，除非服务器部署额外的逻辑。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;（5）JWT 本身包含了认证信息，一旦泄露，任何人都可以获得该令牌的所有权限。为了减少盗用，JWT 的有效期应该设置得比较短。对于一些比较重要的权限，使用时应该再次对用户进行认证。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;（6）为了减少盗用，JWT 不应该使用 HTTP 协议明码传输，要使用 HTTPS 协议传输。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">6.JWT功能实现</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;使用composer安装 JWT 功能组件</span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code>composer <span style="color: #0000ff;">require</span> lcobucci/jwt 3.3</code></pre>
+
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+namespace tools\jwt;
+
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> Lcobucci\JWT\Builder;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> Lcobucci\JWT\Parser;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> Lcobucci\JWT\Signer\Hmac\Sha256;
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> Lcobucci\JWT\ValidationData;
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * Created by PhpStorm.
+ * User: asus
+ * Date: 2019/4/5
+ * Time: 13:02
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Token
+{
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$_config</span> =<span style="color: #000000;"> [
+        </span>'audience' =&gt; '',<span style="color: #008000;">//</span><span style="color: #008000;">接收人</span>
+        'id' =&gt; '',<span style="color: #008000;">//</span><span style="color: #008000;">token的唯一标识，这里只是一个简单示例</span>
+        'sign' =&gt; '',<span style="color: #008000;">//</span><span style="color: #008000;">签名密钥</span>
+        'issuer' =&gt; '',<span style="color: #008000;">//</span><span style="color: #008000;">签发人</span>
+        'expire' =&gt; 3600*24 <span style="color: #008000;">//</span><span style="color: #008000;">有效期</span>
+<span style="color: #000000;">    ];
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">生成token</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> getToken(<span style="color: #800080;">$user_id</span><span style="color: #000000;">){
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">签名对象</span>
+        <span style="color: #800080;">$signer</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Sha256();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">获取当前时间戳</span>
+        <span style="color: #800080;">$time</span> = <span style="color: #008080;">time</span><span style="color: #000000;">();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">设置签发人、接收人、唯一标识、签发时间、立即生效、过期时间、用户id、签名</span>
+        <span style="color: #800080;">$token</span> = (<span style="color: #0000ff;">new</span> Builder())-&gt;issuedBy(self::<span style="color: #800080;">$_config</span>['issuer'<span style="color: #000000;">])
+            </span>-&gt;canOnlyBeUsedBy(self::<span style="color: #800080;">$_config</span>['audience'<span style="color: #000000;">])
+            </span>-&gt;identifiedBy(self::<span style="color: #800080;">$_config</span>['id'], <span style="color: #0000ff;">true</span><span style="color: #000000;">)
+            </span>-&gt;issuedAt(<span style="color: #800080;">$time</span><span style="color: #000000;">)
+            </span>-&gt;canOnlyBeUsedAfter(<span style="color: #800080;">$time</span>-1<span style="color: #000000;">)
+            </span>-&gt;expiresAt(<span style="color: #800080;">$time</span> + self::<span style="color: #800080;">$_config</span>['expire'<span style="color: #000000;">])
+            </span>-&gt;with('user_id', <span style="color: #800080;">$user_id</span><span style="color: #000000;">)
+            </span>-&gt;sign(<span style="color: #800080;">$signer</span>, self::<span style="color: #800080;">$_config</span>['sign'<span style="color: #000000;">])
+            </span>-&gt;<span style="color: #000000;">getToken();
+        </span><span style="color: #0000ff;">return</span> (<span style="color: #0000ff;">string</span>)<span style="color: #800080;">$token</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">从请求信息中获取token令牌</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getRequestToken()
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_SERVER</span>['HTTP_AUTHORIZATION'<span style="color: #000000;">])) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+
+        </span><span style="color: #800080;">$header</span> = <span style="color: #800080;">$_SERVER</span>['HTTP_AUTHORIZATION'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$method</span> = 'bearer'<span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">去除token中可能存在的bearer标识</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #008080;">trim</span>(<span style="color: #008080;">str_ireplace</span>(<span style="color: #800080;">$method</span>, '', <span style="color: #800080;">$header</span><span style="color: #000000;">));
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">从token中获取用户id （包含token的校验）</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> getUserId(<span style="color: #800080;">$token</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$user_id</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+
+        </span><span style="color: #800080;">$token</span> = <span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$token</span>)?self::getRequestToken():<span style="color: #800080;">$token</span><span style="color: #000000;">;
+
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$token</span><span style="color: #000000;">)) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">为了注销token 加以下if判断代码</span>
+            <span style="color: #800080;">$delete_token</span> = cache('delete_token') ?:<span style="color: #000000;"> [];
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$token</span>, <span style="color: #800080;">$delete_token</span><span style="color: #000000;">)){
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">token已被删除（注销）</span>
+                <span style="color: #0000ff;">return</span> <span style="color: #800080;">$user_id</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #800080;">$token</span> = (<span style="color: #0000ff;">new</span> Parser())-&gt;parse((<span style="color: #0000ff;">string</span>) <span style="color: #800080;">$token</span><span style="color: #000000;">);
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">验证token</span>
+            <span style="color: #800080;">$data</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> ValidationData();
+            </span><span style="color: #800080;">$data</span>-&gt;setIssuer(self::<span style="color: #800080;">$_config</span>['issuer']);<span style="color: #008000;">//</span><span style="color: #008000;">验证的签发人</span>
+            <span style="color: #800080;">$data</span>-&gt;setAudience(self::<span style="color: #800080;">$_config</span>['audience']);<span style="color: #008000;">//</span><span style="color: #008000;">验证的接收人</span>
+            <span style="color: #800080;">$data</span>-&gt;setId(self::<span style="color: #800080;">$_config</span>['id']);<span style="color: #008000;">//</span><span style="color: #008000;">验证token标识</span>
+
+            <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$token</span>-&gt;validate(<span style="color: #800080;">$data</span><span style="color: #000000;">)) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">token验证失败</span>
+                <span style="color: #0000ff;">return</span> <span style="color: #800080;">$user_id</span><span style="color: #000000;">;
+            }
+
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">验证签名</span>
+            <span style="color: #800080;">$signer</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Sha256();
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$token</span>-&gt;verify(<span style="color: #800080;">$signer</span>, self::<span style="color: #800080;">$_config</span>['sign'<span style="color: #000000;">])) {
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">签名验证失败</span>
+                <span style="color: #0000ff;">return</span> <span style="color: #800080;">$user_id</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">从token中获取用户id</span>
+            <span style="color: #800080;">$user_id</span> = <span style="color: #800080;">$token</span>-&gt;getClaim('user_id'<span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$user_id</span><span style="color: #000000;">;
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp;</span></strong></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

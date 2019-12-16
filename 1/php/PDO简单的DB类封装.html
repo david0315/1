@@ -1,0 +1,37 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PDO简单的DB类封装' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PDO简单的DB类封装</center></div><div class='banquan'>原文出处:本文由博客园博主PHP进行曲提供。<br/>
+原文连接:https://www.cnblogs.com/wenjixin/p/11206969.html</div><br>
+    <p>&lt;?php</p>
+<p>class DB<br />{    <br />	 private $dbs     = "";<br />	 private $fields  = "*";<br />	 private $tables  = null;<br />	 private $joins   = null;<br />	 private $ons     = null;<br />	 private $wheres  = null;<br />	 private $limits  = null;<br />	 private $orderby = null;<br />	 private $likes   = null;<br />	 private $groupby = null;</p>
+<p>private $havings = null;</p>
+<p>	 private $sums    = null;<br />	 private $field   = null;<br />	 private $avgs    = null;<br />	 private $counts  = null;<br />	 private $maxs    = null;<br />	 private $mins    = null;<br />	 // 链接数据库<br />	 function __construct()<br />	 {<br />		      try {<br />                  $this-&gt;dbs = new PDO('mysql:host=主机地址;dbname=表名','用户名','密码');<br />          } catch (PDOException $e) {<br />                  print "Error!: " . $e-&gt;getMessage() . "&lt;br/&gt;";<br />          die();<br />}<br />	 }<br />     // 各种查询<br />   // 指定字段查询<br />	 public function field($data){<br />           $this-&gt;fields  = implode(",",$data);<br />           return $this;<br />	 }<br />  // 要查询的表名<br />	 public function table($table){<br />           $this-&gt;tables = $table;<br />           return $this;<br />	 }<br />   // 内链接<br />	 public function join($table){<br />           $this-&gt;joins = " inner join ".$table;<br />           return $this;<br />	 }<br />   // 左连接<br />	  public function leftjoin($table){<br />           $this-&gt;joins = " left join ".$table;<br />           return $this;<br />	 }<br />    // 右链接<br />	  public function rightjoin($table){<br />           $this-&gt;joins = " right join ".$table;<br />           return $this;<br />	 }<br />   // 关联关系<br />	 public function on($id,$gid){<br />          $this-&gt;ons = " on ".$id.'='.$gid;<br />          return $this;<br />	 }<br />   // 分组后条件<br />	 public function having($k,$v){<br />           $this-&gt;havings = " having ".$k.'='.$v;<br />           return $this;<br />	 }</p>
+<p>//条件</p>
+<p>public function where($k,$v){<br />$this-&gt;wheres = " where ".$k.'='.$v;<br />return $this;<br />}</p>
+<p>   // 限制条件<br />   public function limit($origin,$end){<br />        $this-&gt;limits = " limit ".$origin.",".$end;<br />        return $this;<br />   }<br />   <br />   public function order($id,$asc){<br />      $this-&gt;orderby = " order by ".$id." ".$asc;<br />      return $this;<br />   }<br />   // 模糊查询<br />   public function like($k,$v){<br />      $this-&gt;likes = " where"." ".$k." "." "." like "."'".'%'.$v.'%'."'";<br />      return $this;<br />   }<br />   // 分组查询<br />   public function group($name){<br />       $this-&gt;groupby = " group by ".$name;<br />       return $this;<br />   }<br />   // 求和<br />   public function sum($v){<br />   	$this-&gt;sums = " sum"."(".$v.")"." ";<br />   	return $this;<br />   }<br />   // 平均值<br />   public function avg($v){<br />       $this-&gt;sums = " avg"."(".$v.")"." ";<br />       return $this;<br />   }<br />   // 长度<br />   public function count($v){<br />       $this-&gt;counts = " count"."(".$v.")"." ";<br />       return $this;<br />   }<br />   // 最大值<br />   public function max($v){<br />       $this-&gt;maxs = " max"."(".$v.")"." ";<br />       return $this;<br />   }<br />   // 最小值<br />   public function min($v){<br />       $this-&gt;mins = " min"."(".$v.")"." ";<br />       return $this;<br />   }</p>
+<p>   // 查询语句<br />	 public function get(){<br />	 	if ($this-&gt;sums == "" &amp;&amp; $this-&gt;avgs == "" &amp;&amp; $this-&gt;counts == "" &amp;&amp; $this-&gt;maxs == "" &amp;&amp; $this-&gt;mins == "") {<br />	 			$sql = "select ".$this-&gt;fields." from ".$this-&gt;tables.$this-&gt;joins.$this-&gt;ons.$this-&gt;wheres.$this-&gt;limits.$this-&gt;orderby.$this-&gt;likes.$this-&gt;groupby.$this-&gt;havings;<br />	 	}else{<br />	 		  $sql = "select ".$this-&gt;sums.$this-&gt;counts.$this-&gt;maxs.$this-&gt;mins.$this-&gt;avgs." from ".$this-&gt;tables.$this-&gt;joins.$this-&gt;ons.$this-&gt;wheres.$this-&gt;limits.$this-&gt;orderby.$this-&gt;likes.$this-&gt;groupby.$this-&gt;havings;<br />	 	}<br />	 	return $this-&gt;dbs-&gt;query($sql)-&gt;fetchAll(PDO::FETCH_ASSOC);<br />	 }</p>
+<p>     // 删除<br />	 public function del($id){<br />         $sql = "delete from ".$this-&gt;tables." where id =".$id;<br />         $res = $this-&gt;dbs-&gt;exec($sql);<br />         return $res;<br />	 }</p>
+<p><br />     // 改<br />     public function update($data,$id){<br />         foreach ($data as $key =&gt; $value) {<br />             @$str .= " ".$key." = "."'".$value."'"." , ";<br />         }<br />        $strs = substr($str,"0","-2");<br />        $sql = "update ".$this-&gt;tables." set ".$strs." where id = ".$id;<br />        return $this-&gt;dbs-&gt;exec($sql);</p>
+<p>     }<br />     // 增<br />     public function add($data){<br />        $v = array_values($data);<br />        $k = array_keys($data);<br />        $k = implode(",",$k);<br />        $v = implode("','",$v);<br />        $v = "'".$v."'";<br />        @$sql = "insert into"." ".$this-&gt;tables."(".$k.")".values."(".$v.")";<br />        return  $this-&gt;dbs-&gt;exec("$sql");<br />     } </p>
+<p><br />}<br /> ?&gt;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

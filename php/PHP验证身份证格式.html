@@ -1,0 +1,182 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP验证身份证格式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP验证身份证格式</center></div><div class='banquan'>原文出处:本文由博客园博主itbsl提供。<br/>
+原文连接:https://www.cnblogs.com/itbsl/p/11282677.html</div><br>
+    <p>互联网公司对身份证验证的需求越来越多，然而普通的小公司是无法对接公安部门的身份认证系统的。几乎都是在网上买一些大的互联网公司的一些认证服务。即使是便宜一些的认证价格也达到了10万次/万元。也就是一角钱一次了，还是挺贵哈。所以为了减少公司的开支，我们在拿到用户提交的身份证信息去认证前应该自己先检验一下身份证的格式，如果连最基本的身份证格式就不满足的话，我们完全可以直接驳回，不必走接下来的花钱认证流程了，而且也可以建立一个用户身份证表，把每次认证通过的数据存起来，以后每次都先从自己系统里的用户身份证表查询，查不到再去走认证流程，最大化节省公司开支。<br />
+这里提供一个初步验证身份证格式的PHP身份证验证类。该类只提供一个静态方法<code>isValid</code>接口,使用起来也很简单，只需要使用<code>IdentityCard::isValid</code>即可验证。可以放到自己项目中当做工具类。该方法可以同时验证15位的老身份证和18位的新身份证格式<br />
+PHP版本: <code>&gt;=7.0.0</code><br />
+<strong>注：</strong> 如果PHP版本低于7.0版本只需要把类中方法的参数限制取消掉即可使用。</p>
+<pre><code><code>class IdentityCard
+{
+    /**
+     * 校验身份证号是否合法
+     * @param string $num 待校验的身份证号
+     * @return bool
+     */
+    public static function isValid(string $num)
+    {
+        //老身份证长度15位，新身份证长度18位
+        $length = strlen($num);
+        if ($length == 15) { //如果是15位身份证
+
+            //15位身份证没有字母
+            if (!is_numeric($num)) {
+                return false;
+            }
+            // 省市县（6位）
+            $areaNum = substr($num, 0, 6);
+            // 出生年月（6位）
+            $dateNum = substr($num, 6, 6);
+
+        } else if ($length == 18) { //如果是18位身份证
+
+            //基本格式校验
+            if (!preg_match(&#39;/^\d{17}[0-9xX]$/&#39;, $num)) {
+                return false;
+            }
+            // 省市县（6位）
+            $areaNum = substr($num, 0, 6);
+            // 出生年月日（8位）
+            $dateNum = substr($num, 6, 8);
+
+        } else { //假身份证
+            return false;
+        }
+
+        //验证地区
+        if (!self::isAreaCodeValid($areaNum)) {
+            return false;
+        }
+
+        //验证日期
+        if (!self::isDateValid($dateNum)) {
+            return false;
+        }
+
+        //验证最后一位
+        if (!self::isVerifyCodeValid($num)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 省市自治区校验
+     * @param string $area 省、直辖市代码
+     * @return bool
+     */
+    private static function isAreaCodeValid(string $area) {
+        $provinceCode = substr($area, 0, 2);
+
+        // 根据GB/T2260—999，省市代码11到65
+        if (11 &lt;= $provinceCode &amp;&amp; $provinceCode &lt;= 65) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 验证出生日期合法性
+     * @param string $date 日期
+     * @return bool
+     */
+    private static function isDateValid(string $date) {
+        if (strlen($date) == 6) { //15位身份证号没有年份，这里拼上年份
+            $date = &#39;19&#39;.$date;
+        }
+        $year  = intval(substr($date, 0, 4));
+        $month = intval(substr($date, 4, 2));
+        $day   = intval(substr($date, 6, 2));
+
+        //日期基本格式校验
+        if (!checkdate($month, $day, $year)) {
+            return false;
+        }
+
+        //日期格式正确，但是逻辑存在问题(如:年份大于当前年)
+        $currYear = date(&#39;Y&#39;);
+        if ($year &gt; $currYear) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 验证18位身份证最后一位
+     * @param string $num 待校验的身份证号
+     * @return bool
+     */
+    private static function isVerifyCodeValid(string $num)
+    {
+        if (strlen($num) == 18) {
+            $factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+            $tokens = [&#39;1&#39;, &#39;0&#39;, &#39;X&#39;, &#39;9&#39;, &#39;8&#39;, &#39;7&#39;, &#39;6&#39;, &#39;5&#39;, &#39;4&#39;, &#39;3&#39;, &#39;2&#39;];
+
+            $checkSum = 0;
+            for ($i = 0; $i &lt; 17; $i++) {
+                $checkSum += intval($num{$i}) * $factor[$i];
+            }
+
+            $mod   = $checkSum % 11;
+            $token = $tokens[$mod];
+
+            $lastChar = strtoupper($num{17});
+
+            if ($lastChar != $token) {
+                return false;
+            }
+        }
+        return true;
+    }
+}</code></code></pre>
+<p>使用示例:</p>
+<pre><code><code>// 测试
+$num = &#39;33071919610920021X&#39;;
+if (IdentityCard::isValid($num)) {
+    echo &#39;身份证格式正确&#39;;
+} else {
+    echo &#39;身份证格式不正确&#39;;
+}</code></code></pre>
+<p>下面是身份证编码各个部分的含义:</p>
+<pre><code><code>//=============新的18位身份证号码各位的含义:=======================
+//1-2位省、自治区、直辖市代码；11-65
+//3-4位地级市、盟、自治州代码；
+//5-6位县、县级市、区代码；
+//7-14位出生年月日，比如19670401代表1967年4月1日；
+//15-17位为顺序号，其中17位男为单数，女为双数；
+//18位为校验码，0-9和X，由公式随机产生。
+//举例：
+//130503 19670401 0012这个身份证号的含义: 13为河北，05为邢台，03为桥西区，出生日期为1967年4月1日，顺序号为001，2为验证码
+//===========15位身份证号码各位的含义:=======================
+//1-2位省、自治区、直辖市代码；
+//3-4位地级市、盟、自治州代码；
+//5-6位县、县级市、区代码；
+//7-12位出生年月日,比如670401代表1967年4月1日,这是和18位号码的第一个区别；
+//13-15位为顺序号，其中15位男为单数，女为双数；
+//与18位身份证号的第二个区别：没有最后一位的验证码。
+//举例：
+//130503 670401 001的含义; 13为河北，05为邢台，03为桥西区，出生日期为1967年4月1日，顺序号为001。</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

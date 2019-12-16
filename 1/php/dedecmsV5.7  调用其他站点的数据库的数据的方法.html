@@ -1,0 +1,48 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修dedecmsV5.7  调用其他站点的数据库的数据的方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>dedecmsV5.7  调用其他站点的数据库的数据的方法</center></div><div class='banquan'>原文出处:本文由博客园博主早上六点半遇见五月天提供。<br/>
+原文连接:https://www.cnblogs.com/pawn-i/p/11007833.html</div><br>
+    <p>问题：网站是用dedecmsv5.7写的，后来加了一套论坛discuzX3.4。因为dede要调用dz的数据，本来用jsonp跨域请求的数据，但是m端掉用的时候会把请求的链接的域名后面自动加个/m（不知道在哪儿加的&hellip;&hellip;），所以就上网找了另一种方法，dede直接调用dz的数据库。</p>
+<hr />
+<p>&nbsp;</p>
+<p>解决方法：</p>
+<p><strong>1、打开dedecms 下面的/data/tag/sql.inc.php文件，增加一下代码：</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> dz数据库连接配置
+// ------------------------------------------------------------------------</span>
+<span style="color: #800080;">$sqltag</span>['<strong>dzdb</strong>']['dbhost'] = 'localhost'<span style="color: #000000;">;
+</span><span style="color: #800080;">$sqltag</span>['<strong>dzdb</strong>']['dbname'] = 'phpb2b'<span style="color: #000000;">;
+</span><span style="color: #800080;">$sqltag</span>['<strong>dzdb</strong>']['dbuser'] = 'root'<span style="color: #000000;">;
+</span><span style="color: #800080;">$sqltag</span>['<strong>dzdb</strong>']['dbpwd'] = '123456'<span style="color: #000000;">;
+</span><span style="color: #800080;">$sqltag</span>['<strong>dzdb</strong>']['dbprefix'] = 'pb_'<span style="color: #000000;">;
+</span><span style="color: #800080;">$sqltag</span>['<strong>dzdb</strong>']['dblanguage'] = 'utf8';</code></pre>
+
+<p><strong>在sql.inc.php文件中按上面格式把dz的数据库信息填写正确</strong></p>
+<p><strong>2、在模版中调用dz的数据</strong></p>
+<src class="cnblogs_code">
+<pre><code>{dede:sql sql="SELECT * FROM x_forum_post DESC LIMIT 15" <span style="color: #ff0000;"><strong>appname="dzdb"</strong></span>}</code></pre>
+
+<p><strong>还是按照dede:sql 怎么写就怎么写。在标签里需要多加一个<span style="color: #ff0000;">appname='dzdb';</span></strong></p>
+<p><strong>然后就OK了！</strong></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

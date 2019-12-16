@@ -1,0 +1,70 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现部分字符隐藏' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现部分字符隐藏</center></div><div class='banquan'>原文出处:本文由博客园博主dreams7433提供。<br/>
+原文连接:https://www.cnblogs.com/phperlinxinlan/p/10774895.html</div><br>
+    <src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 隐藏部分字符串
+ * # 此方法多用于手机号码或身份证号、银行卡号的中间部分数字的隐藏
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> func_substr_replace(<span style="color: #800080;">$str</span>, <span style="color: #800080;">$replacement</span> = '*', <span style="color: #800080;">$start</span> = 1, <span style="color: #800080;">$length</span> = 3<span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$len</span> = mb_strlen(<span style="color: #800080;">$str</span>,'utf-8'<span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$len</span> &gt; <span style="color: #008080;">intval</span>(<span style="color: #800080;">$start</span>+<span style="color: #800080;">$length</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$str1</span> = mb_substr(<span style="color: #800080;">$str</span>,0,<span style="color: #800080;">$start</span>,'utf-8'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$str2</span> = mb_substr(<span style="color: #800080;">$str</span>,<span style="color: #008080;">intval</span>(<span style="color: #800080;">$start</span>+<span style="color: #800080;">$length</span>),<span style="color: #0000ff;">NULL</span>,'utf-8'<span style="color: #000000;">);
+    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$str1</span> = mb_substr(<span style="color: #800080;">$str</span>,0,1,'utf-8'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$str2</span> = mb_substr(<span style="color: #800080;">$str</span>,<span style="color: #800080;">$len</span>-1,1,'utf-8'<span style="color: #000000;">);
+        </span><span style="color: #800080;">$length</span> = <span style="color: #800080;">$len</span> - 2<span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$new_str</span> = <span style="color: #800080;">$str1</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$length</span>; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$new_str</span> .= <span style="color: #800080;">$replacement</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$new_str</span> .= <span style="color: #800080;">$str2</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$new_str</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 只保留字符串首尾字符，隐藏中间用*代替（两个字符时只显示第一个）
+ * @param string $user_name 姓名
+ * @return string 格式化后的姓名
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> substr_cut(<span style="color: #800080;">$user_name</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$strlen</span>   = mb_strlen(<span style="color: #800080;">$user_name</span>, 'utf-8'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$firstStr</span>   = <span style="color: #008080;">ucfirst</span>(<span style="color: #008080;">strtolower</span>(mb_substr(<span style="color: #800080;">$user_name</span>, 0, 3, 'utf-8'<span style="color: #000000;">)));
+    </span><span style="color: #800080;">$lastStr</span>   = <span style="color: #008080;">strtolower</span>(<span style="color: #008080;">substr</span>(<span style="color: #800080;">$user_name</span>, -3<span style="color: #000000;">));
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$strlen</span> == 2<span style="color: #000000;">){
+        </span><span style="color: #800080;">$hideStr</span> = <span style="color: #008080;">str_repeat</span>('*', <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$user_name</span>, 'utf-8') - 1<span style="color: #000000;">);
+        </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$firstStr</span> . <span style="color: #800080;">$hideStr</span><span style="color: #000000;"> ;
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+        </span><span style="color: #800080;">$hideStr</span> = <span style="color: #008080;">substr</span>(<span style="color: #008080;">str_repeat</span>("*", <span style="color: #800080;">$strlen</span> - 6), 0, 3<span style="color: #000000;">);
+        </span><span style="color: #800080;">$result</span> = <span style="color: #800080;">$firstStr</span> . <span style="color: #800080;">$hideStr</span> . <span style="color: #800080;">$lastStr</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

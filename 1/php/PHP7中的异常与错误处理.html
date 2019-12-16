@@ -1,0 +1,197 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP7中的异常与错误处理' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP7中的异常与错误处理</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11857297.html</div><br>
+    <h3>PHP 中的 Exception, Error, Throwable</h3>
+<ul>
+<li>PHP 中将代码自身异常(一般是环境或者语法非法所致)称作错误&nbsp;<code>Error</code>，将运行中出现的逻辑错误称为异常&nbsp;<code>Exception</code></li>
+<li>错误是没法通过代码处理的，而异常则可以通过&nbsp;<code>try/catch</code>&nbsp;来处理</li>
+<li>PHP7 中出现了&nbsp;<code>Throwable</code>&nbsp;接口，该接口由&nbsp;<code>Error</code>&nbsp;和&nbsp;<code>Exception</code>&nbsp;实现，用户不能直接实现&nbsp;<code>Throwable</code>&nbsp;接口，而只能通过继承&nbsp;<code>Exception</code>&nbsp;来实现接口</li>
+</ul>
+<h3>PHP7 异常处理机制</h3>
+<p>过去的 PHP，处理致命错误几乎是不可能的。致命错误不会调用由&nbsp;<code>set_error_handler()</code>&nbsp;设置的处理方式，而是简单的停止脚本的执行。</p>
+<p>在 PHP7 中，当致命错误和可捕获的错误(<code>E_ERROR</code>&nbsp;和&nbsp;<code>E_RECOVERABLE_ERROR</code>)发生时会抛出异常，而不是直接停止脚本的运行。对于某些情况，比如内存溢出，致命错误则仍然像之前一样直接停止脚本执行。在 PHP7 中，一个未捕获的异常也会是一个致命错误。这意味着在 PHP5.x 中致命错误抛出的异常未捕获，在 PHP7 中也是致命错误。</p>
+<blockquote>注意：其他级别的错误如&nbsp;<code>warning</code>&nbsp;和&nbsp;<code>notice</code>，和之前一样不会抛出异常，只有&nbsp;<code>fatal</code>&nbsp;和&nbsp;<code>recoverable</code>&nbsp;级别的错误会抛出异常。</blockquote>
+<p>从&nbsp;<code>fatal</code>&nbsp;和&nbsp;<code>recoverable</code>&nbsp;级别错误抛出的异常并非继承自&nbsp;<code>Exception</code>&nbsp;类。这种分离是为了防止现有 PHP5.x 的用于停止脚本运行的代码也捕获到错误抛出的异常。<code>fatal</code>&nbsp;和&nbsp;<code>recoverable</code>&nbsp;级别的错误抛出的异常是一个全新分离出来的类&nbsp;<code>Error</code>&nbsp;类的实例。跟其他异常一样，<code>Error</code>&nbsp;类异常也能被捕获和处理，同样允许在&nbsp;<code>finally</code>&nbsp;之类的块结构中运行。</p>
+<h3>Throwable</h3>
+<p>为了统一两个异常分支，<code>Exception</code>&nbsp;和&nbsp;<code>Error</code>&nbsp;都实现了一个全新的接口：<code>Throwable</code></p>
+<p>PHP7 中新的异常结构如下：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">interface</span><span style="color: #000000;"> Throwable
+</span><span style="color: #008080;">2</span>     |- <span style="color: #0000ff;">Exception</span> <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Throwable
+</span><span style="color: #008080;">3</span>         |- ...
+<span style="color: #008080;">4</span>     |- Error <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Throwable
+</span><span style="color: #008080;">5</span>         |- TypeError <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Error
+</span><span style="color: #008080;">6</span>         |- ParseError <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Error
+</span><span style="color: #008080;">7</span>         |- ArithmeticError <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Error
+</span><span style="color: #008080;">8</span>             |- DivisionByZeroError <span style="color: #0000ff;">extends</span><span style="color: #000000;"> ArithmeticError
+</span><span style="color: #008080;">9</span>         |- AssertionError <span style="color: #0000ff;">extends</span> Error</code></pre>
+
+<p>&nbsp;</p>
+
+<p>如果在 PHP7 的代码中定义了&nbsp;<code>Throwable</code>&nbsp;类，它将会是如下这样：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">interface</span><span style="color: #000000;"> Throwable{
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getMessage(): <span style="color: #0000ff;">string</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getCode():<span style="color: #000000;"> int;
+</span><span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getFile(): <span style="color: #0000ff;">string</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getLine():<span style="color: #000000;"> int;
+</span><span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getTrace(): <span style="color: #0000ff;">array</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getTraceAsString(): <span style="color: #0000ff;">string</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getPrevious():<span style="color: #000000;"> Throwable;
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __toString(): <span style="color: #0000ff;">string</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这个接口看起来很熟悉。<code>Throwable</code>&nbsp;规定的方法跟&nbsp;<code>Exception</code>&nbsp;几乎是一样的。唯一不同的是&nbsp;<code>Throwable::getPrevious()</code>&nbsp;返回的是&nbsp;<code>Throwable</code>&nbsp;的实例而不是&nbsp;<code>Exception</code>&nbsp;的。<code>Exception</code>&nbsp;和&nbsp;<code>Error</code>&nbsp;的构造函数跟之前&nbsp;<code>Exception</code>&nbsp;一样，可以接受任何&nbsp;<code>Throwable</code>&nbsp;的实例。</p>
+<p><code>Throwable</code>&nbsp;可以用于&nbsp;<code>try/catch</code>块中捕获&nbsp;<code>Exception</code>&nbsp;和&nbsp;<code>Error</code>&nbsp;对象(或是任何未来可能的异常类型)。记住捕获更多特定类型的异常并且对之做相应的处理是更好的实践。然而在某种情况下我们想捕获任何类型的异常(比如日志或框架中错误处理)。在 PHP7 中，要捕获所有的应该使用&nbsp;<code>Throwable</code>&nbsp;而不是&nbsp;<code>Exception</code>。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">2</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Code that may throw an Exception or Error.</span>
+<span style="color: #008080;">3</span> } <span style="color: #0000ff;">catch</span> (Throwable <span style="color: #800080;">$t</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Handle exception</span>
+<span style="color: #008080;">5</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>用户定义的类不能实现&nbsp;<code>Throwable</code>&nbsp;接口。做出这个决定一定程度上是为了预测性和一致性&mdash;&mdash;只有&nbsp;<code>Exception</code>&nbsp;和&nbsp;<code>Error</code>&nbsp;的对象可以被抛出。此外，异常需要携带对象在追溯堆栈中创建位置的信息，而用户定义的对象不会自动的有参数来存储这些信息。</p>
+<p><code>Throwable</code>&nbsp;可以被继承从而创建特定的包接口或者添加额外的方法。一个继承自&nbsp;<code>Throwable</code>&nbsp;的接口只能被&nbsp;<code>Exception</code>&nbsp;或&nbsp;<code>Error</code>&nbsp;的子类来实现。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">interface</span> MyPackageThrowable <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Throwable {}
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #0000ff;">class</span> MyPackageException <span style="color: #0000ff;">extends</span> <span style="color: #0000ff;">Exception</span> <span style="color: #0000ff;">implements</span><span style="color: #000000;"> MyPackageThrowable {}
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> MyPackageException();</code></pre>
+
+<p>&nbsp;</p>
+
+<h3>Error</h3>
+<p>事实上，PHP5.x 中所有的错误都是&nbsp;<code>fatal</code>&nbsp;或&nbsp;<code>recoverable</code>&nbsp;级别的错误，在 PHP7 中都能抛出一个&nbsp;<code>Error</code>实例。跟其他任何异常一样，<code>Error</code>&nbsp;对象可以使用&nbsp;<code>try/catch</code>&nbsp;块来捕获。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$var</span> = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">2</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">3</span> <span style="color: #800080;">$var</span>-&gt;method(); <span style="color: #008000;">//</span><span style="color: #008000;"> Throws an Error object in PHP 7.</span>
+<span style="color: #008080;">4</span> } <span style="color: #0000ff;">catch</span> (Error <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">5</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Handle error</span>
+<span style="color: #008080;">6</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>通常情况下，之前的致命错误都会抛出一个基本的&nbsp;<code>Error</code>&nbsp;类实例，但某些错误会抛出一个更具体的&nbsp;<code>Error</code>&nbsp;子类：<code>TypeError</code>、<code>ParseError</code>&nbsp;以及&nbsp;<code>AssertionError</code>。</p>
+<h3>TypeError</h3>
+<p>当函数参数或返回值不符合声明的类型时，<code>TypeError</code>&nbsp;的实例会被抛出。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span> add(int <span style="color: #800080;">$left</span>, int <span style="color: #800080;">$right</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">return</span> <span style="color: #800080;">$left</span> + <span style="color: #800080;">$right</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;"> 6</span> <span style="color: #800080;">$value</span> = add('left', 'right'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span> } <span style="color: #0000ff;">catch</span> (TypeError <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$e</span>-&gt;getMessage(), "\n"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #008000;">//</span><span style="color: #008000;">Argument 1 passed to add() must be of the type integer, string given</span></code></pre>
+
+<p>&nbsp;</p>
+
+<h3>ParseError</h3>
+<p>当&nbsp;<code>include/require</code>&nbsp;文件或&nbsp;<code>eval()</code>&nbsp;代码存在语法错误时，<code>ParseError</code>&nbsp;会被抛出。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">2</span> <span style="color: #0000ff;">require</span> 'file-with-parse-error.php'<span style="color: #000000;">;
+</span><span style="color: #008080;">3</span> } <span style="color: #0000ff;">catch</span> (ParseError <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$e</span>-&gt;getMessage(), "\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">5</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<h3>ArithmeticError</h3>
+<p><code>ArithmeticError</code>&nbsp;在两种情况下会被抛出。一是位移操作负数位。二是调用<code>intdiv()</code>&nbsp;时分子是&nbsp;<code>PHP_INT_MIN</code>&nbsp;且分母是 -1 (这个使用除法运算符的表达式：<code>PHP_INT_MIN / -1</code>，结果是浮点型)。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$value</span> = 1 &lt;&lt; -1<span style="color: #000000;">;
+</span><span style="color: #008080;">3</span> <span style="color: #0000ff;">catch</span> (ArithmeticError <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$e</span>-&gt;getMessage();<span style="color: #008000;">//</span><span style="color: #008000;">Bit shift by negative number</span>
+<span style="color: #008080;">5</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<h3>DevisionByZeroError</h3>
+<p>当&nbsp;<code>intdiv()</code>&nbsp;的分母是 0 或者取模操作 (%) 中分母是 0 时，<code>DivisionByZeroError</code>&nbsp;会被抛出。注意在除法运算符 (/) 中使用 0 作除数（也即xxx/0这样写）时只会触发一个 warning，这时候若分子非零结果是 INF，若分子是 0 结果是 NaN。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$value</span> = 1 % 0<span style="color: #000000;">;
+</span><span style="color: #008080;">3</span> } <span style="color: #0000ff;">catch</span> (DivisionByZeroError <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$e</span>-&gt;getMessage();<span style="color: #008000;">//</span><span style="color: #008000;">Modulo by zero</span>
+<span style="color: #008080;">5</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<h3>AssertionError</h3>
+<p>当&nbsp;<code>assert()</code>&nbsp;的条件不满足时，<code>AssertionError</code>&nbsp;会被抛出。</p>
+<src class="highlight">
+<pre><code><code class="language-text">ini_set('zend.assertions', 1);</code></code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008080;">ini_set</span>('assert.exception', 1<span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> 
+<span style="color: #008080;">3</span> <span style="color: #800080;">$test</span> = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> <span style="color: #008080;">assert</span>(<span style="color: #800080;">$test</span> === 0<span style="color: #000000;">);
+</span><span style="color: #008080;">6</span> 
+<span style="color: #008080;">7</span> <span style="color: #008000;">//</span><span style="color: #008000;">Fatal error: Uncaught AssertionError: assert($test === 0)</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>只有断言启用并且是设置 ini 配置的&nbsp;<code>zend.assertions = 1</code>&nbsp;和&nbsp;<code>assert.exception = 1</code>&nbsp;时，<code>assert()</code>才会执行并抛&nbsp;<code>AssertionError</code>。</p>
+<h3>在你的代码中使用 Error</h3>
+<p>用户可以通过继承&nbsp;<code>Error</code>&nbsp;来创建符合自己层级要求的&nbsp;<code>Error</code>&nbsp;类。这就形成了一个问题：什么情况下应该抛出&nbsp;<code>Exception</code>，什么情况下应该抛出&nbsp;<code>Error</code>。</p>
+<p><code>Error</code>&nbsp;应该用来表示需要程序员关注的代码问题。从 PHP 引擎抛出的&nbsp;<code>Error</code>&nbsp;对象属于这些分类，通常都是代码级别的错误，比如传递了错误类型的参数给一个函数或者解析一个文件发生错误。<code>Exception</code>&nbsp;则应该用于在运行时能安全的处理，并且另一个动作能继续执行的情况。</p>
+<p>由于&nbsp;<code>Error</code>&nbsp;对象不应该在运行时被处理，因此捕获&nbsp;<code>Error</code>&nbsp;对象也应该是不频繁的。一般来说，<code>Error</code>&nbsp;对象仅被捕获用于日志记录、执行必要的清理以及展示错误信息给用户。</p>
+<h3>编写代码支持 PHP5.x 和 PHP7 的异常</h3>
+<p>为了在同样的代码中捕获任何 PHP5.x 和 PHP7 的异常，可以使用多个&nbsp;<code>catch</code>，先捕获&nbsp;<code>Throwable</code>，然后是&nbsp;<code>Exception</code>。当 PHP5.x 不再需要支持时，捕获&nbsp;<code>Exception</code>&nbsp;的&nbsp;<code>catch</code>&nbsp;块可以移除。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">2</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Code that may throw an Exception or Error.</span>
+<span style="color: #008080;">3</span> } <span style="color: #0000ff;">catch</span> (Throwable <span style="color: #800080;">$t</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Executed only in PHP 7, will not match in PHP 5.x</span>
+<span style="color: #008080;">5</span> } <span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">6</span> <span style="color: #008000;">//</span><span style="color: #008000;"> Executed only in PHP 5.x, will not be reached in PHP 7</span>
+<span style="color: #008080;">7</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>不幸的是，处理异常的函数中的类型声明不容易确定。当&nbsp;<code>Exception</code>&nbsp;用于函数参数类型声明时，如果函数调用时候能用&nbsp;<code>Error</code>&nbsp;的实例，这个类型声明就要去掉。当 PHP5.x 不需要被支持时，类型声明则可以还原为&nbsp;<code>Throwable</code>。</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

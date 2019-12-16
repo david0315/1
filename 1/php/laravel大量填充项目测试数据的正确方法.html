@@ -1,0 +1,82 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修laravel大量填充项目测试数据的正确方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>laravel大量填充项目测试数据的正确方法</center></div><div class='banquan'>原文出处:本文由博客园博主Winner192提供。<br/>
+原文连接:https://www.cnblogs.com/winner192/p/11772467.html</div><br>
+    <p>项目开发时，一般都会有到项目测试数据的准备操作，以前都是基于PHP代码自主编写sql语句，然后循环的插入到数据库中里面，当当我们接触过laravel数据库后，就可以很方便的完成项目的测试数据准备。</p>
+<p>但在这个过程中计算用到laravel框架多少还是有有到问题，因为大家一般可能都是基于&nbsp;&nbsp;<code>php artisan db:seed</code>&nbsp; 来进行数据填充，但随着项目的代码量越来越大，<code>db:seed</code>&nbsp;的运行时间会变得越来越长，有些项目多达几分钟甚至几十分钟。</p>
+<p>只有当&nbsp;<code>db:seed</code>&nbsp;运行起来很快的时候，才能完全利用数据填充工具带来的便利，而不是最后变成累赘。 所以今天我们分享到的内容就是面对大量假数据需要填充的时候我们应该如何来做到改善</p>
+<p>方案一：</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;"><strong>模型工厂</strong>&nbsp;</span></p>
+<h3>避免使用 create 方法</h3>
+<p>在使用 模型工厂函数 来书写假数据插入逻辑时，要注意避免使用&nbsp;<code>create</code>&nbsp;方法，因为每一次就是一条 SQL 语句。</p>
+<pre><code><code><span class="token function">factory<span class="token punctuation">(\<span class="token scope">App<span class="token punctuation">\Models<span class="token punctuation">\User<span class="token punctuation">::<span class="token keyword">class<span class="token punctuation">)<span class="token operator">-<span class="token operator">&gt;<span class="token function">times<span class="token punctuation">(<span class="token number">300<span class="token punctuation">)<span class="token operator">-<span class="token operator">&gt;<span class="token function">create<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>以下截图是一个使用&nbsp;<code>factory</code>&nbsp;辅助函数的例子，插入 300 条数据，总共执行了 602 条 SQL 语句，总执行时长为&nbsp;<code>23.91</code>&nbsp;秒。</p>
+<p>&nbsp;</p>
+<src class="fluidbox__wrap">
+<src class="fluidbox__wrap">
+<src class="fluidbox__wrap"><img class="fluidbox__thumb" src="./images/laravel大量填充项目测试数据的正确方法0.jpg" alt="file" />
+<src class="fluidbox__ghost">&nbsp;
+
+<src class="fluidbox__ghost">&nbsp;轻轻松松运行时间就累积起来了，你能想象运行一次&nbsp;<code>db:seed</code>&nbsp;要半个小时是什么感觉么？
+
+
+<p>通过上图大家可以发现每天插入都会查询一遍然后在做一次添加，也就是大量测试数据添加的时候，我们对于数据库的IO操作非常的多，一般在面对大量的测试数据时，都是基于把单条的插入转化为批量的数据插入。进而提升到数据填充时间&nbsp;</p>
+<h3>正确的做法：使用&nbsp;<code>make</code>&nbsp;方法，在make里面方法里创建模型但不会将它们保存至数据库</h3>
+<pre><code><code><span class="token variable">$users <span class="token operator">= <span class="token function">factory<span class="token punctuation">(\<span class="token scope">App<span class="token punctuation">\Models<span class="token punctuation">\User<span class="token punctuation">::<span class="token keyword">class<span class="token punctuation">)<span class="token operator">-<span class="token operator">&gt;<span class="token function">times<span class="token punctuation">(<span class="token number">1000<span class="token punctuation">)<span class="token operator">-<span class="token operator">&gt;<span class="token function">make<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+\<span class="token scope">App<span class="token punctuation">\Models<span class="token punctuation">\User<span class="token punctuation">::<span class="token function">insert<span class="token punctuation">(<span class="token variable">$users<span class="token operator">-<span class="token operator">&gt;<span class="token function">toArray<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">)<span class="token punctuation">;</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>&nbsp;</p>
+<src class="fluidbox__wrap">
+<src class="fluidbox__wrap">
+<src class="fluidbox__wrap"><img class="fluidbox__thumb" src="./images/laravel大量填充项目测试数据的正确方法1.jpg" alt="file" />
+
+
+<p>&nbsp;</p>
+<p><strong><span style="font-size: 14pt;">普通方式&nbsp; &nbsp;</span></strong></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>使用 DB:<span style="color: #000000;">insert，直接，快速，一步到位：
+
+</span><span style="color: #800080;">$faker</span> = Faker::<span style="color: #000000;">create();
+</span><span style="color: #800080;">$users</span> = User::lists('id'<span style="color: #000000;">);
+</span><span style="color: #800080;">$datas</span> =<span style="color: #000000;"> [];
+
+</span><span style="color: #0000ff;">foreach</span> (<span style="color: #008080;">range</span>(1, 1000) <span style="color: #0000ff;">as</span> <span style="color: #800080;">$index</span><span style="color: #000000;">)
+{
+  </span><span style="color: #800080;">$datas</span>[] =<span style="color: #000000;"> [
+      </span>'user_id'     =&gt; <span style="color: #800080;">$faker</span>-&gt;randomElement(<span style="color: #800080;">$users</span>),
+      'title'       =&gt; <span style="color: #800080;">$faker</span>-&gt;sentence(),
+      'description' =&gt; <span style="color: #800080;">$faker</span>-&gt;text(),
+      'created_at'  =&gt; Carbon::now()-&gt;toDateTimeString(),
+      'updated_at'  =&gt; Carbon::now()-&gt;toDateTimeString(),<span style="color: #000000;">
+  ];
+}
+DB</span>::table('topics')-&gt;insert(<span style="color: #800080;">$datas</span><span style="color: #000000;">);<br /></span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>只有&nbsp;<code>db:seed</code>&nbsp;运行起来很快的时候，你才可以随时随地，想 seed 就 seed。 看看源码，看看流程你就知道啦。</p>
+<p>想要详细的获取测试源码、交流项目开发的技术问题。可以加入技术交流群进行探讨</p>
+<p><img src="./images/laravel大量填充项目测试数据的正确方法2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,278 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修老雷socket编程之websocket实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>老雷socket编程之websocket实现</center></div><div class='banquan'>原文出处:本文由博客园博主lrjxgl提供。<br/>
+原文连接:https://www.cnblogs.com/lrjxgl/p/11125490.html</div><br>
+    <p>老雷socket编程之websocket实现</p>
+<p>我们主要实现私聊和群聊两个功能,要在web端实现想微信QQ那样的即时通讯的功能，我们需要了解一下websocket。<br />websocket是一种可以双向通讯的长连接协议，http是获取完数据就关闭，websocket则可以一直连接，就像铺了一条管道一样，水可以一直流着。</p>
+<p>&nbsp;</p>
+<p>一、websocket前端</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">var</span> ws = <span style="color: #0000ff;">new</span> WebSocket("ws://127.0.0.1.com:8282"<span style="color: #000000;">);
+    ws.onopen</span>=<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+        </span><span style="color: #0000ff;">var</span> msg =<span style="color: #000000;"> JSON.stringify({
+            type: </span>"login"<span style="color: #000000;">,
+            content: </span>"login"<span style="color: #000000;">
+        });
+        ws.send(msg);
+    }
+    
+    ws.onmessage </span>= <span style="color: #0000ff;">function</span><span style="color: #000000;"> (e){ 
+        console.log(e);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">服务器发送的内容</span>
+        <span style="color: #0000ff;">var</span> res =<span style="color: #000000;"> JSON.parse(e.data);
+        </span><span style="color: #0000ff;">switch</span><span style="color: #000000;">(res.type){
+            </span><span style="color: #0000ff;">case</span> "login"<span style="color: #000000;">:
+                
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> "pm"<span style="color: #000000;">:
+                
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">case</span> "groupPm"<span style="color: #000000;">:
+                
+                </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                
+        }
+    }
+    ws.onerror</span>=<span style="color: #0000ff;">function</span><span style="color: #000000;"> (e){ 
+        console.log(e);
+    }
+    ws.onclose</span>=<span style="color: #0000ff;">function</span><span style="color: #000000;"> (e){ 
+        console.log(e);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p><br />二、服务端	</p>
+<p><img src="./images/老雷socket编程之websocket实现0.jpg" alt="" /><br />	客户端发送http请求，带上Sec-WebSocket-Key，<br />	服务端握手 加密key,发送给客户端。<br />	双方能进行交流。</p>
+<p>发送接收消息需要进行打包encode 解包decode。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> SocketService
+{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$host</span>="tcp://0.0.0.0:8000"<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$address</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$port</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$_sockets</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$clients</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$maxid</span>=1000<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$address</span> = '', <span style="color: #800080;">$port</span>=''<span style="color: #000000;">)
+    {
+            </span><span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$address</span><span style="color: #000000;">)){
+                </span><span style="color: #800080;">$this</span>-&gt;address = <span style="color: #800080;">$address</span><span style="color: #000000;">;
+            }
+            </span><span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$port</span><span style="color: #000000;">)) {
+                </span><span style="color: #800080;">$this</span>-&gt;port = <span style="color: #800080;">$port</span><span style="color: #000000;">;
+            }
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onConnect(<span style="color: #800080;">$client_id</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span>  "Client client_id:{<span style="color: #800080;">$client_id</span>}   \n"<span style="color: #000000;">;
+         
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onMessage(<span style="color: #800080;">$client_id</span>,<span style="color: #800080;">$msg</span><span style="color: #000000;">){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">发给所有的</span>
+        <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$this</span>-&gt;clients <span style="color: #0000ff;">as</span> <span style="color: #800080;">$kk</span>=&gt;<span style="color: #800080;">$cc</span><span style="color: #000000;">){
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$kk</span>&gt;0<span style="color: #000000;">){
+                </span><span style="color: #800080;">$this</span>-&gt;send(<span style="color: #800080;">$cc</span>, <span style="color: #800080;">$msg</span><span style="color: #000000;">);
+            }                                
+        }    
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onClose(<span style="color: #800080;">$client_id</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$client_id</span> close \n"<span style="color: #000000;">;
+    }
+    
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> service(){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">获取tcp协议号码。</span>
+        <span style="color: #800080;">$tcp</span> = <span style="color: #008080;">getprotobyname</span>("tcp"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$sock</span> = <span style="color: #008080;">stream_socket_server</span>(<span style="color: #800080;">$this</span>-&gt;host, <span style="color: #800080;">$errno</span>, <span style="color: #800080;">$errstr</span><span style="color: #000000;">);;
+        
+        </span><span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$sock</span><span style="color: #000000;">)
+        {
+            </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>("failed to create socket: ".socket_strerror(<span style="color: #800080;">$sock</span>)."\n"<span style="color: #000000;">);
+        }
+        </span><span style="color: #008080;">stream_set_blocking</span>(<span style="color: #800080;">$sock</span>,0<span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;_sockets = <span style="color: #800080;">$sock</span><span style="color: #000000;">;
+         </span><span style="color: #0000ff;">echo</span> "listen on <span style="color: #800080;">$this</span>-&gt;address <span style="color: #800080;">$this</span>-&gt;host ... \n"<span style="color: #000000;">;
+    }
+ 
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> run(){
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">service();
+        </span><span style="color: #800080;">$this</span>-&gt;clients[] = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_sockets;
+        </span><span style="color: #0000ff;">while</span> (<span style="color: #0000ff;">true</span><span style="color: #000000;">){
+            </span><span style="color: #800080;">$changes</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">clients;
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">$write = NULL;
+            //$except = NULL;</span>
+            <span style="color: #008080;">stream_select</span>(<span style="color: #800080;">$changes</span>,  <span style="color: #800080;">$write</span>,  <span style="color: #800080;">$except</span>, <span style="color: #0000ff;">NULL</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$changes</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$_sock</span><span style="color: #000000;">){
+                </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;_sockets == <span style="color: #800080;">$_sock</span>){ <span style="color: #008000;">//</span><span style="color: #008000;">判断是不是新接入的socket</span>
+                    <span style="color: #0000ff;">if</span>((<span style="color: #800080;">$newClient</span> = <span style="color: #008080;">stream_socket_accept</span>(<span style="color: #800080;">$_sock</span>))  === <span style="color: #0000ff;">false</span><span style="color: #000000;">){
+                        </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$this</span>-&gt;clients[<span style="color: #800080;">$key</span><span style="color: #000000;">]);
+                        </span><span style="color: #0000ff;">continue</span><span style="color: #000000;">;
+                    }
+                    </span><span style="color: #800080;">$line</span> = <span style="color: #008080;">trim</span>(<span style="color: #008080;">stream_socket_recvfrom</span>(<span style="color: #800080;">$newClient</span>, 1024<span style="color: #000000;">));
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;">握手</span>
+                    <span style="color: #800080;">$this</span>-&gt;handshaking(<span style="color: #800080;">$newClient</span>, <span style="color: #800080;">$line</span><span style="color: #000000;">);
+                    </span><span style="color: #800080;">$this</span>-&gt;maxid++<span style="color: #000000;">;
+                    </span><span style="color: #800080;">$this</span>-&gt;clients[<span style="color: #800080;">$this</span>-&gt;maxid] = <span style="color: #800080;">$newClient</span><span style="color: #000000;">;
+                    </span><span style="color: #800080;">$this</span>-&gt;onConnect(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">maxid);
+                } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                    </span><span style="color: #800080;">$res</span>=@<span style="color: #008080;">stream_socket_recvfrom</span>(<span style="color: #800080;">$_sock</span>,  2048<span style="color: #000000;">);
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;">客户端主动关闭</span>
+                    <span style="color: #0000ff;">if</span>(<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$res</span>) &lt; 9<span style="color: #000000;">) {
+                        stream_socket_shutdown(</span><span style="color: #800080;">$this</span>-&gt;clients[<span style="color: #800080;">$key</span>],<span style="color: #000000;">STREAM_SHUT_RDWR);
+                        </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$this</span>-&gt;clients[<span style="color: #800080;">$key</span><span style="color: #000000;">]);
+                        </span><span style="color: #800080;">$this</span>-&gt;onClose(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+                    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                        </span><span style="color: #008000;">//</span><span style="color: #008000;">解密</span>
+                        <span style="color: #800080;">$msg</span> = <span style="color: #800080;">$this</span>-&gt;decode(<span style="color: #800080;">$res</span><span style="color: #000000;">);
+                        </span><span style="color: #800080;">$this</span>-&gt;onMessage(<span style="color: #800080;">$key</span>,<span style="color: #800080;">$msg</span><span style="color: #000000;">);
+                    }
+                     
+                    
+                }
+            }
+        }
+    }
+ 
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 握手处理
+     * @param $newClient socket
+     * @return int  接收到的信息
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> handshaking(<span style="color: #800080;">$newClient</span>, <span style="color: #800080;">$line</span><span style="color: #000000;">){
+ 
+        </span><span style="color: #800080;">$headers</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+        </span><span style="color: #800080;">$lines</span> = <span style="color: #008080;">preg_split</span>("/\r\n/", <span style="color: #800080;">$line</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$lines</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$line</span><span style="color: #000000;">)
+        {
+            </span><span style="color: #800080;">$line</span> = <span style="color: #008080;">chop</span>(<span style="color: #800080;">$line</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">preg_match</span>('/\A(\S+): (.*)\z/', <span style="color: #800080;">$line</span>, <span style="color: #800080;">$matches</span><span style="color: #000000;">))
+            {
+                </span><span style="color: #800080;">$headers</span>[<span style="color: #800080;">$matches</span>[1]] = <span style="color: #800080;">$matches</span>[2<span style="color: #000000;">];
+            }
+        }
+        </span><span style="color: #800080;">$secKey</span> = <span style="color: #800080;">$headers</span>['Sec-WebSocket-Key'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$secAccept</span> = <span style="color: #008080;">base64_encode</span>(<span style="color: #008080;">pack</span>('H*', <span style="color: #008080;">sha1</span>(<span style="color: #800080;">$secKey</span> . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'<span style="color: #000000;">)));
+        </span><span style="color: #800080;">$upgrade</span>  = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" .
+            "Upgrade: websocket\r\n" .
+            "Connection: Upgrade\r\n" .
+            "WebSocket-Origin: <span style="color: #800080;">$this</span>-&gt;address\r\n" .
+            "WebSocket-Location: ws://<span style="color: #800080;">$this</span>-&gt;address:<span style="color: #800080;">$this</span>-&gt;port/websocket/websocket\r\n".
+            "Sec-WebSocket-Accept:<span style="color: #800080;">$secAccept</span>\r\n\r\n"<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">stream_socket_sendto</span>(<span style="color: #800080;">$newClient</span>, <span style="color: #800080;">$upgrade</span><span style="color: #000000;">);
+    }
+    
+    
+    
+    
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 发送数据
+     * @param $newClinet 新接入的socket
+     * @param $msg   要发送的数据
+     * @return int|string
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> send(<span style="color: #800080;">$newClinet</span>, <span style="color: #800080;">$msg</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$msg</span> = <span style="color: #800080;">$this</span>-&gt;encode(<span style="color: #800080;">$msg</span><span style="color: #000000;">);
+        </span><span style="color: #008080;">stream_socket_sendto</span>(<span style="color: #800080;">$newClinet</span>, <span style="color: #800080;">$msg</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 解析接收数据
+     * @param $buffer
+     * @return null|string
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> decode(<span style="color: #800080;">$buffer</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$len</span> = <span style="color: #800080;">$masks</span> = <span style="color: #800080;">$data</span> = <span style="color: #800080;">$decoded</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$len</span> = <span style="color: #008080;">ord</span>(<span style="color: #800080;">$buffer</span>[1]) &amp; 127<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$len</span> === 126<span style="color: #000000;">)  {
+            </span><span style="color: #800080;">$masks</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$buffer</span>, 4, 4<span style="color: #000000;">);
+            </span><span style="color: #800080;">$data</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$buffer</span>, 8<span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$len</span> === 127<span style="color: #000000;">)  {
+            </span><span style="color: #800080;">$masks</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$buffer</span>, 10, 4<span style="color: #000000;">);
+            </span><span style="color: #800080;">$data</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$buffer</span>, 14<span style="color: #000000;">);
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;">  {
+            </span><span style="color: #800080;">$masks</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$buffer</span>, 2, 4<span style="color: #000000;">);
+            </span><span style="color: #800080;">$data</span> = <span style="color: #008080;">substr</span>(<span style="color: #800080;">$buffer</span>, 6<span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$index</span> = 0; <span style="color: #800080;">$index</span> &lt; <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$data</span>); <span style="color: #800080;">$index</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$decoded</span> .= <span style="color: #800080;">$data</span>[<span style="color: #800080;">$index</span>] ^ <span style="color: #800080;">$masks</span>[<span style="color: #800080;">$index</span> % 4<span style="color: #000000;">];
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$decoded</span><span style="color: #000000;">;
+    }
+ 
+    
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+    *打包消息
+    *</span><span style="color: #008000;">*/</span>
+     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> encode(<span style="color: #800080;">$buffer</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$first_byte</span>="\x81"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$len</span>=<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$buffer</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$len</span> &lt;= 125<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$encode_buffer</span> = <span style="color: #800080;">$first_byte</span> . <span style="color: #008080;">chr</span>(<span style="color: #800080;">$len</span>) . <span style="color: #800080;">$buffer</span><span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$len</span> &lt;= 65535<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$encode_buffer</span> = <span style="color: #800080;">$first_byte</span> . <span style="color: #008080;">chr</span>(126) . <span style="color: #008080;">pack</span>("n", <span style="color: #800080;">$len</span>) . <span style="color: #800080;">$buffer</span><span style="color: #000000;">;
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #800080;">$encode_buffer</span> = <span style="color: #800080;">$first_byte</span> . <span style="color: #008080;">chr</span>(127) . <span style="color: #008080;">pack</span>("xxxxN", <span style="color: #800080;">$len</span>) . <span style="color: #800080;">$buffer</span><span style="color: #000000;">;
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$encode_buffer</span><span style="color: #000000;">;
+    }
+ 
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 关闭socket
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> close(){
+        </span><span style="color: #0000ff;">return</span> socket_close(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_sockets);
+    }
+}
+ 
+</span><span style="color: #800080;">$sock</span> = <span style="color: #0000ff;">new</span> SocketService('127.0.0.1','9000'<span style="color: #000000;">);
+</span><span style="color: #800080;">$sock</span>-&gt;run();</code></pre>
+
+<p>&nbsp;</p>
+<p>三、常见应用</p>
+<p>1.聊天室、群聊 实现类似QQ群的web版本</p>
+<p>2.im私聊、客服 实现类似qq聊天，和即时客服交流</p>
+<p>3.消息推送 建立即时的web消息推送</p>
+<p>课后练习<br />	实现聊天室 跟 个人聊天<br />	前端格式</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">var</span> msg =<span style="color: #000000;"> JSON.stringify({
+type: </span>"login"<span style="color: #000000;">,
+content: </span>"login"<span style="color: #000000;">
+});
+</span><span style="color: #0000ff;">var</span> msg =<span style="color: #000000;"> JSON.stringify({
+type: </span>"group"<span style="color: #000000;">,
+content: </span>"login"<span style="color: #000000;">,
+gid:</span>123<span style="color: #000000;">
+});
+
+</span><span style="color: #0000ff;">var</span> msg =<span style="color: #000000;"> JSON.stringify({
+type: </span>"pm"<span style="color: #000000;">,
+content: </span>"login"<span style="color: #000000;">,
+uid:</span>123<span style="color: #000000;">
+});</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

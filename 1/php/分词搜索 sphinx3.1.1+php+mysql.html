@@ -1,0 +1,164 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修分词搜索 sphinx3.1.1+php+mysql' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>分词搜索 sphinx3.1.1+php+mysql</center></div><div class='banquan'>原文出处:本文由博客园博主微笑周星驰提供。<br/>
+原文连接:https://www.cnblogs.com/wxzxc/p/11263936.html</div><br>
+    <h3><strong>sphinx3.1.1的安装与使用</strong></h3>
+<ol>
+<li>下载sphinx3.1.1
+<ul>
+<li><span style="background-color: #c0c0c0;">wget&nbsp;http://sphinxsearch.com/files/sphinx-3.1.1-612d99f-linux-amd64.tar.gz</span></li>
+</ul>
+</li>
+<li>解压&nbsp;
+<ul>
+<li><span style="background-color: #c0c0c0;">tar zxf&nbsp;sphinx-3.1.1-612d99f-linux-amd64.tar.gz</span></li>
+</ul>
+</li>
+<li>改名 sphinx 并移动到 /usr/local/
+<ul>
+<li><span style="background-color: #c0c0c0;">mv&nbsp;sphinx-3.1.1 sphinx</span></li>
+<li><span style="background-color: #c0c0c0;">mv&nbsp;sphinx /usr/local/</span></li>
+</ul>
+</li>
+<li>到sphinx目录下创建 data,log文件夹
+<ul>
+<li><span style="background-color: #c0c0c0;">cd /usr/local/sphinx</span></li>
+<li><span style="background-color: #c0c0c0;">mkdir data &amp;&amp; mkdir log</span></li>
+</ul>
+</li>
+<li>在/usr/local/sphinx/etc 编写 sphinx.conf 配置文件</li>
+<ul>
+<li><span style="background-color: #c0c0c0;">vim&nbsp;/usr/local/sphinx/etc/sphinx.conf</span></li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">#
+# Minimal Sphinx configuration sample (clean, simple, functional)
+#
+
+source src1
+{
+    type                </span>=<span style="color: #000000;"> mysql
+    sql_host            </span>=<span style="color: #000000;"> localhost
+    sql_user            </span>=<span style="color: #000000;"> root
+    sql_pass            </span>=<span style="color: #000000;"> root
+    sql_db              </span>=<span style="color: #000000;"> test
+    sql_port            </span>= <span style="color: #800080;">3306</span>    # optional, default is <span style="color: #800080;">3306</span><span style="color: #000000;">
+    sql_query_pre       </span>=<span style="color: #000000;"> SET NAMES utf8
+    sql_query           </span>=<span style="color: #000000;"> \
+        SELECT </span><span style="color: #0000ff;">id</span><span style="color: #000000;">, group_id, UNIX_TIMESTAMP(date_added) AS date_added, title, content \
+        FROM documents
+
+    sql_attr_uint        </span>=<span style="color: #000000;"> group_id
+    sql_attr_timestamp   </span>=<span style="color: #000000;"> date_added
+}
+
+
+index test1
+{
+    source                  </span>=<span style="color: #000000;"> src1
+    path                    </span>= /usr/local/sphinx/data/test1<span style="color: #000000;">
+    min_word_len            </span>= <span style="color: #800080;">1</span><span style="color: #000000;">
+    ngram_len               </span>= <span style="color: #800080;">1</span><span style="color: #000000;">
+    ngram_chars             </span>= U+<span style="color: #800080;">3000</span>..U+<span style="color: #000000;">2FA1F
+}
+
+indexer
+{
+    mem_limit        </span>=<span style="color: #000000;"> 128M
+}
+
+searchd
+{
+        listen                  </span>= <span style="color: #800080;">9312</span><span style="color: #000000;">
+        listen                  </span>= <span style="color: #800080;">9306</span><span style="color: #000000;">:mysql41
+        log                     </span>= /usr/local/sphinx/log/<span style="color: #000000;">searchd.log
+        query_log               </span>= /usr/local/sphinx/log/<span style="color: #000000;">query.log
+        read_timeout            </span>= <span style="color: #800080;">5</span><span style="color: #000000;">
+        max_children            </span>= <span style="color: #800080;">30</span><span style="color: #000000;">
+        pid_file                </span>= /usr/local/sphinx/log/<span style="color: #000000;">searchd.pid
+        seamless_rotate         </span>= <span style="color: #800080;">1</span><span style="color: #000000;">
+        preopen_indexes         </span>= <span style="color: #800080;">1</span><span style="color: #000000;">
+        unlink_old              </span>= <span style="color: #800080;">1</span><span style="color: #000000;">
+        binlog_path             </span>= /usr/local/sphinx/data/<span style="color: #000000;">
+}</span></code></pre>
+
+</li>
+</ul>
+<li>在test数据库中 运行/usr/local/sphinx/etc目录下的example.sql文件
+<ul>
+<li>进入mysql</li>
+<li><span style="background-color: #c0c0c0;">use test;</span></li>
+<li><span style="background-color: #c0c0c0;">source /usr/local/sphinx/etc/example.sql</span></li>
+</ul>
+</li>
+<li>添加索引
+<ul>
+<li><span style="background-color: #c0c0c0;">/usr/local/sphinx/bin/indexer -c&nbsp; /usr/local/sphinx/etc/sphinx.conf test1</span></li>
+<li><img src="./images/分词搜索 sphinx3.1.1+php+mysql0.jpg" alt="" /></li>
+<li><span style="background-color: #c0c0c0;">/usr/local/sphinx/bin/indexer -c /usr/local/sphinx/etc/sphinx.conf test1 --rotate</span>&nbsp; // 重新生成索引命令</li>
+</ul>
+</li>
+<li>运行sphinx
+<ul>
+<li><span style="background-color: #c0c0c0;">/usr/local/sphinx/bin/searchd -c&nbsp; /usr/local/sphinx/etc/sphinx.conf</span></li>
+<li><img src="./images/分词搜索 sphinx3.1.1+php+mysql1.jpg" alt="" /></li>
+<li>
+<p><span style="background-color: #c0c0c0;">/usr/local/sphinx/bin/searchd -c /usr/local/sphinx/etc/sphinx.conf --stop</span>&nbsp; //停止sphinx命令</p>
+</li>
+</ul>
+</li>
+<li>php操作sphinx
+<ul>
+<li>复制/usr/local/sphinx/api/ 目录下的&nbsp;sphinxapi.php</li>
+</ul>
+</li>
+</ol><ol>
+<li style="list-style-type: none;">
+<ul>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$sphinx</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> SphinxClient();
+</span><span style="color: #800080;">$q</span>      = <span style="color: #800080;">$_GET</span>['key'] ?? 'test'; <span style="color: #008000;">//</span><span style="color: #008000;">搜索关键字<br />// <span style="color: #ff0000;">3.1已经弃用了setMatchMode!直接写查询语法就可以</span><br />// 如果要匹配字符串中任意一个词或字使用如下写法<br />// '"string1" | "string2" | "string3"'<br /><br />// '@(title,content) string'  @括号中的是要搜索的字段 可以写多个或单个<br /><br />// '^$string$'  表示全部匹配 类似mysql中的 fieldName = 'string'<br />// 更多用法可以参考正则表达式或者官方文档<br /><br />// 中文分词扩展建议使用scws,官网安装和使用教程说明很详细,(<span style="color: #ff0000;">不过sphinx自带的一元分词已经够用了,一般不需要scws</span><br />//<a href="http://www.xunsearch.com/scws/">http://www.xunsearch.com/scws/</a><br /></span>
+<span style="color: #800080;">$sql</span>    = ""<span style="color: #000000;">;
+</span><span style="color: #800080;">$host</span>   = "127.0.0.1"<span style="color: #000000;">;
+</span><span style="color: #800080;">$port</span>   = 9312<span style="color: #000000;">;
+</span><span style="color: #800080;">$index</span>  = "test1"<span style="color: #000000;">;
+</span><span style="color: #800080;">$sphinx</span>-&gt;SetServer(<span style="color: #800080;">$host</span>, <span style="color: #800080;">$port</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$sphinx</span>-&gt;SetConnectTimeout(10<span style="color: #000000;">);
+</span><span style="color: #800080;">$sphinx</span>-&gt;SetArrayResult(<span style="color: #0000ff;">true</span><span style="color: #000000;">);</span>
+<span style="color: #800080;">$res</span> = <span style="color: #800080;">$sphinx</span>-&gt;Query(<span style="color: #800080;">$q</span>, <span style="color: #800080;">$index</span><span style="color: #000000;">);
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$res</span>);</code></pre>
+
+<p>&nbsp;运行结果如下:</p>
+</li>
+</ul>
+</li>
+<li style="list-style-type: none;">
+<ul>
+<li><img src="./images/分词搜索 sphinx3.1.1+php+mysql2.jpg" alt="" /></li>
+</ul>
+</li>
+</ol>
+<p>结束,记得数据库数据改变后需重新生成索引</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

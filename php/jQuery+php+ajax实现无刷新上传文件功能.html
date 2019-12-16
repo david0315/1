@@ -1,0 +1,117 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修jQuery+php+ajax实现无刷新上传文件功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>jQuery+php+ajax实现无刷新上传文件功能</center></div><div class='banquan'>原文出处:本文由博客园博主我乐意啊提供。<br/>
+原文连接:https://www.cnblogs.com/woleyia/p/10933474.html</div><br>
+    <p>jQuery+php+ajax实现无刷新上传文件功能，还带有上传进度条动画效果，支持图片、视频等大文件上传。</p>
+<p><img src="https://img.sucaihuo.com/jquery/43/4379/big.jpg" alt="" width="760" height="194" /></p>
+<p><br /><strong>js代码</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;script type='text/javascript' src='js/jquery-2.0.3.min.js'&gt;&lt;/script&gt; 
+<span style="color: #008080;"> 2</span> &lt;script type='text/javascript' src='js/jquery.form.js'&gt;&lt;/script&gt; 
+<span style="color: #008080;"> 3</span> &lt;script type="text/javascript"&gt; 
+<span style="color: #008080;"> 4</span>  <span style="color: #0000ff;">function</span><span style="color: #000000;"> filesize(ele) {  
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">var</span> filesize = (ele.files[0].size / 1024/1024).toFixed(2);    
+<span style="color: #008080;"> 6</span>     $('#big').html(filesize+"MB"<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 7</span>     $('#text').html(ele.files[0<span style="color: #000000;">].name); 
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">}   
+</span><span style="color: #008080;"> 9</span> $(document).ready(<span style="color: #0000ff;">function</span><span style="color: #000000;">(e) { 
+</span><span style="color: #008080;">10</span>    <span style="color: #0000ff;">var</span> progress = $(".progress"<span style="color: #000000;">);  
+</span><span style="color: #008080;">11</span>    <span style="color: #0000ff;">var</span> progress_bar = $(".progress-bar"<span style="color: #000000;">); 
+</span><span style="color: #008080;">12</span>    <span style="color: #0000ff;">var</span> percent = $('.percent'<span style="color: #000000;">);  
+</span><span style="color: #008080;">13</span>     $("#del").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){ 
+</span><span style="color: #008080;">14</span>     <span style="color: #0000ff;">var</span> objFile=document.getElementsByTagName('input')[2<span style="color: #000000;">];   
+</span><span style="color: #008080;">15</span>      objFile.value=""<span style="color: #000000;">;  
+</span><span style="color: #008080;">16</span>      $("#list"<span style="color: #000000;">).hide(); 
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }); 
+</span><span style="color: #008080;">18</span>     $("#uploadphoto").change(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){  
+</span><span style="color: #008080;">19</span>         $("#list"<span style="color: #000000;">).show(); 
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    }); 
+</span><span style="color: #008080;">21</span>    $("#ups").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){ 
+</span><span style="color: #008080;">22</span>    <span style="color: #0000ff;">var</span> file = $("#uploadphoto"<span style="color: #000000;">).val();  
+</span><span style="color: #008080;">23</span>    <span style="color: #0000ff;">if</span>(file!=""<span style="color: #000000;">){    
+</span><span style="color: #008080;">24</span>      $('#uped').html("上传中&hellip;&hellip;"<span style="color: #000000;">);    
+</span><span style="color: #008080;">25</span>        $("#myupload"<span style="color: #000000;">).ajaxSubmit({   
+</span><span style="color: #008080;">26</span>           dataType:  'json', <span style="color: #008000;">//</span><span style="color: #008000;">数据格式为json  </span>
+<span style="color: #008080;">27</span>           beforeSend: <span style="color: #0000ff;">function</span>() { <span style="color: #008000;">//</span><span style="color: #008000;">开始上传   </span>
+<span style="color: #008080;">28</span>               <span style="color: #0000ff;">var</span> percentVal = '0%'<span style="color: #000000;">; 
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">              progress_bar.width(percentVal); 
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">              percent.html(percentVal); 
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">          },  
+</span><span style="color: #008080;">32</span>           uploadProgress: <span style="color: #0000ff;">function</span><span style="color: #000000;">(event, position, total, percentComplete) {  
+</span><span style="color: #008080;">33</span>               <span style="color: #0000ff;">var</span> percentVal = percentComplete + '%'; <span style="color: #008000;">//</span><span style="color: #008000;">获得进度  </span>
+<span style="color: #008080;">34</span>               progress_bar.width(percentVal); <span style="color: #008000;">//</span><span style="color: #008000;">上传进度条宽度变宽  </span>
+<span style="color: #008080;">35</span>               percent.html(percentVal); <span style="color: #008000;">//</span><span style="color: #008000;">显示上传进度百分比  </span>
+<span style="color: #008080;">36</span> <span style="color: #000000;">          },  
+</span><span style="color: #008080;">37</span>           success: <span style="color: #0000ff;">function</span><span style="color: #000000;">(data) {  
+</span><span style="color: #008080;">38</span>             <span style="color: #0000ff;">if</span>(data.status == 1<span style="color: #000000;">){ 
+</span><span style="color: #008080;">39</span>                 <span style="color: #0000ff;">var</span> src =<span style="color: #000000;"> data.url;   
+</span><span style="color: #008080;">40</span>                 $('#uped').html("上传成功"<span style="color: #000000;">);  
+</span><span style="color: #008080;">41</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">var attstr= '&lt;img src="'+src+'"&gt;';   </span>
+<span style="color: #008080;">42</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">$(".imglist").append(attstr); </span>
+<span style="color: #008080;">43</span>                 <span style="color: #008000;">//</span><span style="color: #008000;">$(".res").html("上传图片"+data.name+"成功，图片大小："+data.size+"K,文件地址："+data.url); </span>
+<span style="color: #008080;">44</span>             }<span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+</span><span style="color: #008080;">45</span>                 $(".res"<span style="color: #000000;">).html(data.content); 
+</span><span style="color: #008080;">46</span> <span style="color: #000000;">            }      
+</span><span style="color: #008080;">47</span> <span style="color: #000000;">          },  
+</span><span style="color: #008080;">48</span>           error:<span style="color: #0000ff;">function</span>(xhr){ <span style="color: #008000;">//</span><span style="color: #008000;">上传失败  </span>
+<span style="color: #008080;">49</span>              alert("上传失败"<span style="color: #000000;">);   
+</span><span style="color: #008080;">50</span> <span style="color: #000000;">          }          
+</span><span style="color: #008080;">51</span> <span style="color: #000000;">      });  
+</span><span style="color: #008080;">52</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">53</span>     <span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+</span><span style="color: #008080;">54</span>      alert("请选择视频文件"<span style="color: #000000;">);   
+</span><span style="color: #008080;">55</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">56</span> <span style="color: #000000;">   }); 
+</span><span style="color: #008080;">57</span>  
+<span style="color: #008080;">58</span> <span style="color: #000000;">}); 
+</span><span style="color: #008080;">59</span> &lt;/script&gt;</code></pre>
+
+<p><strong>upload.php源代码</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php 
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span>     <span style="color: #800080;">$picname</span> = <span style="color: #800080;">$_FILES</span>['uploadfile']['name'<span style="color: #000000;">];  
+</span><span style="color: #008080;"> 4</span>     <span style="color: #800080;">$picsize</span> = <span style="color: #800080;">$_FILES</span>['uploadfile']['size'<span style="color: #000000;">];  
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$picname</span> != ""<span style="color: #000000;">) {  
+</span><span style="color: #008080;"> 6</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$picsize</span> &gt; 201400000) { <span style="color: #008000;">//</span><span style="color: #008000;">限制上传大小  </span>
+<span style="color: #008080;"> 7</span>             <span style="color: #0000ff;">echo</span> '{"status":0,"content":"图片大小不能超过2M"}'<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 8</span>             <span style="color: #0000ff;">exit</span><span style="color: #000000;">;  
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        }  
+</span><span style="color: #008080;">10</span>         <span style="color: #800080;">$type</span> = <span style="color: #008080;">strstr</span>(<span style="color: #800080;">$picname</span>, '.'); <span style="color: #008000;">//</span><span style="color: #008000;">限制上传格式  </span>
+<span style="color: #008080;">11</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$type</span> != ".gif" &amp;&amp; <span style="color: #800080;">$type</span> != ".jpg" &amp;&amp; <span style="color: #800080;">$type</span> != "png" &amp;&amp; <span style="color: #800080;">$type</span> != ".mp4"&amp;&amp; <span style="color: #800080;">$type</span> != ".rar"<span style="color: #000000;">) { 
+</span><span style="color: #008080;">12</span>             <span style="color: #0000ff;">echo</span> '{"status":2,"content":"文件格式不对！"}'<span style="color: #000000;">; 
+</span><span style="color: #008080;">13</span>             <span style="color: #0000ff;">exit</span><span style="color: #000000;">;  
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">15</span>         <span style="color: #800080;">$rand</span> = <span style="color: #008080;">rand</span>(100, 999<span style="color: #000000;">);  
+</span><span style="color: #008080;">16</span>         <span style="color: #800080;">$pics</span> = <span style="color: #008080;">uniqid</span>() . <span style="color: #800080;">$type</span>; <span style="color: #008000;">//</span><span style="color: #008000;">命名图片名称  
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">        //上传路径  </span>
+<span style="color: #008080;">18</span>         <span style="color: #800080;">$pic_path</span> = "images/". <span style="color: #800080;">$pics</span><span style="color: #000000;">;  
+</span><span style="color: #008080;">19</span>         <span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>['uploadfile']['tmp_name'], <span style="color: #800080;">$pic_path</span><span style="color: #000000;">);  
+</span><span style="color: #008080;">20</span>         <span style="color: #800080;">$myfile</span> = <span style="color: #008080;">fopen</span>("1/".<span style="color: #008080;">date</span>("His")."testfile.txt", "w"<span style="color: #000000;">); 
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">    }  
+</span><span style="color: #008080;">22</span>     <span style="color: #800080;">$size</span> = <span style="color: #008080;">round</span>(<span style="color: #800080;">$picsize</span>/1024,2); <span style="color: #008000;">//</span><span style="color: #008000;">转换成kb  </span>
+<span style="color: #008080;">23</span>     <span style="color: #0000ff;">echo</span> '{"status":1,"name":"'.<span style="color: #800080;">$picname</span>.'","url":"'.<span style="color: #800080;">$pic_path</span>.'","size":"'.<span style="color: #800080;">$size</span>.'","content":"上传成功"}'<span style="color: #000000;">;      
+</span><span style="color: #008080;">24</span> ?&gt;</code></pre>
+
+<p>本文转自<a href="https://www.sucaihuo.com/php/4379.html" target="_blank">https://www.sucaihuo.com/php/4379.html</a>，转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

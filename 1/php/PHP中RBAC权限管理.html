@@ -1,0 +1,47 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中RBAC权限管理' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中RBAC权限管理</center></div><div class='banquan'>原文出处:本文由博客园博主行走的阳光提供。<br/>
+原文连接:https://www.cnblogs.com/shineguang/p/11203650.html</div><br>
+    <p><span style="font-size: 18px;"><strong>1.RBAC概念和原理</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;RBAC：全称叫做Role-Based Access Control，中文翻译叫做基于角色的访问控制。其主要的作用是实现项目的权限控制。</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;效果：让不同的管理员，能够访问的页面不一样。比如运营人员 只能看到运营相关模块。财务人员只能看到财务相关模块。</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 传统权限管理：</strong></span></p>
+<p><span style="font-size: 18px;"><strong><img src="./images/PHP中RBAC权限管理0.jpg" alt="" /></strong></span></p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;"><strong>&nbsp; RBAC权限管理：</strong></span></p>
+<p><span style="font-size: 18px;"><strong><img src="./images/PHP中RBAC权限管理1.jpg" alt="" /></strong></span></p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 18px;"><strong> RBAC权限管理：</strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus"><span class="md-expand">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;权限的管理相对规范，角色拥有的权限可以按照一定标准定义好。</span></span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;新增管理员，只需要指定角色，即可拥有对应的权限。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp;2.数据表设计：</strong></span></p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<span style="font-size: 18px;"><strong>基本数据表：管理员表、角色表、权限表</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;对应关系：管理员对应一个角色，一个角色对应多个权限。（一个管理员也可以对应多个角色）</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;对应关系的维护：</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;第一种：三表结构，在管理员表增加角色id字段，在角色表增加权限ids字段，最终三张表。</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;第二种：五表结构，新增一张管理员角色关联表，新增一张角色权限关联表。最终五张表。</strong></span></p>
+<p><span style="font-size: 18px;"><strong><img src="./images/PHP中RBAC权限管理2.jpg" alt="" /></strong></span></p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus"><span class="md-expand">这里以三表结构为例：&nbsp;</span></span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;查询一个管理员拥有的权限：</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;先查询管理员表，获取到角色id</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;再查询角色表，获取到拥有的权限ids</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;最后根据权限ids查询权限表，where id in（1,2,3）</span></strong></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

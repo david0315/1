@@ -1,0 +1,94 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP如何支持CURL字符串证书传输' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP如何支持CURL字符串证书传输</center></div><div class='banquan'>原文出处:本文由博客园博主张以诺提供。<br/>
+原文连接:https://www.cnblogs.com/enochzzg/p/10815900.html</div><br>
+    <h3 id="背景">背景</h3>
+<p>最近在对接微信支付的时候，需要在退款处用到证书，由于我们是SAAS平台，要支持多方多渠道支付，如果把所有证书文件保存在应用服务器会受到SLB的影响，会导致某台机器文件不同步而阻碍退款流程，但把文件存在OSS的话，后端又要从OSS下载到应用服务器来保证一致性。思来想去，最终决定将证书内容保存在数据库，不同客户各对应一份证书文件，无论几台机器做集群都能保证文件的一致性，同时也避免了多余的下载步骤。</p>
+<h3 id="问题">问题</h3>
+<p>但是刚做就遇到了问题，PHP的CURL证书并不支持字符串的传输，只能填写证书路径（以下是官方的说法）</p>
+<blockquote>
+<p>Client certificates must be specified by a path expression to a certificate store.</p>
+</blockquote>
+<h3 id="解决过程">解决过程</h3>
+<p>我第一个想到的就是创建空白文件，将证书内容写进去，等证书使用完毕后再将文件删除，但是创建实体文件再删除的操作消耗性能不说，还非常麻烦，有没有创建临时文件的方法呢？有，<code>tmpfile()</code>函数就可以帮我们创建临时文件并拿到文件路径，于是我写了一个获取临时文件路径的方法</p>
+<pre><code><code>&lt;?php
+    public function getTmpPathByContent($content)
+    {
+        $tmpFile = tmpfile();
+        fwrite($tmpFile, $content);
+        $tempPemPath = stream_get_meta_data($tmpFile);
+        return $tempPemPath[&#39;uri&#39;];  ///tmp/phpXZCtAO
+    }
+?&gt;</code></code></pre>
+<p>比较悲哀的是，通过这个方法返回的路径根本读不到内容，甚至一度以为是不是被骗了</p>
+<pre class="bash"><code>file_get_contents(/tmp/phpyyiOZv): failed to open stream: No such file or directory</code></code></pre>
+<p>看了官方文档才找到原因，如果<code>tmpfile()</code>返回的句柄引用计数为0的话就会将临时文件回收，临时路径自然也就失效了，显然方法<code>getTmpPathByContent()</code>执行完后，局部变量<code>$tmpFile</code>的生命周期就结束了（官方文档如下）</p>
+<blockquote>
+<p>The file is automatically removed when closed (for example, by calling fclose(), or when there are no remaining references to the file handle returned by tmpfile()), or when the script ends.</p>
+</blockquote>
+<p>确认了根源，那我们现在亟需找到一个生命周期随进程结束而终止的变量类型来保存句柄，什么类型能满足条件呢？静态变量。静态变量与局部变量不同的是，在PHP生命周期开始时便会为其分配内存空间，并会把它存储在全局变量区域，而全局变量是在模块关闭阶段销毁的，这样的话，声明静态变量就可以使<code>$tmpFile</code>引用计数持续保持大于0的状态，那我们的代码就可以做出如下处理</p>
+<pre><code><code>&lt;?php
+    public function getTmpPathByContent($content)
+    {
+        static $tmpFile = null;
+        $tmpFile = tmpfile();
+        fwrite($tmpFile, $content);
+        $tempPemPath = stream_get_meta_data($tmpFile);
+        return $tempPemPath[&#39;uri&#39;];
+    }
+?&gt;</code></code></pre>
+<p>再执行一次就成功读取了临时文件的内容</p>
+<pre class="bash"><code>-----BEGIN CERTIFICATE-----
+MIIEbDCCA9WgAwIBAgIEAWJKHDANBgkqhkiG9w0BAQUFADCBijELMAkGA1UEBhMC
+Q04xEjAQBgNVBAgTCUd1YW5nZG9uZzERMA8GA1UEBxMIU2hlbnpoZW4xEDAOBgNV
+BAoTB1RlbmNlbnQxDDAKBgNVBAsTA1dYRzETMBEGA1UEAxMKTW1wYXltY2hDQTEf
+MB0GCSqGSIb3DQEJARYQbW1wYXltY2hAdGVuY2VudDAeFw0xNzA4MDcwOTIxNDda
+Fw0yNzA4MDUwOTIxNDdaMIGbMQswCQYDVQQGEwJDTjESMBAGA1UECBMJR3Vhbmdk
+b25nMREwDwYDVQQHEwhTaGVuemhlbjEQMA4GA1UEChMHVGVuY2VudDEOMAwGA1UE
+CxMFTU1QYXkxMDAuBgNVBAMUJ+a3seWcs+W4guaYjua6kOi9r+S7tuiCoeS7veac
+iemZkOWFrOWPuDERMA8GA1UEBBMIMTAyNTkyODEwggEiMA0GCSqGSIb3DQEBAQUA
+A4IBDwAwggEKAoIBAQDg2D3++uOxY/yMGQPBnROvyYimnCsfGE0dnqdGUTCykqBh
+yfv82zE1/St/4DQX2QDiIvLif+sMGcYwF4bkzdY+HgitYLI0k5o/5LCNZOMctuio
+kdYC2bNdWHq2y9S5UWLQR1Zvq+6QyPBVBVY9yq9xtQhIlUTsZnICAp3iQLfQUR3l
+aEdH9IERoRUIkbyb8oX5ONQz4P9jOeE9C5iwx0QrH4s01NFhkhr8JHlugRLpo9vA
+xGgi/48fOlONj6wWal5Gt0OvvEbIwgQwya15KBX2YeGnZvYBQa+lQMeXEqZSFie3
+G+wGvbtlONczQEtp+JDxLZLUS/FT7U0TQN/t8JDvAgMBAAGjggFGMIIBQjAJBgNV
+HRMEAjAAMCwGCWCGSAGG+EIBDQQfFh0iQ0VTLUNBIEdlbmVyYXRlIENlcnRpZmlj
+YXRlIjAdBgNVHQ4EFgQUjDJ75bu3Roog7XOH6uFAdZ6kpcIwgb8GA1UdIwSBtzCB
+tIAUPgUm9iJitBVbiM1kfrDUYqflhnShgZCkgY0wgYoxCzAJBgNVBAYTAkNOMRIw
+EAYDVQQIEwlHdWFuZ2RvbmcxETAPBgNVBAcTCFNoZW56aGVuMRAwDgYDVQQKEwdU
+ZW5jZW50MQwwCgYDVQQLEwNXWEcxEzARBgNVBAMTCk1tcGF5bWNoQ0ExHzAdBgkq
+hkiG9w0BCQEWEG1tcGF5bWNoQHRlbmNlbnSCCQC7VJcrvADoVzAOBgNVHQ8BAf8E
+BAMCBsAwFgYDVR0lAQH/BAwwCgYIKwYBBQUHAwIwDQYJKoZIhvcNAQEFBQADgYEA
+ucJLJkkHxlqQCEapZOWmySutqNVZxFbqyG//UXxxpA/1yG4e+KmufKZWv+c+MtYI
+8i0KDDCv/UE+kkFIrHYDDKsdLRpxrYOUHGoqq0c7yBJ6Dimgy6m8U8FsEv3HtUR2
+8g5xrg2Tc5MPWEp9ncEw575hGk0CXLDGOkI1nU+pGqk=
+-----END CERTIFICATE-----</code></code></pre>
+<p>下面就可以把生成的临时文件地址设置到<code>CURLOPT_SSLCERT</code>了</p>
+<pre><code><code>&lt;?php
+    $sslCertPath = getTmpPathByContent($content);
+    curl_setopt($ch,CURLOPT_SSLCERT, $sslCertPath);
+    //......
+?&gt;</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

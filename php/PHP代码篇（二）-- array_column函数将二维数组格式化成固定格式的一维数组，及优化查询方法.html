@@ -1,0 +1,70 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP代码篇（二）-- array_column函数将二维数组格式化成固定格式的一维数组，及优化查询方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP代码篇（二）-- array_column函数将二维数组格式化成固定格式的一维数组，及优化查询方法</center></div><div class='banquan'>原文出处:本文由博客园博主在斑马线上散布提供。<br/>
+原文连接:https://www.cnblogs.com/camg/p/11084101.html</div><br>
+    <p>　　小白因为经常用到多表查询，比如获取一个会员领取的卡卷list，里面当然包含了1&ldquo;会员优惠券记录表t_coupon_members&rdquo;主表，然后2&ldquo;门店优惠券表t_coupon&rdquo;，和3&ldquo;门店信息表t_shop&rdquo;。连表关系是：主表1里的冗余字段门店优惠券coupon_id对应表2，然后表2的冗余字段shop_id对应表3的店铺id。所以直接3表联查即可获取，但是被告知需要优化，下面是优化结果。</p>
+<p><strong>一、如何优化</strong></p>
+<p>　　1、这边优化是，直接主表1和主表2联查获取到一个带有门店id的二维数组$list，然后通过门店id进行数据库IN语句查询出满足条件的门店信息$shop_info，然后循环$list，通过PHP数组处理函数array_column，将$shop_info匹配到$list中。如下是具体实现步骤，代码框架TP5.1。</p>
+<p><strong>二、具体步骤</strong></p>
+<p>　　1、连表获取表1和表2的数组</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$list</span> = <span style="color: #800080;">$this</span>-&gt;alias('M1'<span style="color: #000000;">)
+                   </span>-&gt;field('<span style="color: #000000;">M1.id,M1.status,M1.member_id,M1.writer_time,
+                             M2.coupon_name,M2.shop_id,M2.type,M2.type_value1,M2.type_value2,M2.use_start_time,M2.use_end_time
+                             </span>'<span style="color: #000000;">)
+                    </span>-&gt;<span style="color: #008080;">join</span>('t_coupon M2','M1.coupon_id = M2.id','left'<span style="color: #000000;">)
+                    </span>-&gt;where(<span style="color: #800080;">$where</span><span style="color: #000000;">)
+                    </span>-&gt;page(<span style="color: #800080;">$page</span> + 1,<span style="color: #800080;">$psize</span><span style="color: #000000;">)
+                    </span>-&gt;<span style="color: #000000;">select();
+</span><span style="color: #800080;">$list</span> ? <span style="color: #800080;">$list</span> = <span style="color: #800080;">$list</span>-&gt;toArray() : [];</code></pre>
+
+<p>　　2、结果如下图2，这里要注意，为什么要用&nbsp;&nbsp;-&gt;toArray()，因为在TP5.1里面 -&gt;select() 查询返回的是一个对象，有人可能说我用 dump() ,打印显示的是一个数组呀，这个我也是用 数组函数&nbsp;array_column，报错提示参数必须是一个数组，才发现。原来 dump() 是TP5.1对它进行了封装，大家可以用PHP自带的 var_dump() 打印一下就明白了，如图1。</p>
+<p><img src="https://img2018.cnblogs.com/blog/1597032/201906/1597032-20190625170608076-186318790.png" alt="" /></p>
+<p>　　3、拿到带有门店的shop_id后，我们再对它进行数组处理，获取一个IN语句使用数组，类似【4,5】这样的，代码如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$shop_id</span> = array_column(<span style="color: #800080;">$list</span>,"shop_id");<span style="color: #008000;">//</span><span style="color: #008000;">格式化门店ID</span></code></pre>
+
+<p><img style="border: 2px solid black;" src="https://img2018.cnblogs.com/blog/1597032/201906/1597032-20190625171248115-495611505.png" alt="" /></p>
+<p>　　4、这样我们就可以直接一条SQL IN语句获取当前$list里面所有的门店信息的$shop_info&nbsp;了，代码如下:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$shops_model</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Shops();
+</span><span style="color: #800080;">$shop_info</span> = <span style="color: #800080;">$shops_model</span>-&gt;where('id','IN',<span style="color: #800080;">$shop_id</span>)-&gt;field('id,shop_name')-&gt;<span style="color: #000000;">select();
+</span><span style="color: #800080;">$shop_info</span> ? <span style="color: #800080;">$shop_info</span> = <span style="color: #800080;">$shop_info</span>-&gt;toArray() : [];<span style="color: #008000;">//</span><span style="color: #008000;">门店信息</span></code></pre>
+
+<p><img style="border: 2px solid black;" src="https://img2018.cnblogs.com/blog/1597032/201906/1597032-20190625171640052-292343107.png" alt="" /></p>
+<p>　　5、接下来对 $shop_info 这个数组进行处理，让门店id成为键名，门店名称成为键值，可以用PHP自带的函数 array_column() ，具体用法说明可以参考<a href="https://www.php.net/manual/zh/function.array-column.php">https://www.php.net/manual/zh/function.array-column.php</a></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$shop_info</span> = array_column(<span style="color: #800080;">$shop_info</span>,"shop_name","id");</code></pre>
+
+<p><img style="border: 2px solid black;" src="https://img2018.cnblogs.com/blog/1597032/201906/1597032-20190625172224816-497668869.png" alt="" /></p>
+<p>　　6、最后我们，直接循环&nbsp;foreach $list，将处理好的门店信息添加到数据源中,得到效果如下。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$list</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$list</span>[<span style="color: #800080;">$k</span>]['shop_name'] = <span style="color: #800080;">$shop_info</span>[<span style="color: #800080;">$v</span>['shop_id'<span style="color: #000000;">]];
+ }<br /></span></code></pre>
+
+<p><img style="border: 2px solid black;" src="https://img2018.cnblogs.com/blog/1597032/201906/1597032-20190625172546008-1774229851.png" alt="" /></p>
+<p>ps：其实最开始我是直接在循环$list里面的时候，直接数据库查询门店信息，但是被告知这样不好，要秉承尽量少在循环里面做查询动作，然后询问老猿使用&nbsp;array_column() ，确实效果很好。</p>
+<p>　　呃，这个主要是对&nbsp;array_column() 的使用做说明，感觉确实PHP确实有很多丰富的函数方法，可以满足主流业务需求，只是不知道，所以写了大量冗余代码┭┮﹏┭┮，老猿的经验确实值得赞赞。</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

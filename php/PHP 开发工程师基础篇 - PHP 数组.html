@@ -1,0 +1,987 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 开发工程师基础篇 - PHP 数组' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 开发工程师基础篇 - PHP 数组</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11908341.html</div><br>
+    <h2>数组 (Array)</h2>
+<p>数组是 PHP 中最重要的数据类型，可以说是掌握数组，基本上 PHP 一大半问题都可以解决. PHP 数组与其他编程语言数组概念不一样。其他编程语言数组是由相同类型的元素（element）的集合所组成的数据结构，而 PHP 数组元素可以为不同类型的元素。因此说 PHP 数组不是纯粹的数组，而是哈希 (字典) 更为恰当.<br />PHP 数组可以当作真正的数组，或列表（向量），散列表（是映射的一种实现），字典，集合，栈，队列以及更多可能性。数组分为关联数组 (类似字典) 和索引数组 (纯数组，键值从数字开始，一般从 0 开始).</p>
+<ul>
+<li><a href="https://juejin.im/post/5b967696e51d450e452a74d8" data-cke-saved-href="https://juejin.im/post/5b967696e51d450e452a74d8">PHP 数组底层实现</a></li>
+<li><a href="https://juejin.im/post/5bce1c35518825781f7b0935" data-cke-saved-href="https://juejin.im/post/5bce1c35518825781f7b0935">详解 PHP 数组的底层实现：HashTable</a></li>
+
+
+</ul>
+<h3>语法</h3>
+<ul>
+<li>array
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="84">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span>(1, 2, 3);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>[]
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="83">
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$arr</span> = [1, 2, 3];</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3>数组键值注意事项</h3>
+</li>
+</ul>
+<p>PHP 数组的键值仅支持字符串 (string) 和整型 (integer). 其他类型均会转换数字或字符串。浮点类型会被转换为整型类型的，8.7-&gt;8. 布尔类型则会转换为整型类型的，true-&gt;1, false-&gt;0. Null 会被转换为空的字符串，数组和对象则不会转换成为字符串类型和整型。会抛出一个警告: Illegal offset type.</p>
+<p>注意的是字符串类型假如是有效十进制数字的话，则会转换为整型. "8"-&gt;8. 若不想转换则在数字前添加 "+" 符号.</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="82">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 02不是有效十进制数字</span>
+<span style="color: #008080;"> 2</span> <span style="color: #800080;">$arr</span> = ['1' =&gt; 'a', '+1' =&gt; 'b', '02' =&gt; 'c'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> array(3) {
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">  [1]=&gt;
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">  string(1) "a"
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">  ["+1"]=&gt;
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">  string(1) "b"
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">  ["02"]=&gt;
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">  string(1) "c"
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">}
+</span><span style="color: #008080;">12</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">13</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 数组的键值可以不用有键值, 下面这个数组最大数字是6,所以在它后面的元素,则是在它基础上+1</span>
+<span style="color: #008080;">15</span> <span style="color: #800080;">$array</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">16</span>          "a",
+<span style="color: #008080;">17</span>          "b",
+<span style="color: #008080;">18</span>     6 =&gt; "c",
+<span style="color: #008080;">19</span>          "d",
+<span style="color: #008080;">20</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">22</span> <span style="color: #008000;"> array(4) {
+</span><span style="color: #008080;">23</span> <span style="color: #008000;">  [0]=&gt;
+</span><span style="color: #008080;">24</span> <span style="color: #008000;">  string(1) "a"
+</span><span style="color: #008080;">25</span> <span style="color: #008000;">  [1]=&gt;
+</span><span style="color: #008080;">26</span> <span style="color: #008000;">  string(1) "b"
+</span><span style="color: #008080;">27</span> <span style="color: #008000;">  [6]=&gt;
+</span><span style="color: #008080;">28</span> <span style="color: #008000;">  string(1) "c"
+</span><span style="color: #008080;">29</span> <span style="color: #008000;">  [7]=&gt;
+</span><span style="color: #008080;">30</span> <span style="color: #008000;">  string(1) "d"
+</span><span style="color: #008080;">31</span> <span style="color: #008000;">}
+</span><span style="color: #008080;">32</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">33</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$array</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<h3>数组基本操作 (增删改查)</h3>
+<p>通过在方括号 ([]) 内指定键名来给数组赋值实现的增加和修改元素，也可以省略键名.</p>
+<ul>
+<li>增加数组的元素
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="81">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 索引数组</span>
+<span style="color: #008080;">2</span> <span style="color: #800080;">$arr</span> = [1, 2, 3<span style="color: #000000;">];
+</span><span style="color: #008080;">3</span> <span style="color: #800080;">$arr</span>[] = 4; <span style="color: #008000;">//</span><span style="color: #008000;"> [1, 2, 3, 4]
+</span><span style="color: #008080;">4</span> <span style="color: #008000;">// 关联数组</span>
+<span style="color: #008080;">5</span> <span style="color: #800080;">$arr1</span> = ['a' =&gt; 1, 'b' =&gt; 2<span style="color: #000000;">];
+</span><span style="color: #008080;">6</span> <span style="color: #800080;">$arr1</span>['c'] = 3; <span style="color: #008000;">//</span><span style="color: #008000;"> ['a' =&gt; 1, 'b' =&gt; 2, 'c' =&gt; 3]
+</span><span style="color: #008080;">7</span> <span style="color: #008000;">// 混合数组</span>
+<span style="color: #008080;">8</span> <span style="color: #800080;">$arr3</span> = ['a' =&gt; 1, 'b' =&gt; 2<span style="color: #000000;">];
+</span><span style="color: #008080;">9</span> <span style="color: #800080;">$arr3</span>[1] = 3; <span style="color: #008000;">//</span><span style="color: #008000;"> ['a' =&gt; 1, 'b' =&gt; 2, 1 =&gt; 3]</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>删除数组的元素
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="80">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$arr</span> = [1, 2, 3<span style="color: #000000;">];
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 删除数组中值为3的, 注意的是数组不会被重新索引(索引数组)</span>
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$arr</span>[2<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 4</span> <span style="color: #800080;">$arr</span>[] = 3<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">array(3) {
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">[0]=&gt;
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">int(1)
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">[1]=&gt;
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">int(2)
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">[3]=&gt;
+</span><span style="color: #008080;">12</span> <span style="color: #008000;">int(3)
+</span><span style="color: #008080;">13</span> <span style="color: #008000;">}
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">15</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$arr</span>);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>改变数组的元素
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="79">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr = [1, 2, 3];\n$arr[0] = 'a';\nvar_dump($arr); ['a', 2, 3]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr = [1, 2, 3];
+$arr[0] = 'a';
+var_dump($arr); ['a', 2, 3]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>查询数组的元素
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="78">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr = [1, 2, 3];\nvar_dump($arr[0]); // 1&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr = [1, 2, 3];
+var_dump($arr[0]); // 1</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+<h3>其他类型转换为数组</h3>
+<p>除了对象 (Object) 转换数组外，对于对于任意 integer，float，string，boolean 和 resource 类型，如果将一个值转换为数组，将得到一个仅有一个元素的数组，其下标为 0.<br />(array)$scalarValue 与 array ($scalarValue) 一样。而对象 (object) 类型转换为 array. 其单元为该对象的属性。键名将为成员变量名，不过有几点例外：整数属性不可访问；私有变量前会加上类名作前缀；保护变量前会加上一个 '*' 做前缀。这些前缀的前后都各有一个 NULL 字符。这会导致一些不可预知的行为：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="77">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;class A {\n    private $A; // This will become '\\0A\\0A'\n}\n\nclass B extends A {\n    private $A; // This will become '\\0B\\0A'\n    protected $B // This will \\0*\\0A\n    public $AA; // This will become 'AA'\n}\n// 会有两个键名为 'AA'，不过其中一个实际上是 '\\0A\\0A'。\n/**\n array(4) {\n  [\&amp;quot;BA\&amp;quot;]=&amp;gt;\n  NULL\n  [\&amp;quot;*B\&amp;quot;]=&amp;gt;\n  NULL\n  [\&amp;quot;AA\&amp;quot;]=&amp;gt;\n  NULL\n  [\&amp;quot;AA\&amp;quot;]=&amp;gt;\n  NULL\n}\n */\nvar_dump((array) new B());\n&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">class A {
+    private $A; // This will become '\0A\0A'
+}
+
+class B extends A {
+    private $A; // This will become '\0B\0A'
+    protected $B // This will \0*\0A
+    public $AA; // This will become 'AA'
+}
+// 会有两个键名为 'AA'，不过其中一个实际上是 '\0A\0A'。
+/**
+ array(4) {
+  ["BA"]=&gt;
+  NULL
+  ["*B"]=&gt;
+  NULL
+  ["AA"]=&gt;
+  NULL
+  ["AA"]=&gt;
+  NULL
+}
+ */
+var_dump((array) new B());
+</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<ul>
+<li><a href="https://stackoverflow.com/questions/14547187/what-is-a-integer-property-and-whats-the-meaning-of-0a-0a" data-cke-saved-href="https://stackoverflow.com/questions/14547187/what-is-a-integer-property-and-whats-the-meaning-of-0a-0a">整数属性</a></li>
+</ul>
+<h3>数组函数分类</h3>
+<ol>
+<li>
+<p><strong>创建数组</strong></p>
+<ul>
+<li>array_combine (array $keys , array $values) : array &mdash; 创建一个数组，用一个数组的值作为其键名，另一个数组的值作为其值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="76">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$key = ['a', 'b', 'c'];\n$value = [1, 2, 3];\nprint_r(array_combine($key, $value)); // ['a' =&amp;gt; 1, 'b' =&amp;gt; 2, 'c' =&amp;gt; 3]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$key = ['a', 'b', 'c'];
+$value = [1, 2, 3];
+print_r(array_combine($key, $value)); // ['a' =&gt; 1, 'b' =&gt; 2, 'c' =&gt; 3]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_fill_keys (array $keys , mixed $value) : array &mdash; 使用指定的键和值填充数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="75">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$keys = ['red', 'blue', 'green'];\nvar_dump(array_fill_keys($keys, 1)); // ['red' =&amp;gt; 1, 'blue' =&amp;gt; 1, 'green' =&amp;gt; 1]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$keys = ['red', 'blue', 'green'];
+var_dump(array_fill_keys($keys, 1)); // ['red' =&gt; 1, 'blue' =&gt; 1, 'green' =&gt; 1]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_fill (int $start_index , int $num , mixed $value) : array &mdash; 用给定的值填充数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="74">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;var_dump(array_fill(0, 0, 1)); // []\nvar_dump(array_fill(1, 3, 'red')); // [1=&amp;gt;'red', 2=&amp;gt;'red', 3=&amp;gt;'red']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">var_dump(array_fill(0, 0, 1)); // []
+var_dump(array_fill(1, 3, 'red')); // [1=&gt;'red', 2=&gt;'red', 3=&gt;'red']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array &mdash; 新建一个数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="73">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// array() 是语言结构, 不是常规函数\n$a = array(1, 2, 3);&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// array() 是语言结构, 不是常规函数
+$a = array(1, 2, 3);</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>compact (mixed $varname1 [, mixed $...] ) : array &mdash; 建立一个数组，包括变量名和它们的值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="72">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = 'apple';\n$b = 'banana';\n$d = 'lemon';\n$sweet = ['b', 'd'];\n$result = compact('a', $sweet); // ['a' =&amp;gt; 'apple', 'b' =&amp;gt; 'banana', 'd' =&amp;gt; 'lemon']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = 'apple';
+$b = 'banana';
+$d = 'lemon';
+$sweet = ['b', 'd'];
+$result = compact('a', $sweet); // ['a' =&gt; 'apple', 'b' =&gt; 'banana', 'd' =&gt; 'lemon']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>range (mixed $start , mixed $end [, number $step = 1] ) : array &mdash; 根据范围创建数组，包含指定的元素
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="71">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;var_dump(range(1, 5)); // [1, 2, 3, 4, 5]\nvar_dump(range(0, 100, 10)); // [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">var_dump(range(1, 5)); // [1, 2, 3, 4, 5]
+var_dump(range(0, 100, 10)); // [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>数组分割</strong></p>
+<ul>
+<li>array_chunk (array $array , int $size [, bool $preserve_keys = FALSE] ) : array &mdash; 将一个数组分割成多个
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="70">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['a' =&amp;gt; 1, 'B' =&amp;gt; 2, 3 =&amp;gt; 'c', 'A' =&amp;gt; 4, 'b' =&amp;gt; 6];\nprint_r(array_chunk($a, 2)); // [[1, 2], ['c', 4], [6]]\nprint_r(array_chunk($a, 2, true)); // [['a' =&amp;gt; 1, 'B' =&amp;gt; 2], [3 =&amp;gt; 'c', 'A' =&amp;gt; 4], ['b' =&amp;gt; 6]]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['a' =&gt; 1, 'B' =&gt; 2, 3 =&gt; 'c', 'A' =&gt; 4, 'b' =&gt; 6];
+print_r(array_chunk($a, 2)); // [[1, 2], ['c', 4], [6]]
+print_r(array_chunk($a, 2, true)); // [['a' =&gt; 1, 'B' =&gt; 2], [3 =&gt; 'c', 'A' =&gt; 4], ['b' =&gt; 6]]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_slice (array $array , int $offset [, int $length = NULL [, bool $preserve_keys = FALSE]] ) : array &mdash; 从数组中取出一段
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="69">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$input = ['a', 'b', 'c', 'e', 'f'];\nvar_dump(array_slice($a, 2)); // ['c', 'e', 'f']\nvar_dump(array_slice($a, 2, 1)); // ['c']\nvar_dump(array_slice($a, -1, 1)); // ['f']\nvar_dump(array_slice($a, -1, 1, true)); [4 =&amp;gt; 'f']\nvar_dump(array_slice($a, 0, 6)); // ['a', 'b', 'c', 'e', 'f']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$input = ['a', 'b', 'c', 'e', 'f'];
+var_dump(array_slice($a, 2)); // ['c', 'e', 'f']
+var_dump(array_slice($a, 2, 1)); // ['c']
+var_dump(array_slice($a, -1, 1)); // ['f']
+var_dump(array_slice($a, -1, 1, true)); [4 =&gt; 'f']
+var_dump(array_slice($a, 0, 6)); // ['a', 'b', 'c', 'e', 'f']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>数组队列或栈操作</strong></p>
+<ul>
+<li>array_pop (array &amp;$array) : mixed &mdash; 弹出数组最后一个单元（出栈）
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="68">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr1 = ['yellow', 'green', 'red']\nvar_dump(array_pop($arr1)); // 'yellow'&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr1 = ['yellow', 'green', 'red']
+var_dump(array_pop($arr1)); // 'yellow'</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_push (array &amp;$array [, mixed $...] ) : int &mdash; 将一个或多个单元压入数组的末尾（入栈）
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="67">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;var_dump(array_push([1, 2, 3], 4, 5)) // 2 &amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">var_dump(array_push([1, 2, 3], 4, 5)) // 2 </code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_shift (array &amp;$array) : mixed &mdash; 将数组开头的单元移出数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="66">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a ['php', 'c', 'python'];\nvar_dump(array_shift($a));// 'php'&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a ['php', 'c', 'python'];
+var_dump(array_shift($a));// 'php'</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_unshift (array &amp;$array [, mixed $...] ) : int &mdash; 在数组开头插入一个或多个单元
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="65">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$queue = ['orange', 'banana'];\nvar_dump(array_unshift($queue, 'apple')); // 3\nvar_dump($queue);&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$queue = ['orange', 'banana'];
+var_dump(array_unshift($queue, 'apple')); // 3
+var_dump($queue);</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>数组数学运算</strong></p>
+<ul>
+<li>array_count_values (array $array): array &mdash; 统计数组中所有的值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="64">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;print_r(array_count_value([1, 'hello', 1, 'hello', 'world'])) // [1=&amp;gt;2, 'hello' =&amp;gt; 2, 'world' =&amp;gt; 1]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">print_r(array_count_value([1, 'hello', 1, 'hello', 'world'])) // [1=&gt;2, 'hello' =&gt; 2, 'world' =&gt; 1]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_product (array $array) : number &mdash; 计算数组中所有值的乘积
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="63">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = array(2, 4, 6, 8);\nvar_dump(array_product($a));// 384\nvar_dump(array_product([])); // 1&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = array(2, 4, 6, 8);
+var_dump(array_product($a));// 384
+var_dump(array_product([])); // 1</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_reduce ( array $array , callable $callback [, mixed $initial = NULL ] ) : mixed
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="62">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;function sum ($carry, $item) {\n$carry += $item;\nreturn $carry;\n}\n$a = [1, 2, 3, 4, 5];\nvar_dump(array_reduce($a, 'sum')); // 15\nvar_dump(array_reduce($a, 'sum', 10)); // 25&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">function sum ($carry, $item) {
+$carry += $item;
+return $carry;
+}
+$a = [1, 2, 3, 4, 5];
+var_dump(array_reduce($a, 'sum')); // 15
+var_dump(array_reduce($a, 'sum', 10)); // 25</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_sum (array $array) : number &mdash; 对数组中所有值求和
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="61">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;var_dump(array_sum([1, 2, 3])); // 6\nvar_dump(array_sum([])); // 0&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">var_dump(array_sum([1, 2, 3])); // 6
+var_dump(array_sum([])); // 0</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>数组键值操作</strong></p>
+<ul>
+<li>array_change_key_case (array $array [, int $case = CASE_LOWER] ) : array &mdash; 将数组中的所有键名修改为全大写或小写
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="60">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['a' =&amp;gt; 1, 'B' =&amp;gt; 2, 3 =&amp;gt; 'c', 'A' =&amp;gt; 4];\nprint_r(array_change_key_case($a)); // ['a' =&amp;gt; 4, 'b' =&amp;gt; 2, 3 =&amp;gt; 'c']\nprint_r(array_change_key_case($a, CASE_UPPER)); // ['A' =&amp;gt; 4, 'B' =&amp;gt; 2, 3 =&amp;gt; 'c']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['a' =&gt; 1, 'B' =&gt; 2, 3 =&gt; 'c', 'A' =&gt; 4];
+print_r(array_change_key_case($a)); // ['a' =&gt; 4, 'b' =&gt; 2, 3 =&gt; 'c']
+print_r(array_change_key_case($a, CASE_UPPER)); // ['A' =&gt; 4, 'B' =&gt; 2, 3 =&gt; 'c']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_key_exists (mixed $key , array $array) : bool &mdash; 检查数组里是否有指定的键名或索引
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="59">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;var_dump(array_key_exists('first', ['first' =&amp;gt; 1, 'second' =&amp;gt; 2])); // true&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">var_dump(array_key_exists('first', ['first' =&gt; 1, 'second' =&gt; 2])); // true</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_key_first (array $array) : mixed &mdash; 获取数组第一个键值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="58">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// php &amp;gt;= 7.3.0\nvar_dump(array_key_first(['a' =&amp;gt; 1, 'b' =&amp;gt; 2])); // 'a'&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// php &gt;= 7.3.0
+var_dump(array_key_first(['a' =&gt; 1, 'b' =&gt; 2])); // 'a'</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_key_last (array $array) : mixed &mdash; 获取数组最后一个键值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="57">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// php &amp;gt;= 7.3.0\nvar_dump(array_key_last(['a' =&amp;gt; 1, 'b' =&amp;gt; 2])); // 'b'&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// php &gt;= 7.3.0
+var_dump(array_key_last(['a' =&gt; 1, 'b' =&gt; 2])); // 'b'</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_keys (array $array , mixed $search_value [, bool $strict = FALSE] ) : array | array_keys ( array $array ) : array &mdash; 返回数组中部分的或所有的键名
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="56">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['a' =&amp;gt; 1, 'b' =&amp;gt; 2, 'c' =&amp;gt; 3];\nvar_dump(array_keys($a)); // ['a', 'b', 'c']\nvar_dump(array_keys($a, '1')); // 'a'\nvar_dump(array_keys($a, '1', true)); // []&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['a' =&gt; 1, 'b' =&gt; 2, 'c' =&gt; 3];
+var_dump(array_keys($a)); // ['a', 'b', 'c']
+var_dump(array_keys($a, '1')); // 'a'
+var_dump(array_keys($a, '1', true)); // []</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>key_exists &mdash; 别名 array_key_exists</li>
+</ul>
+</li>
+<li>
+<p><strong>数组元素操作</strong></p>
+<ul>
+<li>array_pad (array $array , int $size , mixed $value) : array &mdash; 以指定长度将一个值填充进数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="55">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$input = [12, 10, 9];\nvar_dump(array_pad($input, 5, 2)); // [12, 10, 9, 2, 2]\nvar_dump(array_pad($input, -5, 2)); // [2, 2, 12, 10, 9]\nvar_dump(array_pad($input, 4, [1])); // [12, 10, 9, [1]]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$input = [12, 10, 9];
+var_dump(array_pad($input, 5, 2)); // [12, 10, 9, 2, 2]
+var_dump(array_pad($input, -5, 2)); // [2, 2, 12, 10, 9]
+var_dump(array_pad($input, 4, [1])); // [12, 10, 9, [1]]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_rand (array $array [, int $num = 1] ) : mixed &mdash; 从数组中随机取出一个或多个单元
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="54">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;var_dump(array_rand([1, 2, 3], 2)); // [1, 3]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">var_dump(array_rand([1, 2, 3], 2)); // [1, 3]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_search (mixed $needle , array $haystack [, bool $strict = FALSE] ) : mixed &mdash; 在数组中搜索给定的值，如果成功则返回首个相应的键名
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="53">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = [1, 'blue', 'red', 'php', 0];\nvar_dump(array_search('php', $a)); // 2\nvar_dump(array_search(false, $a)); // 3\nvar_dump(array_search(false, $a, true)); // false&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = [1, 'blue', 'red', 'php', 0];
+var_dump(array_search('php', $a)); // 2
+var_dump(array_search(false, $a)); // 3
+var_dump(array_search(false, $a, true)); // false</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_values (array $array) : array &mdash; 返回数组中所有的值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="52">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['a' =&amp;gt; 1, 'b' =&amp;gt; 2];\nvar_dump(array_value($a)); // [1, 2]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['a' =&gt; 1, 'b' =&gt; 2];
+var_dump(array_value($a)); // [1, 2]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>in_array (mixed $needle , array $haystack [, bool $strict = FALSE] ) : bool 检查数组中是否存在某个值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="51">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 字符串比较是大小写敏感\n$os = ['Mac', 'NT', 'Irix', 'Linux', 1];\nvar_dump(in_array('Linux', $os)); // true\nvar_dump(in_array('1', $os)); //true\nvar_dump(in_array('1a', $os)); //true\n// 开启严格类型比较\nvar_dump(in_array('1', $os, true)); // false&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 字符串比较是大小写敏感
+$os = ['Mac', 'NT', 'Irix', 'Linux', 1];
+var_dump(in_array('Linux', $os)); // true
+var_dump(in_array('1', $os)); //true
+var_dump(in_array('1a', $os)); //true
+// 开启严格类型比较
+var_dump(in_array('1', $os, true)); // false</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>数组交集与差集，合并</strong></p>
+<ul>
+<li>array_diff_assoc (array $array1 , array $array2 [, array $...] ) : array &mdash; 带索引检查计算数组的差集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="50">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$array1 = [\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;blue\&amp;quot;, \&amp;quot;red\&amp;quot;];\n$array2 = [\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;yellow\&amp;quot;, \&amp;quot;red\&amp;quot;];\nprint_r(array_diff_assoc($array1, $array2)); // [\&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;blue\&amp;quot;, 0 =&amp;gt; \&amp;quot;red\&amp;quot;]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$array1 = ["a" =&gt; "green", "b" =&gt; "brown", "c" =&gt; "blue", "red"];
+$array2 = ["a" =&gt; "green", "yellow", "red"];
+print_r(array_diff_assoc($array1, $array2)); // ["b" =&gt; "brown", "c" =&gt; "blue", 0 =&gt; "red"]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_diff_key (array $array1 , array $array2 [, array $...] ) : array &mdash; 使用键名比较计算数组的差集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="49">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$array1 = ['blue' =&amp;gt; 1, 'red' =&amp;gt; 2]; \n$array2 = ['green' =&amp;gt; 2, 'blue' =&amp;gt; 1];\nprint_r(array_diff_key($array1, $array2)); // ['red' =&amp;gt; 2];&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$array1 = ['blue' =&gt; 1, 'red' =&gt; 2]; 
+$array2 = ['green' =&gt; 2, 'blue' =&gt; 1];
+print_r(array_diff_key($array1, $array2)); // ['red' =&gt; 2];</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_diff_uassoc (array $array1 , array $array2 [, array $...], callable $key_compare_func ) : array &mdash; 用用户提供的回调函数做索引检查来计算数组的差集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="48">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;function key_compare_func($a, $b)\n{\n if ($a === $b) {\n     return 0;\n }\nreturn ($a &amp;gt; $b)? 1:-1;\n}\n$array1 = array(\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;blue\&amp;quot;, \&amp;quot;red\&amp;quot;);\n$array2 = array(\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;yellow\&amp;quot;, \&amp;quot;red\&amp;quot;);\n$result = array_diff_uassoc($array1, $array2, \&amp;quot;key_compare_func\&amp;quot;);\nprint_r($result); // [\&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;blue\&amp;quot;, \&amp;quot;red\&amp;quot;]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">function key_compare_func($a, $b)
+{
+ if ($a === $b) {
+     return 0;
+ }
+return ($a &gt; $b)? 1:-1;
+}
+$array1 = array("a" =&gt; "green", "b" =&gt; "brown", "c" =&gt; "blue", "red");
+$array2 = array("a" =&gt; "green", "yellow", "red");
+$result = array_diff_uassoc($array1, $array2, "key_compare_func");
+print_r($result); // ["b" =&gt; "brown", "c" =&gt; "blue", "red"]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_diff_ukey (array $array1 , array $array2 [, array $...], callable $key_compare_func ) : array &mdash; 用回调函数对键名比较计算数组的差集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="47">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;function key_compare_func($key1, $key2)\n{\n if ($key1 == $key2) {\n     return 0;\n } else if ($key1 &amp;gt; $key2) {\n     return 1;\n } else {\n     return -1;\n }\n}\n$array1 = ['blue' =&amp;gt; 1, 'red' =&amp;gt; 2, 'green' =&amp;gt; 3];\n$array2 = ['green' =&amp;gt; 5, 'blue' =&amp;gt; 6, 'yellow' =&amp;gt; 8];\nvar_dump(array_diff_ukey($array1, $array2, 'key_compare_func')); // ['red' =&amp;gt; 2]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">function key_compare_func($key1, $key2)
+{
+ if ($key1 == $key2) {
+     return 0;
+ } else if ($key1 &gt; $key2) {
+     return 1;
+ } else {
+     return -1;
+ }
+}
+$array1 = ['blue' =&gt; 1, 'red' =&gt; 2, 'green' =&gt; 3];
+$array2 = ['green' =&gt; 5, 'blue' =&gt; 6, 'yellow' =&gt; 8];
+var_dump(array_diff_ukey($array1, $array2, 'key_compare_func')); // ['red' =&gt; 2]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_diff (array $array1 , array $array2 [, array $...] ) : array &mdash; 计算数组的差集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="46">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$array1 = ['red', 'blue', 'green'];\n$array2 = ['red', 'yellow', 'hello'];\n$array3 = ['green', 'world'];\nvar_dump(array_diff($array1, $array2, $array3)); // ['blue']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$array1 = ['red', 'blue', 'green'];
+$array2 = ['red', 'yellow', 'hello'];
+$array3 = ['green', 'world'];
+var_dump(array_diff($array1, $array2, $array3)); // ['blue']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_intersect_assoc (array $array1 , array $array2 [, array $...] ) : array &mdash; 带索引检查计算数组的交集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="45">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$array1 = array(\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;blue\&amp;quot;, \&amp;quot;red\&amp;quot;);\n$array2 = array(\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;yellow\&amp;quot;, \&amp;quot;blue\&amp;quot;, \&amp;quot;red\&amp;quot;);\n$result_array = array_intersect_assoc($array1, $array2);\nprint_r($result_array); // ['a' =&amp;gt; 'green']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$array1 = array("a" =&gt; "green", "b" =&gt; "brown", "c" =&gt; "blue", "red");
+$array2 = array("a" =&gt; "green", "b" =&gt; "yellow", "blue", "red");
+$result_array = array_intersect_assoc($array1, $array2);
+print_r($result_array); // ['a' =&gt; 'green']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_intersect_key (array $array1 , array $array2 [, array $...] ) : array &mdash; 使用键名比较计算数组的交集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="44">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$array1 = array('blue'  =&amp;gt; 1, 'red'  =&amp;gt; 2, 'green'  =&amp;gt; 3, 'purple' =&amp;gt; 4);\n$array2 = array('green' =&amp;gt; 5, 'blue' =&amp;gt; 6, 'yellow' =&amp;gt; 7, 'cyan'   =&amp;gt; 8);\nvar_dump(array_intersect_key($array1, $array2)); // ['blue' =&amp;gt; 1, 'green'=&amp;gt;5]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$array1 = array('blue'  =&gt; 1, 'red'  =&gt; 2, 'green'  =&gt; 3, 'purple' =&gt; 4);
+$array2 = array('green' =&gt; 5, 'blue' =&gt; 6, 'yellow' =&gt; 7, 'cyan'   =&gt; 8);
+var_dump(array_intersect_key($array1, $array2)); // ['blue' =&gt; 1, 'green'=&gt;5]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_intersect_uassoc ( array $array1 , array $array2 [, array $... ], callable $key_compare_func ) : array<br />&mdash; 带索引检查计算数组的交集，用回调函数比较索引
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="43">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$array1 = [\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;blue\&amp;quot;, \&amp;quot;red\&amp;quot;];\n$array2 = [\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;GREEN\&amp;quot;, \&amp;quot;B\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;yellow\&amp;quot;, \&amp;quot;red\&amp;quot;];\nvar_dump(array_intersect_uassoc($array1, $array2, 'strcasecmp')); // ['b' =&amp;gt; 'brown']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$array1 = ["a" =&gt; "green", "b" =&gt; "brown", "c" =&gt; "blue", "red"];
+$array2 = ["a" =&gt; "GREEN", "B" =&gt; "brown", "yellow", "red"];
+var_dump(array_intersect_uassoc($array1, $array2, 'strcasecmp')); // ['b' =&gt; 'brown']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_intersect_ukey (array $array1 , array $array2 [, array $...], callable $key_compare_func ) : array &mdash; 用回调函数比较键名来计算数组的交集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="42">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$array1 = [\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;blue\&amp;quot;, \&amp;quot;red\&amp;quot;];\n$array2 = [\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;GREEN\&amp;quot;, \&amp;quot;B\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;yellow\&amp;quot;, \&amp;quot;red\&amp;quot;];\nvar_dump(array_intersect_ukey($array1, $array2, 'strcasecmp')); // ['a' =&amp;gt; 'green', 'b' =&amp;gt; 'brown', 'red']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$array1 = ["a" =&gt; "green", "b" =&gt; "brown", "c" =&gt; "blue", "red"];
+$array2 = ["a" =&gt; "GREEN", "B" =&gt; "brown", "yellow", "red"];
+var_dump(array_intersect_ukey($array1, $array2, 'strcasecmp')); // ['a' =&gt; 'green', 'b' =&gt; 'brown', 'red']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_intersect (array $array1 , array $array2 [, array $...] ) : array &mdash; 计算数组的交集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="41">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['a' =&amp;gt; 'green', 'red', 'blue'];\n$b = ['b' =&amp;gt; 'green', 'yellow', 'red'];\nvar_dump(array_intersect($a, $b)); // ['a' =&amp;gt; 'green', 'red']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['a' =&gt; 'green', 'red', 'blue'];
+$b = ['b' =&gt; 'green', 'yellow', 'red'];
+var_dump(array_intersect($a, $b)); // ['a' =&gt; 'green', 'red']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_merge_recursive ([array $...] ) : array &mdash; 递归地合并一个或多个数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="40">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr1 = ['color' =&amp;gt; ['favorite' =&amp;gt; 'red', 5]];\n$arr2 = ['color' =&amp;gt; ['favorite' =&amp;gt; 'green', 6, 7]];\nvar_dump(array_merge_recursive($arr1, $arr2)); // ['color' =&amp;gt; ['favorite' =&amp;gt; ['red', 'green'], 5, 6, 7]]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr1 = ['color' =&gt; ['favorite' =&gt; 'red', 5]];
+$arr2 = ['color' =&gt; ['favorite' =&gt; 'green', 6, 7]];
+var_dump(array_merge_recursive($arr1, $arr2)); // ['color' =&gt; ['favorite' =&gt; ['red', 'green'], 5, 6, 7]]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_merge (array $array1 [, array $...] ) : array &mdash; 合并一个或多个数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="39">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr1 = ['color' =&amp;gt; ['favorite' =&amp;gt; 'red', 5]];\n$arr2 = ['color' =&amp;gt; ['favorite' =&amp;gt; 'green', 6, 7]];\nvar_dump(array_merge($arr1, $arr2)); // ['color' =&amp;gt; ['favorite' =&amp;gt; 'green', 6, 7]];\nvar_dump($arr1 + $arr2); // ['color' =&amp;gt; ['favorite' =&amp;gt; 'red', 5]]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr1 = ['color' =&gt; ['favorite' =&gt; 'red', 5]];
+$arr2 = ['color' =&gt; ['favorite' =&gt; 'green', 6, 7]];
+var_dump(array_merge($arr1, $arr2)); // ['color' =&gt; ['favorite' =&gt; 'green', 6, 7]];
+var_dump($arr1 + $arr2); // ['color' =&gt; ['favorite' =&gt; 'red', 5]]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_udiff_assoc (array $array1 , array $array2 [, array $...], callable $value_compare_func ) : array &mdash; 带索引检查计算数组的差集，用回调函数比较数据
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="38">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// https://segmentfault.com/q/1010000000364758/a-1020000000364791 array_udiff_assoc 和 array_diff_uassoc 区别\n/**\n* https://www.reddit.com/r/PHP/comments/1ncqc0/real_difference_between_array_udiff_assoc_and/\n*/\n$item1 = [ 1 =&amp;gt; \&amp;quot;a\&amp;quot;, \&amp;quot;b\&amp;quot;, \&amp;quot;c\&amp;quot;];\n$item2 = [-1 =&amp;gt; 'a', -2 =&amp;gt; 'b', -3 =&amp;gt; 'c'];\n$item3 = [1 =&amp;gt; ['a'], ['b'], ['c']];\nfunction compareKey($a, $b) {\n  if(abs($a) == abs($b)) return 0;\n  return (abs($a) &amp;gt; abs($b)) ? 1 : -1;\n}\nfunction compareValue($a, $b) {\n $tempA = is_array($a) ? $a[0] : $a;\n$tempB = is_array($b) ? $b[0] : $b;\nif($tempA == $tempB) return 0;\nreturn ($tempA &amp;gt; $tempB) ? 1 : -1;\n}\nprint_r(array_diff_uassoc($item1, $item2, 'compareKey')); // []\nprint_r(array_udiff_assoc($item1, $item2, 'compareKey')); // ['a', 'b', 'c']\nprint_r(array_diff_uassoc($item1, $item3, 'compareValue')); // ['a', 'b', 'c']\nprint_r(array_udiff_assoc($item1, $item3, 'compareValue')); // []&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// https://segmentfault.com/q/1010000000364758/a-1020000000364791 array_udiff_assoc 和 array_diff_uassoc 区别
+/**
+* https://www.reddit.com/r/PHP/comments/1ncqc0/real_difference_between_array_udiff_assoc_and/
+*/
+$item1 = [ 1 =&gt; "a", "b", "c"];
+$item2 = [-1 =&gt; 'a', -2 =&gt; 'b', -3 =&gt; 'c'];
+$item3 = [1 =&gt; ['a'], ['b'], ['c']];
+function compareKey($a, $b) {
+  if(abs($a) == abs($b)) return 0;
+  return (abs($a) &gt; abs($b)) ? 1 : -1;
+}
+function compareValue($a, $b) {
+ $tempA = is_array($a) ? $a[0] : $a;
+$tempB = is_array($b) ? $b[0] : $b;
+if($tempA == $tempB) return 0;
+return ($tempA &gt; $tempB) ? 1 : -1;
+}
+print_r(array_diff_uassoc($item1, $item2, 'compareKey')); // []
+print_r(array_udiff_assoc($item1, $item2, 'compareKey')); // ['a', 'b', 'c']
+print_r(array_diff_uassoc($item1, $item3, 'compareValue')); // ['a', 'b', 'c']
+print_r(array_udiff_assoc($item1, $item3, 'compareValue')); // []</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_udiff_uassoc (array $array1 , array $array2 [, array $...], callable $value_compare_func , callable $key_compare_func ) : array &mdash; 带索引检查计算数组的差集，用回调函数比较数据和索引
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="37">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['0.1' =&amp;gt; 9, '0.5' =&amp;gt; 12, 0 =&amp;gt; 23, 1 =&amp;gt; 4, 2 =&amp;gt; -15];\n$b = ['0.2' =&amp;gt; 9, '0.5' =&amp;gt; 22, 0 =&amp;gt; 3, 1 =&amp;gt; 4, 2 =&amp;gt; -15];\nfunction compareKey($a, $b) {\n if ($a === $b) return 0;\n return $a &amp;gt; $b ? 1 : -1;\n}\nfunction compareValue($a, $b) {\n if ($a === $b) return 0;\n return $a &amp;gt; $b ? 1 : -1;\n}\nprint_r(array_udiff_uassoc($a, $b, 'compareValue', 'compareKey')); // [0.1 =&amp;gt; 9, 0.5 =&amp;gt; 12, 0 =&amp;gt; 23]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['0.1' =&gt; 9, '0.5' =&gt; 12, 0 =&gt; 23, 1 =&gt; 4, 2 =&gt; -15];
+$b = ['0.2' =&gt; 9, '0.5' =&gt; 22, 0 =&gt; 3, 1 =&gt; 4, 2 =&gt; -15];
+function compareKey($a, $b) {
+ if ($a === $b) return 0;
+ return $a &gt; $b ? 1 : -1;
+}
+function compareValue($a, $b) {
+ if ($a === $b) return 0;
+ return $a &gt; $b ? 1 : -1;
+}
+print_r(array_udiff_uassoc($a, $b, 'compareValue', 'compareKey')); // [0.1 =&gt; 9, 0.5 =&gt; 12, 0 =&gt; 23]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_udiff (array $array1 , array $array2 [, array $...], callable $value_compare_func ) : array &mdash; 用回调函数比较数据来计算数组的差集
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="36">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = [[1, 2], [7, 1], [2, 9]];\n$b = [[1, 3], [8, 1], [2, 9]];\nfunction compare($a, $b) {\n $areaA = $a[0] * $a[1];\n $areaB = $b[0] * $b[1];\n if ($areaA == $areaB) return 0;\n return $areaA &amp;gt; $areaB ? 1 : -1;\n}\nprint_r(array_udiff($a, $b, 'compare')); // [[1, 2], [7, 1]]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = [[1, 2], [7, 1], [2, 9]];
+$b = [[1, 3], [8, 1], [2, 9]];
+function compare($a, $b) {
+ $areaA = $a[0] * $a[1];
+ $areaB = $b[0] * $b[1];
+ if ($areaA == $areaB) return 0;
+ return $areaA &gt; $areaB ? 1 : -1;
+}
+print_r(array_udiff($a, $b, 'compare')); // [[1, 2], [7, 1]]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_uintersect_assoc (array $array1 , array $array2 [, array $...], callable $value_compare_func ) : array &mdash; 带索引检查计算数组的交集，用回调函数比较数据
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="35">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['a' =&amp;gt; 'green', 'b' =&amp;gt; 'brown', 'c' =&amp;gt; 'blue', 'red'];\n$b = ['a' =&amp;gt; 'GREEN', 'B' =&amp;gt; 'brown', 'yellow', 'red'];\nprint_r(array_uintersect_assoc($a, $b, 'strcasecmp')); // ['a' =&amp;gt; 'green']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['a' =&gt; 'green', 'b' =&gt; 'brown', 'c' =&gt; 'blue', 'red'];
+$b = ['a' =&gt; 'GREEN', 'B' =&gt; 'brown', 'yellow', 'red'];
+print_r(array_uintersect_assoc($a, $b, 'strcasecmp')); // ['a' =&gt; 'green']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_uintersect_uassoc (array $array1 , array $array2 [, array $...], callable $value_compare_func , callable $key_compare_func ) : array &mdash; 带索引检查计算数组的交集，用单独的回调函数比较数据和索引
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="34">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$array1 = array(\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;green\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;blue\&amp;quot;, \&amp;quot;red\&amp;quot;);\n$array2 = array(\&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;GREEN\&amp;quot;, \&amp;quot;B\&amp;quot; =&amp;gt; \&amp;quot;brown\&amp;quot;, \&amp;quot;yellow\&amp;quot;, \&amp;quot;red\&amp;quot;);\nprint_r(array_uintersect_uassoc($array1, $array2, \&amp;quot;strcasecmp\&amp;quot;, \&amp;quot;strcasecmp\&amp;quot;)); // ['a' =&amp;gt; 'green', 'b' =&amp;gt; 'brown']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$array1 = array("a" =&gt; "green", "b" =&gt; "brown", "c" =&gt; "blue", "red");
+$array2 = array("a" =&gt; "GREEN", "B" =&gt; "brown", "yellow", "red");
+print_r(array_uintersect_uassoc($array1, $array2, "strcasecmp", "strcasecmp")); // ['a' =&gt; 'green', 'b' =&gt; 'brown']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_uintersect (array $array1 , array $array2 [, array $...], callable $value_compare_func ) : array &mdash; 计算数组的交集，用回调函数比较数据
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="33">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = [[1, 2], [7, 1], [2, 9]];\n$b = [[1, 3], [8, 1], [2, 9]];\nfunction compare($a, $b) {\n $areaA = $a[0] * $a[1];\n $areaB = $b[0] * $b[1];\n if ($areaA == $areaB) return 0;\n return $areaA &amp;gt; $areaB ? 1 : -1;\n}\nprint_r(array_uintersect($a, $b, 'compare')); // [[2, 9]]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = [[1, 2], [7, 1], [2, 9]];
+$b = [[1, 3], [8, 1], [2, 9]];
+function compare($a, $b) {
+ $areaA = $a[0] * $a[1];
+ $areaB = $b[0] * $b[1];
+ if ($areaA == $areaB) return 0;
+ return $areaA &gt; $areaB ? 1 : -1;
+}
+print_r(array_uintersect($a, $b, 'compare')); // [[2, 9]]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>数组排序</strong></p>
+<ul>
+<li>array_multisort (array &amp;$array1 [, mixed $array1_sort_order = SORT_ASC [, mixed $array1_sort_flags = SORT_REGULAR [, mixed $...]]] ) : bool &mdash; 对多个数组或多维数组进行排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="32">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 更多用法请看 https://www.php.net/manual/en/function.array-multisort.php\n$ar1 = [10, 100, 100, 0];\n$ar2 = [1, 3, 2, 4];\narray_multisort($ar1, $ar2); // [0, 10, 100, 100] [4, 1, 2, 3]\narray_multisort($ar1, SORT_DESC, SORT_NUMERIC, $ar2, SORT_ASC, SORT_NUMERIC); // [100, 100, 10, 0] [2, 3, 1, 4]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 更多用法请看 https://www.php.net/manual/en/function.array-multisort.php
+$ar1 = [10, 100, 100, 0];
+$ar2 = [1, 3, 2, 4];
+array_multisort($ar1, $ar2); // [0, 10, 100, 100] [4, 1, 2, 3]
+array_multisort($ar1, SORT_DESC, SORT_NUMERIC, $ar2, SORT_ASC, SORT_NUMERIC); // [100, 100, 10, 0] [2, 3, 1, 4]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>arsort (array &amp;$array [, int $sort_flags = SORT_REGULAR] ) : bool &mdash; 对数组进行逆向排序并保持索引关系
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="31">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 排序针对的是值, 而且会保存原先索引\n$fruits = array(\&amp;quot;d\&amp;quot; =&amp;gt; \&amp;quot;lemon\&amp;quot;, \&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;orange\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;banana\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;apple\&amp;quot;);\narsort($fruits);\nprint_r($fruits); // ['a' =&amp;gt; 'orange', 'd' =&amp;gt; 'lemon', 'b' =&amp;gt; 'banana', 'c' =&amp;gt; 'apple'];&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 排序针对的是值, 而且会保存原先索引
+$fruits = array("d" =&gt; "lemon", "a" =&gt; "orange", "b" =&gt; "banana", "c" =&gt; "apple");
+arsort($fruits);
+print_r($fruits); // ['a' =&gt; 'orange', 'd' =&gt; 'lemon', 'b' =&gt; 'banana', 'c' =&gt; 'apple'];</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>asort (array &amp;$array [, int $sort_flags = SORT_REGULAR] ) : bool &mdash; 对数组进行排序并保持索引关系
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="30">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$fruits = array(\&amp;quot;d\&amp;quot; =&amp;gt; \&amp;quot;lemon\&amp;quot;, \&amp;quot;a\&amp;quot; =&amp;gt; \&amp;quot;orange\&amp;quot;, \&amp;quot;b\&amp;quot; =&amp;gt; \&amp;quot;banana\&amp;quot;, \&amp;quot;c\&amp;quot; =&amp;gt; \&amp;quot;apple\&amp;quot;);\nasort($fruits);\nprint_r($fruits); // ['c' =&amp;gt; 'apple', 'b' =&amp;gt; 'banana', 'd' =&amp;gt; 'lemon', 'a' =&amp;gt; 'orange'];&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$fruits = array("d" =&gt; "lemon", "a" =&gt; "orange", "b" =&gt; "banana", "c" =&gt; "apple");
+asort($fruits);
+print_r($fruits); // ['c' =&gt; 'apple', 'b' =&gt; 'banana', 'd' =&gt; 'lemon', 'a' =&gt; 'orange'];</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>krsort (array &amp;$array [, int $sort_flags = SORT_REGULAR] ) : bool &mdash; 对数组按照键名逆向排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="29">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$fruits = ['d' =&amp;gt; 'lemon', 'a' =&amp;gt; 'orange', 'b' =&amp;gt; 'banana', 'c' =&amp;gt; 'apple'];\nkrsort($fruits);//true\nvar_dump($fruits); // ['d' =&amp;gt; 'lemon', 'c' =&amp;gt; 'apple', 'b' =&amp;gt; 'banana', 'a' =&amp;gt; 'orange']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$fruits = ['d' =&gt; 'lemon', 'a' =&gt; 'orange', 'b' =&gt; 'banana', 'c' =&gt; 'apple'];
+krsort($fruits);//true
+var_dump($fruits); // ['d' =&gt; 'lemon', 'c' =&gt; 'apple', 'b' =&gt; 'banana', 'a' =&gt; 'orange']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>ksort (array &amp;$array [, int $sort_flags = SORT_REGULAR] ) : bool &mdash; 对数组按照键名排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="28">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$fruits = ['d' =&amp;gt; 'lemon', 'a' =&amp;gt; 'orange', 'b' =&amp;gt; 'banana', 'c' =&amp;gt; 'apple'];\nksort($fruits);//true\nvar_dump($fruits); // ['a' =&amp;gt; 'orange', 'b' =&amp;gt; 'banana', 'c' =&amp;gt; 'apple', 'd' =&amp;gt; 'lemon']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$fruits = ['d' =&gt; 'lemon', 'a' =&gt; 'orange', 'b' =&gt; 'banana', 'c' =&gt; 'apple'];
+ksort($fruits);//true
+var_dump($fruits); // ['a' =&gt; 'orange', 'b' =&gt; 'banana', 'c' =&gt; 'apple', 'd' =&gt; 'lemon']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>rsort (array &amp;$array [, int $sort_flags = SORT_REGULAR] ) : bool &mdash; 对数组逆向排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="27">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$fruits = array(\&amp;quot;lemon\&amp;quot;, \&amp;quot;orange\&amp;quot;, \&amp;quot;banana\&amp;quot;, \&amp;quot;apple\&amp;quot;);\nrsort($fruits); // true\nvar_dump($fruits); // ['orange', 'lemon', 'banana', 'apple']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$fruits = array("lemon", "orange", "banana", "apple");
+rsort($fruits); // true
+var_dump($fruits); // ['orange', 'lemon', 'banana', 'apple']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>sort (array &amp;$array [, int $sort_flags = SORT_REGULAR] ) : bool &mdash; 对数组排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="26">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// https://bettercuicui.github.io/2018/04/01/PHP/php%20sort%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/\n$fruits = array(\&amp;quot;lemon\&amp;quot;, \&amp;quot;orange\&amp;quot;, \&amp;quot;banana\&amp;quot;, \&amp;quot;apple\&amp;quot;, 1);\nsort($fruits);\nvar_dump($fruits); // ['apple', 'banana', 'lemon', 'orange', 1]\n// 数字比较项目, 'a1' 转换数字为 0, 所以排序顺序如下\n$arr1 = ['a1', 0, 2, '1a'];\nsort($arr1, SORT_NUMERIC);\nvar_dump($arr1);  // ['a1', 0, '1a', 2]\n// 被作为字符串来比较\n$fruits = array(\&amp;quot;lemon\&amp;quot;, \&amp;quot;orange\&amp;quot;, \&amp;quot;banana\&amp;quot;, \&amp;quot;apple\&amp;quot;, 1);\nsort($fruits, SORT_STRING);\nvar_dump($fruits); // [1, 'apple', 'banana', 'lemon', 'orange']\n// 根据当前的区域（locale）设置来把单元当作字符串比较，可以用 setlocale() 来改变\n$fruits = array(\&amp;quot;lemon\&amp;quot;, \&amp;quot;orange\&amp;quot;, \&amp;quot;banana\&amp;quot;, \&amp;quot;apple\&amp;quot;, 1);\nsort($fruits, SORT_LOCALE_STRING);\nvar_dump($fruits); // [1, 'apple', 'banana', 'lemon', 'orange']\n//  和 natsort() 类似对每个单元以&ldquo;自然的顺序&rdquo;对字符串进行排序\n$arr = ['a1', 'A1', 'c2', 'c3', 'b4', 'b5', 'B1'];\nsort($arr, SORT_NATURAL);  // true\nvar_dump($arr); // ['A1', 'B1', 'a1', 'b4', 'b5', 'c2', 'c3']\n// 能够与 SORT_STRING 或 SORT_NATURAL 合并（OR 位运算），不区分大小写排序字符串。\n$fruits = array(\&amp;quot;lemon\&amp;quot;, \&amp;quot;orange\&amp;quot;, \&amp;quot;banana\&amp;quot;, \&amp;quot;apple\&amp;quot;, \&amp;quot;Apple\&amp;quot;, 1);\nsort($fruits, SORT_FLAG_CASE|SORT_STRING);\nvar_dump($fruits); // [1, \&amp;quot;apple\&amp;quot;, \&amp;quot;Apple\&amp;quot;, \&amp;quot;banana\&amp;quot;, \&amp;quot;lemon\&amp;quot;, \&amp;quot;orange\&amp;quot;]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// https://bettercuicui.github.io/2018/04/01/PHP/php%20sort%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/
+$fruits = array("lemon", "orange", "banana", "apple", 1);
+sort($fruits);
+var_dump($fruits); // ['apple', 'banana', 'lemon', 'orange', 1]
+// 数字比较项目, 'a1' 转换数字为 0, 所以排序顺序如下
+$arr1 = ['a1', 0, 2, '1a'];
+sort($arr1, SORT_NUMERIC);
+var_dump($arr1);  // ['a1', 0, '1a', 2]
+// 被作为字符串来比较
+$fruits = array("lemon", "orange", "banana", "apple", 1);
+sort($fruits, SORT_STRING);
+var_dump($fruits); // [1, 'apple', 'banana', 'lemon', 'orange']
+// 根据当前的区域（locale）设置来把单元当作字符串比较，可以用 setlocale() 来改变
+$fruits = array("lemon", "orange", "banana", "apple", 1);
+sort($fruits, SORT_LOCALE_STRING);
+var_dump($fruits); // [1, 'apple', 'banana', 'lemon', 'orange']
+//  和 natsort() 类似对每个单元以&ldquo;自然的顺序&rdquo;对字符串进行排序
+$arr = ['a1', 'A1', 'c2', 'c3', 'b4', 'b5', 'B1'];
+sort($arr, SORT_NATURAL);  // true
+var_dump($arr); // ['A1', 'B1', 'a1', 'b4', 'b5', 'c2', 'c3']
+// 能够与 SORT_STRING 或 SORT_NATURAL 合并（OR 位运算），不区分大小写排序字符串。
+$fruits = array("lemon", "orange", "banana", "apple", "Apple", 1);
+sort($fruits, SORT_FLAG_CASE|SORT_STRING);
+var_dump($fruits); // [1, "apple", "Apple", "banana", "lemon", "orange"]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>uasort (array &amp;$array , callable $value_compare_func) : bool &mdash; 使用用户自定义的比较函数对数组中的值进行排序并保持索引关联
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="25">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 用户自定义值比较函数, 保持索引不变\nfunction compare($a, $b) {\n if ($a === $b) {\n     return 0;\n }\n return ($a &amp;lt; $b)  ? -1 : 1;\n}\n$arr = ['a' =&amp;gt; 3, 'b' =&amp;gt; 9, 'c' =&amp;gt; 4, 'd' =&amp;gt; 8, 'e' =&amp;gt; -1];\nuasort($arr, 'compare'); // true\nvar_dump($arr); // ['e' =&amp;gt; -1, 'a' =&amp;gt; 3, 'c' =&amp;gt; 4, 'd' =&amp;gt; 8, 'b' =&amp;gt; 9]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 用户自定义值比较函数, 保持索引不变
+function compare($a, $b) {
+ if ($a === $b) {
+     return 0;
+ }
+ return ($a &lt; $b)  ? -1 : 1;
+}
+$arr = ['a' =&gt; 3, 'b' =&gt; 9, 'c' =&gt; 4, 'd' =&gt; 8, 'e' =&gt; -1];
+uasort($arr, 'compare'); // true
+var_dump($arr); // ['e' =&gt; -1, 'a' =&gt; 3, 'c' =&gt; 4, 'd' =&gt; 8, 'b' =&gt; 9]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>uksort (array &amp;$array , callable $key_compare_func) : bool &mdash; 使用用户自定义的比较函数对数组中的键名进行排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="24">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 用户自定义值比较函数, 保持索引不变\nfunction keyCompare($a, $b) {\n if ($a === $b) {\n     return 0;\n }\n return ($a &amp;gt; $b)  ? -1 : 1;\n}\n$arr = ['a' =&amp;gt; 3, 'b' =&amp;gt; 9, 'c' =&amp;gt; 4, 'e' =&amp;gt; 8, 'd' =&amp;gt; -1];\nuksort($arr, 'compare'); // true\nvar_dump($arr); // ['a' =&amp;gt; 3, 'b' =&amp;gt; 9, 'c' =&amp;gt; 4, 'd' =&amp;gt; -1, 'e' =&amp;gt; 8]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 用户自定义值比较函数, 保持索引不变
+function keyCompare($a, $b) {
+ if ($a === $b) {
+     return 0;
+ }
+ return ($a &gt; $b)  ? -1 : 1;
+}
+$arr = ['a' =&gt; 3, 'b' =&gt; 9, 'c' =&gt; 4, 'e' =&gt; 8, 'd' =&gt; -1];
+uksort($arr, 'compare'); // true
+var_dump($arr); // ['a' =&gt; 3, 'b' =&gt; 9, 'c' =&gt; 4, 'd' =&gt; -1, 'e' =&gt; 8]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>usort (array &amp;$array , callable $value_compare_func) : bool &mdash; 使用用户自定义的比较函数对数组中的值进行排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="23">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 对多维数组排序时，$ a和$ b包含对数组第一个索引的引用。\nfunction cmp($a, $b)\n{\nreturn strcmp($a[\&amp;quot;fruit\&amp;quot;], $b[\&amp;quot;fruit\&amp;quot;]);\n}\n$fruits = [['fruit' =&amp;gt; 'lemons'], ['fruit' =&amp;gt; 'apples'], ['fruit' =&amp;gt; 'grapes']];\nusort($fruits, \&amp;quot;cmp\&amp;quot;);\nvar_dump($arr); // [['fruit' =&amp;gt; 'apples'], ['fruit' =&amp;gt; 'grapes'], ['fruit' =&amp;gt; 'lemons']]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 对多维数组排序时，$ a和$ b包含对数组第一个索引的引用。
+function cmp($a, $b)
+{
+return strcmp($a["fruit"], $b["fruit"]);
+}
+$fruits = [['fruit' =&gt; 'lemons'], ['fruit' =&gt; 'apples'], ['fruit' =&gt; 'grapes']];
+usort($fruits, "cmp");
+var_dump($arr); // [['fruit' =&gt; 'apples'], ['fruit' =&gt; 'grapes'], ['fruit' =&gt; 'lemons']]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>natcasesort (array &amp;$array) : bool &mdash; 用 &ldquo;自然排序&rdquo; 算法对数组进行不区分大小写字母的排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="22">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 自然排序, 以人们认知方式排序,不区分大小写\n$arr = ['a1', 'A1', 'c2', 'c3', 'b4', 'b5', 'B1'];\nnatcasesort($arr);  // true\nvar_dump($arr); // ['a1', 'A1', 'B1', 'b4', 'b5', 'c2', 'c3']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 自然排序, 以人们认知方式排序,不区分大小写
+$arr = ['a1', 'A1', 'c2', 'c3', 'b4', 'b5', 'B1'];
+natcasesort($arr);  // true
+var_dump($arr); // ['a1', 'A1', 'B1', 'b4', 'b5', 'c2', 'c3']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>natsort (array &amp;$array) : bool &mdash; 用 &ldquo;自然排序&rdquo; 算法对数组排序
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="21">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 自然排序, 以人们认知方式排序,区分大小写\n$arr = ['a1', 'A1', 'c2', 'c3', 'b4', 'b5', 'B1'];\nnatsort($arr);  // true\nvar_dump($arr); // ['A1', 'B1', 'a1', 'b4', 'b5', 'c2', 'c3']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 自然排序, 以人们认知方式排序,区分大小写
+$arr = ['a1', 'A1', 'c2', 'c3', 'b4', 'b5', 'B1'];
+natsort($arr);  // true
+var_dump($arr); // ['A1', 'B1', 'a1', 'b4', 'b5', 'c2', 'c3']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>回调函数处理数组</strong></p>
+<ul>
+<li>array_filter (array $array [, callable $callback [, int $flag = 0]] ) : array &mdash; 用回调函数过滤数组中的单元
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="20">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 若没有回调函数, 则筛选值为false\n$a = [1, 0, 'false', 'null', '0', 2, '', false];\nvar_dump(array_filter($a)); // [1, \&amp;quot;false\&amp;quot;, \&amp;quot;null\&amp;quot;, 2]\n$b = [6, 7, 8, 9, 10, 11, 12];\nfunction odd($var)\n{\n  return $var &amp;amp; 1;\n}\nvar_dump(array_filter($b, 'odd')); // [7, 9, 11]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 若没有回调函数, 则筛选值为false
+$a = [1, 0, 'false', 'null', '0', 2, '', false];
+var_dump(array_filter($a)); // [1, "false", "null", 2]
+$b = [6, 7, 8, 9, 10, 11, 12];
+function odd($var)
+{
+  return $var &amp; 1;
+}
+var_dump(array_filter($b, 'odd')); // [7, 9, 11]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_map (callable $callback , array $array1 [, array $...] ) : array &mdash; 为数组的每个元素应用回调函数
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="19">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;print_r(array_map('strtoupper', ['a', 'b', 'c'])); // ['A', 'B', 'C']\nfunction demo($n, $m) {\n  return strtoupper($n) . '-' . strtoupper($m);\n}\nprint_r('demo', ['a', 'b', 'c'], ['d', 'e', 'f']); // ['A-D', 'B-E', 'C-F']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">print_r(array_map('strtoupper', ['a', 'b', 'c'])); // ['A', 'B', 'C']
+function demo($n, $m) {
+  return strtoupper($n) . '-' . strtoupper($m);
+}
+print_r('demo', ['a', 'b', 'c'], ['d', 'e', 'f']); // ['A-D', 'B-E', 'C-F']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_walk_recursive (array &amp;$array , callable $callback [, mixed $userdata = NULL] ) : bool &mdash; 对数组中的每个成员递归地应用用户函数
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="18">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$sweet = ['a' =&amp;gt; 'apple', 'b' =&amp;gt; 'banana'];\n$fruits = ['sweet' =&amp;gt; $sweet, 'sour' =&amp;gt; 'lemon'];\nfunction testPrint($item, $key) {\n  echo \&amp;quot;$key holds $item\\n\&amp;quot;;\n}\n/**\n* a holds apple\n* b holds banana\n* sour holds lemon\n*/\narray_walk_recursive($fruits, 'testPrint');\nfunction testPrint2($item, $key, $userData) {\n  $item = strtoupper($item);\n  echo \&amp;quot;$key holds $item and $userData\\n\&amp;quot;;\n}\n/**\n* a holds apple and php\n* b holds banana and php\n* sour holds lemon and php\n*/\narray_walk_recursive($fruits, 'testPrint2', 'php');&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$sweet = ['a' =&gt; 'apple', 'b' =&gt; 'banana'];
+$fruits = ['sweet' =&gt; $sweet, 'sour' =&gt; 'lemon'];
+function testPrint($item, $key) {
+  echo "$key holds $item\n";
+}
+/**
+* a holds apple
+* b holds banana
+* sour holds lemon
+*/
+array_walk_recursive($fruits, 'testPrint');
+function testPrint2($item, $key, $userData) {
+  $item = strtoupper($item);
+  echo "$key holds $item and $userData\n";
+}
+/**
+* a holds apple and php
+* b holds banana and php
+* sour holds lemon and php
+*/
+array_walk_recursive($fruits, 'testPrint2', 'php');</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_walk (array &amp;$array , callable $callback [, mixed $userdata = NULL] ) : bool &mdash; 使用用户自定义函数对数组中的每个元素做回调处理
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="17">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$sweet = ['a' =&amp;gt; 'apple', 'b' =&amp;gt; 'banana'];\nfunction testPrint($item, $key) {\n  echo \&amp;quot;$key holds $item\\n\&amp;quot;;\n}\n/**\n* a holds apple\n* b holds banana\n*/\narray_walk($sweet, 'testPrint');\nfunction testPrint($item, $key, $userData) {\n  echo \&amp;quot;$key holds $item and $userData\\n\&amp;quot;;\n}\n/**\n* a holds apple and php\n* b holds banana and php\n* sour holds lemon and php\n*/\narray_walk_recursive($fruits, 'testPrint2', 'php');&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$sweet = ['a' =&gt; 'apple', 'b' =&gt; 'banana'];
+function testPrint($item, $key) {
+  echo "$key holds $item\n";
+}
+/**
+* a holds apple
+* b holds banana
+*/
+array_walk($sweet, 'testPrint');
+function testPrint($item, $key, $userData) {
+  echo "$key holds $item and $userData\n";
+}
+/**
+* a holds apple and php
+* b holds banana and php
+* sour holds lemon and php
+*/
+array_walk_recursive($fruits, 'testPrint2', 'php');</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>数组替换</strong></p>
+<ul>
+<li>array_replace_recursive (array $array1 [, array $...] ) : array &mdash; 使用传递的数组递归替换第一个数组的元素
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="16">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$base = ['citrus' =&amp;gt; ['orange'], 'berries' =&amp;gt; ['blackberry', 'raspberry']];\n$replacements = ['citrus' =&amp;gt; ['pineapple'], 'berries' =&amp;gt; ['blueberry']];\nvar_dump(array_replace_recursive($base, $replacements));// ['citrus' =&amp;gt; ['pineapple'], 'berries' =&amp;gt; ['blueberry', 'raspberry']]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$base = ['citrus' =&gt; ['orange'], 'berries' =&gt; ['blackberry', 'raspberry']];
+$replacements = ['citrus' =&gt; ['pineapple'], 'berries' =&gt; ['blueberry']];
+var_dump(array_replace_recursive($base, $replacements));// ['citrus' =&gt; ['pineapple'], 'berries' =&gt; ['blueberry', 'raspberry']]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_replace (array $array1 [, array $...] ) : array &mdash; 使用传递的数组替换第一个数组的元素
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="15">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$base = ['citrus' =&amp;gt; ['orange'], 'berries' =&amp;gt; ['blackberry', 'raspberry']];\n$replacements = ['citrus' =&amp;gt; ['pineapple'], 'berries' =&amp;gt; ['blueberry']];\nvar_dump(array_replace($base, $replacements));// ['citrus' =&amp;gt; ['pineapple'], 'berries' =&amp;gt; ['blueberry']]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$base = ['citrus' =&gt; ['orange'], 'berries' =&gt; ['blackberry', 'raspberry']];
+$replacements = ['citrus' =&gt; ['pineapple'], 'berries' =&gt; ['blueberry']];
+var_dump(array_replace($base, $replacements));// ['citrus' =&gt; ['pineapple'], 'berries' =&gt; ['blueberry']]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_splice (array &amp; $input , int $offset [, int $length = count ($input) [, mixed $replacement = array () ]] ) : array &mdash; 去掉数组中的某一部分并用其它值取代
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="14">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['a', 'b', 'c'];\narray_splice($a, 1, 2, ['B', 'C']);\nvar_dump($a); // ['a', 'B', 'C']\narray_splice($a, -2, 2, ['b', 'c']); \nvar_dump($a);// ['a', 'b', 'c']\narray_splice($a, 3, 0, ['d', 'e']);\nvar_dump($a); // ['a', 'b', 'c', 'd', 'e']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['a', 'b', 'c'];
+array_splice($a, 1, 2, ['B', 'C']);
+var_dump($a); // ['a', 'B', 'C']
+array_splice($a, -2, 2, ['b', 'c']); 
+var_dump($a);// ['a', 'b', 'c']
+array_splice($a, 3, 0, ['d', 'e']);
+var_dump($a); // ['a', 'b', 'c', 'd', 'e']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>数组指针操作</strong></p>
+<ul>
+<li>current (array $array) : mixed &mdash; 返回数组中的当前单元
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="13">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = [1, 2, 3];\nvar_dump(current($a)); // 1&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = [1, 2, 3];
+var_dump(current($a)); // 1</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>end (array &amp;$array) : mixed &mdash; 将数组的内部指针指向最后一个单元
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="12">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = [1, 2, 3];\nvar_dump(end($a)); // 3&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = [1, 2, 3];
+var_dump(end($a)); // 3</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>key (array $array) : mixed &mdash; 从关联数组中取得键名
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="11">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr = ['color' =&amp;gt; 'red'];\nvar_dump(key($arr)); // color&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr = ['color' =&gt; 'red'];
+var_dump(key($arr)); // color</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>next (array &amp;$array) : mixed &mdash; 将数组中的内部指针向前移动一位
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="10">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr = [1, 2, 3];\nvar_dump(next($arr)); // 2&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr = [1, 2, 3];
+var_dump(next($arr)); // 2</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>pos &mdash; current 的别名</li>
+<li>prev (array &amp;$array) : mixed &mdash; 将数组的内部指针倒回一位
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="9">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr = [1, 2, 3];\nnext($arr); // 2\nvar_dump(prev($arr)); // 1&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr = [1, 2, 3];
+next($arr); // 2
+var_dump(prev($arr)); // 1</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>reset (array &amp;$array) : mixed &mdash; 将数组的内部指针指向第一个单元
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="8">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr = [1, 2, 3];\nnext($arr); // 2\nnext($arr); // 3\nvar_dump(reset($arr)); // 1&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr = [1, 2, 3];
+next($arr); // 2
+next($arr); // 3
+var_dump(reset($arr)); // 1</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>其他</strong></p>
+<ul>
+<li>array_column (array $input , mixed $column_key [, mixed $index_key = NULL] ) : array &mdash; 返回数组中指定的一列
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="7">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = [['id' =&amp;gt; 1, 'first_name' =&amp;gt; 'John', 'last_name' =&amp;gt; 'Doe'], ['id' =&amp;gt; 2, 'first_name' =&amp;gt; 'Wythe', 'last_name' =&amp;gt; 'Huang']];\nprint_r(array_column($a, 'first_name')); // ['John', 'Wythe']\nprint_r(array_column($a, 'first_name', 'id')); // [1=&amp;gt; 'John', 2 =&amp;gt; 'Wythe']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = [['id' =&gt; 1, 'first_name' =&gt; 'John', 'last_name' =&gt; 'Doe'], ['id' =&gt; 2, 'first_name' =&gt; 'Wythe', 'last_name' =&gt; 'Huang']];
+print_r(array_column($a, 'first_name')); // ['John', 'Wythe']
+print_r(array_column($a, 'first_name', 'id')); // [1=&gt; 'John', 2 =&gt; 'Wythe']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_flip (array $array) : array &mdash; 交换数组中的键和值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="6">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['a' =&amp;gt; 1, 'b' =&amp;gt; 2, 'c' =&amp;gt; 3];\nvar_dump(array_filp($a)); // [1 =&amp;gt; 'a', 2 =&amp;gt; 'b', 3 =&amp;gt; 'c']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['a' =&gt; 1, 'b' =&gt; 2, 'c' =&gt; 3];
+var_dump(array_filp($a)); // [1 =&gt; 'a', 2 =&gt; 'b', 3 =&gt; 'c']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_reverse (array $array [, bool $preserve_keys = FALSE] ) : array &mdash; 返回单元顺序相反的数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="5">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['php', 4.0, ['green', 'red']];\nvar_dump(array_reverse($a)); // [['green', 'red'], 7.1, 'php']\nvar_dump(array_reverse($a, true)); // [2 =&amp;gt; ['green', 'red'], 1 =&amp;gt; 7.1, 0 =&amp;gt; 'php']&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['php', 4.0, ['green', 'red']];
+var_dump(array_reverse($a)); // [['green', 'red'], 7.1, 'php']
+var_dump(array_reverse($a, true)); // [2 =&gt; ['green', 'red'], 1 =&gt; 7.1, 0 =&gt; 'php']</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>array_unique (array $array [, int $sort_flags = SORT_STRING] ) : array &mdash; 移除数组中重复的值
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="4">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = ['4', 1, 4, '1', 2];\nvar_dump(array_unique($a)); // [0 =&amp;gt; '4', 1 =&amp;gt; 1, 4 =&amp;gt; 2]\nvar_dump(array_unique($a, SORT_NUMERIC));// [0 =&amp;gt; '4', 1 =&amp;gt; 1, 4 =&amp;gt; 2]&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = ['4', 1, 4, '1', 2];
+var_dump(array_unique($a)); // [0 =&gt; '4', 1 =&gt; 1, 4 =&gt; 2]
+var_dump(array_unique($a, SORT_NUMERIC));// [0 =&gt; '4', 1 =&gt; 1, 4 =&gt; 2]</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>count (mixed $array_or_countable [, int $mode = COUNT_NORMAL] ) : int &mdash; 计算数组中的单元数目，或对象中的属性个数
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="3">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = [1, 2, 3];\necho count($a); // 3\n$b = [$a, 4, 5, 6];\necho count($b, COUNT_RECURSIVE) // 7&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = [1, 2, 3];
+echo count($a); // 3
+$b = [$a, 4, 5, 6];
+echo count($b, COUNT_RECURSIVE) // 7</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>
+<p>extract (array &amp;$array [, int $flags = EXTR_OVERWRITE [, string $prefix = NULL]] ) : int &mdash; 从数组中将变量导入到当前的符号表</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="2">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$size = 1;\n$varArray = ['color' =&amp;gt; 'blue', 'size' =&amp;gt; 2, 'shape' =&amp;gt; 'sphere'];\n\nvar_dump(extract($varArray)); // 3 若存在, 则覆盖\necho \&amp;quot;$color, $size, $shape\\n\&amp;quot;; // blue, 2, sphere\n\nextract($varArray, EXTR_SKIP); // 若存在, 则不覆盖\necho \&amp;quot;$color, $size, $shape\\n\&amp;quot;; // blue, 1, sphere\n\nextract($varArray, EXTR_PREFIX_SAME, 'prefix'); // 若存在, 则在变量名使用前缀\necho \&amp;quot;$color, $size, $shape, $prefix_size\\n\&amp;quot;; // blue, 1, sphere, 2\n\nextract($varArray, EXTR_PREFIX_ALL, 'prefix'); // 若存在, 则在变量名使用前缀\necho \&amp;quot;$prefix_color, $size, $prefix_shape, $prefix_size\\n\&amp;quot;; // blue, 1, sphere, 2\n\nvar_dump(extract($varArray, EXTR_IF_EXISTS)); // 1 若存在, 则只覆盖已有变量\n/**\n* Notice: Undefined variable: color\n* Notice: Undefined variable: shape\n*/\necho \&amp;quot;$color, $size, $shape\\n\&amp;quot;; // , 2, \n\nextract($varArray, EXTR_PREFIX_IF_EXISTS, 'prefix'); // 仅当当前符号表中存在相同变量的非前缀版本时，才创建带前缀的变量名称。\n/**\n* Notice: Undefined variable: color\n* Notice: Undefined variable: shape\n*/\necho \&amp;quot;$color, $size, $shape, $prefix_size\\n\&amp;quot;; // , 1, , 2\n\nvar_dump(extract($varArray, EXTR_REFS)); // 3 变量作为引用。这实际上意味着导入的变量的值仍在引用数组参数的值, 可以与其他参数结合\necho \&amp;quot;$color, $size, $shape\\n\&amp;quot;; // blue, 2, sphere\n$color = 'red';\nvar_dump($varArray); // ['color' =&amp;gt; 'red', 'size' =&amp;gt; 2, 'shape' =&amp;gt; 'sphere'];\n\n// 变量作为引用。这实际上意味着导入的变量的值仍在引用数组参数的值, 可以与其他参数结合, 若解析变量前缀的, 则修改前缀变量, 数组变量则修改.\n$size = 1;\n$varArray = ['color' =&amp;gt; 'blue', 'size' =&amp;gt; 2, 'shape' =&amp;gt; 'sphere'];\nvar_dump(extract($varArray, EXTR_REFS|EXTR_PREFIX_SAME, 'prefix')); // 3\necho \&amp;quot;$color, $size, $shape, $prefix_size\\n\&amp;quot;; // blue, 1, sphere, 2\n$color = 'red';\n$prefix_size = 4;\nvar_dump($size); // 1\nvar_dump($varArray); // ['color' =&amp;gt; 'red', 'size' =&amp;gt; 4, 'shape' =&amp;gt; 'sphere'];\n\n$a = [1, 2, 3];\nextract($a, EXTR_PREFIX_INVALID, 'prefix');\necho \&amp;quot;$prefix_0, $prefix_1, $prefix_2\\n\&amp;quot;; // 1, 2, 3&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$size = 1;
+$varArray = ['color' =&gt; 'blue', 'size' =&gt; 2, 'shape' =&gt; 'sphere'];
+
+var_dump(extract($varArray)); // 3 若存在, 则覆盖
+echo "$color, $size, $shape\n"; // blue, 2, sphere
+
+extract($varArray, EXTR_SKIP); // 若存在, 则不覆盖
+echo "$color, $size, $shape\n"; // blue, 1, sphere
+
+extract($varArray, EXTR_PREFIX_SAME, 'prefix'); // 若存在, 则在变量名使用前缀
+echo "$color, $size, $shape, $prefix_size\n"; // blue, 1, sphere, 2
+
+extract($varArray, EXTR_PREFIX_ALL, 'prefix'); // 若存在, 则在变量名使用前缀
+echo "$prefix_color, $size, $prefix_shape, $prefix_size\n"; // blue, 1, sphere, 2
+
+var_dump(extract($varArray, EXTR_IF_EXISTS)); // 1 若存在, 则只覆盖已有变量
+/**
+* Notice: Undefined variable: color
+* Notice: Undefined variable: shape
+*/
+echo "$color, $size, $shape\n"; // , 2, 
+
+extract($varArray, EXTR_PREFIX_IF_EXISTS, 'prefix'); // 仅当当前符号表中存在相同变量的非前缀版本时，才创建带前缀的变量名称。
+/**
+* Notice: Undefined variable: color
+* Notice: Undefined variable: shape
+*/
+echo "$color, $size, $shape, $prefix_size\n"; // , 1, , 2
+
+var_dump(extract($varArray, EXTR_REFS)); // 3 变量作为引用。这实际上意味着导入的变量的值仍在引用数组参数的值, 可以与其他参数结合
+echo "$color, $size, $shape\n"; // blue, 2, sphere
+$color = 'red';
+var_dump($varArray); // ['color' =&gt; 'red', 'size' =&gt; 2, 'shape' =&gt; 'sphere'];
+
+// 变量作为引用。这实际上意味着导入的变量的值仍在引用数组参数的值, 可以与其他参数结合, 若解析变量前缀的, 则修改前缀变量, 数组变量则修改.
+$size = 1;
+$varArray = ['color' =&gt; 'blue', 'size' =&gt; 2, 'shape' =&gt; 'sphere'];
+var_dump(extract($varArray, EXTR_REFS|EXTR_PREFIX_SAME, 'prefix')); // 3
+echo "$color, $size, $shape, $prefix_size\n"; // blue, 1, sphere, 2
+$color = 'red';
+$prefix_size = 4;
+var_dump($size); // 1
+var_dump($varArray); // ['color' =&gt; 'red', 'size' =&gt; 4, 'shape' =&gt; 'sphere'];
+
+$a = [1, 2, 3];
+extract($a, EXTR_PREFIX_INVALID, 'prefix');
+echo "$prefix_0, $prefix_1, $prefix_2\n"; // 1, 2, 3</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>list (mixed $var1 [, mixed $...] ) : array &mdash; 把数组中的值赋给一组变量
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;// 语言结构, 并非函数\n$info = ['coffee', 'brown', 'caffeine'];\nlist($drink, $color, $power) = $info;\necho \&amp;quot;$drink, $color, $power\&amp;quot;; // coffee, brown, caffeine\n// 可以省略不想取的\nlist($drink, , $power) = $info;\necho \&amp;quot;$drink, $power\&amp;quot;; // coffee, caffeine\n// 7.0 以上是从左到右赋值, 7.0以下是从右到左赋值\nlist($a[0], $a[1], $a[2]) = $info;\n// 7.0 以上\nvar_dump($a); // ['coffee', 'brown', 'caffeine']\n// 7.0 以下\nvar_dump($a); // ['caffeine', 'brown', 'coffee']\n// 7.1 支持索引数组\n$info = ['a' =&amp;gt; 'coffee', 'b' =&amp;gt; 'brown', 'c' =&amp;gt; 'caffeine'];\nlist('a' =&amp;gt; $drink, 'c' =&amp;gt; $power) = $info;\necho \&amp;quot;$drink, $power\&amp;quot;; // coffee, caffeine&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">// 语言结构, 并非函数
+$info = ['coffee', 'brown', 'caffeine'];
+list($drink, $color, $power) = $info;
+echo "$drink, $color, $power"; // coffee, brown, caffeine
+// 可以省略不想取的
+list($drink, , $power) = $info;
+echo "$drink, $power"; // coffee, caffeine
+// 7.0 以上是从左到右赋值, 7.0以下是从右到左赋值
+list($a[0], $a[1], $a[2]) = $info;
+// 7.0 以上
+var_dump($a); // ['coffee', 'brown', 'caffeine']
+// 7.0 以下
+var_dump($a); // ['caffeine', 'brown', 'coffee']
+// 7.1 支持索引数组
+$info = ['a' =&gt; 'coffee', 'b' =&gt; 'brown', 'c' =&gt; 'caffeine'];
+list('a' =&gt; $drink, 'c' =&gt; $power) = $info;
+echo "$drink, $power"; // coffee, caffeine</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>shuffle (array &amp;$array) : bool &mdash; 打乱数组
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="0">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$arr = [1, 2, 3, 4];\nshuffle($arr); // 洗牌算法, 打乱数组&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$arr = [1, 2, 3, 4];
+shuffle($arr); // 洗牌算法, 打乱数组</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+</li>
+<li>sizeof 等同于 count</li>
+<li>很多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></li>
+</ul>
+</li>
+</ol>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

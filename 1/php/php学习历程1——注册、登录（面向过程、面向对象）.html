@@ -1,0 +1,755 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php学习历程1——注册、登录（面向过程、面向对象）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php学习历程1——注册、登录（面向过程、面向对象）</center></div><div class='banquan'>原文出处:本文由博客园博主今后生提供。<br/>
+原文连接:https://www.cnblogs.com/futureifekin/p/11088832.html</div><br>
+    <p style="text-align: center;">&nbsp;</p>
+<p style="text-align: center;"><span style="font-size: 18pt; color: #00ccff; background-color: #ffff00;">&nbsp;首先放一张天空之城</span></p>
+<p style="text-align: center;">&nbsp;</p>
+<p style="text-align: center;"><img src="./images/php学习历程1——注册、登录（面向过程、面向对象）0.jpg" alt="" width="1280" height="800" /></p>
+<p align="center">&nbsp;</p>
+<p>Php<span style="font-family: 宋体;">入门来的第一个小项目，首先做的是一个简陋的文章管理系统。有<span style="color: #0000ff;"><strong>登录、注册、文章</strong></span></span><span style="color: #0000ff;"><strong><span style="font-family: Calibri;">list</span></strong></span><span style="font-family: 宋体;"><span style="color: #0000ff;"><strong>、添加文章、修改文章、删除文章、分页</strong></span>这几个小功能。</span></p>
+<ul>
+<li><span style="background-color: #333333; color: #ffffff;"><strong>面向过程的编码</strong></span></li>
+<li><span style="background-color: #333333; color: #ffffff;"><strong>面向对象的编码</strong></span></li>
+</ul>
+<p>&nbsp;</p>
+<ul>
+<li style="text-align: left;"><span style="font-size: 14pt;"><strong>首先做的就是登录注册功能</strong></span></li>
+</ul>
+<p>&nbsp;</p>
+<p style="text-align: left;"><em>本文介绍我在登录、注册功能上的学习、理解和实践。</em></p>
+<hr />
+<ul>
+<li><span style="color: #800000;"><strong><span style="font-size: 14pt;">&nbsp;面向过程</span></strong></span></li>
+</ul>
+<p><strong><span style="text-decoration: line-through;"><span style="font-family: 宋体;">刚学习完</span>php<span style="font-family: 宋体;">函数和简单的</span><span style="font-family: Calibri;">html</span><span style="font-family: 宋体;">，连</span><span style="font-family: Calibri;">js</span><span style="font-family: 宋体;">、</span><span style="font-family: Calibri;">ajax</span><span style="font-family: 宋体;">完全不会。起初想搞一个美观优雅的登录注册界面，但是碍于能力有限，最后写了一个宇宙中最无敌简陋的登录模板，然后开始写后端数据处理。</span></span></strong></p>
+<ul>
+<li><strong><span style="font-size: 14px;">登录</span></strong></li>
+</ul>
+<p><strong>&nbsp;<img src="./images/php学习历程1——注册、登录（面向过程、面向对象）1.jpg" alt="" /></strong></p>
+<p>模板想用的代码<span style="background-color: #0000ff; color: #ffff00;">login.php</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">DOCTYPE html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 2</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">="UTF-8"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>login page<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 8</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 9</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">10</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">11</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">12</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">13</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">14</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">15</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">16</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">17</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">18</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">19</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">20</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">21</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">22</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">style</span><span style="color: #0000ff;">="width: 775px; height: 250px; float: left"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">25</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">align</span><span style="color: #0000ff;">="center"</span><span style="color: #ff0000;"> style</span><span style="color: #0000ff;">=" background-color: #78c4d8;display: table; height: 250px;width: 450px;box-shadow: 10px 10px 10px  #828282;
+</span><span style="color: #008080;">26</span> <span style="color: #0000ff;">        border-radius: 30px"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">27</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">style</span><span style="color: #0000ff;">="height: 89.5px"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">28</span>         
+<span style="color: #008080;">29</span>     <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">30</span>     
+<span style="color: #008080;">31</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="../Controller/login.php"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="POST"</span><span style="color: #ff0000;"> align</span><span style="color: #0000ff;">="center"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">32</span> <span style="color: #000000;">    登录
+</span><span style="color: #008080;">33</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="username1"</span><span style="color: #ff0000;"> size</span><span style="color: #0000ff;">="20"</span><span style="color: #ff0000;"> maxlength</span><span style="color: #0000ff;">="15"</span>
+<span style="color: #008080;">34</span> <span style="color: #ff0000;">              placeholder</span><span style="color: #0000ff;">="请填写用户名"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">35</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">36</span> <span style="color: #000000;">    密码
+</span><span style="color: #008080;">37</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="password"</span>
+<span style="color: #008080;">38</span> <span style="color: #ff0000;">           name</span><span style="color: #0000ff;">="password1"</span><span style="color: #ff0000;"> size</span><span style="color: #0000ff;">="20"</span><span style="color: #ff0000;"> maxlength</span><span style="color: #0000ff;">="15"</span><span style="color: #0000ff;">&gt;</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">39</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input
+</span><span style="color: #008080;">40</span>         <span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="登录"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">41</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="button"</span>
+<span style="color: #008080;">42</span> <span style="color: #ff0000;">                                         onclick</span><span style="color: #0000ff;">="window.location.href='register.html'"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="注册"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">43</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">44</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">45</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">46</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">47</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">别问我面向对象是什么？我这时候还不懂，啥也不懂，本科没好好学</span>c++<span style="font-family: 宋体;">和</span><span style="font-family: Calibri;">java</span><span style="font-family: 宋体;">，我错了（已跪）。</span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">接着我用面向过程的语言就写成了这个玩意儿</span>&hellip;&hellip;</p>
+<p><span style="background-color: #0000ff; color: #ffff00;">&nbsp;login.php</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008080;">session_start</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span> <span style="color: #008000;">//</span><span style="color: #008000;">注销登录</span>
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">if</span>(@<span style="color: #800080;">$_GET</span>['action'] == 'logout'<span style="color: #000000;">) {
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$_SESSION</span>['username1'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$_SESSION</span>['userID'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">echo</span> '注销登录成功！点击此处 &lt;a href="../View/login.html"&gt;登录&lt;/a&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span> <span style="color: #800080;">$username1</span> = <span style="color: #800080;">$_POST</span> ['username1'<span style="color: #000000;">];
+</span><span style="color: #008080;">15</span> <span style="color: #800080;">$password1</span> = <span style="color: #800080;">$_POST</span> ['password1'<span style="color: #000000;">];
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span> <span style="color: #0000ff;">include</span> "../../../Common/dataBase.php"<span style="color: #000000;">;
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span> <span style="color: #800080;">$check_query</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$conn</span>,"select userID from think_userrg where username1='<span style="color: #800080;">$username1</span>' and password1='<span style="color: #800080;">$password1</span>' limit 1"<span style="color: #000000;">);
+</span><span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span> 
+<span style="color: #008080;">22</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> = <span style="color: #008080;">mysqli_fetch_array</span>(<span style="color: #800080;">$check_query</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">23</span>     <span style="color: #008000;">//</span><span style="color: #008000;">登陆成功</span>
+<span style="color: #008080;">24</span>     <span style="color: #800080;">$_SESSION</span>['username1'] =<span style="color: #800080;">$username1</span><span style="color: #000000;">;
+</span><span style="color: #008080;">25</span>     <span style="color: #800080;">$_SESSION</span>['userID'] =<span style="color: #800080;">$result</span>['userID'<span style="color: #000000;">];
+</span><span style="color: #008080;">26</span>     <span style="color: #0000ff;">echo</span>  <span style="color: #800080;">$username1</span>, '<span style="color: #000000;">,登录成功！欢迎您！&lt;a href="../View/articleList.php"&gt;如果您的浏览器没有自动跳转，请点击这里&lt;/a&gt;
+</span><span style="color: #008080;">27</span>                ' . '<span style="color: #000000;">&lt;script&gt;
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">setTimeout(function(){window.location.href=\'../View/articleList.php\';},3000)
+</span><span style="color: #008080;">29</span>               &lt;/script&gt;'<span style="color: #000000;"> ;
+</span><span style="color: #008080;">30</span>     <span style="color: #0000ff;">echo</span> '点击此处 &lt;a href= "login.php?action=logout"&gt;注销&lt;/a&gt;登录！&lt;br /&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">31</span>     <span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+</span><span style="color: #008080;">32</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">33</span>     <span style="color: #0000ff;">die</span> ( '登录失败！点击此处&lt;a href ="javascript:history.back(-1);"&gt;返回&lt;/a&gt;重试'<span style="color: #000000;"> );
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">35</span> 
+<span style="color: #008080;">36</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">37</span> <span style="color: #008000;"> * 判断是否为
+</span><span style="color: #008080;">38</span> <span style="color: #008000;"> * 1.非submit事件
+</span><span style="color: #008080;">39</span> <span style="color: #008000;"> * 2.非注销事件
+</span><span style="color: #008080;">40</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">41</span> <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_POST</span>['submit']) &amp;&amp; !(<span style="color: #800080;">$_GET</span>['action'] == 'logout'<span style="color: #000000;">)){
+</span><span style="color: #008080;">42</span>     <span style="color: #0000ff;">die</span>('非法访问！'<span style="color: #000000;">);
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">44</span> 
+<span style="color: #008080;">45</span> ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p><strong>1.用户名和密码正确，点击登录，可以成功。</strong></p>
+<p><img src="./images/php学习历程1——注册、登录（面向过程、面向对象）2.jpg" alt="" /></p>
+<p><strong>2.用户名不存在或者用户名存在，密码错误，都报错，跳转错误页面，返回登录初始界面。</strong></p>
+<p><img src="./images/php学习历程1——注册、登录（面向过程、面向对象）3.jpg" alt="" /></p>
+<p>（哦，忘了给看数据库结构了）</p>
+<p><strong><span style="font-family: 宋体;">think_</span>userrg<span style="font-family: 宋体;">表</span></strong></p>
+<p>&nbsp;<img src="./images/php学习历程1——注册、登录（面向过程、面向对象）4.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;">&nbsp;</span></p>
+<hr />
+<ul>
+<li><strong>注册</strong></li>
+</ul>
+<p>&nbsp;</p>
+<p>以下是注册的模板</p>
+<p>&nbsp;<img src="./images/php学习历程1——注册、登录（面向过程、面向对象）5.jpg" alt="" /></p>
+<p><span style="text-decoration: line-through;">平平淡淡才是真~</span></p>
+<p>代码如下<span style="background-color: #0000ff; color: #ffff00;">register.html</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">DOCTYPE html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 2</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 4</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">="UTF-8"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>register<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">11</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">12</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">13</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">14</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">15</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">16</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">17</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">19</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">20</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="../Controller/register.php"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="POST"</span><span style="color: #ff0000;"> enctype</span><span style="color: #0000ff;">="multipart/form-data"</span>
+<span style="color: #008080;">21</span> <span style="color: #ff0000;">          align</span><span style="color: #0000ff;">="center"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span>         用户名： <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="username1"</span><span style="color: #ff0000;"> size</span><span style="color: #0000ff;">="20"</span><span style="color: #ff0000;"> maxlength</span><span style="color: #0000ff;">="15"</span>
+<span style="color: #008080;">24</span> <span style="color: #ff0000;">            placeholder</span><span style="color: #0000ff;">="必须填写用户名"</span><span style="color: #0000ff;">&gt;</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span> 登录密码： <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="password"</span>
+<span style="color: #008080;">25</span> <span style="color: #ff0000;">            name</span><span style="color: #0000ff;">="password1"</span><span style="color: #ff0000;"> size</span><span style="color: #0000ff;">="20"</span><span style="color: #ff0000;"> maxlength</span><span style="color: #0000ff;">="15"</span><span style="color: #0000ff;">&gt;</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span> 确认密码： <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input
+</span><span style="color: #008080;">26</span>             <span style="color: #ff0000;">type</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="confirmPassword"</span><span style="color: #ff0000;"> size</span><span style="color: #0000ff;">="20"</span><span style="color: #ff0000;"> maxlength</span><span style="color: #0000ff;">="15"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">27</span>         <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">br</span><span style="color: #0000ff;">&gt;</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="注册"</span><span style="color: #0000ff;">&gt;</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input
+</span><span style="color: #008080;">28</span>             <span style="color: #ff0000;">type</span><span style="color: #0000ff;">="button"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="back"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="返回"</span>
+<span style="color: #008080;">29</span> <span style="color: #ff0000;">            onclick</span><span style="color: #0000ff;">="window.location.href='login.html'"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">30</span>     <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">31</span> 
+<span style="color: #008080;">32</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #008080;">33</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+<p>然后是后端<span style="background-color: #0000ff; color: #ffff00;">register.php</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">include</span> "../../../Common/dataBase.php"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span> ( <span style="color: #800080;">$_POST</span><span style="color: #000000;"> )) {
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">exit</span> ( "您提交的表单数据超过post_max_size!&lt;br&gt;"<span style="color: #000000;"> );
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 判断输入密码与确认密码是否相同</span>
+<span style="color: #008080;"> 9</span> <span style="color: #800080;">$password1</span> = <span style="color: #800080;">$_POST</span> ['password1'<span style="color: #000000;">];
+</span><span style="color: #008080;">10</span> <span style="color: #800080;">$confirmPassword</span> = <span style="color: #800080;">$_POST</span> ['confirmPassword'<span style="color: #000000;">];
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$password1</span> != <span style="color: #800080;">$confirmPassword</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">exit</span> ('两次输入的密码不相同！&lt;a href ="../View/register.html"&gt;返回重试&lt;/a&gt;'<span style="color: #000000;">);
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span> <span style="color: #800080;">$username1</span> = <span style="color: #800080;">$_POST</span> ['username1'<span style="color: #000000;">];
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 判断用户名是否重复</span>
+<span style="color: #008080;">18</span> <span style="color: #800080;">$usernameSQL</span> = "select * from userrg where username1 = '<span style="color: #800080;">$username1</span>'"<span style="color: #000000;">;
+</span><span style="color: #008080;">19</span> <span style="color: #800080;">$resultSet</span> = <span style="color: #008080;">mysqli_query</span> (<span style="color: #800080;">$conn</span>, <span style="color: #800080;">$usernameSQL</span><span style="color: #000000;"> );
+</span><span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span> <span style="color: #800080;">$row</span> = <span style="color: #008080;">mysqli_fetch_array</span>(<span style="color: #800080;">$resultSet</span><span style="color: #000000;">);
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">//</span><span style="color: #008000;">判断用户名是否存在</span>
+<span style="color: #008080;">23</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$username1</span> == <span style="color: #800080;">$row</span>['username1'<span style="color: #000000;">]) {
+</span><span style="color: #008080;">24</span>     <span style="color: #0000ff;">die</span> ('用户名被占用，请更换其他用户名&lt;a href ="../View/register.html"&gt;返回重试&lt;/a&gt;'<span style="color: #000000;">);
+</span><span style="color: #008080;">25</span> }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">26</span> 
+<span style="color: #008080;">27</span> <span style="color: #800080;">$sql</span> = "<span style="color: #000000;">insert into userrg (username1,password1,confirmPassword)
+</span><span style="color: #008080;">28</span>          values ('<span style="color: #800080;">$username1</span>','<span style="color: #800080;">$password1</span>','<span style="color: #800080;">$confirmPassword</span>')"<span style="color: #000000;">;
+</span><span style="color: #008080;">29</span> <span style="color: #008080;">mysqli_query</span> (<span style="color: #800080;">$conn</span>,<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #008080;">30</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 注册成功跳转到登录界面</span>
+<span style="color: #008080;">31</span>     <span style="color: #0000ff;">die</span> ('注册成功！点击此处&lt;a href="../View/login.html"&gt;登录&lt;/a&gt;'<span style="color: #000000;">);
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">33</span> 
+<span style="color: #008080;">34</span> 
+<span style="color: #008080;">35</span> 
+<span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span> ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;然后就没了。</p>
+<p>&nbsp;</p>
+<hr />
+<ul>
+<li><span style="color: #800000;"><strong><span style="font-size: 14pt;">&nbsp;面向对象</span></strong></span></li>
+</ul>
+<p><span style="color: #ff0000;"><strong>&nbsp;你居然没走？真的机智！机智如我~&nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 18pt;">：）</span></strong></span></p>
+<p>说明一下，<span style="text-decoration: line-through;">以上是其实不是最初的版本</span>，是改了好多次之后的终于变成<span style="text-decoration: line-through;">我自己代码</span>的代码。</p>
+<p>&nbsp;</p>
+<p>接下来是我学习了面向对象之后，对原来代码的修改。</p>
+<p><span style="background-color: #333333; color: #ffffff;">我师傅说虽然是写成了一个个类文件，但是还是有点面向过程的思维，我自己也觉得是这样子，我也不敢说，我也不敢问，我就是个年幼的程序猿。</span></p>
+<p>&nbsp;</p>
+<p>话不多说，直接上代码。</p>
+<p><strong><span style="color: #ff0000;">注意：</span></strong><span style="color: #ffff00; background-color: #0000ff;">登录的注册功能还应用了两个文件。我会在末尾也贴出来。</span></p>
+<p>登录处理代码<span style="color: #ffff00; background-color: #0000ff;">Login.php</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">//</span><span style="color: #008000;">namespace A;
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">//use A\User;</span>
+<span style="color: #008080;"> 4</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;"> * Login类
+</span><span style="color: #008080;"> 6</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">require_once</span> '../../Back/User/User.php'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">include</span> '../../MySQLDB.php'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span> <span style="color: #0000ff;">class</span> Login <span style="color: #0000ff;">extends</span><span style="color: #000000;"> User
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">15</span> 
+<span style="color: #008080;">16</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> check(<span style="color: #800080;">$usernm</span>, <span style="color: #800080;">$userpwd</span><span style="color: #000000;">)
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>         <span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">20</span>             'dbname' =&gt; 'newpage'
+<span style="color: #008080;">21</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">22</span>         <span style="color: #800080;">$db</span> = MySQLDB::getInstance(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">23</span>         <span style="color: #800080;">$sql</span> = "select uid from new_user where usernm='<span style="color: #800080;">$usernm</span>' and userpwd='<span style="color: #800080;">$userpwd</span>' limit 1"<span style="color: #000000;">;
+</span><span style="color: #008080;">24</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> = <span style="color: #800080;">$db</span>-&gt;fetchArray(<span style="color: #800080;">$sql</span><span style="color: #000000;">) ) {
+</span><span style="color: #008080;">25</span>             <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$usernm</span> . "欢迎您，点击&lt;a href='../Article/list.php'&gt;此处&lt;/a&gt;跳转主页"<span style="color: #000000;">;
+</span><span style="color: #008080;">26</span>         } <span style="color: #0000ff;">else</span>
+<span style="color: #008080;">27</span>             <span style="color: #0000ff;">die</span>("密码错误"<span style="color: #000000;">);
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span> <span style="color: #800080;">$usernm</span> = <span style="color: #800080;">$_POST</span>['usernm'<span style="color: #000000;">];
+</span><span style="color: #008080;">32</span> <span style="color: #800080;">$userpwd</span> = <span style="color: #800080;">$_POST</span>['userpwd'<span style="color: #000000;">];
+</span><span style="color: #008080;">33</span> 
+<span style="color: #008080;">34</span> <span style="color: #800080;">$log</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Login();
+</span><span style="color: #008080;">35</span> <span style="color: #800080;">$log</span>-&gt;<span style="color: #000000;">is_POST();
+</span><span style="color: #008080;">36</span> <span style="color: #800080;">$a</span> = <span style="color: #800080;">$usernm</span><span style="color: #000000;">;
+</span><span style="color: #008080;">37</span> <span style="color: #800080;">$b</span> = <span style="color: #800080;">$userpwd</span><span style="color: #000000;">;
+</span><span style="color: #008080;">38</span> <span style="color: #800080;">$log</span>-&gt;is_empty(<span style="color: #800080;">$a</span>, <span style="color: #800080;">$b</span><span style="color: #000000;">);
+</span><span style="color: #008080;">39</span> <span style="color: #800080;">$log</span>-&gt;check(<span style="color: #800080;">$a</span>, <span style="color: #800080;">$b</span><span style="color: #000000;">);
+</span><span style="color: #008080;">40</span> 
+<span style="color: #008080;">41</span> ?&gt;</code></pre>
+
+<p>注册处理代码<span style="color: #ffff00;"><strong><span style="background-color: #0000ff;">Register.php</span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">//</span><span style="color: #008000;"> namespace User\Register;</span>
+<span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span> <span style="color: #0000ff;">require_once</span> '../../Back/User/User.php'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">include</span> '../../MySQLDB.php'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">//</span><span style="color: #008000;">var_dump($_POST['usernm']);
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">//var_dump($_POST['userpwd']);</span>
+<span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">10</span> <span style="color: #008000;"> * Register类
+</span><span style="color: #008080;">11</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">12</span> <span style="color: #0000ff;">class</span> Register <span style="color: #0000ff;">extends</span><span style="color: #000000;"> User
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">14</span>     <span style="color: #008000;">#</span><span style="color: #008000;">注册账户方法</span>
+<span style="color: #008080;">15</span>     <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">17</span> 
+<span style="color: #008080;">18</span> <span style="color: #008000;">//</span><span style="color: #008000;">        $usernm= $_POST['usernm'];
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">//        $userpwd=$_POST['userpwd'];
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">//        $userrepwd=$_POST['userrepwd'];</span>
+<span style="color: #008080;">21</span> 
+<span style="color: #008080;">22</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span>     <span style="color: #008000;">#</span><span style="color: #008000;">判断两次输入的密码是否相同</span>
+<span style="color: #008080;">25</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> pwdSame()
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">27</span>         <span style="color: #800080;">$userpwd</span> = <span style="color: #800080;">$_POST</span>['userpwd'<span style="color: #000000;">];
+</span><span style="color: #008080;">28</span>         <span style="color: #800080;">$userrepwd</span> = <span style="color: #800080;">$_POST</span>['userrepwd'<span style="color: #000000;">];
+</span><span style="color: #008080;">29</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$userpwd</span> != <span style="color: #800080;">$userrepwd</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">30</span>             <span style="color: #0000ff;">die</span> ("两次输入的密码不相同！请重试！"<span style="color: #000000;">);
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">32</span> 
+<span style="color: #008080;">33</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">34</span> 
+<span style="color: #008080;">35</span> 
+<span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span>     <span style="color: #008000;">#</span><span style="color: #008000;">将用户信息写入数据库</span>
+<span style="color: #008080;">38</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> query()
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">40</span>         <span style="color: #800080;">$usernm</span> = <span style="color: #800080;">$_POST</span>['usernm'<span style="color: #000000;">];
+</span><span style="color: #008080;">41</span>         <span style="color: #800080;">$userpwd</span> = <span style="color: #800080;">$_POST</span>['userpwd'<span style="color: #000000;">];
+</span><span style="color: #008080;">42</span>         <span style="color: #800080;">$createtime</span> = <span style="color: #008080;">date</span>("Y-m-d H:i:s", <span style="color: #008080;">time</span><span style="color: #000000;">());
+</span><span style="color: #008080;">43</span>         <span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">44</span>             'dbname' =&gt; 'newpage'
+<span style="color: #008080;">45</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">46</span>         <span style="color: #800080;">$db</span> = MySQLDB::getInstance(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">47</span>         <span style="color: #800080;">$sql</span> = "insert into new_user (usernm,userpwd,createtime) value ('<span style="color: #800080;">$usernm</span>','<span style="color: #800080;">$userpwd</span>','<span style="color: #800080;">$createtime</span>')"<span style="color: #000000;">;
+</span><span style="color: #008080;">48</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> = <span style="color: #800080;">$db</span>-&gt;my_query(<span style="color: #800080;">$sql</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">49</span>             <span style="color: #0000ff;">die</span>('注册成功！点击此处&lt;a href="../Login/Login.html"&gt;登录&lt;/a&gt;'<span style="color: #000000;">);
+</span><span style="color: #008080;">50</span>         } <span style="color: #0000ff;">else</span>
+<span style="color: #008080;">51</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">52</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">53</span> 
+<span style="color: #008080;">54</span>     <span style="color: #008000;">#</span><span style="color: #008000;">加载选择数据库信息方法</span>
+<span style="color: #008080;">55</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> dbname()
+</span><span style="color: #008080;">56</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">57</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">58</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">59</span> 
+<span style="color: #008080;">60</span> 
+<span style="color: #008080;">61</span> <span style="color: #800080;">$usernm</span> = <span style="color: #800080;">$_POST</span>['usernm'<span style="color: #000000;">];
+</span><span style="color: #008080;">62</span> <span style="color: #800080;">$userpwd</span> = <span style="color: #800080;">$_POST</span>['userpwd'<span style="color: #000000;">];
+</span><span style="color: #008080;">63</span> 
+<span style="color: #008080;">64</span> 
+<span style="color: #008080;">65</span> <span style="color: #800080;">$reg</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Register();
+</span><span style="color: #008080;">66</span> <span style="color: #800080;">$a</span> = <span style="color: #800080;">$usernm</span><span style="color: #000000;">;
+</span><span style="color: #008080;">67</span> <span style="color: #800080;">$b</span> = <span style="color: #800080;">$userpwd</span><span style="color: #000000;">;
+</span><span style="color: #008080;">68</span> <span style="color: #800080;">$reg</span>-&gt;is_empty(<span style="color: #800080;">$a</span>, <span style="color: #800080;">$b</span><span style="color: #000000;">);
+</span><span style="color: #008080;">69</span> 
+<span style="color: #008080;">70</span> <span style="color: #800080;">$reg</span>-&gt;<span style="color: #000000;">is_POST();
+</span><span style="color: #008080;">71</span> <span style="color: #800080;">$reg</span>-&gt;<span style="color: #000000;">pwdSame();
+</span><span style="color: #008080;">72</span> <span style="color: #800080;">$reg</span>-&gt;<span style="color: #000000;">is_repeat();
+</span><span style="color: #008080;">73</span> <span style="color: #800080;">$reg</span>-&gt;<span style="color: #000000;">query();
+</span><span style="color: #008080;">74</span> 
+<span style="color: #008080;">75</span> 
+<span style="color: #008080;">76</span> ?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p><strong><span style="background-color: #0000ff; color: #ffff00;">附件1：User.php</span></strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;"> * Created by PhpStorm.
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> * User: ts-jinjinying
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;"> * Date: 2019/6/13
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;"> * Time: 10:40
+</span><span style="color: #008080;"> 7</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #008000;">//</span><span style="color: #008000;">namespace A;</span>
+<span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">12</span> <span style="color: #008000;"> * User类
+</span><span style="color: #008080;">13</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">14</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> User
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">16</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">     *  用户类的属性
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">     * @param string $usernm 用户名
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">     * @param int $uid 用户ID
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">     * @param string $userpwd 密码
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">     * @param string $userrepwd
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">     * @param datetime $createtime 创建时间
+</span><span style="color: #008080;">23</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">24</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$usernm</span><span style="color: #000000;">;
+</span><span style="color: #008080;">25</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$uid</span><span style="color: #000000;">;
+</span><span style="color: #008080;">26</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$userpwd</span><span style="color: #000000;">;
+</span><span style="color: #008080;">27</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$userrepwd</span><span style="color: #000000;">;
+</span><span style="color: #008080;">28</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$createtime</span><span style="color: #000000;">;
+</span><span style="color: #008080;">29</span> 
+<span style="color: #008080;">30</span>     <span style="color: #008000;">#</span><span style="color: #008000;">初始化对象属性</span>
+<span style="color: #008080;">31</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$usernm</span>, <span style="color: #800080;">$userpwd</span><span style="color: #000000;">)
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">33</span>         <span style="color: #800080;">$this</span>-&gt;usernm = <span style="color: #800080;">$usernm</span><span style="color: #000000;">;
+</span><span style="color: #008080;">34</span>         <span style="color: #800080;">$this</span>-&gt;userpwd = <span style="color: #800080;">$userpwd</span><span style="color: #000000;">;
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span>     <span style="color: #008000;">#</span><span style="color: #008000;">判断是否提交</span>
+<span style="color: #008080;">38</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> is_POST()
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">40</span>         <span style="color: #0000ff;">if</span> (!(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_POST</span>['submit'<span style="color: #000000;">]))) {
+</span><span style="color: #008080;">41</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">44</span> 
+<span style="color: #008080;">45</span>     <span style="color: #008000;">#</span><span style="color: #008000;">判断是否为空</span>
+<span style="color: #008080;">46</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> is_empty(<span style="color: #800080;">$a</span>, <span style="color: #800080;">$b</span><span style="color: #000000;">)
+</span><span style="color: #008080;">47</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">48</span>         <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$a</span> &amp;&amp; <span style="color: #800080;">$b</span><span style="color: #000000;">))
+</span><span style="color: #008080;">49</span>             <span style="color: #0000ff;">die</span>("用户名或密码不能为空"<span style="color: #000000;">);
+</span><span style="color: #008080;">50</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">51</span> 
+<span style="color: #008080;">52</span>     <span style="color: #008000;">#</span><span style="color: #008000;">判断用户名是否重复</span>
+<span style="color: #008080;">53</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> is_repeat()
+</span><span style="color: #008080;">54</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">55</span>         <span style="color: #800080;">$usernm</span> = <span style="color: #800080;">$_POST</span>['usernm'<span style="color: #000000;">];
+</span><span style="color: #008080;">56</span>         <span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">57</span>             'dbname' =&gt; 'newpage'
+<span style="color: #008080;">58</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;">59</span>         <span style="color: #800080;">$select</span> = MySQLDB::getInstance(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">60</span>         <span style="color: #800080;">$usernmSql</span> = "select * from new_user where usernm = '<span style="color: #800080;">$usernm</span>'"<span style="color: #000000;">;
+</span><span style="color: #008080;">61</span> 
+<span style="color: #008080;">62</span>         <span style="color: #800080;">$row</span> = <span style="color: #800080;">$select</span>-&gt;fetchRow(<span style="color: #800080;">$usernmSql</span><span style="color: #000000;">);
+</span><span style="color: #008080;">63</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$usernm</span> == <span style="color: #800080;">$row</span>['usernm'<span style="color: #000000;">]) {
+</span><span style="color: #008080;">64</span>             <span style="color: #0000ff;">die</span>("用户名被占用，请更换其他用户名！"<span style="color: #000000;">);
+</span><span style="color: #008080;">65</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">66</span>             <span style="color: #0000ff;">echo</span> "用户名合法！"<span style="color: #000000;">;
+</span><span style="color: #008080;">67</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">68</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">69</span> 
+<span style="color: #008080;">70</span> 
+<span style="color: #008080;">71</span>     <span style="color: #008000;">#</span><span style="color: #008000;">注销方法</span>
+<span style="color: #008080;">72</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> logout()
+</span><span style="color: #008080;">73</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">74</span>         <span style="color: #0000ff;">if</span> ('合法'<span style="color: #000000;">) {
+</span><span style="color: #008080;">75</span>             <span style="color: #0000ff;">echo</span> "注销成功"<span style="color: #000000;">;
+</span><span style="color: #008080;">76</span>         } <span style="color: #0000ff;">else</span>
+<span style="color: #008080;">77</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">78</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">79</span> 
+<span style="color: #008080;">80</span>     <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct()
+</span><span style="color: #008080;">81</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">82</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">83</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="background-color: #0000ff; color: #ffff00;"><strong>&nbsp;附件2：MySQLDB.php</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">  3</span> <span style="color: #008000;"> * Created by PhpStorm.
+</span><span style="color: #008080;">  4</span> <span style="color: #008000;"> * User: ts-jinjinying
+</span><span style="color: #008080;">  5</span> <span style="color: #008000;"> * Date: 2019/6/14
+</span><span style="color: #008080;">  6</span> <span style="color: #008000;"> * Time: 8:51
+</span><span style="color: #008080;">  7</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">  8</span> 
+<span style="color: #008080;">  9</span> 
+<span style="color: #008080;"> 10</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 11</span> <span style="color: #008000;"> * Class MySQLDB
+</span><span style="color: #008080;"> 12</span> <span style="color: #008000;"> * MySQLDB工具类
+</span><span style="color: #008080;"> 13</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 14</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> MySQLDB
+</span><span style="color: #008080;"> 15</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 16</span> <span style="color: #008000;">//</span><span style="color: #008000;">定义相关的属性</span>
+<span style="color: #008080;"> 17</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$host</span>;<span style="color: #008000;">//</span><span style="color: #008000;">主机地址</span>
+<span style="color: #008080;"> 18</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$port</span>;<span style="color: #008000;">//</span><span style="color: #008000;">端口号</span>
+<span style="color: #008080;"> 19</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$user</span>;<span style="color: #008000;">//</span><span style="color: #008000;">用户名</span>
+<span style="color: #008080;"> 20</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$pass</span>;<span style="color: #008000;">//</span><span style="color: #008000;">密码</span>
+<span style="color: #008080;"> 21</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$charset</span>;<span style="color: #008000;">//</span><span style="color: #008000;">字符集</span>
+<span style="color: #008080;"> 22</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$dbname</span>;<span style="color: #008000;">//</span><span style="color: #008000;">数据库名
+</span><span style="color: #008080;"> 23</span> <span style="color: #008000;">    //运行时需要的属性；</span>
+<span style="color: #008080;"> 24</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$link</span>;<span style="color: #008000;">//</span><span style="color: #008000;">保存连接资源</span>
+<span style="color: #008080;"> 25</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$instance</span>;<span style="color: #008000;">//</span><span style="color: #008000;">用于保存对象</span>
+<span style="color: #008080;"> 26</span> 
+<span style="color: #008080;"> 27</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 28</span> <span style="color: #008000;">     * MySQLDB constructor.
+</span><span style="color: #008080;"> 29</span> <span style="color: #008000;">     * @param $arr
+</span><span style="color: #008080;"> 30</span> <span style="color: #008000;">     * 构造方法
+</span><span style="color: #008080;"> 31</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 32</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$arr</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 33</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 34</span>         <span style="color: #008000;">//</span><span style="color: #008000;">初始化属性的值</span>
+<span style="color: #008080;"> 35</span>         <span style="color: #800080;">$this</span>-&gt;init(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 36</span>         <span style="color: #008000;">//</span><span style="color: #008000;">连接数据库</span>
+<span style="color: #008080;"> 37</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">my_connect();
+</span><span style="color: #008080;"> 38</span>         <span style="color: #008000;">//</span><span style="color: #008000;">选择默认字符集</span>
+<span style="color: #008080;"> 39</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">my_charset();
+</span><span style="color: #008080;"> 40</span>         <span style="color: #008000;">//</span><span style="color: #008000;">选择默认数据库</span>
+<span style="color: #008080;"> 41</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">my_dbname();
+</span><span style="color: #008080;"> 42</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 43</span> 
+<span style="color: #008080;"> 44</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 45</span> <span style="color: #008000;">     * 获得单例对象的公开的静态方法
+</span><span style="color: #008080;"> 46</span> <span style="color: #008000;">     * @param array $arr 传递给构造方法的参数
+</span><span style="color: #008080;"> 47</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 48</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> getInstance(<span style="color: #800080;">$arr</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 49</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 50</span>         <span style="color: #0000ff;">if</span> (!self::<span style="color: #800080;">$instance</span><span style="color: #000000;"> instanceof self) {
+</span><span style="color: #008080;"> 51</span>             self::<span style="color: #800080;">$instance</span> = <span style="color: #0000ff;">new</span> self(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 52</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 53</span>         <span style="color: #0000ff;">return</span> self::<span style="color: #800080;">$instance</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 54</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 55</span> 
+<span style="color: #008080;"> 56</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> init(<span style="color: #800080;">$arr</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 57</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 58</span>         <span style="color: #800080;">$this</span>-&gt;host = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$arr</span>['host']) ? <span style="color: #800080;">$arr</span>['host'] : '127.0.0.1'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 59</span>         <span style="color: #800080;">$this</span>-&gt;port = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$arr</span>['port']) ? <span style="color: #800080;">$arr</span>['port'] : '3306'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 60</span>         <span style="color: #800080;">$this</span>-&gt;user = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$arr</span>['user']) ? <span style="color: #800080;">$arr</span>['user'] : 'root'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 61</span>         <span style="color: #800080;">$this</span>-&gt;pass = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$arr</span>['pass']) ? <span style="color: #800080;">$arr</span>['pass'] : ''<span style="color: #000000;">;
+</span><span style="color: #008080;"> 62</span>         <span style="color: #800080;">$this</span>-&gt;charset = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$arr</span>['charset']) ? <span style="color: #800080;">$arr</span>['charset'] : 'utf8'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 63</span>         <span style="color: #800080;">$this</span>-&gt;dbname = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$arr</span>['dbname']) ? <span style="color: #800080;">$arr</span>['dbname'] : ''<span style="color: #000000;">;
+</span><span style="color: #008080;"> 64</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 65</span> 
+<span style="color: #008080;"> 66</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 67</span> <span style="color: #008000;">     * 连接数据库
+</span><span style="color: #008080;"> 68</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 69</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> my_connect()
+</span><span style="color: #008080;"> 70</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 71</span>         <span style="color: #008000;">//</span><span style="color: #008000;">如果连接成功，就将连接资源保存到$link属性里面</span>
+<span style="color: #008080;"> 72</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$link</span> = @<span style="color: #008080;">mysqli_connect</span>("<span style="color: #800080;">$this</span>-&gt;host:<span style="color: #800080;">$this</span>-&gt;port", "<span style="color: #800080;">$this</span>-&gt;user", "<span style="color: #800080;">$this</span>-&gt;pass"<span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 73</span>             <span style="color: #800080;">$this</span>-&gt;link = <span style="color: #800080;">$link</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 74</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;"> 75</span>             <span style="color: #008000;">//</span><span style="color: #008000;">连接失败</span>
+<span style="color: #008080;"> 76</span> 
+<span style="color: #008080;"> 77</span>             <span style="color: #0000ff;">echo</span> "数据库连接失败！&lt;br/&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 78</span>             <span style="color: #0000ff;">echo</span> "错误编号：", <span style="color: #008080;">mysqli_errno</span>(<span style="color: #800080;">$this</span>-&gt;link), "&lt;br/&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 79</span>             <span style="color: #0000ff;">echo</span> "错误信息：", <span style="color: #008080;">mysqli_error</span>(<span style="color: #800080;">$this</span>-&gt;link), "&lt;br/&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 80</span> <span style="color: #008000;">//</span><span style="color: #008000;">            die;</span>
+<span style="color: #008080;"> 81</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 82</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 83</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 84</span> 
+<span style="color: #008080;"> 85</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 86</span> <span style="color: #008000;">     * 错误调试方法,执行一条sql语句
+</span><span style="color: #008080;"> 87</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 88</span> 
+<span style="color: #008080;"> 89</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> my_query(<span style="color: #800080;">$sql</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 90</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 91</span>         <span style="color: #800080;">$result</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$this</span>-&gt;link, <span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 92</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$result</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 93</span>             <span style="color: #008000;">//</span><span style="color: #008000;">执行失败</span>
+<span style="color: #008080;"> 94</span>             <span style="color: #0000ff;">echo</span> "SQL语句执行失败&lt;br/&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 95</span>             <span style="color: #0000ff;">echo</span> "错误编号：", <span style="color: #008080;">mysqli_errno</span>(<span style="color: #800080;">$this</span>-&gt;link), "&lt;br/&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 96</span>             <span style="color: #0000ff;">echo</span> "错误信息：", <span style="color: #008080;">mysqli_error</span>(<span style="color: #800080;">$this</span>-&gt;link), "&lt;br/&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 97</span> <span style="color: #008000;">//</span><span style="color: #008000;">            die;</span>
+<span style="color: #008080;"> 98</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 99</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">100</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+</span><span style="color: #008080;">101</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">102</span> 
+<span style="color: #008080;">103</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">104</span> <span style="color: #008000;">     * 返回多行多列的查询结果
+</span><span style="color: #008080;">105</span> <span style="color: #008000;">     * @param string $sql 一条sql语句
+</span><span style="color: #008080;">106</span> <span style="color: #008000;">     * @return mixed  array|false
+</span><span style="color: #008080;">107</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">108</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> fetchAll(<span style="color: #800080;">$sql</span><span style="color: #000000;">)
+</span><span style="color: #008080;">109</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">110</span>         <span style="color: #008000;">//</span><span style="color: #008000;">先执行sql语句</span>
+<span style="color: #008080;">111</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;my_query(<span style="color: #800080;">$sql</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">112</span>             <span style="color: #008000;">//</span><span style="color: #008000;">执行成功
+</span><span style="color: #008080;">113</span> <span style="color: #008000;">            //遍历资源结果集</span>
+<span style="color: #008080;">114</span>             <span style="color: #800080;">$rows</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">115</span>             <span style="color: #0000ff;">while</span> (<span style="color: #800080;">$row</span> = <span style="color: #008080;">mysqli_fetch_assoc</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">116</span>                 <span style="color: #800080;">$rows</span>[] = <span style="color: #800080;">$row</span><span style="color: #000000;">;
+</span><span style="color: #008080;">117</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">118</span>             <span style="color: #008000;">//</span><span style="color: #008000;">释放结果集资源</span>
+<span style="color: #008080;">119</span>             <span style="color: #008080;">mysqli_free_result</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;">120</span>             <span style="color: #008000;">//</span><span style="color: #008000;">返回所有的数据</span>
+<span style="color: #008080;">121</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$rows</span><span style="color: #000000;">;
+</span><span style="color: #008080;">122</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">123</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">124</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">125</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">126</span> 
+<span style="color: #008080;">127</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">128</span> <span style="color: #008000;">     * 返回一行的查询结果
+</span><span style="color: #008080;">129</span> <span style="color: #008000;">     * @param string $sql 一条sql语句
+</span><span style="color: #008080;">130</span> <span style="color: #008000;">     * @return mixed  array|false
+</span><span style="color: #008080;">131</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">132</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> fetchRow(<span style="color: #800080;">$sql</span><span style="color: #000000;">)
+</span><span style="color: #008080;">133</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">134</span>         <span style="color: #008000;">//</span><span style="color: #008000;">先执行sql语句</span>
+<span style="color: #008080;">135</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;my_query(<span style="color: #800080;">$sql</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">136</span>             <span style="color: #008000;">//</span><span style="color: #008000;">执行成功</span>
+<span style="color: #008080;">137</span>             <span style="color: #800080;">$row</span> = <span style="color: #008080;">mysqli_fetch_assoc</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;">138</span>             <span style="color: #008080;">mysqli_free_result</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;">139</span>             <span style="color: #008000;">//</span><span style="color: #008000;">返回这一条记录的数据</span>
+<span style="color: #008080;">140</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$row</span><span style="color: #000000;">;
+</span><span style="color: #008080;">141</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">142</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">143</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">144</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">145</span> 
+<span style="color: #008080;">146</span> 
+<span style="color: #008080;">147</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">148</span> <span style="color: #008000;">     * 返回单行单列的查询结果（单一值）
+</span><span style="color: #008080;">149</span> <span style="color: #008000;">     * @param string $sql 一条sql语句
+</span><span style="color: #008080;">150</span> <span style="color: #008000;">     * @return mixed  string|false
+</span><span style="color: #008080;">151</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">152</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> fetchColumn(<span style="color: #800080;">$sql</span><span style="color: #000000;">)
+</span><span style="color: #008080;">153</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">154</span>         <span style="color: #008000;">//</span><span style="color: #008000;">执行sql语句</span>
+<span style="color: #008080;">155</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;my_query(<span style="color: #800080;">$sql</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">156</span>             <span style="color: #008000;">//</span><span style="color: #008000;">执行成功</span>
+<span style="color: #008080;">157</span>             <span style="color: #800080;">$row</span> = <span style="color: #008080;">mysqli_fetch_row</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;">158</span>             <span style="color: #008000;">//</span><span style="color: #008000;">释放结果集资源</span>
+<span style="color: #008080;">159</span>             <span style="color: #008080;">mysqli_free_result</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;">160</span>             <span style="color: #008000;">//</span><span style="color: #008000;">返回这个单一值</span>
+<span style="color: #008080;">161</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$row</span>[0]) ? <span style="color: #800080;">$row</span>[0] : <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">162</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">163</span>             <span style="color: #008000;">//</span><span style="color: #008000;">执行失败</span>
+<span style="color: #008080;">164</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">165</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">166</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">167</span> 
+<span style="color: #008080;">168</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">169</span> <span style="color: #008000;">     * @param $sql
+</span><span style="color: #008080;">170</span> <span style="color: #008000;">     * @return array|bool|null
+</span><span style="color: #008080;">171</span> <span style="color: #008000;">     * 返回遍历数据表的所有数据
+</span><span style="color: #008080;">172</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">173</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> fetchArray(<span style="color: #800080;">$sql</span><span style="color: #000000;">)
+</span><span style="color: #008080;">174</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">175</span>         <span style="color: #008000;">//</span><span style="color: #008000;">执行sql语句</span>
+<span style="color: #008080;">176</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;my_query(<span style="color: #800080;">$sql</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">177</span>             <span style="color: #008000;">//</span><span style="color: #008000;">执行成功
+</span><span style="color: #008080;">178</span> <span style="color: #008000;">            //遍历资源结果集</span>
+<span style="color: #008080;">179</span>             <span style="color: #800080;">$rows</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">180</span> 
+<span style="color: #008080;">181</span>             <span style="color: #0000ff;">while</span>(<span style="color: #800080;">$row</span> = <span style="color: #008080;">mysqli_fetch_array</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">182</span>                 <span style="color: #800080;">$rows</span>[]= <span style="color: #800080;">$row</span><span style="color: #000000;">;
+</span><span style="color: #008080;">183</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">184</span>             <span style="color: #008000;">//</span><span style="color: #008000;">释放结果集资源</span>
+<span style="color: #008080;">185</span>             <span style="color: #008080;">mysqli_free_result</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;">186</span>             <span style="color: #008000;">//</span><span style="color: #008000;">返回所有数据</span>
+<span style="color: #008080;">187</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$rows</span><span style="color: #000000;">;
+</span><span style="color: #008080;">188</span>         } <span style="color: #0000ff;">else</span>
+<span style="color: #008080;">189</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">190</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">191</span> 
+<span style="color: #008080;">192</span> 
+<span style="color: #008080;">193</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">194</span> <span style="color: #008000;">     * 选择默认的字符集
+</span><span style="color: #008080;">195</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">196</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> my_charset()
+</span><span style="color: #008080;">197</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">198</span>         <span style="color: #800080;">$sql</span> = "set names <span style="color: #800080;">$this</span>-&gt;charset"<span style="color: #000000;">;
+</span><span style="color: #008080;">199</span>         <span style="color: #800080;">$this</span>-&gt;my_query(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #008080;">200</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">201</span> 
+<span style="color: #008080;">202</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">203</span> <span style="color: #008000;">     * 选择默认数据库
+</span><span style="color: #008080;">204</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">205</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> my_dbname()
+</span><span style="color: #008080;">206</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">207</span>         <span style="color: #800080;">$sql</span> = "use <span style="color: #800080;">$this</span>-&gt;dbname"<span style="color: #000000;">;
+</span><span style="color: #008080;">208</span>         <span style="color: #800080;">$this</span>-&gt;my_query(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #008080;">209</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">210</span> 
+<span style="color: #008080;">211</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">212</span> <span style="color: #008000;">     * 析构方法
+</span><span style="color: #008080;">213</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">214</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct()
+</span><span style="color: #008080;">215</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">216</span>         <span style="color: #008000;">//</span><span style="color: #008000;">释放额外的数据库连接资源</span>
+<span style="color: #008080;">217</span>         <span style="color: #008080;">mysqli_close</span>(<span style="color: #800080;">$this</span>-&gt;link);  <span style="color: #008000;">//</span><span style="color: #008000;"> TODO: Implement __destruct() method.</span>
+<span style="color: #008080;">218</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">219</span> 
+<span style="color: #008080;">220</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">221</span> <span style="color: #008000;">     * __sleep方法，序列化对象的时候自动调用
+</span><span style="color: #008080;">222</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">223</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __sleep()
+</span><span style="color: #008080;">224</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">225</span>         <span style="color: #008000;">//</span><span style="color: #008000;">返回一个数组，数组内的元素为需要被序列化的属性名的集合</span>
+<span style="color: #008080;">226</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">array</span>('host', 'port', 'user', 'pass', 'charset', 'dbname');   <span style="color: #008000;">//</span><span style="color: #008000;"> TODO: Implement __sleep() method.</span>
+<span style="color: #008080;">227</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">228</span> 
+<span style="color: #008080;">229</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">230</span> <span style="color: #008000;">     * __wakeup方法，反序列化一个对象的时候自动调用
+</span><span style="color: #008080;">231</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">232</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __wakeup()
+</span><span style="color: #008080;">233</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">234</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">*数据库相关初始化操作</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">235</span> 
+<span style="color: #008080;">236</span>         <span style="color: #008000;">//</span><span style="color: #008000;">连接数据库</span>
+<span style="color: #008080;">237</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">my_connect();
+</span><span style="color: #008080;">238</span>         <span style="color: #008000;">//</span><span style="color: #008000;">选择默认字符集</span>
+<span style="color: #008080;">239</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">my_charset();
+</span><span style="color: #008080;">240</span>         <span style="color: #008000;">//</span><span style="color: #008000;">选择默认数据库</span>
+<span style="color: #008080;">241</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">my_dbname();
+</span><span style="color: #008080;">242</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">243</span> 
+<span style="color: #008080;">244</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">245</span> <span style="color: #008000;">     * 私有化克隆模式方法，防止通过克隆得到一个新的对象
+</span><span style="color: #008080;">246</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">247</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __clone()
+</span><span style="color: #008080;">248</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">249</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> TODO: Implement __clone() method.</span>
+<span style="color: #008080;">250</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">251</span> 
+<span style="color: #008080;">252</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __set(<span style="color: #800080;">$name</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">)
+</span><span style="color: #008080;">253</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">254</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> TODO: Implement __set() method.</span>
+<span style="color: #008080;">255</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">256</span> 
+<span style="color: #008080;">257</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __get(<span style="color: #800080;">$name</span><span style="color: #000000;">)
+</span><span style="color: #008080;">258</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">259</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> TODO: Implement __get() method.</span>
+<span style="color: #008080;">260</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">261</span> 
+<span style="color: #008080;">262</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __unset(<span style="color: #800080;">$name</span><span style="color: #000000;">)
+</span><span style="color: #008080;">263</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">264</span>         <span style="color: #008000;">//</span><span style="color: #008000;">什么都不做，表示不能删除任何属性</span>
+<span style="color: #008080;">265</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">266</span> 
+<span style="color: #008080;">267</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __isset(<span style="color: #800080;">$name</span><span style="color: #000000;">)
+</span><span style="color: #008080;">268</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">269</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> TODO: Implement __isset() method.</span>
+<span style="color: #008080;">270</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">271</span> }</code></pre>
+
+<p>&nbsp;</p>
+<blockquote>
+<p>上面的代码中有些本文没有说明，以后有机会会一一说明，也是对我自己代码的复盘。</p>
+<p>新人练手小项目的分享，一方面是记录自己的学习，一方面分享给别的正在入门的朋友。</p>
+<p>这个标签还会坚持下去。</p>
+</blockquote>
+<p>tails：第<span style="background-color: #ffffff; color: #0000ff;">0000 0000 0000 00</span><span style="color: #ff0000;">1</span><span style="color: #0000ff;">0</span><span style="font-family: Helvetica;">篇</span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

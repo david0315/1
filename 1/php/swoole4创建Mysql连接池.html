@@ -1,0 +1,164 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修swoole4创建Mysql连接池' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>swoole4创建Mysql连接池</center></div><div class='banquan'>原文出处:本文由博客园博主久伴成忆提供。<br/>
+原文连接:https://www.cnblogs.com/starluke/p/11770799.html</div><br>
+    <src><span style="font-size: 18px;"><strong>一 .什么是mysql连接池</strong></span>
+<src><strong>场景：</strong>每秒同时有1000个并发，但是这个mysql同时只能处理400个连接，mysql会宕机。
+<src>&nbsp;
+<src><strong>解决方案：</strong>连接池，这个连接池建立了200个和mysql的连接，这1000个并发就有顺序的共享这连接池中的200个连接。
+<src>这个连接池能够带来额外的性能提升，因为这个和mysql建立连接的这个过程消耗较大，使用连接池只需连接一次mysql。
+<src>&nbsp;
+<src><strong>连接池定义：</strong>永不断开，要求我们的这个程序是一个常驻内存的程序。数据库连接池（Connection pooling）是程序启
+<src>动时建立足够的数据库连接，并将这些连接组成一个连接池，由程序动态地对池中的连接进行申请，使用，释放。
+<src>&nbsp;
+<src><span style="font-size: 18px;"><strong>二.小案例</strong></span>
+<src>查找用户表数据库最新注册的3个会员？
+<src><strong>（1）小提示</strong>
+<src>show processlist #mysql查看连接数
+<src><strong>（2）创建10个mysql连接示例代码</strong>
+<src>&lt;?php
+<src>/**
+<src>&nbsp;* Created by PhpStorm.
+<src>&nbsp;* User: Luke
+<src>&nbsp;* Date: 2019/10/30
+<src>&nbsp;* Time: 14:12
+<src>&nbsp;*/
+<src>//编写mysql连接池，这个类只能被实例化一次（单例）
+<src>class MysqlConnectionPool
+<src>{
+<src>&nbsp; &nbsp; private static $instance;//单例对象
+<src>&nbsp; &nbsp; private $connection_num = 10;//连接数量
+<src>&nbsp; &nbsp; private $connection_obj = [];
+<src>&nbsp;
+<src>&nbsp; &nbsp; //构造方法连接mysql，创建20mysql连接
+<src>&nbsp; &nbsp; private function __construct()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; for($i=0;$i&lt;$this-&gt;connection_num;$i++){
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $dsn = "mysql:host=127.0.0.1;dbnane=swoole";
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;connection_obj[] =&nbsp; new Pdo($dsn,'root','rootmysql123');
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>&nbsp; &nbsp; private function __clone()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; // TODO: Implement __clone() method.
+<src>&nbsp; &nbsp; }
+<src>&nbsp; &nbsp; public static function getInstance()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if(is_null(self::$instance)){
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; self::$instance = new self();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>}
+<src>MysqlConnectionPool::getInstance();
+<src>//创建swool的http服务器对象
+<src>$serv = new swoole_http_server('0.0.0.0',8000);
+<src>//当浏览器链接点这个http服务器的时候,向浏览器发送helloworld
+<src>$serv-&gt;on('request', function($request,$response){
+<src>&nbsp; &nbsp; //$request包含这个请求的所有信息，比如参数
+<src>&nbsp; &nbsp; //$response包含返回给浏览器的所有信息，比如helloworld
+<src>&nbsp;
+<src>&nbsp; &nbsp; //(2.3)向浏览器发送helloworld
+<src>&nbsp; &nbsp; $response-&gt;end("hello world");
+<src>});
+<src>//启动http服务器
+<src>$serv-&gt;start();
+<src><strong>（3）效果</strong>
+<src><img src="./images/swoole4创建Mysql连接池0.jpg" alt="" />
+<src><strong>（4）完善mysql连接池</strong>
+<src>&lt;?php
+<src>/**
+<src>&nbsp;* Created by PhpStorm.
+<src>&nbsp;* User: Luke
+<src>&nbsp;* Date: 2019/10/30
+<src>&nbsp;* Time: 14:12
+<src>&nbsp;*/
+<src>//编写mysql连接池，这个类只能被实例化一次（单例）
+<src>class MysqlConnectionPool
+<src>{
+<src>&nbsp; &nbsp; private static $instance;//单例对象
+<src>&nbsp; &nbsp; private $connection_num = 20;//连接数量
+<src>&nbsp; &nbsp; private $connection_obj = [];
+<src>&nbsp; &nbsp; private $avil_connection_num = 20;//可用连接
+<src>&nbsp;
+<src>&nbsp; &nbsp; //构造方法连接mysql，创建20mysql连接
+<src>&nbsp; &nbsp; private function __construct()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; for($i=0;$i&lt;$this-&gt;connection_num;$i++){
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $dsn = "mysql:host=127.0.0.1;dbname=swoole";
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;connection_obj[] =&nbsp; new Pdo($dsn,'root','rootmysql123');
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>&nbsp; &nbsp; private function __clone()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; // TODO: Implement __clone() method.
+<src>&nbsp; &nbsp; }
+<src>&nbsp; &nbsp; public static function getInstance()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if(is_null(self::$instance)){
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; self::$instance = new self();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return self::$instance;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; //执行sql操作
+<src>&nbsp; &nbsp; public function query($sql)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if($this-&gt;avil_connection_num==0){
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; throw new Exception("暂时没有可用的连接诶，请稍后");
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; //执行sql语句
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $pdo = array_pop($this-&gt;connection_obj);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; //可用连接数减1
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;avil_connection_num --;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; //使用从连接池中取出的mysql连接执行查询，并且把数据取成关联数组
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $rows = $pdo-&gt;query($sql)-&gt;fetchAll(PDO::FETCH_ASSOC);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; //把mysql连接放回连接池，可用连接数+1
+<src>&nbsp; &nbsp; &nbsp; &nbsp; array_push($this-&gt;connection_obj,$pdo);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;avil_connection_num ++;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return $rows;
+<src>&nbsp; &nbsp; }
+<src>}
+<src>//创建swool的http服务器对象
+<src>$serv = new swoole_http_server('0.0.0.0',8000);
+<src>//当浏览器链接点这个http服务器的时候,向浏览器发送helloworld
+<src>$serv-&gt;on('request', function($request,$response){
+<src>&nbsp; &nbsp; //$request包含这个请求的所有信息，比如参数
+<src>&nbsp; &nbsp; //$response包含返回给浏览器的所有信息，比如helloworld
+<src>&nbsp; &nbsp; //向浏览器发送helloworld
+<src>&nbsp; &nbsp; $stop = false;
+<src>&nbsp; &nbsp; while (!$stop){
+<src>&nbsp; &nbsp; &nbsp; &nbsp; try{
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $sql = "SELECT * FROM user ORDER BY id&nbsp; DESC LIMIT 5";
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $rows = MysqlConnectionPool::getInstance()-&gt;query($sql);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $response-&gt;end(json_encode($rows));
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $stop = true;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }catch (Exception $e){
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; usleep(100000);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>});
+<src>//启动http服务器
+<src>$serv-&gt;start();
+<src><span style="color: #ff9900;">进阶之路：<a href="https://jq.qq.com/?_wv=1027&amp;k=5jZlevv" target="_blank"><span style="color: #ff9900;">想要了解更多的进阶知识点的话可以点击这里奥！</span></a></span>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

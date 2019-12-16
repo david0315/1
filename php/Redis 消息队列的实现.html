@@ -1,0 +1,38 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Redis 消息队列的实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Redis 消息队列的实现</center></div><div class='banquan'>原文出处:本文由博客园博主我爱读活法提供。<br/>
+原文连接:https://www.cnblogs.com/wadhf/p/11799405.html</div><br>
+    <h1>概述</h1>
+<p>Redis实现消息队列有两种形式：</p>
+<ol>
+<li>广播订阅模式：基于Redis的 Pub/Sub 机制，一旦有客户端往某个key里面 publish一个消息，所有subscribe的客户端都会触发事件</li>
+<li>集群订阅模式：基于Redis List双向+ 原子性 + BRPOP</li>
+</ol>
+<p>Redis消息队列时，当Redis宕机后，消息可能会丢失（也要看持久化的策略）。如果收消息方未有重发和验证机制，Redis内的数据会出现丢失。所以，使用Redis的作为消息队列，通常是对于消息的准确性并非特别高的场景。</p>
+<h1>原理</h1>
+<ol>
+<li>基于Redis的 List的队列性质：从Left插入元素，从Right Pop元素</li>
+<li>原子性：避免并发线程不安全，比如LPush的时候、BRPOP的时候</li>
+<li>BRPOP：提升性能，保证及时性又降低无效请求的次数，类似于RocketMQ的长轮询Pull消息。如果不考虑性能的话，也可直接用RPOP命令</li>
+</ol>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

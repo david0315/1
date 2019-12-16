@@ -1,0 +1,85 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP MySQL数据分页' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP MySQL数据分页</center></div><div class='banquan'>原文出处:本文由博客园博主web小哥提供。<br/>
+原文连接:https://www.cnblogs.com/jc2182/p/11577302.html</div><br>
+    <p>SQL&nbsp;SELECT语句查询总是可能导致数千条记录。但是在一个页面上显示所有结果并不是一个好主意。因此，我们可以根据要求将此结果划分为多个页面。分页意味着在多个页面中显示您的查询结果，而不是仅将它们全部放在一个长页面中。MySQL通过使用LIMIT子句帮助生成分页，该子句将采用两个参数。第一个参数为OFFSET，第二个参数应从数据库返回多少条记录。下面是一个使用LIMIT子句获取记录以生成分页的简单示例。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>PHP分页<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php
+         $dbhost = 'localhost';  // 数据库主机
+         $dbuser = 'root';            // 用户名
+         $dbpass = '123456';    // 密码
+         $rec_limit = 10;            // 每页10条数据
+         $conn = mysqli_connect($dbhost, $dbuser, $dbpass);
+         if(! $conn ) {
+            die('连接失败: ' . mysqli_error());
+         }
+         mysqli_select_db($conn,'test');   // 要操作的数据
+         /* 获取所有的记录数 */
+         $sql = "SELECT COUNT(id) FROM test ";
+         $retval = mysqli_query( $conn, $sql );
+         if(! $retval ) {
+            die('没有获取到数据: ' . mysqli_error($conn));
+         }
+         $row = mysqli_fetch_array($retval, MYSQLI_NUM );
+         $rec_count = $row[0];
+         if( isset($_GET['page'] ) ) {
+            $page = $_GET['page'] + 1;
+            $offset = $rec_limit * $page ;
+         }else {
+            $page = 0;
+            $offset = 0;
+         }
+         $left_rec = $rec_count - ($page * $rec_limit);
+         $sql = "SELECT name ".
+            "FROM test ".
+            "LIMIT $offset, $rec_limit";
+         $retval = mysqli_query( $conn, $sql );
+         if(! $retval ) {
+            die('不能获取到数据: ' . mysqli_error($conn));
+         }
+         while($row = mysqli_fetch_array($retval, MYSQLI_ASSOC)) {
+            echo "TEST name :{$row['name']}  &lt;br&gt; ";
+         }
+         if( $page &gt; 0 ) {
+            $last = $page - 2;
+            echo "&lt;a href = \"".$_SERVER['PHP_SELF']."?page=$last\"&gt;上一页&lt;/a&gt; |";
+            echo "&lt;a href = \"".$_SERVER['PHP_SELF']."?page=$page\"&gt;下一页&lt;/a&gt;";
+         }else if( $page == 0 ) {
+            echo "&lt;a href = \"".$_SERVER['PHP_SELF']."?page=$page\"&gt;下一页&lt;/a&gt;";
+         }else if( $left_rec &lt; $rec_limit ) {
+            $last = $page - 2;
+            echo "&lt;a href =  \"".$_SERVER['PHP_SELF']."?page=$last\"&gt;最后一页&lt;/a&gt;";
+         }
+         mysqli_close($conn);
+      </span><span style="color: #0000ff;">?&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+<p>修改每页显示的数据或者插入多条数据查看效果，<a href="https://www.jc2182.com/php-mysql-insert/3477.html" rel="nofollow noreferrer" target="_blank">PHP MySQL插入数据</a>。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,57 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 项目实践中使用的IOC容器思想' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 项目实践中使用的IOC容器思想</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11423263.html</div><br>
+    <p>1.容器的意思就是一个全局变量,里面存了很多对象,如果要用到某个对象就从里面取,前提就是要先把对象放进去<br />2.控制反转就是把自己的控制权交给别人<br />3.这两个结合就是,把自己的控制权交给别人并且创建的对象放进一个全局变量里<br />4.好处就是可以灵活的修改一个对象的属性,而不需要去修改类本身的代码</p>
+<p>项目实践:<br />1.Application对象的resources属性数组就是那个容器<br />2.getResource方法就是控制生成对象的方法,生成一个对象的控制权交给了Application<br />3.这里先简化的规定下,自定义的类必须有createResource静态方法来创建自己这个对象</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Application{
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$resources</span>= <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getResource(<span style="color: #800080;">$class</span>,<span style="color: #800080;">$params</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;resources[<span style="color: #800080;">$class</span><span style="color: #000000;">])) {
+            </span><span style="color: #800080;">$this</span>-&gt;resources[<span style="color: #800080;">$class</span>] = <span style="color: #008080;">call_user_func_array</span>(<span style="color: #0000ff;">array</span>(<span style="color: #800080;">$class</span>, 'createResource'), <span style="color: #800080;">$params</span><span style="color: #000000;">);
+        }   
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;resources[<span style="color: #800080;">$class</span><span style="color: #000000;">];
+    }   
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> User {
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$age</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$name</span>,<span style="color: #800080;">$age</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;name=<span style="color: #800080;">$name</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;age=<span style="color: #800080;">$age</span><span style="color: #000000;">;
+    }   
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> createResource(<span style="color: #800080;">$name</span>,<span style="color: #800080;">$age</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> self(<span style="color: #800080;">$name</span>,<span style="color: #800080;">$age</span><span style="color: #000000;">);
+    }   
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> says(){
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">name;
+    }   
+}
+</span><span style="color: #800080;">$app</span>=<span style="color: #0000ff;">new</span><span style="color: #000000;"> Application();
+</span><span style="color: #800080;">$user</span>=<span style="color: #800080;">$app</span>-&gt;getResource("User",<span style="color: #0000ff;">array</span>("taoshihan","1000"<span style="color: #000000;">));
+</span><span style="color: #800080;">$user</span>-&gt;says();</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

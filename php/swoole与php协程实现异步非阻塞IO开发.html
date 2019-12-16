@@ -1,0 +1,396 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修swoole与php协程实现异步非阻塞IO开发' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>swoole与php协程实现异步非阻塞IO开发</center></div><div class='banquan'>原文出处:本文由博客园博主Winner192提供。<br/>
+原文连接:https://www.cnblogs.com/winner192/p/11704147.html</div><br>
+    <src>&ldquo;协程可以在遇到阻塞的时候中断主动让渡资源，调度程序选择其他的协程运行。从而实现非阻塞IO&rdquo;
+<src>然而php是不支持原生协程的，遇到阻塞时如不交由异步进程来执行是没有任何意义的，代码还是同步执行的，如下所示：
+<src>function foo()
+<src>{
+<src>&nbsp; &nbsp; $db=new Db();
+<src>&nbsp; &nbsp; $result=(yield $db-&gt;query());
+<src>&nbsp; &nbsp; yield $result;
+<src>}
+<src>上面的数据库查询操作是阻塞的，当调度器调度该协程到这一步时发现执行了阻塞操作，此时调度器该怎么办？选择其余协程执行？那该协程的阻塞操作又该何时执行，交由谁执行呢？所以说在php协程中抛开异步调用谈非阻塞IO属于耍流氓。
+<src>而swoole的异步task提供了一个实现异步的解决方案,关于swoole_task可以参考官方文档
+<src>核心功能实现
+<src>&nbsp;
+<src>将一次请求形成一个协程
+<src>&nbsp;
+<src>首先创建一个swoole_server并设置回调
+<src>class HttpServer implements Server
+<src>{
+<src>&nbsp; &nbsp; private $swooleHttpServer;
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function __construct(\swoole_http_server $swooleHttpServer)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer = $swooleHttpServer;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function start()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;on('start', [$this, 'onStart']);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;on('shutdown', [$this, 'onShutdown']);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;on('workerStart', [$this, 'onWorkerStart']);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;on('workerStop', [$this, 'onWorkerStop']);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;on('workerError', [$this, 'onWorkerError']);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;on('task', [$this, 'onTask']);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;on('finish', [$this, 'onFinish']);
+<src>&nbsp;
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;on('request', [$this, 'onRequest']);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;swooleHttpServer-&gt;start();
+<src>&nbsp; &nbsp; }
+<src>onRequest方法：
+<src>&nbsp;public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $requestHandler = new RequestHandler($request, $response);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $requestHandler-&gt;handle();
+<src>&nbsp; &nbsp; }
+<src>在ReqeustHandler中执行handle方法，来解析请求的路由，并创建控制器，调用相应的方法，相
+<src>&nbsp;public function handle()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;context = new Context($this-&gt;request, $this-&gt;response, $this-&gt;getFd());
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;router = new Router($this-&gt;request);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; try {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (false === $this-&gt;router-&gt;parse()) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;response-&gt;output('');
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $coroutine = $this-&gt;doRun();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $task = new Task($coroutine, $this-&gt;context);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $task-&gt;run();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; } catch (\Exception $e) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; PcsExceptionHandler::handle($e, $this-&gt;response);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>&nbsp; &nbsp;&nbsp;
+<src>&nbsp;private function doRun()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $ret = (yield $this-&gt;dispatch());
+<src>&nbsp; &nbsp; &nbsp; &nbsp; yield $this-&gt;response-&gt;send($ret);
+<src>&nbsp; &nbsp; }
+<src>上面代码中的ret是action()的调用结果，yield $this-&gt;response-&gt;send($ret);是向对客户端请求的应答。
+<src>$coroutine是这一次请求形成的一个协程（Genetator对象)，包含了整个请求的流程，接下来就要对这个协程进行调度来获取真正的执行结果。
+<src>&nbsp;
+<src>协程调度
+<src>&nbsp;
+<src>namespace Pcs\Coroutine;
+<src>&nbsp;
+<src>use Pcs\Network\Context\Context;
+<src>&nbsp;
+<src>class Task
+<src>{
+<src>&nbsp; &nbsp; private $coroutine;
+<src>&nbsp; &nbsp; private $context;
+<src>&nbsp; &nbsp; private $status;
+<src>&nbsp; &nbsp; private $scheduler;
+<src>&nbsp; &nbsp; private $sendValue;
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function __construct(\Generator $coroutine, Context $context)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;coroutine = $coroutine;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;context = $context;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;scheduler = new Scheduler($this);
+<src>&nbsp;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function run()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; while (true) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; try {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;status = $this-&gt;scheduler-&gt;schedule();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; switch ($this-&gt;status) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; case TaskStatus::TASK_WAIT:
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; echo "task status: TASK_WAIT\n";
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return null;
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; case TaskStatus::TASK_DONE:
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; echo "task status: TASK_DONE\n";
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return null;
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; case TaskStatus::TASK_CONTINUE;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; echo "task status: TASK_CONTINUE\n";
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; break;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } catch (\Exception $e) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;scheduler-&gt;throwException($e);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>&nbsp; &nbsp; public function setCoroutine($coroutine)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;coroutine = $coroutine;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function getCoroutine()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return $this-&gt;coroutine;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function valid()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($this-&gt;coroutine-&gt;valid()) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return true;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; } else {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return false;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function send($value)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;sendValue = $value;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $ret = $this-&gt;coroutine-&gt;send($value);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return $ret;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function getSendVal()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return $this-&gt;sendValue;
+<src>&nbsp; &nbsp; }
+<src>}
+<src>Task依赖于Generator对象$coroutine,在Task类中定义了一些get/set方法，以及一些Generator的方法，Task::run()方法用来执行对协程的调度，调度行为由Schedule来执行，每次调度都会返回当前这次调度的状态。多个协程共用一个调度器，而这里run方法会为每个协程创建一个调度器，原因是每个协程都是一个客户端的请求，使用一个单独的调度器能减少相互间的影响，而且多个协程之间的调度顺序是swoole来处理的，这里的调度器不用关心。下面给出调度的代码：
+<src>namespace Pcs\Coroutine;
+<src>&nbsp;
+<src>class Scheduler
+<src>{
+<src>&nbsp; &nbsp; private $task;
+<src>&nbsp; &nbsp; private $stack;
+<src>&nbsp; &nbsp; const SCHEDULE_CONTINUE = 10;
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function __construct(Task $task)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task = $task;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;stack = new \SplStack();
+<src>&nbsp; &nbsp; }
+<src>&nbsp; &nbsp;&nbsp;
+<src>&nbsp; &nbsp; public function schedule()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $coroutine = $this-&gt;task-&gt;getCoroutine();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $value = $coroutine-&gt;current();
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $status = $this-&gt;handleSystemCall($value);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($status !== self::SCHEDULE_CONTINUE) return $status;
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $status = $this-&gt;handleStackPush($value);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($status !== self::SCHEDULE_CONTINUE) return $status;
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $status = $this-&gt;handleAsyncJob($value);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($status !== self::SCHEDULE_CONTINUE) return $status;
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $status = $this-&gt;handelYieldValue($value);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($status !== self::SCHEDULE_CONTINUE) return $status;
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $status = $this-&gt;handelStackPop();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($status !== self::SCHEDULE_CONTINUE) return $status;
+<src>&nbsp;
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return TaskStatus::TASK_DONE;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function isStackEmpty()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return $this-&gt;stack-&gt;isEmpty();
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; private function handleSystemCall($value)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if (!$value instanceof SystemCall) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return self::SCHEDULE_CONTINUE;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; private function handleStackPush($value)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if (!$value instanceof \Generator) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return self::SCHEDULE_CONTINUE;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $coroutine = $this-&gt;task-&gt;getCoroutine();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;stack-&gt;push($coroutine);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;setCoroutine($value);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return TaskStatus::TASK_CONTINUE;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; private function handleAsyncJob($value)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if (!is_subclass_of($value, Async::class)) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return self::SCHEDULE_CONTINUE;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $value-&gt;execute([$this, 'asyncCallback']);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return TaskStatus::TASK_WAIT;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function asyncCallback($response, $exception = null)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($exception !== null
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &amp;&amp; $exception instanceof \Exception
+<src>&nbsp; &nbsp; &nbsp; &nbsp; ) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;throwException($exception, true);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; } else {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;send($response);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;run();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; private function handelYieldValue($value)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if (!$this-&gt;task-&gt;valid()) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return self::SCHEDULE_CONTINUE;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $ret = $this-&gt;task-&gt;send($value);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return TaskStatus::TASK_CONTINUE;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp;
+<src>&nbsp; &nbsp; private function handelStackPop()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($this-&gt;isStackEmpty()) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return self::SCHEDULE_CONTINUE;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $coroutine = $this-&gt;stack-&gt;pop();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;setCoroutine($coroutine);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $value = $this-&gt;task-&gt;getSendVal();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;send($value);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return TaskStatus::TASK_CONTINUE;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function throwException($e, $isFirstCall = false)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($this-&gt;isStackEmpty()) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;getCoroutine()-&gt;throw($e);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; try {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if ($isFirstCall) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $coroutine = $this-&gt;task-&gt;getCoroutine();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } else {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $coroutine = $this-&gt;stack-&gt;pop();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;setCoroutine($coroutine);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $coroutine-&gt;throw($e);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;run();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; } catch (\Exception $e) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;throwException($e);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>}
+<src>Scheduler中的schedule方法会获取当前Task的协程，并通过current()方法获取当前中断点的返回值，接着依次调用5个方法来对返回值进行处理。
+<src>1:handleSystemCall
+<src>如果返回的值是SystemCall类型的对象，则执行系统调用，如killTask之类的操作，systemCall是第一优先级。
+<src>2:handleStackPush
+<src>在A函数中调用B函数，则B函数称为A函数的子例程（子函数），然而在协程中却不能像普通函数那样调用。
+<src>function funcA()
+<src>{
+<src>&nbsp; &nbsp; return funcB();
+<src>}
+<src>&nbsp;
+<src>function genA()
+<src>{
+<src>&nbsp; &nbsp; yield genB();
+<src>}
+<src>在funcA中funcB();会返回funcB的执行结果，但是在genA中，yield genB();会返回一个Generator对象，而不是genB的最终执行结果。想得到genB的执行结果需要对genB进行调度，而genB中又可能有genC()genD()的协程嵌套，所以为了让协程像函数一眼正常调用，这里使用协程栈来实现。
+<src><img src="./images/swoole与php协程实现异步非阻塞IO开发0.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="0" data-src="http://r.photo.store.qq.com/psb?/V13NqO1a2wSnVe/eKoK68JluPsJcLiYkP7eTcRKJ9GavMocshBVnokWPcA!/o/dLYAAAAAAAAA&amp;ek=1&amp;kp=1&amp;pt=0&amp;bo=iwKCAYsCggERECc!&amp;tl=3&amp;su=0262593665&amp;tm=1571468400&amp;sce=0-12-12&amp;rf=2-9" /><br /><br />
+<src>如上图，当调度器获取到GenA（父协程）的返回值is instance of Generator时，调度器会把父协程push到stack中，然后把子协程分配给Task，继续调度子协程。如此反复直到最后一个子协程返回，然后开始pop，将stack中的协程依次取出<br />&nbsp;
+<src>3:handleAsyncJob
+<src>handleAsyncJob是整个协程调度的核心
+<src>private function handleAsyncJob($value)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if (!is_subclass_of($value, Async::class)) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return self::SCHEDULE_CONTINUE;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $value-&gt;execute([$this, 'asyncCallback']);
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return TaskStatus::TASK_WAIT;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function asyncCallback($response, $exception = null)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($exception !== null
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &amp;&amp; $exception instanceof \Exception
+<src>&nbsp; &nbsp; &nbsp; &nbsp; ) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;throwException($exception, true);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; } else {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;send($response);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;task-&gt;run();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; }
+<src>当协程调度的返回值是继承了Async的子类或者是实现了Asycn接口的实例的时候，会执行Async的execute方法。这里用mysqli数据库查询类举例。
+<src>&nbsp; &nbsp; public function execute(callable $callback)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $this-&gt;callback = $callback;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $serv = ServerHolder::getServer();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $serv-&gt;task($this-&gt;sql, -1, [$this, 'queryReady']);
+<src>&nbsp;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; public function queryReady(\swoole_http_server $serv, $task_id, $data)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $queryResult = unserialize($data);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $exception = null;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if ($queryResult-&gt;errno != 0) {
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $exception = new \Exception($queryResult-&gt;error);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; call_user_func_array($this-&gt;callback, [$queryResult, $exception]);
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>execute方法接收一个函数作为该异步操作完成之后的回调函数，在Mysqli类中的execute方法中，启动了一个异步swoole_task，将sql操作交给swoole_task异步执行，在执行结束后会执行queryReady方法，该方法在解析异步返回数据之后执行$this-&gt;callback()也就是之前在调度器中传入的 asyncCallback方法，该方法在检测异常之后会执行send()方法将异步执行的结果发送到中断处，继续执行。
+<src>handleAsyncJob不会等待异步操作的返回结果，而是直接返回TASK_WAIT信号，回到上面的Task-&gt;run()方法可以看到TASK_WAIT信号会导致run()方法返回null,释放当前worker,调度流程图如下图所示，
+<src><img src="./images/swoole与php协程实现异步非阻塞IO开发1.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="1" data-src="http://r.photo.store.qq.com/psb?/V13NqO1a2wSnVe/K1omCpW6oITrWte5vhJpEuUupjxfcjfevpCebnXoND0!/o/dL8AAAAAAAAA&amp;ek=1&amp;kp=1&amp;pt=0&amp;bo=ngI5Ap4COQIRECc!&amp;tl=3&amp;su=0207609921&amp;tm=1571468400&amp;sce=0-12-12&amp;rf=2-9" /><br /><br />
+<src>4:handleYieldValue
+<src>private function handelYieldValue($value)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if (!$this-&gt;task-&gt;valid()) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return self::SCHEDULE_CONTINUE;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $ret = $this-&gt;task-&gt;send($value);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return TaskStatus::TASK_CONTINUE;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>如果某次yield的返回值既不是异步调用也不是Generator，那么判断当前的generator是否是valid(是否执行完）如果执行完毕，继续调度，执行下面的handleStackPush方法，否则的话返回Task_Continue继续调度，也就是说在一个generator中多次yield，最后只会取最后一次yield的返回值。
+<src>5:handleStackPush
+<src>当上一步中判断!$this-&gt;task-&gt;valid()也就是当前生成器执行完毕的时候，会执行本方法来控制之前的协程stack进行pop操作,首先检查Stac是否是非空，非空的话pop出一个父协程，并将当前协程的返回值send()到父协程中断出继续执行。
+<src>协程优势在哪里
+<src>当一次请求遇到IO的时候，同步操作会导致当前请求阻塞在IO处等待IO返回，体现在swoole上就是一个请求一直占用一个worker。
+<src><img src="./images/swoole与php协程实现异步非阻塞IO开发2.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="2" data-src="http://r.photo.store.qq.com/psb?/V13NqO1a2wSnVe/4g1kMYe5EWSQwWI0Fz7J9Bofd4t7mQPNsKVYnHtEnW0!/o/dL4AAAAAAAAA&amp;ek=1&amp;kp=1&amp;pt=0&amp;bo=igLkAYoC5AERECc!&amp;tl=3&amp;su=0116474145&amp;tm=1571468400&amp;sce=0-12-12&amp;rf=2-9" /><br /><br />
+<src>但是当使用了协程调度之后，用户可以在阻塞的地方通过yield手动中断，交由swoole_task去异步操作，同时释放worker占用来处理其他请求。
+<src>当异步处理执行结束后再继续调度。
+<src><img src="./images/swoole与php协程实现异步非阻塞IO开发3.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="3" data-src="http://r.photo.store.qq.com/psb?/V13NqO1a2wSnVe/XtN5tRviNFtBz6EJY8d0GnpQBUqFv9*UZ1uBmIbopBM!/o/dL8AAAAAAAAA&amp;ek=1&amp;kp=1&amp;pt=0&amp;bo=mAJ3AZgCdwERECc!&amp;tl=3&amp;su=046770353&amp;tm=1571468400&amp;sce=0-12-12&amp;rf=2-9" /><br /><br />
+<src><strong>注意 php的协程只负责中断，异步操作是Swoole_task做的</strong>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

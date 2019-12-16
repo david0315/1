@@ -1,0 +1,518 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel源码解析之model（代码）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel源码解析之model（代码）</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11798149.html</div><br>
+    <p><span class="img-wrap"><span class="img-wrap">本篇文章给大家带来的内容是关于Laravel源码解析之model（代码），有一定的参考价值，有需要的朋友可以参考一下，希望对你有所帮助。<br /></span></span></p>
+<h1>前言</h1>
+<p>提前预祝猿人们国庆快乐，吃好、喝好、玩好，我会在电视上看着你们。</p>
+<p>根据单一责任开发原则来讲，在laravel的开发过程中每个表都应建立一个model对外服务和调用。类似于这样</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">namespace</code> <code class="php plain">App\Models;</code></p>
+<p class="line number2 index1 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</p>
+<p class="line number3 index2 alt2"><code class="php keyword">use</code> <code class="php plain">Illuminate\Database\Eloquent\Model;</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</p>
+<p class="line number5 index4 alt2"><code class="php keyword">class</code> <code class="php plain">User </code><code class="php keyword">extends</code> <code class="php plain">Model</code></p>
+<p class="line number6 index5 alt1"><code class="php plain">{</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">protected</code> <code class="php variable">$table</code> <code class="php plain">= </code><code class="php string">'users'</code><code class="php plain">;</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">}</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<h1>解析</h1>
+<p>Laravel的数据操作分两种</p>
+<ul class=" list-paddingleft-2">
+<li>
+<p>DB facade</p>
+
+
+</li>
+<li>
+<p>Eloquent ORM</p>
+
+
+</li>
+
+
+</ul>
+<p>它们除了有各自的特色外，基本的数据操作都是通过&nbsp;<code>Illuminate\Database\Query\Builder&nbsp;</code>调用方法去完成整个SQL。你也可以帮Builder这个类作为整个SQL操作的基类。这个类涵盖了以下的操作方法(部分展示)</p>
+<table>
+<thead>
+<tr class="firstRow"><th>方法</th></tr>
+
+
+</thead>
+<tbody>
+<tr>
+<td><code>public function select($columns = ['*'])</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function selectSub($query, $as)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function selectRaw($expression, array $bindings = [])</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function fromSub($query, $as)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function fromRaw($expression, $bindings = [])</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function addSelect($column)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function distinct()</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function from($table)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function joinWhere($table, $first, $operator, $second, $type = 'inner')</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function joinSub($query, $as, $first, $operator = null, $second = null, $type = 'inner', $where = false)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function leftJoin($table, $first, $operator = null, $second = null)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function where($column, $operator = null, $value = null, $boolean = 'and')</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function orWhere($column, $operator = null, $value = null)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function whereRaw($sql, $bindings = [], $boolean = 'and')</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function whereIn($column, $values, $boolean = 'and', $not = false)</code></td>
+
+
+</tr>
+<tr>
+<td><code>public function orWhereIn($column, $values)</code></td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>可见有很多方法在中国laravel站或者官方文档上都没有体现，所以说就算要精通一款框架，不去看它的源码也是不行的。这个文件在你项目目录中的 vendor/laravel/framework/src/Illuminate/Database/Query 下，你可以自行去查看。</p>
+<p><img src="./images/Laravel源码解析之model（代码）0.jpg" alt="" /><img src="./images/Laravel源码解析之model（代码）1.jpg" alt="" /><img src="./images/Laravel源码解析之model（代码）2.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<h1>DB facade</h1>
+<p>正常情况下你可能会这样写一个操作</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">DB::table(</code><code class="php string">'user'</code><code class="php plain">)-&gt;get();</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>这个操作首先经过laravel的门面指向文件,不过它并不在 app.php 中，而是通过内核直接加载，它在</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">Illuminate\Foundation\Application -&gt; registerCoreContainerAliases()</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>被注册。门面直接调用 Illuminate\Database\DatabaseManager 类。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">registerCoreContainerAliases()</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">foreach</code> <code class="php plain">([</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">...</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'encrypter'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [\Illuminate\Encryption\Encrypter::</code><code class="php keyword">class</code><code class="php plain">, \Illuminate\Contracts\Encryption\Encrypter::</code><code class="php keyword">class</code><code class="php plain">],</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'db'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [\Illuminate\Database\DatabaseManager::</code><code class="php keyword">class</code><code class="php plain">],</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'db.connection'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [\Illuminate\Database\Connection::</code><code class="php keyword">class</code><code class="php plain">, \Illuminate\Database\ConnectionInterface::</code><code class="php keyword">class</code><code class="php plain">],</code></p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'events'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [\Illuminate\Events\Dispatcher::</code><code class="php keyword">class</code><code class="php plain">, \Illuminate\Contracts\Events\Dispatcher::</code><code class="php keyword">class</code><code class="php plain">],</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'files'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [\Illuminate\Filesystem\Filesystem::</code><code class="php keyword">class</code><code class="php plain">],</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">....</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">)</code></p>
+<p class="line number12 index11 alt1"><code class="php plain">}</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>Illuminate\Database\DatabaseManager 内并没有太多的代码，大多都是处理数据库链接。当你使用 DB::table()时，会通过</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">__call(</code><code class="php variable">$method</code><code class="php plain">, </code><code class="php variable">$parameters</code><code class="php plain">)</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php variable">$this</code><code class="php plain">-&gt;connection()-&gt;</code><code class="php variable">$method</code><code class="php plain">(...</code><code class="php variable">$parameters</code><code class="php plain">);</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">}</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>转发,调用的是 Illuminate\Database\Connection ，用户处理 table() 方法，随后会通过 table() 方法指向 Illuminate\Database\Query 类，开头我们讲过这个类了，这里就不多说了，随后就是各种sql的拼接-&gt;执行sql-&gt;结束战斗</p>
+<p><span class="img-wrap"><img src="./images/Laravel源码解析之model（代码）3.jpg" alt="" /></span></p>
+<h1>Eloquent ORM</h1>
+<p>Eloquent ORM 与DB facade 类似，首先每个 Eloquent ORM 都需要继承父类 Illuminate\Database\Eloquent\Model&nbsp;<br />你大概会这样写</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">User::find(1)</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>父类是不存在这个方法的，它会通过</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">public</code> <code class="php keyword">static</code> <code class="php keyword">function</code> <code class="php plain">__callStatic(</code><code class="php variable">$method</code><code class="php plain">, </code><code class="php variable">$parameters</code><code class="php plain">)</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">(</code><code class="php keyword">new</code> <code class="php keyword">static</code><code class="php plain">)-&gt;</code><code class="php variable">$method</code><code class="php plain">(...</code><code class="php variable">$parameters</code><code class="php plain">);</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">}</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>去转发请求调用。同理</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">User::get()</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>则是通过</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">__call(</code><code class="php variable">$method</code><code class="php plain">, </code><code class="php variable">$parameters</code><code class="php plain">)</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">if</code> <code class="php plain">(in_array(</code><code class="php variable">$method</code><code class="php plain">, [</code><code class="php string">'increment'</code><code class="php plain">, </code><code class="php string">'decrement'</code><code class="php plain">])) {</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php variable">$this</code><code class="php plain">-&gt;</code><code class="php variable">$method</code><code class="php plain">(...</code><code class="php variable">$parameters</code><code class="php plain">);</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php variable">$this</code><code class="php plain">-&gt;newQuery()-&gt;</code><code class="php variable">$method</code><code class="php plain">(...</code><code class="php variable">$parameters</code><code class="php plain">);</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">}</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>去调用，这个方法最终以&nbsp;<code>new Builder()&nbsp;</code>而告终，</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">newEloquentBuilder(</code><code class="php variable">$query</code><code class="php plain">)</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php keyword">new</code> <code class="php plain">Builder(</code><code class="php variable">$query</code><code class="php plain">);</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">}</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>最后我们到了 Illuminate\Database\Eloquent\Builder 文件下，这个类中涵盖了ORM的基本操作，例如find , findOrFail 等等。如果你在代码用到了get方法，抱歉，这里没有，它依旧会通过__call 方法将你的请求转发到 Illuminate\Database\Query\Builder 类中</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php variable">$this</code><code class="php plain">-&gt;query-&gt;{</code><code class="php variable">$method</code><code class="php plain">}(...</code><code class="php variable">$parameters</code><code class="php plain">);</code></p>
+
+
+
+
+
+</td>
+
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+<p>至此就完成了整个数据操作。</p>
+<p><span class="img-wrap"><img src="./images/Laravel源码解析之model（代码）4.jpg" alt="" /></span></p>
+<p>以上就是Laravel源码解析之model（代码）的详细内容</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

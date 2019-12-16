@@ -1,0 +1,333 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 结合 Boostrap 结合 js 实现学生列表删除编辑以及搜索功能（完结）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 结合 Boostrap 结合 js 实现学生列表删除编辑以及搜索功能（完结）</center></div><div class='banquan'>原文出处:本文由博客园博主小方哥&#183;提供。<br/>
+原文连接:https://www.cnblogs.com/duxiu-fang/p/10899392.html</div><br>
+    <p>这个自己的小项目要先告一段落了。可能还有许多bug。请见谅</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h1>删除学生功能</h1>
+<p>PHP:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">// 这里是通过前端代码HTML中的 url 传过来的，用 $_GET 来获取(相关HTML代码可以看一下到主页看一下前几条博客)<br />if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_GET</span>['num'])) <span style="color: #0000ff;">exit</span>('&lt;h1&gt;找不到您要删除的学生的学号&lt;/h1&gt;'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$num</span> = <span style="color: #800080;">$_GET</span>['num'<span style="color: #000000;">];
+
+</span><span style="color: #800080;">$connection</span> = <span style="color: #008080;">mysqli_connect</span>('localhost', 'root', '密码', 'students_info_system'<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$connection</span>) <span style="color: #0000ff;">exit</span>('&lt;h1&gt;连接数据库失败&lt;/h1&gt;'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$query</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$connection</span>, "delete from students where num = {<span style="color: #800080;">$num</span>}"<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$query</span>) <span style="color: #0000ff;">exit</span>('&lt;h1&gt;该学生信息查询失败&lt;/h1&gt;'<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 注意：这里传入的是连接对象</span>
+<span style="color: #800080;">$affected_rows</span> = <span style="color: #008080;">mysqli_affected_rows</span>(<span style="color: #800080;">$connection</span><span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$affected_rows</span> !== 1) <span style="color: #0000ff;">exit</span>('&lt;h1&gt;删除失败&lt;/h1&gt;'<span style="color: #000000;">);
+
+</span><span style="color: #008080;">header</span>('Location: student_info.php');</code></pre>
+
+<h1>编辑学生功能(整体上和添加学生功能差不到，稍微有些许变化)</h1>
+<p>HTML:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">DOCTYPE html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">charset</span><span style="color: #0000ff;">="utf-8"</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>编辑学生<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">link </span><span style="color: #ff0000;">rel</span><span style="color: #0000ff;">="stylesheet"</span><span style="color: #ff0000;"> type</span><span style="color: #0000ff;">="text/css"</span><span style="color: #ff0000;"> href</span><span style="color: #0000ff;">="css/Bootstrap.css"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="container mt-3"</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">h1 </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="display-5 text-center"</span><span style="color: #0000ff;">&gt;</span>编辑学生<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">h1</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php if (isset($error_msg)): </span><span style="color: #0000ff;">?&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="alert alert-danger"</span><span style="color: #0000ff;">&gt;</span><span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php echo $error_msg; </span><span style="color: #0000ff;">?&gt;</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php endif </span><span style="color: #0000ff;">?&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="row mt-3"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">img </span><span style="color: #ff0000;">src</span><span style="color: #0000ff;">="&lt;?php echo $current_student['photo']; ?&gt;"</span><span style="color: #ff0000;"> alt</span><span style="color: #0000ff;">="&lt;?php echo $current_student['name']; ?&gt;"</span><span style="color: #ff0000;"> width</span><span style="color: #0000ff;">="100"</span><span style="color: #ff0000;"> height</span><span style="color: #0000ff;">="488"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="col-sm-6"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="&lt;?php echo $_SERVER['PHP_SELF']; ?&gt;?id=&lt;?php echo $current_num; ?&gt;"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="post"</span><span style="color: #ff0000;"> enctype</span><span style="color: #0000ff;">="multipart/form-data"</span><span style="color: #ff0000;"> autocomplete</span><span style="color: #0000ff;">="off"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="col-sm-6"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="number"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="num"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> placeholder</span><span style="color: #0000ff;">="学号"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="&lt;?php echo isset($_POST['num']) ? $_POST['num'] : $current_student['num']; ?&gt;"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">select </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="system"</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>请选择学院/系<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['system'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'电气工程学院' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span>&gt;电气工程学院<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['system'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'信息工程与艺术学院' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span>&gt;信息工程与艺术学院<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['system'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'国际教育学院' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span>&gt;国际教育学院<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['system'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'水利水电工程学院' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span>&gt;水利水电工程学院<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['system'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'测绘与市政工程学院' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span>&gt;测绘与市政工程学院<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['system'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'马克思主义学院' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span>&gt;马克思主义学院<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['system'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'建筑工程学院' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span>&gt;建筑工程学院<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['system'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'经济与管理学院' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span>&gt;经济与管理学院<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">select</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="class"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> placeholder</span><span style="color: #0000ff;">="班级"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="&lt;?php echo isset($_POST['class']) ? $_POST['class'] : $current_student['class']; ?&gt;"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="name"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> placeholder</span><span style="color: #0000ff;">="姓名"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="&lt;?php echo isset($_POST['name']) ? $_POST['name'] : $current_student['name']; ?&gt;"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">select </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="gender"</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">value</span><span style="color: #0000ff;">="-1"</span><span style="color: #0000ff;">&gt;</span>请选择性别<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['gender'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'1' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span> value="1"&gt;男<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">option </span><span style="color: #ff0000;">&lt;?php echo $current_student['gender'] </span><span style="color: #0000ff;">=== </span><span style="color: #ff0000;">'0' ? 'selected' : ''; ?</span><span style="color: #0000ff;">&gt;</span> value="0"&gt;女<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">option</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">select</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label </span><span style="color: #ff0000;">for</span><span style="color: #0000ff;">="birthday"</span><span style="color: #0000ff;">&gt;</span>出生日期<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="date"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="birthday"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="birthday"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="&lt;?php echo isset($_POST['birthday']) ? $_POST['birthday'] : $current_student['birthday']; ?&gt;"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label </span><span style="color: #ff0000;">for</span><span style="color: #0000ff;">="photo"</span><span style="color: #0000ff;">&gt;</span>照片<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+                    <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="photo"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">button </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="btn btn-info btn-block"</span><span style="color: #0000ff;">&gt;</span>确认修改<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">button</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>PHP:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_GET</span>['id'])) <span style="color: #0000ff;">exit</span>('&lt;h1&gt;必须指定相应的学号&lt;/h1&gt;'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$current_num</span> = <span style="color: #800080;">$_GET</span>['id'<span style="color: #000000;">];
+
+</span><span style="color: #800080;">$connection</span> = <span style="color: #008080;">mysqli_connect</span>('localhost', 'root', '密码', 'students_info_system'<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$connection</span>) <span style="color: #0000ff;">exit</span>('&lt;h1&gt;连接数据库失败&lt;/h1&gt;'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$query</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$connection</span>, "select * from students where num = {<span style="color: #800080;">$current_num</span>} limit 1"<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$query</span>) <span style="color: #0000ff;">exit</span>('&lt;h1&gt;找不到您要编辑的学生信息&lt;/h1&gt;'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$current_student</span> = <span style="color: #008080;">mysqli_fetch_assoc</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($current_student);</span>
+
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> edit_student() {
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump('进来了');</span>
+    <span style="color: #0000ff;">global</span> <span style="color: #800080;">$connection</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">global</span> <span style="color: #800080;">$current_num</span>;    <span style="color: #008000;">//</span><span style="color: #008000;"> 当前学生学号</span>
+    <span style="color: #0000ff;">global</span> <span style="color: #800080;">$current_student</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$extra_students_query</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$connection</span>, "select * from students where num != {<span style="color: #800080;">$current_num</span>}"<span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$extra_students_query</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">exit</span>('&lt;h1&gt;其余学生数据查询失败&lt;/h1&gt;'<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> return;</span>
+<span style="color: #000000;">    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 查询除该学生以外的其他学生</span>
+    <span style="color: #0000ff;">while</span> (<span style="color: #800080;">$student</span> = <span style="color: #008080;">mysqli_fetch_assoc</span>(<span style="color: #800080;">$extra_students_query</span><span style="color: #000000;">)) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($student);</span>
+        <span style="color: #800080;">$students_num</span>[] = <span style="color: #800080;">$student</span>['num'<span style="color: #000000;">];
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($students_num);
+    // var_dump($_FILES['photo']);
+    // var_dump($_POST['gender']);</span>
+    <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['num'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请输入学号'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 判断该学号是否已经被添加(即列表中已存在该学生)=========</span>
+    <span style="color: #0000ff;">if</span> (<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$_POST</span>['num'], <span style="color: #800080;">$students_num</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '该学生已存在'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['system']) || <span style="color: #800080;">$_POST</span>['system'] === '请选择学院/系'<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请选择学院/系'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['class'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请输入班级'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['name'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请输入姓名'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (!(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_POST</span>['gender']) &amp;&amp; <span style="color: #800080;">$_POST</span>['gender'] !== '-1'<span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请选择性别'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['birthday'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请输入出生日期'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 以下处理文件域=======================================================
+    // 当有文件上传时才验证，没有上传则照片不变
+    // $_FILES['photo'] = $current_student['photo'];
+    // var_dump($_FILES['photo']);</span>
+    <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_FILES</span>['photo']['name'] !== ''<span style="color: #000000;">) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($_FILES['photo']);
+        // var_dump($_FILES['photo']);</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_FILES</span>['photo']['error'] !==<span style="color: #000000;"> UPLOAD_ERR_OK) {
+            </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '上传照片失败'<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 验证上传文件的类型(只允许图片)</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strpos</span>(<span style="color: #800080;">$_FILES</span>['photo']['type'], 'image/') !== 0<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '这不是支持的文件格式类型，请重新上传'<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 文件上传到了服务端开辟的一个临时地址，需要转移到本地</span>
+        <span style="color: #800080;">$image_target</span> = 'images/' . <span style="color: #800080;">$_FILES</span>['photo']['name'<span style="color: #000000;">];
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>['photo']['tmp_name'], <span style="color: #800080;">$image_target</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '图片上传失败'<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+        }
+        
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 接收更新过的学生照片</span>
+        <span style="color: #800080;">$current_student</span>['photo'] = (<span style="color: #0000ff;">string</span>)<span style="color: #800080;">$image_target</span><span style="color: #000000;">;
+        
+    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($_FILES['photo']);
+        // 如果照片没有上传则不进行验证文件域,直接更新数据且不改变原来的照片</span>
+        <span style="color: #800080;">$current_student</span>['num'] = <span style="color: #800080;">$_POST</span>['num'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$current_student</span>['system'] = <span style="color: #800080;">$_POST</span>['system'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$current_student</span>['class'] = <span style="color: #800080;">$_POST</span>['class'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$current_student</span>['name'] = <span style="color: #800080;">$_POST</span>['name'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$current_student</span>['gender'] = <span style="color: #800080;">$_POST</span>['gender'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$current_student</span>['birthday'] = <span style="color: #800080;">$_POST</span>['birthday'<span style="color: #000000;">];
+    }
+
+    
+    
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($current_num);
+    // 将数据修改存放到数据库</span>
+    <span style="color: #800080;">$update_query</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$connection</span>, "update students set `num` = '{<span style="color: #800080;">$current_student</span>['num']}', `system` = '{<span style="color: #800080;">$current_student</span>['system']}', `class` = '{<span style="color: #800080;">$current_student</span>['class']}', `name` = '{<span style="color: #800080;">$current_student</span>['name']}', `gender` = '{<span style="color: #800080;">$current_student</span>['gender']}', `birthday` = '{<span style="color: #800080;">$current_student</span>['birthday']}', `photo` = '{<span style="color: #800080;">$current_student</span>['photo']}' where `num` = {<span style="color: #800080;">$current_num</span>}"<span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$update_query</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '更新数据查询失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #800080;">$affected_rows</span> = <span style="color: #008080;">mysqli_affected_rows</span>(<span style="color: #800080;">$connection</span><span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$affected_rows</span> !== 1<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '修改失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 延迟2秒</span>
+    time_sleep_until(<span style="color: #008080;">time</span>() + 2<span style="color: #000000;">);
+
+    </span><span style="color: #008080;">header</span>('Location: student_info.php'<span style="color: #000000;">);
+}
+
+</span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_SERVER</span>['REQUEST_METHOD'] === 'POST'<span style="color: #000000;">) {
+    edit_student();
+}</span></code></pre>
+
+<h1>搜索功能（用js）</h1>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> 关键词搜索功能----立即函数</span>
+(<span style="color: #0000ff;">function</span><span style="color: #000000;"> (element, search_key) {
+
+    let table </span>= document.getElementById('table-content'); <span style="color: #008000;">//</span><span style="color: #008000;"> 获取表格</span>
+
+    <span style="color: #0000ff;">function</span><span style="color: #000000;"> in_array_item (item, array) {
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #0000ff;">var</span> i = 0; i &lt; array.length; i++<span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">if</span> (array[i].indexOf(item) != -1<span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> response () {
+        let hiddenStudentsNumber </span>= 0;                          <span style="color: #008000;">//</span><span style="color: #008000;"> 获取隐藏的学生个数(即表格隐藏行数)</span>
+
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 获取要搜索的关键词</span>
+        const search_content =<span style="color: #000000;"> document.getElementById(search_key).value;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> console.log(search_content);</span>
+        <span style="color: #008000;">//</span><span style="color: #008000;"> console.log(typeof(search_content));</span>
+<span style="color: #000000;">
+        let data </span>=<span style="color: #000000;"> [];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 遍历列表将数据存储到一个数组中</span>
+        <span style="color: #008000;">//</span><span style="color: #008000;"> 1.获取表格行数</span>
+        <span style="color: #0000ff;">for</span> (let i = 0; i &lt; table.children.length; i++<span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 2.获取表格列数</span>
+            <span style="color: #0000ff;">for</span> (let j = 0; j &lt; table.children[i].children.length; j++<span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">data[i]) {
+                    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 在数组中创键每一行内容存放的数组，用于存放一行数据</span>
+                    data[i] = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Array();
+                }
+                data[i][j] </span>=<span style="color: #000000;"> table.children[i].children[j].innerHTML.toString();
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> 3.存放数据</span>
+                <span style="color: #0000ff;">if</span> (data[i][j] === '♂'<span style="color: #000000;">) {
+                    data[i][j] </span>= '男'<span style="color: #000000;">;
+                }
+                </span><span style="color: #0000ff;">if</span> (data[i][j] === '♀'<span style="color: #000000;">) {
+                    data[i][j] </span>= '女'<span style="color: #000000;">;
+                }
+            }
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> console.log(data[i]);</span>
+            <span style="color: #0000ff;">if</span> (search_content == ''<span style="color: #000000;">) {
+                table.children[i].style.display </span>= ''<span style="color: #000000;">;
+            } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (in_array_item(search_content, data[i])) {
+                    table.children[i].style.display </span>= ''<span style="color: #000000;">;
+                } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+                    table.children[i].style.display </span>= 'none'<span style="color: #000000;">;
+                    hiddenStudentsNumber </span>+= 1<span style="color: #000000;">;
+                }
+            }
+        }
+        console.log(hiddenStudentsNumber);
+        let str </span>= "共有" + (table.children.length - hiddenStudentsNumber) + "名学生"<span style="color: #000000;">;
+        document.getElementById(</span>'students_number').innerHTML =<span style="color: #000000;"> str;
+    }
+
+    const searchButton </span>=<span style="color: #000000;"> document.getElementById(element);
+    searchButton.addEventListener(</span>'click', <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+        response();
+    });
+
+    document.addEventListener(</span>'keydown', <span style="color: #0000ff;">function</span><span style="color: #000000;"> (event) {
+        </span><span style="color: #0000ff;">if</span> (event.keyCode === 13<span style="color: #000000;">) {
+            response();
+        }
+    });
+
+    let str </span>= "共有" + table.children.length + "名学生"<span style="color: #000000;">;
+    document.getElementById(</span>'students_number').innerHTML =<span style="color: #000000;"> str;
+})(</span>'search', 'search-key');</code></pre>
+
+<p>同时在原有的学生信息页面HTML添加：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="row mt-3"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">a </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="btn btn-info col-sm-2"</span><span style="color: #ff0000;"> style</span><span style="color: #0000ff;">="margin-right: 28px; margin-left: 15px;"</span><span style="color: #ff0000;"> href</span><span style="color: #0000ff;">="add_student.php"</span><span style="color: #0000ff;">&gt;</span>添加学生<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">a</span><span style="color: #0000ff;">&gt;<br />　　　　　　<br /></span>　　　　　　　　// 添加的
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">button </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="btn btn-info align-middle"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="students_number"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">button</span><span style="color: #0000ff;">&gt;<br />　　　　　　　　<br /></span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control col-sm-6 ml-2"</span><span style="color: #ff0000;"> autocomplete</span><span style="color: #0000ff;">="on"</span><span style="color: #ff0000;"> placeholder</span><span style="color: #0000ff;">="请输入关键词"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">=""</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="search-key"</span><span style="color: #0000ff;">&gt;</span>
+              <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">button </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="btn btn-info col-sm-2 ml-2"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="search"</span><span style="color: #0000ff;">&gt;</span>点击搜索<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">button</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,86 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修2019-07-23 static 和 const 关键字的应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>2019-07-23 static 和 const 关键字的应用</center></div><div class='banquan'>原文出处:本文由博客园博主筏愫提供。<br/>
+原文连接:https://www.cnblogs.com/zhangxu-fasu/p/11233501.html</div><br>
+    <p>首先先来了解下内存段，内存段共分为四个，栈、堆、代码段、初始化静态段。程序中不同的声明存放在不同的内存段内，<span style="font-family: 微软雅黑;">栈空间段是存储占用相同空间长度并且占用空间小的数据类型的地方</span><span style="font-family: 微软雅黑;">，比如说整型</span>1， 10， 100， 1000， 10000， 100000等等，在内存里面占用空间是等长的，都是64位4个字节。 那么数据长度不定长，而且占有空间很大的数据类型的数据放在那内存的那个段里面呢？这样的数据是放在堆内存里面的。栈内存是可以直接存取的，而堆内存是不可以直接存取的内存。对于我们的对象来说就是一种大的数据类型而且是占用空间不定长的类型，所以说<span style="font-family: 微软雅黑;">对象是放在堆里面的</span><span style="font-family: 微软雅黑;">，但对象名称是放在栈里面的，这样通过对象名称就可以使用对象了。</span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong><span style="font-family: 微软雅黑;">static 静态</span></strong></span></p>
+<p><span style="font-family: 微软雅黑;">从内存的角度我们来分</span>static关键字是在类中描述<span style="font-family: 微软雅黑;">成员属性</span><span style="font-family: 微软雅黑;">和</span><span style="font-family: 微软雅黑;">成员方法</span><span style="font-family: 微软雅黑;">是静态的；静态的成员好处在哪里呢？前面我们声明了</span>&ldquo;Person&rdquo;的人类，在&ldquo;Person&rdquo;这个类里如果我们加上一个&ldquo;人所属国家&rdquo;的属性，这样用&ldquo;Person&rdquo;这个类实例化出几百个或者更多个实例对象，每个对象里面就都有&ldquo;所属国家&rdquo;的属性了，如果开发的项目就是为中国人而开发的，那么每个对象里面就都有一个国家的属性是 &ldquo;中国&ldquo;其它的属性是不同的，如果我们把&ldquo;国家&rdquo;的属性做成静态的成员，这样国家的属性在内存中就只有一个，而让这几百个或更多的对象共用这一个属性，<span style="color: #ff0000;">static成员能够限制外部的访问，因为static的成员是属于类的，是不属于任何对象实例，是在类第一次被加载的时候分配的空间，其他类是无法访问的，只对类的实例共享，能一定程度对类该成员形成保护</span><span style="font-family: 微软雅黑;"><span style="color: #ff0000;">；</span>分</span><span style="font-family: 微软雅黑;">析一下，内存从逻辑上被分为四段，其中对象是放在</span>&ldquo;堆内存&rdquo;里面，对象的引用被放到了&ldquo;栈内存&ldquo;里，而静态成员则放到了&ldquo;<span style="font-family: 微软雅黑;">初始化静态段</span>&rdquo;，在类第一次被加载的时候放入的，可以让堆内存里面的每个对象所共享。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Preson{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$country</span>="中国"<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> say()
+    {
+        </span><span style="color: #0000ff;">echo</span> "我是中国人，我爱中国"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">实例化上面的类</span>
+<span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Preson();
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$obj</span>-&gt;country;</code></pre>
+
+<p>通常情况下，我们都是按照如上的方法去访问类中的属性和方法，但上面的属性和方法都是静态的，故而系统报错：Strict Standards: Accessing static property Preson::$country as non static。</p>
+<p class="p"><span style="font-family: 微软雅黑;">因为静态成员是在类第一次加载的时候就创建的，所以在类的外部不需要对象而使用类名就可以访问的到静态的成员；上面说过，</span><span style="font-family: 微软雅黑; color: #ff0000;">静态成员被这个类的每个实例对象所共享</span><span style="font-family: 微软雅黑;">，</span><span style="font-family: 微软雅黑;">那么我们使用</span><span style="font-family: 微软雅黑;">对象可不可以访问类中的静态成员呢？</span><span style="font-family: 微软雅黑;">静态的成员不是在每个对象内部存在的，但是每个对象都可以共享，所以我们如果使用对象访问成员的话就会出现没有这个属性定义，</span><span style="font-family: 微软雅黑; color: #ff0000;">使用对象访问不到静态成员的</span><span style="font-family: 微软雅黑;">，在其它的面向对象的语言中，比如</span>Java是可以使用对象的方式访问静态成员的，如果PHP中可以使用对象访问静态成员的话，我们也尽量不要去使用，因为静态的成员我们在做项目的时候目的就是使用类名去访问。</p>
+<p>那我们怎么才能用静态的属性和方法呢？如果在类外需要使用静态属性，那么使用类名::属性（方法）名即可。</p>
+<src class="cnblogs_code">
+<pre><code>Preson::say();</code></pre>
+
+<p>这样我们就能够得到想使用的静态属性或方法。</p>
+<p>&nbsp;在类的内部的方法如何使用静态属性呢？有两种方式①类名::属性;②self::属性。看如下代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Preson{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$country</span>="中国"<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> say()
+    {
+        </span><span style="color: #0000ff;">echo</span> Preson::<span style="color: #800080;">$country</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">echo</span> self::<span style="color: #800080;">$country</span><span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">在外部访问静态方法</span>
+Preson::say();</code></pre>
+
+<p>输出结果为：中国中国。可见两种方式都可以在类内部访问到静态属性，其中self和$this相似，<span style="color: #ff0000;"><span style="font-family: 微软雅黑;">只不过</span>self是代表这个静态方法所在的类</span><span style="font-family: 微软雅黑;">。所以在静态方法里，可以使用这个方法所在的类的</span>&ldquo;类名&ldquo;，也可以使用&ldquo;self&rdquo;来访问其它静态成员，如果没有特殊情况的话，我们通常使用后者，即&ldquo;<span style="color: #ff0000;"><span style="text-decoration-line: underline;">self::成员属性</span></span>&rdquo;的方式。</p>
+<p class="p"><span style="font-family: 微软雅黑;">在非静态方法里可不可以访问静态成员呢，当然也是可以的了，但是也不能使用</span>&ldquo;$this&rdquo;引用，也要使用类名或是&rdquo;self::成员属性的形式&rdquo;。</p>
+<p>那么？我们可以在类的静态方法中访问非静态的属性吗？答案是不能。<span style="color: #ff0000;">类里面的静态方法只能访问类的静态的属性，在类里面的静态方法是不能访问类的非静态成员的</span>，原因很简单，我们要想在本类的方法中访问本类的其它成员，我们需要使用$this这个引用，而$this这个引用指针是代表调用此方法的对象，我们说了静态的方法是不用对象调用的，而是使用类名来访问，&nbsp;所以根本就没有对象存在，也就没有$this这个引用了，没有了$this这个引用就不能访问类里面的非静态成员。</p>
+<p>&nbsp;</p>
+<p><span style="color: #ff0000;"><span style="text-decoration-line: underline;"><span style="font-family: 微软雅黑;">&nbsp;</span></span></span></p>
+<p><span style="color: #000000; font-size: 18px;"><strong>const 常量</strong></span></p>
+<p><strong><strong><br /></strong></strong>const<span style="font-family: 微软雅黑;">是一个定义常量的关键字，在</span>PHP中定义常量使用的是&ldquo;define()&rdquo;这个函数，但是在类里面定义常量使用的是&ldquo;const&rdquo;这个关键字，<span style="font-family: 微软雅黑;">用</span>&ldquo;const&rdquo;修饰的成员属性的访问方式和&ldquo;static&rdquo;修饰的成员访问的方式差不多，也是使用&ldquo;类名&rdquo;，在方法里面使用&ldquo;self&rdquo;关键字。但是不用使用&ldquo;$&rdquo;符号，也不能使用对象来访问<span style="font-family: 微软雅黑;">。</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Preson{
+    </span><span style="color: #0000ff;">const</span> num = 1000<span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> output(){
+        </span><span style="color: #0000ff;">echo</span> Preson::<span style="color: #000000;">num;
+        </span><span style="color: #0000ff;">echo</span> self::<span style="color: #000000;">num;
+    }
+}
+
+</span><span style="color: #0000ff;">echo</span> Preson::<span style="color: #000000;">num;
+</span><span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Preson();
+</span><span style="color: #800080;">$obj</span>-&gt;output();</code></pre>
+
+<p>输出结果100010001000</p>
+<p>可见以上方法均可访问到类中的常量。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

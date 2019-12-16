@@ -1,0 +1,235 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole HTTP 的应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole HTTP 的应用</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11815835.html</div><br>
+    <p>我们都知道 HTTP 是一种协议，允许 WEB 服务器和浏览器通过互联网进行发送和接受数据。<br /><br />想对 HTTP 进行详细的了解，可以找下其他文章，这篇文章不多做介绍。<br /><br />我们在网上能看到的界面，图片，动画，音频，视频 等，都有依赖这个协议的。<br /><br />在做 WEB 系统的时候，都使用过 IIS、Apache、Nginx 吧，我们利用 Swoole 也可以 简单的实现一个 WEB 服务器。<br /><br />主要使用了 HTTP 的两大对象：Request 请求对象、Response 响应对象。<br /><br />Request，包括 GET、POST、COOKIE、Header等。<br /><br />Response，包括 状态、响应体、跳转、发送文件等。<br /><br />不多说，先分享两个程序：<br /><br />&nbsp;&nbsp;&nbsp; 一、实现一个基础的 Demo：&ldquo;你好，Swoole.&rdquo;<br /><br />&nbsp;&nbsp;&nbsp; 二、实现一个简单的 路由控制<br /><br />本地版本：<br /><br />&nbsp;&nbsp;&nbsp; PHP 7.2.6<br /><br />&nbsp;&nbsp;&nbsp; Swoole 4.3.1<br /><br />代码<br /><br />一、Demo：&ldquo;你好，Swoole.&rdquo;<br /><br />示例效果：<br /><br /><img src="./images/Swoole HTTP 的应用0.jpg" alt="" width="1000" height="240" /><br /><br />备注：IP 地址是我的虚拟机。<br /><br />示例代码：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   &lt;?php    
+    class Server    
+    {    
+        private $serv;    
+        public function __construct() {    
+            $this-&gt;serv = new swoole_http_server("0.0.0.0", 9502);    
+            $this-&gt;serv-&gt;set([    
+                'worker_num'      =&gt; 2, //开启2个worker进程    
+                'max_request'     =&gt; 4, //每个worker进程 max_request设置为4次    
+                'daemonize'       =&gt; false, //守护进程(true/false)    
+            ]);    
+            $this-&gt;serv-&gt;on('Start', [$this, 'onStart']);    
+            $this-&gt;serv-&gt;on('WorkerStart', [$this, 'onWorkStart']);    
+            $this-&gt;serv-&gt;on('ManagerStart', [$this, 'onManagerStart']);    
+            $this-&gt;serv-&gt;on("Request", [$this, 'onRequest']);    
+            $this-&gt;serv-&gt;start();    
+        }    
+        public function onStart($serv) {    
+            echo "#### onStart ####".PHP_EOL;    
+            echo "SWOOLE ".SWOOLE_VERSION . " 服务已启动".PHP_EOL;    
+            echo "master_pid: {$serv-&gt;master_pid}".PHP_EOL;    
+            echo "manager_pid: {$serv-&gt;manager_pid}".PHP_EOL;    
+            echo "########".PHP_EOL.PHP_EOL;    
+        }    
+        public function onManagerStart($serv) {    
+            echo "#### onManagerStart ####".PHP_EOL.PHP_EOL;    
+        }    
+        public function onWorkStart($serv, $worker_id) {    
+            echo "#### onWorkStart ####".PHP_EOL.PHP_EOL;    
+        }    
+        public function onRequest($request, $response) {    
+            $response-&gt;header("Content-Type", "text/html; charset=utf-8");    
+            $html = "&lt;h1&gt;你好 Swoole.&lt;/h1&gt;";    
+            $response-&gt;end($html);    
+        }    
+    }    
+    $server = new Server();
+</code></pre>
+
+<p>&nbsp;</p>
+<p>这里我还准备了一分学习图和资料，如下：</p>
+<p><img src="./images/Swoole HTTP 的应用1.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><br /><br />二、路由控制<br /><br />示例效果：<br /><br /><img src="./images/Swoole HTTP 的应用0.jpg" alt="" width="1000" height="240" /><br /><br />目录结构：<br /><br />&nbsp;&nbsp;&nbsp; ├─ swoole_http&nbsp; -- 代码根目录&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ server.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ controller&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── Index.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── Login.php<br /><br />示例代码：<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>server.php
+
+    &lt;?php    
+    class Server    
+    {    
+        private $serv;    
+        public function __construct() {    
+            $this-&gt;serv = new swoole_http_server("0.0.0.0", 9501);    
+            $this-&gt;serv-&gt;set([    
+                'worker_num'      =&gt; 2, //开启2个worker进程    
+                'max_request'     =&gt; 4, //每个worker进程 max_request设置为4次    
+                'document_root'   =&gt; '',    
+                'enable_static_handler' =&gt; true,    
+                'daemonize'       =&gt; false, //守护进程(true/false)    
+            ]);    
+            $this-&gt;serv-&gt;on('Start', [$this, 'onStart']);    
+            $this-&gt;serv-&gt;on('WorkerStart', [$this, 'onWorkStart']);    
+            $this-&gt;serv-&gt;on('ManagerStart', [$this, 'onManagerStart']);    
+            $this-&gt;serv-&gt;on("Request", [$this, 'onRequest']);    
+            $this-&gt;serv-&gt;start();    
+        }    
+        public function onStart($serv) {    
+            echo "#### onStart ####".PHP_EOL;    
+            swoole_set_process_name('swoole_process_server_master');    
+            echo "SWOOLE ".SWOOLE_VERSION . " 服务已启动".PHP_EOL;    
+            echo "master_pid: {$serv-&gt;master_pid}".PHP_EOL;    
+            echo "manager_pid: {$serv-&gt;manager_pid}".PHP_EOL;    
+            echo "########".PHP_EOL.PHP_EOL;    
+        }    
+        public function onManagerStart($serv) {    
+            echo "#### onManagerStart ####".PHP_EOL.PHP_EOL;    
+            swoole_set_process_name('swoole_process_server_manager');    
+        }    
+        public function onWorkStart($serv, $worker_id) {    
+            echo "#### onWorkStart ####".PHP_EOL.PHP_EOL;    
+            swoole_set_process_name('swoole_process_server_worker');    
+            spl_autoload_register(function ($className) {    
+                $classPath = __DIR__ . "/controller/" . $className . ".php";    
+                if (is_file($classPath)) {    
+                    require "{$classPath}";    
+                    return;    
+                }    
+            });    
+        }    
+        public function onRequest($request, $response) {    
+            $response-&gt;header("Server", "SwooleServer");    
+            $response-&gt;header("Content-Type", "text/html; charset=utf-8");    
+            $server = $request-&gt;server;    
+            $path_info    = $server['path_info'];    
+            $request_uri  = $server['request_uri'];    
+            if ($path_info == '/favicon.ico' || $request_uri == '/favicon.ico') {    
+                return $response-&gt;end();    
+            }    
+            $controller = 'Index';    
+            $method     = 'home';    
+            if ($path_info != '/') {    
+                $path_info = explode('/',$path_info);    
+                if (!is_array($path_info)) {    
+                    $response-&gt;status(404);    
+                    $response-&gt;end('URL不存在');    
+                }    
+                if ($path_info[1] == 'favicon.ico') {    
+                    return;    
+                }    
+                $count_path_info = count($path_info);    
+                if ($count_path_info &gt; 4) {    
+                    $response-&gt;status(404);    
+                    $response-&gt;end('URL不存在');    
+                }    
+                $controller = (isset($path_info[1]) &amp;&amp; !empty($path_info[1])) ? $path_info[1] : $controller;    
+                $method = (isset($path_info[2]) &amp;&amp; !empty($path_info[2])) ? $path_info[2] : $method;    
+            }    
+            $result = "class 不存在";    
+            if (class_exists($controller)) {    
+                $class = new $controller();    
+                $result = "method 不存在";    
+                if (method_exists($controller, $method)) {    
+                    $result = $class-&gt;$method($request);    
+                }    
+            }    
+            $response-&gt;end($result);    
+        }    
+    }    
+    $server = new Server();
+
+Index.php
+
+    &lt;?php    
+    class Index    
+    {    
+        public function home($request)    
+        {    
+            $get = isset($request-&gt;get) ? $request-&gt;get : [];    
+            //@TODO 业务代码    
+            $result = "&lt;h1&gt;你好，Swoole。&lt;/h1&gt;";    
+            $result.= "GET参数：".json_encode($get);    
+            return $result;    
+        }    
+    }
+
+Login.php
+
+    &lt;?php    
+    class Login    
+    {    
+        public function index($request)    
+        {    
+            $post = isset($request-&gt;post) ? $request-&gt;post : [];    
+            //@TODO 业务代码    
+            return "&lt;h1&gt;登录成功。&lt;/h1&gt;";    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />小结<br /><br />一、Swoole 可以替代 Nginx 吗？<br /><br />暂时不能，随着 Swoole 越来越强大，以后说不准。<br /><br />官方建议 Swoole 与 Nginx 结合使用。<br /><br />&nbsp;&nbsp;&nbsp; Http\Server 对 Http 协议的支持并不完整，建议仅作为应用服务器。并且在前端增加Nginx作为代理。<br /><br />根据自己的 Nginx 配置文件，可以自行调整。<br /><br />比如：可以新增一个配置文件</p>
+<src class="cnblogs_Highlighter">
+<pre><code>enable-swoole-php.conf
+
+    location ~ [^/]\.php(/|$)    
+    {    
+        proxy_http_version 1.1;    
+        proxy_set_header Connection "keep-alive";    
+        proxy_set_header X-Real-IP $remote_addr;    
+        proxy_pass http://127.0.0.1:9501;    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />我们都习惯于将虚拟域名的配置文件放在 vhost 文件夹中。<br /><br />比如，虚拟域名的配置文件为：local.swoole.com.conf，可以选择加载 enable-php.conf ，也可以选择加载 enable-swoole-php.conf。<br /><br />配置文件供参考：<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   server    
+        {    
+            listen 80;    
+            #listen [::]:80;    
+            server_name local.swoole.com ;    
+            index index.html index.htm index.php default.html default.htm default.php;    
+            root  /home/wwwroot/project/swoole;    
+            #include rewrite/none.conf;    
+            #error_page   404   /404.html;    
+            #include enable-php.conf;    
+            include enable-swoole-php.conf;    
+            location ~ .*\.(gif|jpg|jpeg|png|bmp|swf)$    
+            {    
+                expires      30d;    
+            }    
+            location ~ .*\.(js|css)?$    
+            {    
+                expires      12h;    
+            }    
+            location ~ /.well-known {    
+                allow all;    
+            }    
+            location ~ /\.    
+            {    
+                deny all;    
+            }    
+            access_log  /home/wwwlogs/local.swoole.com.log;    
+        }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />当前，我们直接编辑 server 段的代码也是可以的。<br /><br />二、修改了 controller 文件夹中的业务代码，每次都是重启服务才生效吗？<br /><br />不是，每次重启服务可能会影响到正常用户使用的，正常处理的请求会被强制关闭。<br /><br />在本地运行 路由控制 的代码时，试试这个命令：<br /><br />ps aux | grep swoole_process_server_master | awk '{print $2}' | xargs kill -USR1<br /><br />给 master 进程发送一个 USR1 的信号，当 Swoole Server 接到这个信号后，就会让所有 worker 在处理完当前的请求后，进行重启。<br /><br />如果查看所有的进程，试试这个命令：<br /><br />ps -ef | grep 'swoole_process_server' | grep -v 'grep'<br /><br /><br />扩展<br /><br />&nbsp;&nbsp;&nbsp; 可以试着上传文件，做一个小的FTP服务器。<br /><br />&nbsp;&nbsp;&nbsp; 可以学习 Swoole 开源框架：EasySwoole、Swoft、One。<br /><br />&nbsp;&nbsp;&nbsp; 可以将 Swoole 整合到目前正在使用的PHP框架中。<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

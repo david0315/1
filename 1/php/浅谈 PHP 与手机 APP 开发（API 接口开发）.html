@@ -1,0 +1,125 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修浅谈 PHP 与手机 APP 开发（API 接口开发）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>浅谈 PHP 与手机 APP 开发（API 接口开发）</center></div><div class='banquan'>原文出处:本文由博客园博主PHP程序媛提供。<br/>
+原文连接:https://www.cnblogs.com/993089249a/p/11715663.html</div><br>
+    <p><strong>这个帖子写给不太了解PHP与API开发的人</strong><br /><br /><strong>一、先简单回答两个问题：</strong><br /><br />1、PHP 可以开发客户端？<br />答：不可以，因为PHP是脚本语言，是负责完成 B/S架构 或 C/S架构 的S部分，即：服务端的开发。（别去纠结 GTK、WinBinder）<br /><br />2、为什么选择 PHP 作为开发服务端的首选？<br />答：跨平台（可以运行在UNIX、LINUX、WINDOWS、Mac OS下）、低消耗（PHP消耗相当少的系统资源）、运行效率高（相对而言）、MySQL的完美搭档，本身是免费开源的，......<br /><br /><strong>二、如何使用 PHP 开发 API（Application Programming Interface，应用程序编程接口） 呢？</strong><br /><br />做过 API 的人应该了解，其实开发 API 比开发 WEB 更简洁，但可能逻辑更复杂，因为 API 其实就是数据输出，不用呈现页面，所以也就不存在 MVC（API 只有 M 和 C），<br />1、和 WEB 开发一样，首先需要一些相关的参数，这些参数，都会由客户端传过来，也许是 GET 也许是 POST，这个需要开发团队相互之间约定好，或者制定统一规范。<br />2、有了参数，根据应用需求，完成数据处理，例如：任务进度更新、APP内购、一局游戏结束数据提交等等<br />3、数据逻辑处理完之后，返回客户端所需要用到的相关数据，例如：任务状态、内购结果、玩家信息等等<br />数据怎么返给客户端？<br />直接输出的形式，如：JSON、xml、TEXT 等等。<br />4、客户端获取到你返回的数据后，在客户端本地和用户进行交互</p>
+<p>phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，<strong>需要的请点击（&rarr;）</strong><a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群</a><br /><br /><strong>临时写的一个简单 API 例子：</strong></p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #800080;">$output</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 3</span> <span style="color: #800080;">$a</span> = @<span style="color: #800080;">$_GET</span>['a'] ? <span style="color: #800080;">$_GET</span>['a'] : ''<span style="color: #000000;">;
+</span><span style="color: #008080;"> 4</span> <span style="color: #800080;">$uid</span> = @<span style="color: #800080;">$_GET</span>['uid'] ? <span style="color: #800080;">$_GET</span>['uid'] : 0<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 6</span>     <span style="color: #800080;">$output</span> = <span style="color: #0000ff;">array</span>('data'=&gt;<span style="color: #0000ff;">NULL</span>, 'info'=&gt;'坑爹啊!', 'code'=&gt;-201<span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">exit</span>(json_encode(<span style="color: #800080;">$output</span><span style="color: #000000;">));
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">//</span><span style="color: #008000;">走接口</span>
+<span style="color: #008080;">10</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$a</span> == 'get_users'<span style="color: #000000;">) {
+</span><span style="color: #008080;">11</span>     <span style="color: #008000;">//</span><span style="color: #008000;">检查用户</span>
+<span style="color: #008080;">12</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$uid</span> == 0<span style="color: #000000;">) {
+</span><span style="color: #008080;">13</span>         <span style="color: #800080;">$output</span> = <span style="color: #0000ff;">array</span>('data'=&gt;<span style="color: #0000ff;">NULL</span>, 'info'=&gt;'The uid is null!', 'code'=&gt;-401<span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>         <span style="color: #0000ff;">exit</span>(json_encode(<span style="color: #800080;">$output</span><span style="color: #000000;">));
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">16</span>     <span style="color: #008000;">//</span><span style="color: #008000;">假设 $mysql 是数据库</span>
+<span style="color: #008080;">17</span>     <span style="color: #800080;">$mysql</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">18</span>         10001 =&gt; <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">19</span>             'uid'=&gt;10001,
+<span style="color: #008080;">20</span>             'vip'=&gt;5,
+<span style="color: #008080;">21</span>             'nickname' =&gt; 'Shine X',
+<span style="color: #008080;">22</span>             'email'=&gt;'979137@qq.com',
+<span style="color: #008080;">23</span>             'qq'=&gt;979137,
+<span style="color: #008080;">24</span>             'gold'=&gt;1500,
+<span style="color: #008080;">25</span>             'powerplay'=&gt; <span style="color: #0000ff;">array</span>('2xp'=&gt;12,'gem'=&gt;12,'bingo'=&gt;5,'keys'=&gt;5,'chest'=&gt;8),
+<span style="color: #008080;">26</span>             'gems'=&gt; <span style="color: #0000ff;">array</span>('red'=&gt;13,'green'=&gt;3,'blue'=&gt;8,'yellow'=&gt;17),
+<span style="color: #008080;">27</span>             'ctime'=&gt;1376523234,
+<span style="color: #008080;">28</span>             'lastLogin'=&gt;1377123144,
+<span style="color: #008080;">29</span>             'level'=&gt;19,
+<span style="color: #008080;">30</span>             'exp'=&gt;16758,
+<span style="color: #008080;">31</span>         ),
+<span style="color: #008080;">32</span>         10002 =&gt; <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">33</span>             'uid'=&gt;10002,
+<span style="color: #008080;">34</span>             'vip'=&gt;50,
+<span style="color: #008080;">35</span>             'nickname' =&gt; 'elva',
+<span style="color: #008080;">36</span>             'email'=&gt;'elva@ezhi.net',
+<span style="color: #008080;">37</span>             'qq'=&gt;<span style="color: #0000ff;">NULL</span>,
+<span style="color: #008080;">38</span>             'gold'=&gt;14320,
+<span style="color: #008080;">39</span>             'powerplay'=&gt; <span style="color: #0000ff;">array</span>('2xp'=&gt;1,'gem'=&gt;120,'bingo'=&gt;51,'keys'=&gt;5,'chest'=&gt;8),
+<span style="color: #008080;">40</span>             'gems'=&gt; <span style="color: #0000ff;">array</span>('red'=&gt;13,'green'=&gt;3,'blue'=&gt;8,'yellow'=&gt;17),
+<span style="color: #008080;">41</span>             'ctime'=&gt;1376523234,
+<span style="color: #008080;">42</span>             'lastLogin'=&gt;1377123144,
+<span style="color: #008080;">43</span>             'level'=&gt;112,
+<span style="color: #008080;">44</span>             'exp'=&gt;167588,
+<span style="color: #008080;">45</span>         ),
+<span style="color: #008080;">46</span>         10003 =&gt; <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">47</span>             'uid' =&gt; 10003,
+<span style="color: #008080;">48</span>             'vip' =&gt; 5,
+<span style="color: #008080;">49</span>             'nickname' =&gt; 'Lily',
+<span style="color: #008080;">50</span>             'email' =&gt; 'Lily@ezhi.net',
+<span style="color: #008080;">51</span>             'qq' =&gt; <span style="color: #0000ff;">NULL</span>,
+<span style="color: #008080;">52</span>             'gold' =&gt; 1541,
+<span style="color: #008080;">53</span>             'powerplay'=&gt; <span style="color: #0000ff;">array</span>('2xp'=&gt;2,'gem'=&gt;112,'bingo'=&gt;4,'keys'=&gt;7,'chest'=&gt;8),
+<span style="color: #008080;">54</span>             'gems' =&gt; <span style="color: #0000ff;">array</span>('red'=&gt;13,'green'=&gt;3,'blue'=&gt;9,'yellow'=&gt;7),
+<span style="color: #008080;">55</span>             'ctime' =&gt; 1376523234,
+<span style="color: #008080;">56</span>             'lastLogin'=&gt; 1377123144,
+<span style="color: #008080;">57</span>             'level' =&gt; 10,
+<span style="color: #008080;">58</span>             'exp' =&gt; 1758,
+<span style="color: #008080;">59</span>         ),
+<span style="color: #008080;">60</span> <span style="color: #000000;">    );
+</span><span style="color: #008080;">61</span>     
+<span style="color: #008080;">62</span>     <span style="color: #800080;">$uidArr</span> = <span style="color: #0000ff;">array</span>(10001,10002,10003<span style="color: #000000;">);
+</span><span style="color: #008080;">63</span>     <span style="color: #0000ff;">if</span> (<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$uid</span>, <span style="color: #800080;">$uidArr</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">64</span>         <span style="color: #800080;">$output</span> = <span style="color: #0000ff;">array</span>('data' =&gt; <span style="color: #0000ff;">NULL</span>, 'info'=&gt;'The user does not exist!', 'code' =&gt; -402<span style="color: #000000;">);
+</span><span style="color: #008080;">65</span>         <span style="color: #0000ff;">exit</span>(json_encode(<span style="color: #800080;">$output</span><span style="color: #000000;">));
+</span><span style="color: #008080;">66</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">67</span>     <span style="color: #008000;">//</span><span style="color: #008000;">查询数据库</span>
+<span style="color: #008080;">68</span>     <span style="color: #800080;">$userInfo</span> = <span style="color: #800080;">$mysql</span>[<span style="color: #800080;">$uid</span><span style="color: #000000;">];
+</span><span style="color: #008080;">69</span>     
+<span style="color: #008080;">70</span>     <span style="color: #008000;">//</span><span style="color: #008000;">输出数据</span>
+<span style="color: #008080;">71</span>     <span style="color: #800080;">$output</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">72</span>         'data' =&gt; <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">73</span>             'userInfo' =&gt; <span style="color: #800080;">$userInfo</span>,
+<span style="color: #008080;">74</span>             'isLogin' =&gt; <span style="color: #0000ff;">true</span>,<span style="color: #008000;">//</span><span style="color: #008000;">是否首次登陆</span>
+<span style="color: #008080;">75</span>             'unread' =&gt; 4,<span style="color: #008000;">//</span><span style="color: #008000;">未读消息数量</span>
+<span style="color: #008080;">76</span>             'untask' =&gt; 3,<span style="color: #008000;">//</span><span style="color: #008000;">未完成任务</span>
+<span style="color: #008080;">77</span>         ), 
+<span style="color: #008080;">78</span>         'info' =&gt; 'Here is the message which, commonly used in popup window', <span style="color: #008000;">//</span><span style="color: #008000;">消息提示，客户端常会用此作为给弹窗信息。</span>
+<span style="color: #008080;">79</span>         'code' =&gt; 200, <span style="color: #008000;">//</span><span style="color: #008000;">成功与失败的代码，一般都是正数或者负数</span>
+<span style="color: #008080;">80</span> <span style="color: #000000;">    );
+</span><span style="color: #008080;">81</span>     <span style="color: #0000ff;">exit</span>(json_encode(<span style="color: #800080;">$output</span><span style="color: #000000;">));
+</span><span style="color: #008080;">82</span> } <span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$a</span> == 'get_games_result'<span style="color: #000000;">) {
+</span><span style="color: #008080;">83</span>     <span style="color: #008000;">//</span><span style="color: #008000;">...</span>
+<span style="color: #008080;">84</span>     <span style="color: #0000ff;">die</span>('您正在调 get_games_result 接口!'<span style="color: #000000;">);
+</span><span style="color: #008080;">85</span> } <span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$a</span> == 'upload_avatars'<span style="color: #000000;">) {
+</span><span style="color: #008080;">86</span>     <span style="color: #008000;">//</span><span style="color: #008000;">....</span>
+<span style="color: #008080;">87</span>     <span style="color: #0000ff;">die</span>('您正在调 upload_avatars 接口!'<span style="color: #000000;">);
+</span><span style="color: #008080;">88</span> }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p> 点击测试（对于客户端而言，也是直接调用这样的地址）：<br /><a href="http://www.ezhi.net/api/test/index.php" target="_blank">http://www.ezhi.net/api/test/index.php</a><br /><a href="http://www.ezhi.net/api/test/index.php?a=get_users" target="_blank">http://www.ezhi.net/api/test/index.php?a=get_users</a><br /><a href="http://www.ezhi.net/api/test/index.php?a=get_users&amp;uid=10001" target="_blank">http://www.ezhi.net/api/test/index.php?a=get_users&amp;uid=10001</a><br /><a href="http://www.ezhi.net/api/test/index.php?a=get_users&amp;uid=10002" target="_blank">http://www.ezhi.net/api/test/index.php?a=get_users&amp;uid=10002</a><br /><a href="http://www.ezhi.net/api/test/index.php?a=get_users&amp;uid=10003" target="_blank">http://www.ezhi.net/api/test/index.php?a=get_users&amp;uid=10003</a><br /><br /><strong>三、实际项目中，我们在开发 API 应该注意的几个事项（仅供参考）：</strong><br />1、单文件实现多接口的形式有很多种，例如：if..elseif.. 或 switch 或 动态方法 (也就是TP的这种访问函数体的形式)<br />2、对于数据的输出最好用json，json具有相当强大的跨平台性，市场上各大主流编程语言都支持json解析，json正在逐步取代xml，成为网络数据的通用格式<br />3、接口安全，一定要增加接口验证。例如，客户端和服务端针对不同接口统一做好加密方式，服务端在对于每次接口需要都要进行验证。以保证防止接口被恶意刷新或黑客恶意调用，尤其是大型商业应用。<br />4、对于线上的 API 必须保证所有接口正常且关闭所有的错误信息 =&gt; error_reporting(0)，在输出JSON 时，不能有任何其它输出，否则，客户端将解析数据失败，直接 Crash！<br />5、开发 API 和 WEB 有一定的区别，如果是 WEB 的话，可能代码出错了，不会导致特别严重的错误，也许只是导致数据写入和查询失败，也许导致 WEB 的某个部分错位或乱码。但如果是 API，直接 Crash！<br />6、做接口开发，不建议使用框架开发，原因概括起来有两点（其实我有点冒风险的，本人也是 TPer 一枚，毕竟这是TP的官网）：<br />　　1）客户端一般对服务端的响应速度有极高要求，因此，使用最原生态的 PHP 完成接口开发，是最高效的，假如用到了框架，还需要加载各种不需要多余的文件，就好比夏天穿了件冬天的衣服。试想，你在玩手机的时候，使用一个应用随便一个操作，等半天才有动静，你受的了吗？<br /><br />　　2）就是上面第4点提到的，框架对于WEB开发，是件很幸福的事，但对于 API 而言，你实在不敢想象它会给你出什么岔子！最后你将痛苦不堪~~因为很多框架都是为 WEB 诞生的（我也很期待有一天能看到专门为开发 API 而生的框架或者扩展）<br /><br />　　这个也有人纠结，接口效率与稳定性，还得看编码的人，有的人可能写的还不如框架跑的快，也有人觉得用框架没什么问题，这里只是建议，关键看自己的实际情况，同时建议代码上线前压测一下<br /><br />　　说到这，不得不说扯一下，腾讯微博淘宝等开放平台。其实那些开放平台，所谓的开放，就是给你提供一个这样的接口，你根据他们提供的技术文档，按他们制定的格式和要求，调它们提供的接口文件（一般都是返回JSON或者xml），你就可以获取到他们的相关信息，例如：QQ用户基本信息、淘宝店铺、商品消息等等。然后在根据这些消息，在你的应用里完成交互。<br /><br />　　其实，ajax 也是调用 API 的一种体现形式</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

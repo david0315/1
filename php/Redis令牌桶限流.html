@@ -1,0 +1,214 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Redis令牌桶限流' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Redis令牌桶限流</center></div><div class='banquan'>原文出处:本文由博客园博主久伴成忆提供。<br/>
+原文连接:https://www.cnblogs.com/starluke/p/11845207.html</div><br>
+    <h2>一 、场景描述</h2>
+<p>在开发接口服务器的过程中，为了防止客户端对于接口的滥用，保护服务器的资源， 通常来说我们会对于服务器上的各种接口进行调用次数的限制。比如对于某个 用户，他在一个时间段（interval）内，比如 1 分钟，调用服务器接口的次数不能够 大于一个上限（limit），比如说 100 次。如果用户调用接口的次数超过上限的话，就直接拒绝用户的请求，返回错误信息。<br />
+服务接口的流量控制策略：分流、降级、限流等。本文讨论下限流策略，虽然降低了服务接口的访问频率和并发量，却换取服务接口和业务应用系统的高可用。</p>
+<h2>二、常用的限流算法</h2>
+<p><strong>1、漏桶算法</strong><br />
+漏桶(Leaky Bucket)算法思路很简单,水(请求)先进入到漏桶里,漏桶以一定的速度出水(接口有响应速率),当水流入速度过大会直接溢出(访问频率超过接口响应速率),然后就拒绝请求,可以看出漏桶算法能强行限制数据的传输速率.示意图如下:<br />
+</p>
+<p>&nbsp;</p>
+<p>
+
+　　　</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="443" data-height="299"><img style="display: block; margin-left: auto; margin-right: auto;" src="//upload-images.jianshu.io/upload_images/6954572-41b129bdcfec8e80.png?imageMogr2/auto-orient/strip|imageView2/2/w/443/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/6954572-41b129bdcfec8e80.png" data-original-width="443" data-original-height="299" data-original-format="image/png" data-original-filesize="30926" data-image-index="0" />
+
+
+
+
+<src class="image-caption">&nbsp;
+
+
+
+
+<p>
+<br />
+可见这里有两个变量,一个是桶的大小,支持流量突发增多时可以存多少的水(burst),另一个是水桶漏洞的大小(rate)。<br />
+因为漏桶的漏出速率是固定的参数,所以,即使网络中不存在资源冲突(没有发生拥塞),漏桶算法也不能使流突发(burst)到端口速率.因此,漏桶算法对于存在突发特性的流量来说缺乏效率.</p>
+<p><strong>2、令牌桶算法</strong><br />
+令牌桶算法(Token Bucket)和 Leaky Bucket 效果一样但方向相反的算法,更加容易理解.随着时间流逝,系统会按恒定1/QPS时间间隔(如果QPS=100,则间隔是10ms)往桶里加入Token(想象和漏洞漏水相反,有个水龙头在不断的加水),如果桶已经满了就不再加了.新请求来临时,会各自拿走一个Token,如果没有Token可拿了就阻塞或者拒绝服务.</p>
+<p>&nbsp;</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="421" data-height="241"><img style="display: block; margin-left: auto; margin-right: auto;" src="//upload-images.jianshu.io/upload_images/6954572-9e1f32efe25ca77f.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/421/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/6954572-9e1f32efe25ca77f.jpg" data-original-width="421" data-original-height="241" data-original-format="image/jpeg" data-original-filesize="13262" data-image-index="1" />
+
+
+
+
+<src class="image-caption">&nbsp;
+
+
+
+
+<p>令牌桶的另外一个好处是可以方便的改变速度. 一旦需要提高速率,则按需提高放入桶中的令牌的速率. 一般会定时(比如100毫秒)往桶中增加一定数量的令牌, 有些变种算法则实时的计算应该增加的令牌的数量.</p>
+<h2>三、基于PHP+Redis实现的令牌桶算法</h2>
+<pre><code><code class="  language-php"><span class="token php language-php"><span class="token delimiter important">&lt;?php
+<span class="token keyword">namespace <span class="token package">Api<span class="token punctuation">\Lib<span class="token punctuation">;
+
+<span class="token comment">/**
+ * 限流控制
+ */
+<span class="token keyword">class <span class="token class-name">RateLimit
+<span class="token punctuation">{
+    <span class="token keyword">private <span class="token variable">$minNum <span class="token operator">= <span class="token number">60<span class="token punctuation">; <span class="token comment">//单个用户每分访问数
+    <span class="token keyword">private <span class="token variable">$dayNum <span class="token operator">= <span class="token number">10000<span class="token punctuation">; <span class="token comment">//单个用户每天总的访问量
+
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">minLimit<span class="token punctuation">(<span class="token variable">$uid<span class="token punctuation">)
+    <span class="token punctuation">{
+        <span class="token variable">$minNumKey <span class="token operator">= <span class="token variable">$uid <span class="token punctuation">. <span class="token single-quoted-string string">'_minNum'<span class="token punctuation">;
+        <span class="token variable">$dayNumKey <span class="token operator">= <span class="token variable">$uid <span class="token punctuation">. <span class="token single-quoted-string string">'_dayNum'<span class="token punctuation">;
+        <span class="token variable">$resMin    <span class="token operator">= <span class="token variable">$this<span class="token operator">-<span class="token operator">&gt;<span class="token function">getRedis<span class="token punctuation">(<span class="token variable">$minNumKey<span class="token punctuation">, <span class="token variable">$this<span class="token operator">-<span class="token operator">&gt;<span class="token property">minNum<span class="token punctuation">, <span class="token number">60<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$resDay    <span class="token operator">= <span class="token variable">$this<span class="token operator">-<span class="token operator">&gt;<span class="token function">getRedis<span class="token punctuation">(<span class="token variable">$minNumKey<span class="token punctuation">, <span class="token variable">$this<span class="token operator">-<span class="token operator">&gt;<span class="token property">minNum<span class="token punctuation">, <span class="token number">86400<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token keyword">if <span class="token punctuation">(<span class="token operator">!<span class="token variable">$resMin<span class="token punctuation">[<span class="token single-quoted-string string">'status'<span class="token punctuation">] <span class="token operator">|| <span class="token operator">!<span class="token variable">$resDay<span class="token punctuation">[<span class="token single-quoted-string string">'status'<span class="token punctuation">]<span class="token punctuation">) <span class="token punctuation">{
+            <span class="token keyword">exit<span class="token punctuation">(<span class="token variable">$resMin<span class="token punctuation">[<span class="token single-quoted-string string">'msg'<span class="token punctuation">] <span class="token punctuation">. <span class="token variable">$resDay<span class="token punctuation">[<span class="token single-quoted-string string">'msg'<span class="token punctuation">]<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token punctuation">}
+    <span class="token punctuation">}
+
+    <span class="token keyword">public <span class="token keyword">function <span class="token function">getRedis<span class="token punctuation">(<span class="token variable">$key<span class="token punctuation">, <span class="token variable">$initNum<span class="token punctuation">, <span class="token variable">$expire<span class="token punctuation">)
+    <span class="token punctuation">{
+        <span class="token variable">$nowtime  <span class="token operator">= <span class="token function">time<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$result   <span class="token operator">= <span class="token punctuation">[<span class="token single-quoted-string string">'status' <span class="token operator">=<span class="token operator">&gt; <span class="token boolean constant">true<span class="token punctuation">, <span class="token single-quoted-string string">'msg' <span class="token operator">=<span class="token operator">&gt; <span class="token single-quoted-string string">''<span class="token punctuation">]<span class="token punctuation">;
+        <span class="token variable">$redisObj <span class="token operator">= <span class="token variable">$this<span class="token operator">-<span class="token operator">&gt;<span class="token property">di<span class="token operator">-<span class="token operator">&gt;<span class="token function">get<span class="token punctuation">(<span class="token single-quoted-string string">'redis'<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$redis<span class="token operator">-<span class="token operator">&gt;<span class="token function">watch<span class="token punctuation">(<span class="token variable">$key<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$limitVal <span class="token operator">= <span class="token variable">$redis<span class="token operator">-<span class="token operator">&gt;<span class="token function">get<span class="token punctuation">(<span class="token variable">$key<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token keyword">if <span class="token punctuation">(<span class="token variable">$limitVal<span class="token punctuation">) <span class="token punctuation">{
+            <span class="token variable">$limitVal <span class="token operator">= <span class="token function">json_decode<span class="token punctuation">(<span class="token variable">$limitVal<span class="token punctuation">, <span class="token boolean constant">true<span class="token punctuation">)<span class="token punctuation">;
+            <span class="token variable">$newNum   <span class="token operator">= <span class="token function">min<span class="token punctuation">(<span class="token variable">$initNum<span class="token punctuation">, <span class="token punctuation">(<span class="token variable">$limitVal<span class="token punctuation">[<span class="token single-quoted-string string">'num'<span class="token punctuation">] <span class="token operator">- <span class="token number">1<span class="token punctuation">) <span class="token operator">+ <span class="token punctuation">(<span class="token punctuation">(<span class="token variable">$initNum <span class="token operator">/ <span class="token variable">$expire<span class="token punctuation">) <span class="token operator">* <span class="token punctuation">(<span class="token variable">$nowtime <span class="token operator">- <span class="token variable">$limitVal<span class="token punctuation">[<span class="token single-quoted-string string">'time'<span class="token punctuation">]<span class="token punctuation">)<span class="token punctuation">)<span class="token punctuation">)<span class="token punctuation">;
+            <span class="token keyword">if <span class="token punctuation">(<span class="token variable">$newNum <span class="token operator">&gt; <span class="token number">0<span class="token punctuation">) <span class="token punctuation">{
+                <span class="token variable">$redisVal <span class="token operator">= <span class="token function">json_encode<span class="token punctuation">(<span class="token punctuation">[<span class="token single-quoted-string string">'num' <span class="token operator">=<span class="token operator">&gt; <span class="token variable">$newNum<span class="token punctuation">, <span class="token single-quoted-string string">'time' <span class="token operator">=<span class="token operator">&gt; <span class="token function">time<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">]<span class="token punctuation">)<span class="token punctuation">;
+            <span class="token punctuation">} <span class="token keyword">else <span class="token punctuation">{
+                <span class="token keyword">return <span class="token punctuation">[<span class="token single-quoted-string string">'status' <span class="token operator">=<span class="token operator">&gt; <span class="token boolean constant">false<span class="token punctuation">, <span class="token single-quoted-string string">'msg' <span class="token operator">=<span class="token operator">&gt; <span class="token single-quoted-string string">'当前时刻令牌消耗完！'<span class="token punctuation">]<span class="token punctuation">;
+            <span class="token punctuation">}
+        <span class="token punctuation">} <span class="token keyword">else <span class="token punctuation">{
+            <span class="token variable">$redisVal <span class="token operator">= <span class="token function">json_encode<span class="token punctuation">(<span class="token punctuation">[<span class="token single-quoted-string string">'num' <span class="token operator">=<span class="token operator">&gt; <span class="token variable">$initNum<span class="token punctuation">, <span class="token single-quoted-string string">'time' <span class="token operator">=<span class="token operator">&gt; <span class="token function">time<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">]<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token punctuation">}
+        <span class="token variable">$redis<span class="token operator">-<span class="token operator">&gt;<span class="token function">multi<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$redis<span class="token operator">-<span class="token operator">&gt;<span class="token function">set<span class="token punctuation">(<span class="token variable">$key<span class="token punctuation">, <span class="token variable">$redisVal<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token variable">$rob_result <span class="token operator">= <span class="token variable">$redis<span class="token operator">-<span class="token operator">&gt;<span class="token function">exec<span class="token punctuation">(<span class="token punctuation">)<span class="token punctuation">;
+        <span class="token keyword">if <span class="token punctuation">(<span class="token operator">!<span class="token variable">$rob_result<span class="token punctuation">) <span class="token punctuation">{
+            <span class="token variable">$result <span class="token operator">= <span class="token punctuation">[<span class="token single-quoted-string string">'status' <span class="token operator">=<span class="token operator">&gt; <span class="token boolean constant">false<span class="token punctuation">, <span class="token single-quoted-string string">'msg' <span class="token operator">=<span class="token operator">&gt; <span class="token single-quoted-string string">'访问频次过多！'<span class="token punctuation">]<span class="token punctuation">;
+        <span class="token punctuation">}
+        <span class="token keyword">return <span class="token variable">$result<span class="token punctuation">;
+    <span class="token punctuation">}
+<span class="token punctuation">}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code><button class="VJbwyy" type="button"></button></code></pre>
+<p>代码要点：<br />
+<strong>1：首先定义规则</strong><br />
+单个用户每分钟访问次数（$minNum），单个用户每天总的访问次数（$dayNum），接口总的访问次数等不同的规则。<br />
+<strong>2：计算速率</strong><br />
+该代码示例以秒为最小的时间单位，速率=访问次数/时间（$initNum / $expire）<br />
+<strong>3：每次访问后补充的令牌个数计算方式</strong><br />
+获取上次访问的时间即上次存入令牌的时间，计算当前时刻与上次访问的时间差乘以速率就是此次需要补充的令牌个数，注意补充令牌后总的令牌个数不能大于初始化的令牌个数，以补充数和初始化数的最小值为准。<br />
+<strong>4：程序流程</strong><br />
+第一次访问时初始化令牌个数（$minNum），存入Redis同时将当前的时间戳存入以便计算下次需要补充的令牌个数。第二次访问时获取剩余的令牌个数，并添加本次应该补充的令牌个数，补充后如何令牌数&gt;0则当前访问是有效的可以访问，否则令牌使用完毕不可访问。先补充令牌再判断令牌是否&gt;0的原因是由于还有速率这个概念即如果上次剩余的令牌为0但是本次应该补充的令牌&gt;1那么本次依然可以访问。<br />
+<strong>5：针对并发的处理</strong><br />
+使用Redis的乐观锁机制</p>
+<h2>四、Redis乐观锁介绍</h2>
+<p>redis对事务的支持比较简单。redis只能保证一个客户端发起的事务命令可以执行，中间不会插入其他事务。因为redis是单线程的，所以做到上面这点很容易。一般redis接受到客户端的命令后会立即执行，但是如果客户端发起multi命令，redis不会立即执行，而是让当前连接进入事务上下文，把命令放到队列中，接受到exec命令后，redis会顺序执行队列中的命令。并把执行结果打包到一起返回客户端，之后就结束了事务上下文。<br />
+<strong>一、简单的事务控制</strong></p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-view" data-width="310" data-height="275"><img style="display: block; margin-left: auto; margin-right: auto;" src="//upload-images.jianshu.io/upload_images/6954572-5e59163571585275?imageMogr2/auto-orient/strip|imageView2/2/w/310/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/6954572-5e59163571585275" data-original-width="310" data-original-height="275" data-original-format="image/png" data-original-filesize="23738" data-image-index="2" />
+
+
+
+
+<src class="image-caption">&nbsp;
+
+
+
+
+<p>&nbsp;</p>
+<p>这个例子可以看到：两个set命令发出后并没有立即执行而是放到队列中，redis接受到exec命令才开始执行。<br />
+如果有两个线程同时修改了一个变量的值，如何控制事务回滚？下面看乐观锁怎么控制的？<br />
+<strong>二、乐观锁控制事务</strong><br />
+<strong>1.什么是乐观锁？</strong><br />
+大多是基于数据版本的记录机制。什么是数据版本？就是为数据增加一个版本标识，即为数据库表添加一个version字段，当读取数据时，把数据库版本一同读出，当做了修改后，将数据库版本+1，同修改一起提交。如果提交数据的版本号 &gt;数据库当前版本号，提交成功。如图：</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-view" data-width="669" data-height="451"><img style="display: block; margin-left: auto; margin-right: auto;" src="//upload-images.jianshu.io/upload_images/6954572-497186faad8f73f5?imageMogr2/auto-orient/strip|imageView2/2/w/669/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/6954572-497186faad8f73f5" data-original-width="669" data-original-height="451" data-original-format="image/png" data-original-filesize="102789" data-image-index="3" />
+
+
+
+
+<src class="image-caption">&nbsp;
+
+
+
+
+<p>
+<br />
+<strong>2.乐观锁实例</strong><br />
+假设数据库中账户信息表中有一个version字段，当前值为1，账户余额为$500</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-view" data-width="540" data-height="358"><img style="display: block; margin-left: auto; margin-right: auto;" src="//upload-images.jianshu.io/upload_images/6954572-570dc4e8c762c116?imageMogr2/auto-orient/strip|imageView2/2/w/540/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/6954572-570dc4e8c762c116" data-original-width="540" data-original-height="358" data-original-format="image/png" data-original-filesize="92407" data-image-index="4" />
+
+
+
+
+<src class="image-caption">&nbsp;
+
+<p>这样避免了操作员B用旧数据修改表中记录的的可能。<br />
+<strong>3.在redis中怎么体现的？</strong><br />
+redis中用watch监视key，如果key在提交前被修改，则提交不成功。如下：</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-view" data-width="712" data-height="601"><img style="display: block; margin-left: auto; margin-right: auto;" src="//upload-images.jianshu.io/upload_images/6954572-4bebfbd90aa45e2b?imageMogr2/auto-orient/strip|imageView2/2/w/712/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/6954572-4bebfbd90aa45e2b" data-original-width="712" data-original-height="601" data-original-format="image/png" data-original-filesize="63999" data-image-index="5" />
+
+
+
+
+<src class="image-caption">&nbsp;
+
+
+
+
+<p>
+<br />
+当session1还没来得及对age进行修改，session2已经将age的值设为30，session1再执行的时候失败，因为session1对age加了乐观锁的缘故。<br />
+watch命令会监视key，当exec时如果监视的key从调用watch后发生过变化，则整个事务会失败。也可以调用watch多次监视多个key。<br />
+<strong>三、redis事务存在的问题</strong><br />
+redis保证事务中的命令连续执行，但是如果其中一条命令执行失败，事务并不回滚。</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-view" data-width="402" data-height="84"><img style="display: block; margin-left: auto; margin-right: auto;" src="//upload-images.jianshu.io/upload_images/6954572-bb0be1eac55de9df?imageMogr2/auto-orient/strip|imageView2/2/w/402/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/6954572-bb0be1eac55de9df" data-original-width="402" data-original-height="84" data-original-format="image/png" data-original-filesize="10301" data-image-index="6" />
+
+
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="447" data-height="425"><img style="display: block; margin-left: auto; margin-right: auto;" src="//upload-images.jianshu.io/upload_images/6954572-941a31998ba07303?imageMogr2/auto-orient/strip|imageView2/2/w/447/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/6954572-941a31998ba07303" data-original-width="447" data-original-height="425" data-original-format="image/png" data-original-filesize="46662" data-image-index="7" />
+
+
+
+
+<p>
+为age +1的命令成功，因为anme是string类型的，所以不能做加操作，命令有一个失败也不会回滚，age的值已经被修改了</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

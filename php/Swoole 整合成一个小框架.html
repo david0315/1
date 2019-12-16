@@ -1,0 +1,307 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole 整合成一个小框架' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole 整合成一个小框架</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11815462.html</div><br>
+    <p>效果<br /><br /><img src="./images/Swoole 整合成一个小框架0.jpg" alt="" width="363" height="190" /></p>
+<p><img src="./images/Swoole 整合成一个小框架1.jpg" alt="" width="813" height="465" /><br /><br />命令如下：<br /><br />&nbsp;&nbsp;&nbsp; php index.php 可以查看到上图<br /><br />&nbsp;&nbsp;&nbsp; php index.php start 开启服务（Debug模式）<br /><br />&nbsp;&nbsp;&nbsp; php index.php start -d 开启服务（Daemon模式）<br /><br />&nbsp;&nbsp;&nbsp; php index.php status 查看服务状态<br /><br />&nbsp;&nbsp;&nbsp; php index.php reload 服务热加载<br /><br />&nbsp;&nbsp;&nbsp; php index.php stop 关闭服务<br /><br />index.php 这是文件名称，大家叫什么都可以。<br /><br />目录结构如下：<br /><br />&nbsp;&nbsp;&nbsp; ├─ controller&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; ├─ client&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ websocket&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ tcp&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; ├─ server&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ config&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── config.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ core&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── Common.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── Core.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── HandlerException.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ log&nbsp; -- 需要 读/写 权限&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; ├─ index.php<br /><br />目前就这几个文件，后期研究新的知识点会直接集成到这里面。<br /><br />说说实现了什么：<br /><br />1、启动了 WebSocket、HTTP、TCP、UDP 等服务。<br /><br />2、WebSocket 例子，在 client/websocket 文件夹，实现了视频弹幕。<br /><br />3、HTTP 例子，在浏览器直接访问：http://ip:port，逻辑代码在 controller 文件夹。<br /><br />4、TCP 例子，在 client/tcp 文件夹。<br /><br />5、UDP 例子，直接运行 netcat-u ip port 即可。<br /><br />6、相关配置，在 server/config 文件夹。<br />代码<br />这里我还准备了一分学习图和资料，如下：</p>
+<p><img src="./images/Swoole 整合成一个小框架2.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><br />放不全，就放一个主要的文件吧（Core.php）。<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>   &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    class Core    
+    {    
+        private static $serv;    
+        public function __construct() {    
+            set_error_handler(['HandlerException', 'appError']);    
+            register_shutdown_function(['HandlerException', 'fatalError']);    
+        }    
+        public static function run() {    
+            static::checkCli();    
+            static::checkExtension();    
+            static::showUsageUI();    
+            static::parseCommand();    
+        }    
+        protected static function checkCli() {    
+            if (php_sapi_name() !== 'cli') {    
+                exit(output('服务只能运行在 cli sapi 模式下'));    
+            }    
+        }    
+        protected static function checkExtension() {    
+            if (!extension_loaded('swoole')) {    
+                exit(output('请安装 swoole 扩展'));    
+            }    
+        }    
+        protected static function showUsageUI() {    
+            global $argc;    
+            if ($argc &lt;= 1 || $argc &gt;3) {    
+                echo PHP_EOL;    
+                echo "----------------------------------------".PHP_EOL;    
+                echo "|               Swoole                 |".PHP_EOL;    
+                echo "|--------------------------------------|".PHP_EOL;    
+                echo '|    USAGE: php index.php commond      |'.PHP_EOL;    
+                echo '|--------------------------------------|'.PHP_EOL;    
+                echo '|    1. start    以debug模式开启服务   |'.PHP_EOL;    
+                echo '|    2. start -d 以daemon模式开启服务  |'.PHP_EOL;    
+                echo '|    3. status   查看服务状态          |'.PHP_EOL;    
+                echo '|    4. reload   热加载                |'.PHP_EOL;    
+                echo '|    5. stop     关闭服务              |'.PHP_EOL;    
+                echo "----------------------------------------".PHP_EOL;    
+                echo PHP_EOL;    
+                exit;    
+            }    
+        }    
+        protected static function parseCommand() {    
+            global $argv;    
+            $command = $argv[1];    
+            $option  = isset( $argv[2] ) ? $argv[2] : '' ;    
+            switch ($command) {    
+                case 'start':    
+                    if ($option === '-d') { //以daemon形式启动    
+                        get_config(['set@daemonize' =&gt; true]);    
+                    }    
+                    self::workerStart();    
+                    break;    
+                case 'status':    
+                    self::workerStatus();    
+                    break;    
+                case 'reload':    
+                    self::workerReload();    
+                    break;    
+                case 'stop':    
+                    self::workerStop();    
+                    break;    
+                default:    
+                    echo "Bad Command.".PHP_EOL;    
+            }    
+        }    
+        protected static function workerStart() {    
+            $config = get_config();    
+            self::$serv = new swoole_websocket_server($config['ip'], $config['websocket_port']);    
+            self::$serv-&gt;set($config['set']);    
+            self::$serv-&gt;on('Start', function ($serv) use ($config) {    
+                $start = new OnStart();    
+                $start::run($serv, $config);    
+            });    
+            self::$serv-&gt;on('ManagerStart', function ($serv) use ($config) {    
+                $manager_start = new OnManagerStart();    
+                $manager_start::run($serv, $config);    
+            });    
+            self::$serv-&gt;on('WorkerStart', function ($serv, $worker_id) use ($config) {    
+                $worker_start = new OnWorkerStart();    
+                $worker_start::run($serv, $worker_id, $config);    
+            });    
+            //TCP    
+            $tcp = self::$serv-&gt;listen($config['ip'], $config['tcp_port'], SWOOLE_SOCK_TCP);    
+            $tcp-&gt;set($config['tcp_set']);    
+            $tcp-&gt;on('Receive', function ($serv, $fd, $reactor_id, $data) {    
+                $receive = new OnReceive();    
+                $receive::run($serv, $fd, $reactor_id, $data);    
+            });    
+            //UDP    
+            $udp = self::$serv-&gt;listen($config['ip'], $config['udp_port'], SWOOLE_SOCK_UDP);    
+            $udp-&gt;set($config['udp_set']);    
+            $udp-&gt;on('Packet', function ($serv, $data, $client_info) {    
+                $packet = new OnPacket();    
+                $packet::run($serv, $data, $client_info);    
+            });    
+            self::$serv-&gt;on('Task', function ($serv, $task_id, $src_worker_id, $data) use ($config) {    
+                $task = new OnTask();    
+                $dataArr = json_decode($data, true);    
+                switch ($dataArr['server']) {    
+                    case "tcp":    
+                        $task::tcp_task_run($serv, $task_id, $src_worker_id, $data);    
+                        break;    
+                    case "ws":    
+                        $task::ws_task_run($serv, $task_id, $src_worker_id, $data);    
+                        break;    
+                }    
+            });    
+            self::$serv-&gt;on('Open', function ($serv, $request) {    
+                echo output("onOpen: handshake success with fd={$request-&gt;fd}");    
+            });    
+            self::$serv-&gt;on('Message', function ($serv, $frame) {    
+                $message = new OnMessage();    
+                $message::run($serv, $frame);    
+            });    
+            self::$serv-&gt;on('Request', function ($request, $response) {    
+                $req = new OnRequest();    
+                $req::run($request, $response);    
+            });    
+            self::$serv-&gt;on('Finish', function ($serv, $task_id, $data) {    
+                $finish = new OnFinish();    
+                $finish::run($serv, $task_id, $data);    
+            });    
+            self::$serv-&gt;on('Close', function ($serv, $fd, $reactor_id){    
+                try {    
+                    echo output('客户端关闭');    
+                } catch(Exception $e) {    
+                }    
+            });    
+            self::$serv-&gt;on('Shutdown', function ($serv) {    
+               echo output("服务关闭");    
+            });    
+            self::showProcessUI();    
+            self::$serv-&gt;start();    
+        }    
+        protected static function workerStatus() {    
+            $config = get_config();    
+            if (!file_exists($config['master_pid_file']) ||    
+                !file_exists($config['manager_pid_file']) ||    
+                !file_exists($config['worker_pid_file']) ) {    
+                echo output("暂无启动的服务");    
+                return false;    
+            }    
+            self::showProcessUI($config);    
+            $masterPidString = trim(@file_get_contents($config['master_pid_file']));    
+            $masterPidArr    = explode( '-', $masterPidString);    
+            echo str_pad("Master", 18, ' ', STR_PAD_BOTH ).    
+                str_pad($config['master_process_name'], 26, ' ', STR_PAD_BOTH ).    
+                str_pad($masterPidArr[0], 16, ' ', STR_PAD_BOTH ).    
+                str_pad($masterPidArr[1], 16, ' ', STR_PAD_BOTH ).    
+                str_pad($masterPidArr[2], 16, ' ', STR_PAD_BOTH ).PHP_EOL;    
+            $managerPidString = trim(@file_get_contents($config['manager_pid_file']));    
+            $managerPidArr    = explode( '-', $managerPidString);    
+            echo str_pad("Manager", 20, ' ', STR_PAD_BOTH ).    
+                str_pad($config['manager_process_name'], 24, ' ', STR_PAD_BOTH ).    
+                str_pad($managerPidArr[0], 16, ' ', STR_PAD_BOTH ).    
+                str_pad($managerPidArr[1], 16, ' ', STR_PAD_BOTH ).    
+                str_pad($managerPidArr[2], 16, ' ', STR_PAD_BOTH ).PHP_EOL;    
+            $workerPidString = rtrim(@file_get_contents($config['worker_pid_file']), '|' );    
+            $workerPidArr    = explode( '|', $workerPidString );    
+            if (isset($workerPidArr) &amp;&amp; !empty($workerPidArr)) {    
+                foreach ($workerPidArr as $key =&gt; $val) {    
+                    $v = explode( '-', $val);    
+                    echo str_pad("Worker", 18, ' ', STR_PAD_BOTH ).    
+                         str_pad($config['worker_process_name'], 26, ' ', STR_PAD_BOTH ).    
+                         str_pad($v[0], 16, ' ', STR_PAD_BOTH ).    
+                         str_pad($v[1], 16, ' ', STR_PAD_BOTH ).    
+                         str_pad($v[2], 16, ' ', STR_PAD_BOTH ).PHP_EOL;    
+                }    
+            }    
+            $taskPidString = rtrim(@file_get_contents($config['task_pid_file']), '|' );    
+            $taskPidArr  = explode( '|', $taskPidString );    
+            if (isset($taskPidArr) &amp;&amp; !empty($taskPidArr)) {    
+                foreach ($taskPidArr as $key =&gt; $val) {    
+                    $v = explode( '-', $val);    
+                    echo str_pad("Task", 18, ' ', STR_PAD_BOTH ).    
+                         str_pad($config['task_process_name'], 24, ' ', STR_PAD_BOTH ).    
+                         str_pad($v[0], 20, ' ', STR_PAD_BOTH ).    
+                         str_pad($v[1], 12, ' ', STR_PAD_BOTH ).    
+                         str_pad($v[2], 20, ' ', STR_PAD_BOTH ).PHP_EOL;    
+                }    
+            }    
+        }    
+        protected static function workerReload() {    
+            $config = get_config();    
+            if (!file_exists($config['master_pid_file'])) {    
+                echo output("暂无启动的服务");    
+                return false;    
+            }    
+            $masterPidString = trim(file_get_contents($config['master_pid_file']));    
+            $masterPidArr    = explode( '-', $masterPidString);    
+            if (!swoole_process::kill($masterPidArr[0], 0)) {    
+                echo output("PID:{$masterPidArr[0]} 不存在");    
+                return false;    
+            }    
+            swoole_process::kill($masterPidArr[0], SIGUSR1);    
+            @unlink($config['worker_pid_file']);    
+            @unlink($config['task_pid_file']);    
+            echo output("热加载成功");    
+            return true;    
+        }    
+        protected static function workerStop() {    
+            $config = get_config();    
+            if (!file_exists($config['master_pid_file'])) {    
+                echo output("暂无启动的服务");    
+                return false;    
+            }    
+            $masterPidString = trim(file_get_contents($config['master_pid_file']));    
+            $masterPidArr    = explode( '-', $masterPidString);    
+            if (!swoole_process::kill($masterPidArr[0], 0)) {    
+                echo output("PID:{$masterPidArr[0]} 不存在");    
+                return false;    
+            }    
+            swoole_process::kill($masterPidArr[0]);    
+            $time = time();    
+            while (true) {    
+                usleep(2000);    
+                if (!swoole_process::kill($masterPidArr[0], 0)) {    
+                    unlink($config['master_pid_file']);    
+                    unlink($config['manager_pid_file']);    
+                    unlink($config['worker_pid_file']);    
+                    unlink($config['task_pid_file']);    
+                    echo output("服务关闭成功");    
+                    break;    
+                } else {    
+                    if (time() - $time &gt; 5) {    
+                        echo output("服务关闭失败，请重试");    
+                        break;    
+                    }    
+                }    
+            }    
+            return true;    
+        }    
+        protected static function showProcessUI() {    
+            $config = get_config();    
+            if ($config['set']['daemonize'] == true) {    
+                return false;    
+            }    
+            echo str_pad("-", 90, '-', STR_PAD_BOTH) . PHP_EOL;    
+            echo "|" . str_pad("启动/关闭", 92, ' ', STR_PAD_BOTH) . "|" . PHP_EOL;    
+            echo str_pad("-", 90, '-', STR_PAD_BOTH) . PHP_EOL;    
+            echo str_pad("Start success.", 50, ' ', STR_PAD_BOTH) .    
+                str_pad("php index.php stop", 50, ' ', STR_PAD_BOTH) . PHP_EOL;    
+            echo str_pad("-", 90, '-', STR_PAD_BOTH) . PHP_EOL;    
+            echo "|" . str_pad("版本信息", 92, ' ', STR_PAD_BOTH) . "|" . PHP_EOL;    
+            echo str_pad("-", 90, '-', STR_PAD_BOTH) . PHP_EOL;    
+            echo str_pad("Swoole Version:" . SWOOLE_VERSION, 50, ' ', STR_PAD_BOTH) .    
+                str_pad("PHP Version:" . PHP_VERSION, 50, ' ', STR_PAD_BOTH) . PHP_EOL;    
+            echo str_pad("-", 90, '-', STR_PAD_BOTH) . PHP_EOL;    
+            echo "|" . str_pad("IP 信息", 90, ' ', STR_PAD_BOTH) . "|" . PHP_EOL;    
+            echo str_pad("-", 90, '-', STR_PAD_BOTH) . PHP_EOL;    
+            echo str_pad("IP:" . $config['ip'], 50, ' ', STR_PAD_BOTH) .    
+                str_pad("PORT:" . $config['websocket_port'], 50, ' ', STR_PAD_BOTH) . PHP_EOL;    
+            echo str_pad("-", 90, '-', STR_PAD_BOTH) . PHP_EOL;    
+            echo "|" . str_pad("进程信息", 92, ' ', STR_PAD_BOTH) . "|" . PHP_EOL;    
+            echo str_pad("-", 90, '-', STR_PAD_BOTH) . PHP_EOL;    
+            echo str_pad("Swoole进程", 20, ' ', STR_PAD_BOTH) .    
+                str_pad('进程别名', 30, ' ', STR_PAD_BOTH) .    
+                str_pad('进程ID', 18, ' ', STR_PAD_BOTH) .    
+                str_pad('父进程ID', 18, ' ', STR_PAD_BOTH) .    
+                str_pad('用户', 18, ' ', STR_PAD_BOTH) . PHP_EOL;    
+        }    
+        protected static function signalHandler() {    
+            //TODO 未完成    
+            //swoole_process::signal(SIGINT, function ($signal) {    
+            //    echo $signal;    
+            //    return;    
+            //});    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

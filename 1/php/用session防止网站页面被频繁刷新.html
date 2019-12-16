@@ -1,0 +1,59 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修用session防止网站页面被频繁刷新' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>用session防止网站页面被频繁刷新</center></div><div class='banquan'>原文出处:本文由博客园博主yangzailu提供。<br/>
+原文连接:https://www.cnblogs.com/yangzailu/p/11376235.html</div><br>
+    <p>session防止网站页面频繁被刷新</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php
+
+//公司网站老是受到攻击，这是之前在网上看到的一个用session防止IP频繁访问的方法，我们公司用的是Memcache，都差不多，就是存储方式不一样。
+//话不多说，直接上代码：
+
+//代理IP直接退出
+empty($_SERVER['HTTP_VIA']) or exit('Access Denied');
+//防止快速刷新
+session_start();
+$seconds = '3'; //时间段[秒]
+$refresh = '5'; //刷新次数
+//设置监控变量
+$cur_time = time();
+if(isset($_SESSION['last_time'])){
+    $_SESSION['refresh_times'] += 1;
+}else{
+    $_SESSION['refresh_times'] = 1;
+    $_SESSION['last_time'] = $cur_time;
+}
+//处理监控结果
+if($cur_time - $_SESSION['last_time'] &lt; $seconds){
+    if($_SESSION['refresh_times'] &gt;= $refresh){
+        //跳转至攻击者服务器地址
+        header(sprintf('Location:%s', 'http://www.baidu.com'));
+        exit('Access Denied');
+    }
+}else{
+    $_SESSION['refresh_times'] = 0;
+    $_SESSION['last_time'] = $cur_time;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

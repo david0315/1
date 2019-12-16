@@ -1,0 +1,466 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Php无限层级并显示层级数' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Php无限层级并显示层级数</center></div><div class='banquan'>原文出处:本文由博客园博主周伯通的麦田提供。<br/>
+原文连接:https://www.cnblogs.com/phpper/p/10821203.html</div><br>
+    <p>今天在处理递归无限层级菜单时，遇到一个稍微烧脑的问题，如何显示当前节点所在的层级数。<br />废话不多说，我们先看个直观的无限层级：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 这里的arr是直接从数据库取出的，仅作为测试数据</span>
+<span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+    </span><span style="color: #0000ff;">array</span>('id' =&gt; 1, 'name' =&gt; '一级菜单a', 'pid' =&gt; 0),<span style="color: #008000;">//</span><span style="color: #008000;"> pid 父级id</span>
+    <span style="color: #0000ff;">array</span>('id' =&gt; 2, 'name' =&gt; '一级菜单b', 'pid' =&gt; 0),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 3, 'name' =&gt; '二级菜单a', 'pid' =&gt; 1),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 4, 'name' =&gt; '二级菜单b', 'pid' =&gt; 1),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 5, 'name' =&gt; '二级菜单c', 'pid' =&gt; 2),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 6, 'name' =&gt; '二级菜单d', 'pid' =&gt; 2),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 7, 'name' =&gt; '三级菜单a', 'pid' =&gt; 3),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 8, 'name' =&gt; '三级菜单b', 'pid' =&gt; 3),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 9, 'name' =&gt; '四级菜单a', 'pid' =&gt; 8),<span style="color: #000000;">
+);
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">* 获取所有子节点
+ * @param $data 所有节点数组
+ * @param $id   $pid 父级节点id
+ * @param $level  层级
+ * @return array
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> getTree(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$pid</span>, <span style="color: #800080;">$level = 0</span><span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$list</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$v</span>['pid'] == <span style="color: #800080;">$pid</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$v</span>['level'] = <span style="color: #800080;">$level</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$v</span>['name'] = <span style="color: #800080;">$v</span>['name'].'('.(<span style="color: #800080;">$level</span>+1).'级)'; <span style="color: #008000;">//</span><span style="color: #008000;"> 这里可以加个层级次数</span>
+            <span style="color: #800080;">$v</span>['children'] = getTree(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$v</span>['id'], <span style="color: #800080;">$level</span> + 1<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$v</span>['children'] == <span style="color: #0000ff;">null</span><span style="color: #000000;">){
+                </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$v</span>['children'<span style="color: #000000;">]);
+            }
+            </span><span style="color: #800080;">$list</span>[] = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$list</span><span style="color: #000000;">;
+}
+
+
+</span><span style="color: #800080;">$menu</span> = getTree(<span style="color: #800080;">$arr</span>, 0, 0<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$json</span> = json_encode(<span style="color: #800080;">$menu</span><span style="color: #000000;">);
+</span>?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="ie=edge"&gt;
+    &lt;title&gt;Document&lt;/title&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/vue"&gt;&lt;/script&gt;
+
+    &lt;style&gt;
+        *<span style="color: #000000;">{
+            box</span>-sizing: border-<span style="color: #000000;">box;
+            margin</span>: 0;padding: 0<span style="color: #000000;">;
+        }
+        </span>*:before,*:<span style="color: #000000;">after{
+            box</span>-sizing: border-<span style="color: #000000;">box;
+        }
+        ul</span>,<span style="color: #000000;">
+        li {
+            </span><span style="color: #0000ff;">list</span>-style:<span style="color: #000000;"> none;
+        }
+
+        </span>.<span style="color: #000000;">l_tree_container {
+            width</span>: 100%<span style="color: #000000;">;
+            height</span>: 100%<span style="color: #000000;">;
+            box</span>-shadow: 0 0 3px <span style="color: #008000;">#</span><span style="color: #008000;">ccc;</span>
+            margin:<span style="color: #000000;"> 13px;
+            position</span>:<span style="color: #000000;"> relative;
+        }
+
+        </span>.<span style="color: #000000;">l_tree {
+            width</span>: calc(100% -<span style="color: #000000;"> 44px);
+            height</span>: 100%<span style="color: #000000;">;
+            padding</span>-left:<span style="color: #000000;"> 42px;
+        }
+        </span>.<span style="color: #000000;">l_tree_branch {
+            width</span>: 100%<span style="color: #000000;">;
+            height</span>: 100%<span style="color: #000000;">;
+            display</span>:<span style="color: #000000;"> block;
+            padding</span>:<span style="color: #000000;"> 13px;
+            position</span>:<span style="color: #000000;"> relative;
+        }
+
+        </span>.l_tree_branch .<span style="color: #000000;">l_tree_children_btn {
+            width</span>:<span style="color: #000000;"> 19px;
+            height</span>:<span style="color: #000000;"> 19px;
+            background</span>-color: <span style="color: #008000;">#</span><span style="color: #008000;">23b1f0;</span>
+            font-size:<span style="color: #000000;"> 14px;
+            text</span>-align:<span style="color: #000000;"> center;
+            color</span>: <span style="color: #008000;">#</span><span style="color: #008000;">ffffff;</span>
+            outline:<span style="color: #000000;"> none;
+            border</span>: 0<span style="color: #000000;">;
+            cursor</span>:<span style="color: #000000;"> pointer;
+        }
+
+        ul</span>.l_tree:<span style="color: #000000;">before {
+            content</span>: ''<span style="color: #000000;">;
+            border</span>-left: 1px dashed <span style="color: #008000;">#</span><span style="color: #008000;">999999;</span>
+            height: calc(100%<span style="color: #000000;">);
+            position</span>:<span style="color: #000000;"> absolute;
+            left</span>:<span style="color: #000000;"> 10px;
+            top</span>:<span style="color: #000000;"> 0px;
+        }
+
+        </span>.l_tree .l_tree_branch:last-child::<span style="color: #000000;">before {
+            content</span>: ''<span style="color: #000000;">;
+            width</span>:<span style="color: #000000;"> 3px;
+            height</span>: calc(100% -<span style="color: #000000;"> 24px);
+            display</span>:<span style="color: #000000;"> block;
+            background</span>-color: <span style="color: #008000;">#</span><span style="color: #008000;">ffffff;</span>
+            position:<span style="color: #000000;"> absolute;
+            bottom</span>: 0<span style="color: #000000;">;
+            left</span>: -<span style="color: #000000;">34px;
+        }
+
+        </span>.l_tree,
+        .<span style="color: #000000;">l_tree_branch {
+            position</span>:<span style="color: #000000;"> relative;
+        }
+
+        </span>.l_tree_branch::<span style="color: #000000;">after {
+            content</span>: ''<span style="color: #000000;">;
+            width</span>:<span style="color: #000000;"> 40px;
+            height</span>: 0<span style="color: #000000;">;
+            border</span>-bottom: 1px dashed <span style="color: #008000;">#</span><span style="color: #008000;">000;</span>
+            position:<span style="color: #000000;"> absolute;
+            right</span>: calc(100% -<span style="color: #000000;"> 9px);
+            top</span>:<span style="color: #000000;"> 22px;
+        }
+
+        </span>.l_tree_container&gt;.l_tree::before,
+        .l_tree_container&gt;.l_tree&gt;.l_tree_branch::<span style="color: #000000;">after {
+            display</span>:<span style="color: #000000;"> none;
+        }
+    </span>&lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;div id="demo"&gt;
+    &lt;div <span style="color: #0000ff;">class</span>="l_tree_container"&gt;
+        &lt;ew-tree :model="testdata"&gt;&lt;/ew-tree&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+    <span style="color: #008000;">//</span><span style="color: #008000;"> 树组件</span>
+    Vue.component('ew-tree',<span style="color: #000000;"> {
+        template</span>:<span style="color: #000000;"> `
+        </span>&lt;ul <span style="color: #0000ff;">class</span>="l_tree"&gt;
+            &lt;li <span style="color: #0000ff;">class</span>="l_tree_branch" v-<span style="color: #0000ff;">for</span>="item in model" :<span style="color: #008080;">key</span>="item.id"&gt;
+                &lt;div <span style="color: #0000ff;">class</span>="l_tree_click"&gt;
+                    &lt;button type="button" <span style="color: #0000ff;">class</span>="l_tree_children_btn" v-<span style="color: #0000ff;">if</span>="item.children"  @click="toggle(item)"&gt;{{ !item.show ? '-' : '+' }}&lt;/button&gt;
+                    &lt;span <span style="color: #0000ff;">class</span>="l_folder"&gt;{{ item.name }}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;ew-tree v-show="!item.show" v-<span style="color: #0000ff;">if</span>="item.children" :model="item.children"&gt;&lt;/ew-tree&gt;
+            &lt;/li&gt;
+        &lt;/ul&gt;`,<span style="color: #000000;">
+        props</span>:<span style="color: #000000;"> {
+            model</span>:<span style="color: #000000;"> {}
+        }</span>,<span style="color: #000000;">
+        methods</span>:<span style="color: #000000;"> {
+            toggle</span>: <span style="color: #0000ff;">function</span><span style="color: #000000;"> (item) {
+                </span><span style="color: #0000ff;">var</span> idx = this.model.<span style="color: #000000;">indexOf(item)
+                Vue</span>.set(this.model[idx], 'show', !item.<span style="color: #000000;">show)
+            }
+        }
+    });
+    </span><span style="color: #0000ff;">new</span><span style="color: #000000;"> Vue({
+        el</span>: "#demo",<span style="color: #000000;">
+        data() {
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> {
+                testdata</span>: &lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$json</span>?&gt;<span style="color: #000000;">
+            }
+        }
+    })
+</span>&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<p><img src="./images/Php无限层级并显示层级数0.jpg" alt="" /></p>
+<p>我们看到所有节点层级数没问题，那么我如何查看节点中pid=3的所有节点层级关系呢</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$menu</span> = getTree(<span style="color: #800080;">$arr</span>, 3, 0);</code></pre>
+
+<p><img src="./images/Php无限层级并显示层级数1.jpg" alt="" /></p>
+<p>显然不对，况且菜单展示并不友好，pid=3的父节点至少要显示在顶层吧。层级数暂且不管，我们先解决如何显示顶层pid=3的树形结构：<br />pid=3对应的节点是：二级菜单a。这个可以直接根据数据id查询出来，此处仅做演示哈。调整下代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$menu</span> = getTree(<span style="color: #800080;">$arr</span>, 3, 0<span style="color: #000000;">);
+</span><span style="color: #800080;">$menu</span> = <span style="color: #0000ff;">array</span>(['name' =&gt; '二级菜单a','children'=&gt; <span style="color: #800080;">$menu</span><span style="color: #000000;">]);
+</span><span style="color: #800080;">$json</span> = json_encode(<span style="color: #800080;">$menu</span>);</code></pre>
+
+<p><img src="./images/Php无限层级并显示层级数2.jpg" alt="" /></p>
+<p>OK，完美，同样要显示所有pid=1的节点层级关系，一样，pid=1对应的节点是 一级菜单a</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$menu</span> = getTree(<span style="color: #800080;">$arr</span>, 1, 0<span style="color: #000000;">);
+</span><span style="color: #800080;">$menu</span> = <span style="color: #0000ff;">array</span>(['name' =&gt; '一级菜单a','children'=&gt; <span style="color: #800080;">$menu</span><span style="color: #000000;">]);
+</span><span style="color: #800080;">$json</span> = json_encode(<span style="color: #800080;">$menu</span>);</code></pre>
+
+<p><img src="./images/Php无限层级并显示层级数3.jpg" alt="" /></p>
+<p>好，回到 刚才的话题，如何正确的显示每个节点所在的层级数呢？ 这里我也思考了很久，也没找到快捷的方法。<br />最终我还是递归的查询本节点所有的父节点id集合：完整代码如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 这里的arr是直接从数据库取出的，仅作为测试数据</span>
+<span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+    </span><span style="color: #0000ff;">array</span>('id' =&gt; 1, 'name' =&gt; '一级菜单a', 'pid' =&gt; 0),<span style="color: #008000;">//</span><span style="color: #008000;"> pid 父级id</span>
+    <span style="color: #0000ff;">array</span>('id' =&gt; 2, 'name' =&gt; '一级菜单b', 'pid' =&gt; 0),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 3, 'name' =&gt; '二级菜单a', 'pid' =&gt; 1),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 4, 'name' =&gt; '二级菜单b', 'pid' =&gt; 1),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 5, 'name' =&gt; '二级菜单c', 'pid' =&gt; 2),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 6, 'name' =&gt; '二级菜单d', 'pid' =&gt; 2),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 7, 'name' =&gt; '三级菜单a', 'pid' =&gt; 3),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 8, 'name' =&gt; '三级菜单b', 'pid' =&gt; 3),
+    <span style="color: #0000ff;">array</span>('id' =&gt; 9, 'name' =&gt; '四级菜单a', 'pid' =&gt; 8),<span style="color: #000000;">
+);
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">* 获取所有子节点
+ * @param $data 所有节点数组
+ * @param $id $pid 父级节点id
+ * @param $level  层级
+ * @return array
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> getTree(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$pid</span>, <span style="color: #800080;">$level</span> = 0<span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$list</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$v</span>['pid'] == <span style="color: #800080;">$pid</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$v</span>['level'] = <span style="color: #800080;">$level</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$v</span>['name'] = <span style="color: #800080;">$v</span>['name'] . '(' . (<span style="color: #800080;">$level</span> + 1) . '级)'; <span style="color: #008000;">//</span><span style="color: #008000;"> 这里可以加个层级次数</span>
+            <span style="color: #800080;">$v</span>['children'] = getTree(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$v</span>['id'], <span style="color: #800080;">$level</span> + 1<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$v</span>['children'] == <span style="color: #0000ff;">null</span><span style="color: #000000;">) {
+                </span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$v</span>['children'<span style="color: #000000;">]);
+            }
+            </span><span style="color: #800080;">$list</span>[] = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$list</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">* 根据子节点获取父节点id
+ * @param $data 所有节点数组
+ * @param $id   id  主键id
+ * @return array
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> getParentid(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$id</span><span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$v</span>['id'] == <span style="color: #800080;">$id</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$arr</span>[] = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">$arr[$v['id']]=$v['name'];</span>
+            <span style="color: #800080;">$arr</span> = <span style="color: #008080;">array_merge</span>(getParentid(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$v</span>['pid']), <span style="color: #800080;">$arr</span><span style="color: #000000;">);
+        }
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$arr</span><span style="color: #000000;">;
+
+}
+
+</span><span style="color: #800080;">$id</span> = 8 ; <span style="color: #008000;">//</span><span style="color: #008000;"> 对应的节点是: 三级菜单b 对应的pid 是 3</span>
+<span style="color: #800080;">$pid</span> = 3; <span style="color: #008000;">//</span><span style="color: #008000;"> 对应的节点是  二级菜单a</span>
+
+<span style="color: #800080;">$toparr</span> = getParentid(<span style="color: #800080;">$arr</span>, <span style="color: #800080;">$id</span>); <span style="color: #008000;">//</span><span style="color: #008000;"> 节点为8的所有父节点 id: 1 3  8 这里包含了自身，注意剔除</span>
+
+<span style="color: #800080;">$level</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$toparr</span>); <span style="color: #008000;">//</span><span style="color: #008000;"> 节点所在的层级数</span>
+<span style="color: #800080;">$menu</span> = getTree(<span style="color: #800080;">$arr</span>, <span style="color: #800080;">$pid</span>, <span style="color: #800080;">$level</span>-1<span style="color: #000000;">);
+</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$pid</span><span style="color: #000000;">)
+    </span><span style="color: #800080;">$menu</span> = <span style="color: #0000ff;">array</span>(['name' =&gt; '二级菜单a' . '(' . (<span style="color: #800080;">$level</span>-1) . '级)', 'children' =&gt; <span style="color: #800080;">$menu</span><span style="color: #000000;">]);
+
+</span><span style="color: #800080;">$json</span> = json_encode(<span style="color: #800080;">$menu</span><span style="color: #000000;">);
+</span>?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="ie=edge"&gt;
+    &lt;title&gt;Document&lt;/title&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/vue"&gt;&lt;/script&gt;
+
+    &lt;style&gt;
+        *<span style="color: #000000;"> {
+            box</span>-sizing: border-<span style="color: #000000;">box;
+            margin</span>: 0<span style="color: #000000;">;
+            padding</span>: 0<span style="color: #000000;">;
+        }
+
+        </span>*:before, *:<span style="color: #000000;">after {
+            box</span>-sizing: border-<span style="color: #000000;">box;
+        }
+
+        ul</span>,<span style="color: #000000;">
+        li {
+            </span><span style="color: #0000ff;">list</span>-style:<span style="color: #000000;"> none;
+        }
+
+        </span>.<span style="color: #000000;">l_tree_container {
+            width</span>: 100%<span style="color: #000000;">;
+            height</span>: 100%<span style="color: #000000;">;
+            box</span>-shadow: 0 0 3px <span style="color: #008000;">#</span><span style="color: #008000;">ccc;</span>
+            margin:<span style="color: #000000;"> 13px;
+            position</span>:<span style="color: #000000;"> relative;
+        }
+
+        </span>.<span style="color: #000000;">l_tree {
+            width</span>: calc(100% -<span style="color: #000000;"> 44px);
+            height</span>: 100%<span style="color: #000000;">;
+            padding</span>-left:<span style="color: #000000;"> 42px;
+        }
+
+        </span>.<span style="color: #000000;">l_tree_branch {
+            width</span>: 100%<span style="color: #000000;">;
+            height</span>: 100%<span style="color: #000000;">;
+            display</span>:<span style="color: #000000;"> block;
+            padding</span>:<span style="color: #000000;"> 13px;
+            position</span>:<span style="color: #000000;"> relative;
+        }
+
+        </span>.l_tree_branch .<span style="color: #000000;">l_tree_children_btn {
+            width</span>:<span style="color: #000000;"> 19px;
+            height</span>:<span style="color: #000000;"> 19px;
+            background</span>-color: <span style="color: #008000;">#</span><span style="color: #008000;">23b1f0;</span>
+            font-size:<span style="color: #000000;"> 14px;
+            text</span>-align:<span style="color: #000000;"> center;
+            color</span>: <span style="color: #008000;">#</span><span style="color: #008000;">ffffff;</span>
+            outline:<span style="color: #000000;"> none;
+            border</span>: 0<span style="color: #000000;">;
+            cursor</span>:<span style="color: #000000;"> pointer;
+        }
+
+        ul</span>.l_tree:<span style="color: #000000;">before {
+            content</span>: ''<span style="color: #000000;">;
+            border</span>-left: 1px dashed <span style="color: #008000;">#</span><span style="color: #008000;">999999;</span>
+            height: calc(100%<span style="color: #000000;">);
+            position</span>:<span style="color: #000000;"> absolute;
+            left</span>:<span style="color: #000000;"> 10px;
+            top</span>:<span style="color: #000000;"> 0px;
+        }
+
+        </span>.l_tree .l_tree_branch:last-child::<span style="color: #000000;">before {
+            content</span>: ''<span style="color: #000000;">;
+            width</span>:<span style="color: #000000;"> 3px;
+            height</span>: calc(100% -<span style="color: #000000;"> 24px);
+            display</span>:<span style="color: #000000;"> block;
+            background</span>-color: <span style="color: #008000;">#</span><span style="color: #008000;">ffffff;</span>
+            position:<span style="color: #000000;"> absolute;
+            bottom</span>: 0<span style="color: #000000;">;
+            left</span>: -<span style="color: #000000;">34px;
+        }
+
+        </span>.l_tree,
+        .<span style="color: #000000;">l_tree_branch {
+            position</span>:<span style="color: #000000;"> relative;
+        }
+
+        </span>.l_tree_branch::<span style="color: #000000;">after {
+            content</span>: ''<span style="color: #000000;">;
+            width</span>:<span style="color: #000000;"> 40px;
+            height</span>: 0<span style="color: #000000;">;
+            border</span>-bottom: 1px dashed <span style="color: #008000;">#</span><span style="color: #008000;">000;</span>
+            position:<span style="color: #000000;"> absolute;
+            right</span>: calc(100% -<span style="color: #000000;"> 9px);
+            top</span>:<span style="color: #000000;"> 22px;
+        }
+
+        </span>.l_tree_container &gt; .l_tree::before,
+        .l_tree_container &gt; .l_tree &gt; .l_tree_branch::<span style="color: #000000;">after {
+            display</span>:<span style="color: #000000;"> none;
+        }
+    </span>&lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;div id="demo"&gt;
+    &lt;div <span style="color: #0000ff;">class</span>="l_tree_container"&gt;
+        &lt;ew-tree :model="testdata"&gt;&lt;/ew-tree&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+    <span style="color: #008000;">//</span><span style="color: #008000;"> 树组件</span>
+    Vue.component('ew-tree',<span style="color: #000000;"> {
+        template</span>:<span style="color: #000000;"> `
+        </span>&lt;ul <span style="color: #0000ff;">class</span>="l_tree"&gt;
+            &lt;li <span style="color: #0000ff;">class</span>="l_tree_branch" v-<span style="color: #0000ff;">for</span>="item in model" :<span style="color: #008080;">key</span>="item.id"&gt;
+                &lt;div <span style="color: #0000ff;">class</span>="l_tree_click"&gt;
+                    &lt;button type="button" <span style="color: #0000ff;">class</span>="l_tree_children_btn" v-<span style="color: #0000ff;">if</span>="item.children"  @click="toggle(item)"&gt;{{ !item.show ? '-' : '+' }}&lt;/button&gt;
+                    &lt;span <span style="color: #0000ff;">class</span>="l_folder"&gt;{{ item.name }}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;ew-tree v-show="!item.show" v-<span style="color: #0000ff;">if</span>="item.children" :model="item.children"&gt;&lt;/ew-tree&gt;
+            &lt;/li&gt;
+        &lt;/ul&gt;`,<span style="color: #000000;">
+        props</span>:<span style="color: #000000;"> {
+            model</span>:<span style="color: #000000;"> {}
+        }</span>,<span style="color: #000000;">
+        methods</span>:<span style="color: #000000;"> {
+            toggle</span>: <span style="color: #0000ff;">function</span><span style="color: #000000;"> (item) {
+                </span><span style="color: #0000ff;">var</span> idx = this.model.<span style="color: #000000;">indexOf(item)
+                Vue</span>.set(this.model[idx], 'show', !item.<span style="color: #000000;">show)
+            }
+        }
+    });
+    </span><span style="color: #0000ff;">new</span><span style="color: #000000;"> Vue({
+        el</span>: "#demo",<span style="color: #000000;">
+        data() {
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> {
+                testdata</span>: &lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$json</span>?&gt;<span style="color: #000000;">
+            }
+        }
+    })
+</span>&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<p><img src="./images/Php无限层级并显示层级数4.jpg" alt="" /></p>
+<p>同样要显示所有节点：直接把pid赋值0，比如：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$id</span> = 2 ; <span style="color: #008000;">//</span><span style="color: #008000;"> 对应的节点是: 一级菜单b 对应的pid 是 0</span>
+<span style="color: #800080;">$pid</span> = 0; <span style="color: #008000;">//</span><span style="color: #008000;"> 对应的节点是 0 为 一级节点  显示所有节点，上面的$id用不到</span>
+
+<span style="color: #800080;">$toparr</span> = getParentid(<span style="color: #800080;">$arr</span>, <span style="color: #800080;">$id</span>); <span style="color: #008000;">//</span>
+
+<span style="color: #800080;">$level</span> = <span style="color: #008080;">count</span>(<span style="color: #800080;">$toparr</span>); <span style="color: #008000;">//</span><span style="color: #008000;"> 节点所在的层级数</span>
+<span style="color: #800080;">$menu</span> = getTree(<span style="color: #800080;">$arr</span>, <span style="color: #800080;">$pid</span>, <span style="color: #800080;">$level</span>-1<span style="color: #000000;">);
+</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$pid</span><span style="color: #000000;">)
+    </span><span style="color: #800080;">$menu</span> = <span style="color: #0000ff;">array</span>(['name' =&gt; '二级菜单a' . '(' . (<span style="color: #800080;">$level</span>-1) . '级)', 'children' =&gt; <span style="color: #800080;">$menu</span><span style="color: #000000;">]);
+
+</span><span style="color: #800080;">$json</span> = json_encode(<span style="color: #800080;">$menu</span>);</code></pre>
+
+<p><img src="./images/Php无限层级并显示层级数5.jpg" alt="" /></p>
+<p>&nbsp;看起来没毛病，博友们如果有好的办法获取任意一个节点所处的层级数，欢迎拍砖留言哈。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

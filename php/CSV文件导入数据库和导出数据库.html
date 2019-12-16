@@ -1,0 +1,42 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修CSV文件导入数据库和导出数据库' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>CSV文件导入数据库和导出数据库</center></div><div class='banquan'>原文出处:本文由博客园博主思源林提供。<br/>
+原文连接:https://www.cnblogs.com/yinfa/p/11267198.html</div><br>
+    <p>实例一：</p>
+<p>&lt;?php<br />    $filename = 'test';<br />    //导出文件<br />    header("Content-type: application/vnd.ms-excel; charset=utf-8");<br />    Header("Content-Disposition: attachment; filename=".$filename.".csv");</p>
+<p>    echo "商品名称,商品编号,商品价格,商品品牌,商品颜色\n";<br />    <br />    $arr = [<br />        ['貂秋1','dq00001','1000','雕牌','红色'],<br />        ['貂秋2','dq00002','1000','雕牌','蓝色'],<br />        ['貂秋3','dq00003','1000','雕牌','绿色'],<br />        ['貂秋4','dq00004','1000','雕牌','白色']<br />    ];<br />    //将数组循环遍历并输出<br />    foreach ($arr as $item){<br />        echo implode(',',$item)."\n";<br />    }</p>
+<p>&nbsp;</p>
+<p>示例二：</p>
+<p>//从数据库中导出</p>
+<p>$conn = mysqli_connect('localhost','root','123456','st0614');//连接数据库</p>
+<p>$filename = 'student';//文件名为student<br />        header("Content-type: application/vnd.ms-excel; charset=utf-8");<br />        Header("Content-Disposition: attachment; filename=".$filename.".csv");</p>
+<p>        $res = mysqli_query($conn,'select * from student');<br />        echo "ID,姓名,性别,年龄,院系,班级,头像\n";//表头<br />        while($row = mysqli_fetch_assoc($res))//获取数据库数据<br />        {<br />            $arr[] = $row;<br />        }<br />        foreach ($arr as $item){<br />            echo implode(',',$item)."\n";//输出<br />        }</p>
+<p>//SVN导入数据库</p>
+<p>$file = 'text.txt';<br />    if (isset($_POST['commit'])){<br />        $file = $_FILES['csv'];<br />        $fileName=$file['tmp_name'];</p>
+<p>        $fp = fopen($fileName,'r');<br />        $i=0;<br />        while ($file_data = fgetcsv($fp))<br />        {<br />            $i++;<br />            if($i==1)<br />            {<br />                continue;//过滤表头<br />            }else{<br />                $data[$i] = $file_data;<br />            }</p>
+<p>        }<br />        fclose($fp);<br />    }</p>
+<p>&lt;-- ---------请分开--------- --&gt;<br />    //存入数据库<br />    if (isset($data)){<br />foreach ($data as $item){<br />&nbsp; &nbsp;$name = iconv('gb2312','utf-8',$item[1]);<br />&nbsp; &nbsp;$sql = "insert into student(`name`,`sex`,`age`,`d_id`,`class_id`,`tumble`) values('{$name}',{$item[2]},{$item[3]},{$item[4]},{$item[5]},'{$item[6]}')";<br />&nbsp; &nbsp;$res = mysqli_query($conn,$sql);<br />        }<br />&nbsp;if ($res){<br />&nbsp; &nbsp;echo '上传成功！';<br />&nbsp;}else{<br />&nbsp; &nbsp;echo '上传失败！';<br />&nbsp;}<br />    }</p>
+<p>?&gt;<br />&lt;!doctype html&gt;<br />&lt;html lang="en"&gt;<br />&lt;head&gt;<br />    &lt;meta charset="UTF-8"&gt;<br />    &lt;meta name="viewport"<br />          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"&gt;<br />    &lt;meta http-equiv="X-UA-Compatible" content="ie=edge"&gt;<br />    &lt;title&gt;Document&lt;/title&gt;<br />&lt;/head&gt;<br />&lt;body&gt;</p>
+<p>    &lt;form action="" method="post" enctype="multipart/form-data"&gt;<br />        csv文件:<br />        &lt;input type="file"name="csv"&gt;<br />&lt;--&lt;button id="btn" onclick="&lt;?php //download(); ?&gt;"&gt;下载&lt;/button&gt;--&gt;<br />        &lt;input type="submit" name="commit" value="上传"&gt;<br />    &lt;/form&gt;</p>
+<p>&lt;/body&gt;<br />&lt;/html&gt;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,59 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 中move_uploaded_file 上传中文文件名失败' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 中move_uploaded_file 上传中文文件名失败</center></div><div class='banquan'>原文出处:本文由博客园博主周伯通的麦田提供。<br/>
+原文连接:https://www.cnblogs.com/phpper/p/10721696.html</div><br>
+    <p>项目需要上传文件名保持不变，发现上传中文失败：错误如下：</p>
+<src class="cnblogs_code">
+<pre><code>move_uploaded_file(public/upload/files/<span style="color: #800080;">2019</span>/<span style="color: #800080;">04</span>-<span style="color: #800080;">17</span>/\开密二次开发.rar): failed to open stream: Invalid argument</code></pre>
+
+<p>失败的原因大致猜到是编码问题.保存文件时，需要将中文由utf8转为gb2312。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$files</span> = <span style="color: #800080;">$_FILES</span>['attachment'<span style="color: #000000;">]; // 上传的表单附件名
+</span><span style="color: #800080;">$name</span> = <span style="color: #008080;">iconv</span>("UTF-8", "gb2312", <span style="color: #800080;">$files</span>['name'<span style="color: #000000;">]);
+</span><span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$files</span>['tmp_name'], "/upload/<span style="color: #800080;">$name</span>");</code></pre>
+
+<p>&nbsp;额外补充：如果大家使用Tp5 上传，文件在thinkphp/library/think/File.php.大概是374行：大多数解决办法是在下面的方法转码，但会存在问题，转码后，文件是上传成功，随后就报错：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">elseif</span> (!<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$this</span>-&gt;filename, <span style="color: #008080;">iconv</span>('utf-8','gb2312',<span style="color: #800080;">$filename</span><span style="color: #000000;">))) {
+            </span><span style="color: #800080;">$this</span>-&gt;error = 'upload write error'<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }</span></code></pre>
+
+<p>会抛出异常：</p>
+<src class="cnblogs_code">
+<pre><code>SplFileobject::__construct(/upload\files\<span style="color: #800080;">2019</span>\<span style="color: #800080;">04</span>-<span style="color: #800080;">16</span>\资源.rar): failed to open stream: No such file <span style="color: #0000ff;">or</span> directory</code></pre>
+
+<p>解决：<br />上传中文乱码，使用iconv转码的，不应该在move_uploaded_file（）中转码，应该在file类 buildSaveName()方法中大概422行中转码：<br />最后一段：</p>
+<src class="cnblogs_code">
+<pre><code> <span style="color: #0000ff;">return</span> <span style="color: #008080;">iconv</span>('utf-8','gb2312',<span style="color: #800080;">$savename</span>);</code></pre>
+
+<p>那么如果大家是ajax上传，记得在返回的时候转成utf8返回，比如返回的中文乱码，ajax解析报错：<br />比如以Tp5.0是这样：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$return_data</span>['url'] = '/'.UPLOAD_PATH.<span style="color: #800080;">$new_path</span>.<span style="color: #008080;">iconv</span>('gb2312','utf-8',<span style="color: #800080;">$info</span>-&gt;<span style="color: #000000;">getSaveName());
+
+</span><span style="color: #800080;">$this</span>-&gt;ajaxReturn(<span style="color: #800080;">$return_data</span>);</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

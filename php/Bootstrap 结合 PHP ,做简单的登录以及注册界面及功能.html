@@ -1,0 +1,250 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Bootstrap 结合 PHP ,做简单的登录以及注册界面及功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Bootstrap 结合 PHP ,做简单的登录以及注册界面及功能</center></div><div class='banquan'>原文出处:本文由博客园博主小方哥&#183;提供。<br/>
+原文连接:https://www.cnblogs.com/duxiu-fang/p/10883300.html</div><br>
+    <h1>登录实现</h1>
+<p>HTML代码</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="container"</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php if (isset($error_msg)): </span><span style="color: #0000ff;">?&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="alert alert-danger"</span><span style="color: #ff0000;"> role</span><span style="color: #0000ff;">="alert"</span><span style="color: #0000ff;">&gt;</span><span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php echo $error_msg; </span><span style="color: #0000ff;">?&gt;</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php endif </span><span style="color: #0000ff;">?&gt;</span>
+        <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php if (isset($success_msg)): </span><span style="color: #0000ff;">?&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="alert alert-info"</span><span style="color: #ff0000;"> role</span><span style="color: #0000ff;">="alert"</span><span style="color: #0000ff;">&gt;</span><span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php echo $success_msg; </span><span style="color: #0000ff;">?&gt;</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php endif </span><span style="color: #0000ff;">?&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="&lt;?php echo $_SERVER['PHP_SELF']; ?&gt;"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="post"</span><span style="color: #ff0000;"> autocomplete</span><span style="color: #0000ff;">="on"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label </span><span style="color: #ff0000;">for</span><span style="color: #0000ff;">="administrator"</span><span style="color: #0000ff;">&gt;</span>管理员账号(11位手机号码)<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="number"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="administrator"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="administrator"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="&lt;?php echo isset($_POST['administrator']) ? $_POST['administrator'] : ''; ?&gt;"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label </span><span style="color: #ff0000;">for</span><span style="color: #0000ff;">="password"</span><span style="color: #0000ff;">&gt;</span>密码<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="password"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">button </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="btn btn-info btn-md btn-block"</span><span style="color: #0000ff;">&gt;</span>登录<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">button</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>CSS:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800000;">&lt;link rel="stylesheet" type="text/css" href="css/Bootstrap.css"&gt;
+    &lt;style type="text/css"&gt;
+        .container </span>{<span style="color: #ff0000;">
+            margin-top</span>:<span style="color: #0000ff;"> 150px</span>;
+        }<span style="color: #800000;">
+    &lt;/style&gt;</span></code></pre>
+
+<p>PHP:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span><span style="color: #000000;"> login () {
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['administrator'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请输入管理员账号'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$_POST</span>['administrator']) !== 11<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '您输入的管理员账号不符合相关规定'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$_POST</span>['administrator'] = ''<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['password'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请输入密码'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #800080;">$connection</span> = <span style="color: #008080;">mysqli_connect</span>('localhost', 'root', '密码', 'students_info_system'<span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$connection</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '连接数据库失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #800080;">$query</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$connection</span>, 'select * from administrators'<span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$query</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '查询数据失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">while</span> (<span style="color: #800080;">$administrator</span> = <span style="color: #008080;">mysqli_fetch_assoc</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$administrators</span>[] = <span style="color: #800080;">$administrator</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($administrators);</span>
+
+    <span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #008080;">count</span>(<span style="color: #800080;">$administrators</span>); <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$administrator</span>[] = <span style="color: #800080;">$administrators</span>[<span style="color: #800080;">$i</span>]['administrator'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$passwords</span>[] = <span style="color: #800080;">$administrators</span>[<span style="color: #800080;">$i</span>]['password'<span style="color: #000000;">];
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($administrator);
+    // var_dump($passwords);</span>
+
+    <span style="color: #0000ff;">if</span> (!<span style="color: #008080;">in_array</span>((<span style="color: #0000ff;">string</span>)<span style="color: #800080;">$_POST</span>['administrator'], <span style="color: #800080;">$administrator</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '您输入的管理员账号不存在'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #008080;">in_array</span>((<span style="color: #0000ff;">string</span>)<span style="color: #800080;">$_POST</span>['password'], <span style="color: #800080;">$passwords</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '密码错误'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 账号和密码都存在了----判断密码和账号与数据库中是否一致</span>
+    <span style="color: #800080;">$index</span> = <span style="color: #008080;">array_search</span>(<span style="color: #800080;">$_POST</span>['administrator'], <span style="color: #800080;">$administrator</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span> ((<span style="color: #0000ff;">string</span>)<span style="color: #800080;">$_POST</span>['password'] !== <span style="color: #800080;">$passwords</span>[<span style="color: #800080;">$index</span><span style="color: #000000;">]) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '密码错误'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 在数据库找到了相应的账号和密码</span>
+    <span style="color: #800080;">$GLOBALS</span>['success_msg'] = '登录成功'<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 延时2秒执行后面的代码</span>
+    time_sleep_until(<span style="color: #008080;">time</span>() + 2<span style="color: #000000;">);
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 跳转到内容页面(并将账号一并传过去，区分用户账号以显示各个用户对应的界面)</span>
+    <span style="color: #008080;">header</span>("Location: student_info.php?id={<span style="color: #800080;">$_POST</span>['administrator']}"<span style="color: #000000;">);
+}
+
+</span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_SERVER</span>['REQUEST_METHOD'] === 'POST'<span style="color: #000000;">) {
+    login();
+}</span></code></pre>
+
+<h1>注册实现</h1>
+<p>HTML:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="container"</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="&lt;?php echo $_SERVER['PHP_SELF']; ?&gt;"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="post"</span><span style="color: #ff0000;"> complete</span><span style="color: #0000ff;">="on"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php if (isset($error_msg)): </span><span style="color: #0000ff;">?&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="alert alert-danger"</span><span style="color: #ff0000;"> role</span><span style="color: #0000ff;">="alert"</span><span style="color: #0000ff;">&gt;</span><span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php echo $error_msg; </span><span style="color: #0000ff;">?&gt;</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php endif </span><span style="color: #0000ff;">?&gt;</span>
+            <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php if (isset($success_msg)): </span><span style="color: #0000ff;">?&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="alert alert-info"</span><span style="color: #ff0000;"> role</span><span style="color: #0000ff;">="alert"</span><span style="color: #0000ff;">&gt;</span><span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php echo $success_msg; </span><span style="color: #0000ff;">?&gt;</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php endif </span><span style="color: #0000ff;">?&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label </span><span style="color: #ff0000;">for</span><span style="color: #0000ff;">="administrator"</span><span style="color: #0000ff;">&gt;</span>管理员账户(11位手机号码即可)<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="number"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="administrator"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="administrator"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="&lt;?php echo isset($_POST['administrator']) ? $_POST['administrator'] : ''; ?&gt;"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label </span><span style="color: #ff0000;">for</span><span style="color: #0000ff;">="password"</span><span style="color: #0000ff;">&gt;</span>密码<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="&lt;?php echo isset($_POST['password']) ? $_POST['password'] : ''; ?&gt;"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="form-group"</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">label </span><span style="color: #ff0000;">for</span><span style="color: #0000ff;">="check-pwd"</span><span style="color: #0000ff;">&gt;</span>确认密码<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">label</span><span style="color: #0000ff;">&gt;</span>
+                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="check-pwd"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="check-pwd"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="form-control"</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">button </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="btn btn-info btn-block btn-md"</span><span style="color: #0000ff;">&gt;</span>注册<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">button</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>CSS:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800000;">&lt;link rel="stylesheet" type="text/css" href="css/Bootstrap.css"&gt;
+    &lt;style type="text/css"&gt;
+        .container </span>{<span style="color: #ff0000;">
+            margin-top</span>:<span style="color: #0000ff;"> 100px</span>;
+        }<span style="color: #800000;">
+    &lt;/style&gt;</span></code></pre>
+
+<p>PHP:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span><span style="color: #000000;"> register () {
+    </span><span style="color: #800080;">$connection</span> = <span style="color: #008080;">mysqli_connect</span>('localhost', 'root', '密码', 'students_info_system'<span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$connection</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '连接数据库失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #800080;">$query</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$connection</span>, 'select * from administrators'<span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$query</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '查询数据失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">while</span> (<span style="color: #800080;">$administrator</span> = <span style="color: #008080;">mysqli_fetch_assoc</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$administrators</span>[] = <span style="color: #800080;">$administrator</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($administrators);
+
+    // 获取数据库中已经注册的账号</span>
+    <span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #008080;">count</span>(<span style="color: #800080;">$administrators</span>); <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$administrator</span>[] = <span style="color: #800080;">$administrators</span>[<span style="color: #800080;">$i</span>]['administrator'<span style="color: #000000;">];
+    }
+
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['administrator'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请输入管理员账户'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$_POST</span>['administrator']) !== 11<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '您输入的管理员账户不符合相关规定，请重新输入'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$_POST</span>['administrator'] = ''<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 判断该账号是否已被注册</span>
+    <span style="color: #0000ff;">if</span> (<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$_POST</span>['administrator'], <span style="color: #800080;">$administrator</span><span style="color: #000000;">)) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '该账号已被注册，请另起账号'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['password'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请输入密码'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_POST</span>['check-pwd'<span style="color: #000000;">])) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '请确认密码'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_POST</span>['check-pwd'] !== <span style="color: #800080;">$_POST</span>['password'<span style="color: #000000;">]) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '两次密码输入不一致，请重新确认密码'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #800080;">$administrator</span> = <span style="color: #800080;">$_POST</span>['administrator'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$password</span> = <span style="color: #800080;">$_POST</span>['password'<span style="color: #000000;">];</span><span style="color: #800080;">$query</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$connection</span>, "insert into administrators values ({<span style="color: #800080;">$administrator</span>}, '{<span style="color: #800080;">$password</span>}')"<span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$query</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '查询数据失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #800080;">$affected_rows</span> = <span style="color: #008080;">mysqli_affected_rows</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$affected_rows</span> !== 1<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['error_msg'] = '插入数据失败'<span style="color: #000000;">;
+    }
+
+    </span><span style="color: #800080;">$GLOBALS</span>['success_msg'] = '注册成功'<span style="color: #000000;">;
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 延时2秒执行后面的语句</span>
+    time_sleep_until(<span style="color: #008080;">time</span>() + 2<span style="color: #000000;">);
+
+    </span><span style="color: #008080;">header</span>('Location: index.html'<span style="color: #000000;">);
+    
+}
+
+</span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_SERVER</span>['REQUEST_METHOD'] === 'POST'<span style="color: #000000;">) {
+    register();
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,69 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Centos7下,宿主机nginx配合docker环境的php-fpm' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Centos7下,宿主机nginx配合docker环境的php-fpm</center></div><div class='banquan'>原文出处:本文由博客园博主cutchaos提供。<br/>
+原文连接:https://www.cnblogs.com/cutchaos/p/11389538.html</div><br>
+    <p>一.安装docker并启动</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">yum install docker
+systemctl start docker</span></code></pre>
+
+<p>&nbsp;</p>
+<p>二.安装nginx<br />CentOS 7默认不能从yum中安装nginx,原因可以自己搜索一下,需要执行以下命令</p>
+<src class="cnblogs_code">
+<pre><code>sudo rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm</code></pre>
+
+<p>之后就可以用yum安装了</p>
+<src class="cnblogs_code">
+<pre><code>yum install nginx</code></pre>
+
+<p>&nbsp;</p>
+<p>三.用docker拉取php-fpm<br />因为是老项目,不支持php7,所以用的php5.6的fpm镜像</p>
+<src class="cnblogs_code">
+<pre><code>docker pull phpdockerio/php56-fpm</code></pre>
+
+<p>四.运行phpfpm</p>
+<src class="cnblogs_code">
+<pre><code>docker run --name php56fpm -v /var/www/html/xx/www/:/var/www/html/ --privileged=<span style="color: #0000ff;">true</span> -d phpdockerio/php56-fpm</code></pre>
+
+<p>解释:</p>
+<p style="margin-left: 30px;">docker run <br />运行镜像<br />--name php56fpm<br />将运行的容器命名为php56fpm</p>
+<p style="margin-left: 30px;">-v /var/www/html/xx/www/:/var/www/html/<br />映射本地目录到容器内部的/var/www/html/,php-fpm容器内部会通过这个目录访问PHP文件.<br />--privileged=true<br />增加特权,不然没有权限访问/var/www/html/这里的文件,会导致nginx也无法访问文件(File not found.).(共三种方法,见PS.1)<br />-d <br />后台运行<br />phpdockerio/php56-fpm<br />镜像的名字</p>
+<p>可以不映射端口,如果需要映射,增加参数-p 9001:9000 本地的9001端口映射到容器内部的9000端口,但nginx只用内部的9000端口就够了.</p>
+<p>五.修改宿主机的nginx配置</p>
+<src class="cnblogs_code">
+<pre><code>vi /etc/nginx/conf.d/xx.conf</code></pre>
+
+<src class="cnblogs_code">
+<pre><code>location ~ \.php$<span style="color: #000000;"> {
+    root </span>/var/www/html/xx/<span style="color: #000000;">www;
+    fastcgi_pass </span>172.17.0.2:9000<span style="color: #000000;">;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME  </span>/var/www/html/<span style="color: #800080;">$fastcgi_script_name</span><span style="color: #000000;">;
+    include fastcgi_params;
+} </span></code></pre>
+
+<p>其中的fastcgi_pass和fastcgi_param和平时配置nginx的时候有所区别,</p>
+<p>fastcgi_pass要指定容器的IP,通过 docker inspect php56fpm 可以查看具体IP("IPAddress": "172.17.0.2")<br />fastcgi_param SCRIPT_FILENAME 后面的值要改成容器内部的地址/var/www/html/</p>
+<p>PS.1<br />在Cent OS 7中运行,如果不加--privileged=true,则会出现nginx没有访问内部文件的权限<br />原因是CentOS7中的安全模块selinux把权限禁掉了，至少有以下三种方式解决挂载的目录没有权限的问题：<br />1，在运行容器的时候，给容器加特权：--privileged=true<br />2，临时关闭selinux：<br />su -c "setenforce 0"<br />3，添加selinux规则，将要挂载的目录添加到白名单：<br />chcon -Rt svirt_sandbox_file_t /var/www/html/xx/www/</p>
+<p>PS.2<br />如果遇到明明没用开启端口却提示端口占用,有可能是之前删除的容器还没完全退出,重启一下docker就好了<br />比如提示:Error response from daemon: driver failed programming external connectivity......<br />iptables failed: iptables --wait -t nat -A DOCKER</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

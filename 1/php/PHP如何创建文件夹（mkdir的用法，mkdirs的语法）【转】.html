@@ -1,0 +1,92 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP如何创建文件夹（mkdir的用法，mkdirs的语法）【转】' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP如何创建文件夹（mkdir的用法，mkdirs的语法）【转】</center></div><div class='banquan'>原文出处:本文由博客园博主小猿笔记提供。<br/>
+原文连接:https://www.cnblogs.com/KillBugMe/p/11818653.html</div><br>
+    <p>(PHPmkdir如何创建多级目录)</p>
+<p>   在开始之前，我先说明一下，可能许多朋友与我一样认为只要给一个路径，mkdir就可以创建文件夹，其它不是那样，单个的MKDIR只能创建一级目录，对于多级的就不行了，那如何用mkdir来创建呢？先我抄一段手册上的有关mkdir的描述，如下：</p>
+<p><strong>说明</strong></p>
+<blockquote>
+<p>bool mkdir ( string pathname [, int mode [, bool recursive [, resource context]]] )</p>
+</blockquote>
+<p>尝试新建一个由 pathname 指定的目录。</p>
+<p>注意也许想用八进制数指定模式，也就是说该数应以零打头。模式也会被当前的 umask 修改，可以用 umask() 来改变。</p>
+<p> </p>
+<blockquote>
+<p>注意: mode 在 Windows 下被忽略。自 PHP 4.2.0 起成为可选项。</p>
+</blockquote>
+<p> <br />
+默认的 mode 是 0777，意味着最大可能的访问权。有关 mode 的更多信息请阅读 chmod() 页面。</p>
+<p><strong>例 1. mkdir() 例子</strong></p>
+<pre><code><code>&lt;?php
+mkdir(&quot;/path/to/my/dir&quot;, 0700);
+?&gt;</code></code></pre>
+<p>如果成功则返回 TRUE，失败则返回 FALSE。</p>
+<blockquote>
+<p>注意: 自 PHP 5.0.0 rmdir() 也可用于某些 URL 封装协议。参见附录 N 的列表看看 rmdir() 支持哪些 URL 封装协议。</p>
+</blockquote>
+<blockquote>
+<p>注意: 对 context 的支持是 PHP 5.0.0 添加的。有关 context 的说明见参考 CLX, Stream Functions。</p>
+</blockquote>
+<blockquote>
+<p>注意: recursive 参数是 PHP 5.0.0 添加的。</p>
+</blockquote>
+<blockquote>
+<p>注意: 当安全模式被激活时，PHP 将检查被操作的目录是否和正在执行的脚本有相同的 UID（所有者）。</p>
+</blockquote>
+<p>以上是PHP5手册上的描述信息，即你可以这样：mkdir('./test',0777)就能创建一个文件夹了。但是如何递归创建多级目录呢？<br />
+其方式有：</p>
+<p>1     PHP5 下创建目录函数 mkdir 增加了一个新的参数 recursive ，通过设置 recursive 为 true 可以实现递归创建目录的目的，但是对PHP4就不行了。</p>
+<p>2     自己写一个递归创建多级目录。</p>
+<p>这里，我对第二种方式作一点说明，也有两种方式，如下：</p>
+<p>第一种(用mkdirs来产生多级父级)</p>
+<pre><code><code>function mkdirs($dir, $mode = 0777)
+{
+    if (is_dir($dir) || @mkdir($dir, $mode)) return TRUE;
+    if (!mkdirs(dirname($dir), $mode)) return FALSE;
+    return @mkdir($dir, $mode);
+}</code></code></pre>
+<p><strong>说明：</strong><br />
+1     首先 简单说一下mkdir()与mkdirs()的区别，以及，is_dir和dirname（）：<br />
+<strong>mkdir()</strong> 只能在已经存在的目录中创建创建文件夹（即父级必须有才行）。<br />
+<strong>mkdirs()</strong> 可以在不存在的目录中创建文件夹。诸如：a//b,既可以创建多级目录。                <br />
+<strong>dirname()</strong> 是返回路径中的目录部分。<br />
+<strong>is_dir()</strong> 用于判断给出的文件名是否是一个有效的目录                 </p>
+<p>2      大致流程为：</p>
+<p>（1） 先用is_dir判断是否已是一个文件夹，如果是则返回TRUE。如没有（或者不是文件夹），则试着创建它，当然有可以父级不存在，那mkdir直接就创不成功，但也为不报错，所以就用@来抑止报非致命错误。</p>
+<p>（2）如果传参数都不满足条件，那么就进入第二个if语句，先是取得路径中的目录部分，当然有可能是不存在的多级父级，所以用了mkdirs（）来先创建父级，如果成功（不成功返回FALSE），那么再用mkdir来创建最终的目录了。<br />
+好了，以上就是第一种方案。</p>
+<p>第二种（说明：此方案是相当的精简，那是相当的不错的方案，推荐使用它）</p>
+<pre><code><code>function create_folders($dir){
+       return is_dir($dir) or (create_folders(dirname($dir)) and mkdir($dir, 0777));
+ }</code></code></pre>
+<p><strong>说明：</strong> 1 大致流程： 得到路径后，先判断是否已是一个有效的文件目录，如是则返回，结束程序。如果不是，（由于这里用了OR作先择性的条件，即只要满足其中一个条件就行），则递归再调用自身，并且传入的路径中，少一级目录。这样来先回到上级有的父级目录中，再用mkdir来创建下一级的。</p>
+<p>好了，以上就是用PHP来创建文件夹（以及多级文件夹）的方法。^_^</p>
+<p><strong>总结：</strong><br />
+<font color=red><br />
+1 用PHP5中自带的mkdir 中的一个新的参数 recursive ，通过设置 recursive 为 true 可以实现递归创建目录的目的，但是对PHP4就不行了。</p>
+<p>2    自己写的方法中，用mkdirs来创建多级父级目录方式</p>
+<p>3    仍然用mkdir很巧妙的来创建<br />
+</font><br />
+原文链接：<a href="https://blog.csdn.net/fc_lamp/article/details/6474340#commentBox" class="uri">https://blog.csdn.net/fc_lamp/article/details/6474340#commentBox</a></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

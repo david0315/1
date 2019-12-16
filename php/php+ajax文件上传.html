@@ -1,0 +1,263 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php+ajax文件上传' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php+ajax文件上传</center></div><div class='banquan'>原文出处:本文由博客园博主周小黑提供。<br/>
+原文连接:https://www.cnblogs.com/zhouxiaohei/p/11706468.html</div><br>
+    <ol class=" list-paddingleft-2" style="list-style-type: decimal;">
+<li>
+<p>前端页面代码</p>
+</li>
+</ol>
+<p> <br />
+</p>
+<p>
+    &lt;!-- enctype 定义form要上传文件类型--&gt;
+</p>
+<p>
+    &lt;form action="" method="post" id="t"&nbsp; enctype="multipart/form-data"&gt;
+</p>
+<p>
+    &nbsp; &nbsp; &lt;!--
+</p>
+<p>
+    &nbsp; &nbsp; multiple&nbsp; 作用是可以同时选中多个文件，多张图片
+</p>
+<p>
+    &nbsp; &nbsp; accept 指定input可以上传那种类型
+</p>
+<p>
+    &nbsp; &nbsp; onchange 当本元素动的时候，点击也属于 调用abs函数
+</p>
+<p>
+    &nbsp; &nbsp; --&gt;
+</p>
+<p>
+    <br />
+</p>
+<p>
+    &nbsp; &nbsp; &lt;input type="file" name='tables_a[]' id="tables"&nbsp; multiple accept="image/*" onchange="abs()"&gt;
+</p>
+<p>
+    &nbsp; &nbsp; &lt;!-- 隐藏域&nbsp; 在上传完文件以后，把文件的地址赋给input tables_2 的值 --&gt;
+</p>
+<p>
+    &nbsp; &nbsp; &lt;input type="hidden" name='tables' id='tables_2'&gt;
+</p>
+<p>
+    &nbsp; &nbsp; &lt;!-- 提交表单 --&gt;
+</p>
+<p>
+    &nbsp; &nbsp; &lt;input type="submit" value="提交"&gt;
+</p>
+<p>
+    &lt;/form&gt;
+</p>
+<p>
+    <br />
+</p>
+<p>
+    &lt;!--jquery 必须有，一定要放在执行js的上方，可以是头部--&gt;
+</p>
+<p>
+    &lt;script src="/js/jquery-1.8.3.js"&gt;&lt;/script&gt;
+</p>
+<p>
+    &lt;script&gt;
+</p>
+<p>
+    &nbsp; &nbsp; /*定义函数*/
+</p>
+<p>
+    &nbsp; &nbsp; function abs(){
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; /*获得文件*/
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; var fileArray = document.getElementById('tables').files[0];
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; /*初始化 FormData 对象 文件处理对象&nbsp; 序列化表单数据*/
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; var formData = new FormData();
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; /*给对象中添加文件信息，没有对象或者没有文件信息后台是得不到的*/
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formData.append('file', fileArray);
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; /*jquery ajax 方法*/
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; $.ajax({
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; url: "ceshiphp.php",/*传向后台服务器文件*/
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; type: 'POST',&nbsp; &nbsp; /*传递方法 */
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; data:formData,&nbsp; /*要带的值，在这里只能带一个formdata ，不可以增加其他*/
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//传递的数据
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dataType : 'json',&nbsp; //传递数据的格式
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; async:false, //这是重要的一步，防止重复提交的
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; cache: false,&nbsp; //设置为false，上传文件不需要缓存。
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; contentType: false,//设置为false,因为是构造的FormData对象,所以这里设置为false。
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; processData: false,//设置为false,因为data值是FormData对象，不需要对数据做处理。
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; success: function (responseStr){
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if(responseStr.code != 0){
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; alert('上传成功');
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $('#tables_2').val(responseStr.data);
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }else{
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; alert('上传失败');
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; },
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; error: function () {
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; alert("上传错误！");
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; });
+</p>
+<p>
+    &nbsp; &nbsp; }
+</p>
+<p>
+    &lt;/script&gt;
+</p>
+<p>
+    2.后端页面代码
+</p>
+<p style="white-space: normal;">
+    &nbsp;echo "&lt;pre&gt;";
+</p>
+<p style="white-space: normal;">
+    &nbsp;print_r($_FILES);
+</p>
+<p style="white-space: normal;">
+    &nbsp;echo "&lt;/pre&gt;";
+</p>
+<p style="white-space: normal;">
+    &nbsp;&nbsp;&nbsp;&nbsp;打印出以下内容，
+</p>
+<p style="white-space: normal;">
+    &nbsp;&nbsp;&nbsp;&nbsp;name 文件名称
+</p>
+<p style="white-space: normal;">
+    &nbsp;&nbsp;&nbsp;&nbsp;type 文件类型<br />
+</p>
+<p style="white-space: normal;">
+    &nbsp;&nbsp;&nbsp;&nbsp;tmp_name 文件临时地址<br />
+</p>
+<p style="white-space: normal;">
+    &nbsp;&nbsp;&nbsp;&nbsp;erro 错误编码<br />
+</p>
+<p style="white-space: normal;">
+    &nbsp;&nbsp;&nbsp;&nbsp;size 文件大小</p>
+<p style="white-space: normal;"><img src="./images/php+ajax文件上传0.jpg" alt="" /></p>
+<p style="white-space: normal;">&nbsp;</p>
+<p>
+    <img title="" src="/file-read-64.png" alt="" /></p>
+<p>
+    &nbsp;&nbsp;&nbsp;&nbsp;/*得到文件名称并且赋值给$name变量*/
+</p>
+<p>
+    &nbsp; &nbsp; $name = $_FILES['fileArray']['name'];
+</p>
+<p>
+    &nbsp; &nbsp; /*截取文件后缀并复制给$last*/
+</p>
+<p>
+    &nbsp; &nbsp; $last = substr($name,strrpos($name,'.'));
+</p>
+<p>
+    &nbsp; &nbsp; /*使用时间戳修改文件名称连接后缀并且复制给$name*/
+</p>
+<p>
+    &nbsp; &nbsp; $name = date('YmdHis').rand(10000,99999).$last;
+</p>
+<p>
+    &nbsp; &nbsp; /*定义要传文件的位置路径*/
+</p>
+<p>
+    &nbsp; &nbsp; $address = ROOT_PATH.'/upload/'.$name;
+</p>
+<p>
+    &nbsp; &nbsp; /*使用函数move_uploaded_file 移动临时文件到定义好的地址*/
+</p>
+<p>
+    &nbsp; &nbsp; if(move_uploaded_file($_FILES['fileArray']['tmp_name'],$address)){
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; echo 1;
+</p>
+<p>
+    &nbsp; &nbsp; }else{
+</p>
+<p>
+    &nbsp; &nbsp; &nbsp; &nbsp; echo 0;
+</p>
+<p>
+    &nbsp; &nbsp; }
+</p>
+<p>
+    <br />
+</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

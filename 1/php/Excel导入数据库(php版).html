@@ -1,0 +1,258 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Excel导入数据库(php版)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Excel导入数据库(php版)</center></div><div class='banquan'>原文出处:本文由博客园博主许善祥提供。<br/>
+原文连接:https://www.cnblogs.com/xusx2014/p/11910726.html</div><br>
+    <h2>一、环境说明</h2>
+<pre><code>Apache+php（PHPExcel）+HTML5+JavaScript（jQuery）+MySQL</code></pre>
+<h2>二、前端预览</h2>
+<p><img src="./images/Excel导入数据库(php版)0.jpg" alt="" /></p>
+<h2>三、Excel表格</h2>
+<src class="wp-block-image"><img src="./images/Excel导入数据库(php版)1.jpg" alt="" />
+<h2>四、HTML部分</h2>
+<pre><code>&lt;p&gt;按照Excel表格模板（&lt;a href="javascript:void(0);"&gt;下载&lt;/a&gt;），填写资料。&lt;/p&gt;<br />&lt;p&gt;上传已编辑的文件：&lt;/p&gt;<br />&lt;p&gt;<br />&lt;a href="javascript:void(0);" id="triggerInputFile"&gt;选择文件&lt;/a&gt;<br />&lt;input <br />type="file" <br />id="inputFile" <br />style="height:0;width:0" <br />accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"<br />&gt;<br />&lt;span id="filepath"&gt;&lt;/span&gt;<br />&lt;a class="hide" href="javascript:void(0);" id="uploadFile"&gt;上传&lt;/a&gt;<br />&lt;/p&gt;</code></pre>
+<h2>五、JavaScript部分</h2>
+<pre class="wp-block-code"><code>$(function() {
+    var tipFn = function(str) {
+        $('#tip').text(str);
+        $('#tip').fadeIn(function() {
+            setTimeout(function() {
+                $('#tip').fadeOut();
+            },
+            2000);
+        });
+    };
+
+    $('#triggerInputFile').click(function() {
+        $('#inputFile').click();
+    });
+
+    $('#inputFile').change(function() {
+        var fileReader = new FileReader();
+        var file = $(this).prop('files')[0];
+        if (file) {
+            fileReader.readAsDataURL(file);
+        } else {
+            tipFn('请选择文件');
+            return;
+        }
+        fileReader.onloadend = (e) = &gt;{
+            console.log(e);
+            if (file.size &gt; 2000000) {
+                tipFn('文件大小不得超过 2 M');
+                return;
+            }
+            // $('#filepath').text(e.target.result);
+            var fullpath = $(this).val();
+            var filename = fullpath.split('\\');
+            $('#filepath').text(filename[filename.length - 1]);
+            // C:\fakepath\第三部分价格表.docx
+            $('#uploadFile').removeClass('hide');
+        };
+    });
+
+    $('#uploadFile').click(function() {
+        var form_data = new FormData();
+        var file_data = $('#inputFile').prop('files')[0];
+        form_data.append('id', 'xls_file');
+        form_data.append('name', file_data.name);
+        form_data.append('type', file_data.type);
+        form_data.append('lastModifiedDate', file_data.lastModifiedDate);
+        form_data.append('size', file_data.size);
+        form_data.append('upfile', file_data);
+        $.ajax({
+            type: 'POST',
+            url: '/excel/upload',
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            cache: false,
+            data: form_data
+        }).success(function(json) {
+            if (json.error === 0) {
+                tipFn('文件上传成功！');
+                $('#uploadFile').addClass('hide');
+            } else {
+                tipFn('文件上传失败，原因：' + json.message);
+            }
+        });
+    });
+});</code></code></pre>
+<h2>六、PHP部分</h2>
+<pre class="wp-block-code"><code>public function upload() {
+	//定义允许上传的文件扩展名
+	$ext_arr = array(
+	            'excel' =&gt; array('xls', 'xlsx')
+	        );
+	//最大文件大小
+	$min_size = 1;
+	$max_size = 2000000;
+	if (empty($_FILES) === false) {
+		//原文件名
+		$file_name = $_FILES['upfile']['name'];
+		//服务器上临时文件名
+		$tmp_name = $_FILES['upfile']['tmp_name'];
+		//die($tmp_name);
+		//文件大小
+		$file_size = $_FILES['upfile']['size'];
+		//检查文件名
+		if (!$file_name) {
+			$this-&gt;alert('请选择文件。');
+		}
+		//判断文件是否是通过 HTTP POST 上传的
+		if (is_uploaded_file($tmp_name) === false) {
+			$this-&gt;alert('上传失败。');
+		}
+		//检查文件大小
+		if ($file_size &gt; $max_size) {
+			$this-&gt;alert('上传文件大小超过限制。');
+		}
+		if ($file_size &lt; $min_size) {
+			$this-&gt;alert('上传文件大小过小。');
+		}
+		//获得文件扩展名
+		$temp_arr = explode('.', $file_name);
+		$file_ext = array_pop($temp_arr);
+		$file_ext = trim($file_ext);
+		$file_ext = strtolower($file_ext);
+		//检查扩展名
+		if (in_array($file_ext, $ext_arr['excel']) === false) {
+			$this-&gt;alert('上传文件扩展名是不允许的扩展名。\\n只允许'. implode(',', $ext_arr['excel']) . '格式。');
+		}
+		$save_path = $_SERVER['DOCUMENT_ROOT'].'/upload/';
+		if (!file_exists($save_path)) {
+			mkdir($save_path, 0777, true);
+		}
+		$new_file_name = md5(uniqid(rand()));
+		$new_file_name .= '.'.$file_ext;
+		//移动文件
+		$file_path = $save_path.$new_file_name;
+		if (move_uploaded_file($tmp_name, $file_path) === false) {
+			$this-&gt;alert('上传文件失败。');
+		} else {
+			header('Content-type: text/plain; charset=UTF-8');
+			$result = $this-&gt;show_excel($file_path);
+			echo '{"error":0, "url":"/upload/'.$new_file_name.'","msg":'.$result.'}';
+			//删除本地文件
+			// $this-&gt;del_file($file_path);
+		}
+	}
+}
+private function show_excel($file_path) {
+	//Include class  
+	require_once($_SERVER['DOCUMENT_ROOT'].'/Classes/PHPExcel.php');
+	require_once($_SERVER['DOCUMENT_ROOT'].'/Classes/PHPExcel/Writer/Excel2007.php');
+	//文件的扩展名
+	$ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+	// 读excel
+	if ($ext === 'xlsx') {
+		// $objReader = PHPExcel_IOFactory::createReader('Excel2007');
+		require_once($_SERVER['DOCUMENT_ROOT'].'/Classes/PHPExcel/Reader/Excel2007.php');
+		$objReader   = new PHPExcel_Reader_Excel2007;
+		$objPHPExcel = $objReader-&gt;load($file_path, 'utf-8');
+	} elseif ($ext === 'xls') {
+		// $objReader = PHPExcel_IOFactory::createReader('Excel5');
+		require_once($_SERVER['DOCUMENT_ROOT'].'/Classes/PHPExcel/Reader/Excel5.php');
+		$objReader   = new PHPExcel_Reader_Excel5;
+		$objPHPExcel = $objReader-&gt;load($file_path, 'utf-8');
+	}
+	$sheet         = $objPHPExcel-&gt;getSheet(0);
+	$highestRow    = $sheet-&gt;getHighestRow();
+	// 取得总行数
+	$highestColumn = $sheet-&gt;getHighestColumn();
+	// 取得总列数
+	$ar  = array();
+	$nar = array();
+	$i   = 0;
+	$importRows = 0;
+	for ($j = 2; $j &lt;= $highestRow; $j++) {
+		$importRows++;
+		$realName = (string)$objPHPExcel-&gt;getActiveSheet()-&gt;getCell("A$j")-&gt;getValue();
+		//需要导入的realName
+		$phone    = (string)$objPHPExcel-&gt;getActiveSheet()-&gt;getCell("B$j")-&gt;getValue();
+		//需要导入的phone
+		$company  = (string)$objPHPExcel-&gt;getActiveSheet()-&gt;getCell("C$j")-&gt;getValue();
+		//需要导入的company
+		$job      = (string)$objPHPExcel-&gt;getActiveSheet()-&gt;getCell("D$j")-&gt;getValue();
+		//需要导入的job
+		$qq       = (string)$objPHPExcel-&gt;getActiveSheet()-&gt;getCell("E$j")-&gt;getValue();
+		//需要导入的email
+		$ret['mdata'] = 0;
+		array_push($nar, $realName);
+		// $ret['mdata'] = $this-&gt;addMemb($phone, $realName, $company, $job, $qq);     //这里就是我的数据库添加操作定义的一个方法，对应替换为自己的
+		if ($ret['mdata'] &amp;&amp; !is_Bool($ret['mdata'])) {
+			$ar[$i] = $ret['mdata'];
+			$i++;
+		}
+	}
+	if ($i &gt; 0) {
+		$ret['res']    = "0";
+		$ret['errNum'] = $i;
+		$ret['allNum'] = $importRows;
+		$ret['sucNum'] = $importRows - $i;
+		$ret['mdata']  = $ar;
+		$ret['msg']    = "导入完毕!";
+		return json_encode($ret);
+	}
+	$ret['res']    = "1";
+	$ret['allNum'] = $importRows;
+	$ret['errNum'] = 0;
+	$ret['sucNum'] = $importRows;
+	$ret['mdata']  = "导入成功!";
+	$ret['nar']    = $nar;
+	return json_encode($ret);
+}
+private function alert($msg='null') {
+	header('Content-type: text/plain; charset=UTF-8');
+	echo '{"error":1, "message":"'.$msg.'"}';
+	exit;
+}</code></code></pre>
+<p>上传结果：</p>
+<pre class="wp-block-code"><code>{
+    "error": 0,
+    "url": "/upload/caeaba6fdf8106a3425aead0401d5c5c.xlsx",
+    "msg": {
+        "mdata": "导入成功!",
+        "res": "1",
+        "allNum": 10,
+        "errNum": 0,
+        "sucNum": 10,
+        "nar": [
+            "但秀逸",
+            "禹雪儿",
+            "果智",
+            "沙怡",
+            "岑阳秋",
+            "粘萌",
+            "兴飞兰",
+            "白翰飞",
+            "危莞尔",
+            "辉迎丝"
+        ]
+    }
+}</code></code></pre>
+<blockquote class="wp-block-quote">
+<p>注意：</p>
+<p>请根据自身需求参考上面代码，而不要直接使用上面演示代码，这里仅提供一个简单的思路。</p>
+</blockquote>
+<p>来源：<a href="https://xushanxiang.com/2019/11/excel-uses-php-to-import-the-database.html">https://xushanxiang.com/2019/11/excel-uses-php-to-import-the-database.html</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

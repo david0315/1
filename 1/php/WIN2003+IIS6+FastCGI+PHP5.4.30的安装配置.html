@@ -1,0 +1,102 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置</center></div><div class='banquan'>原文出处:本文由博客园博主阿安安提供。<br/>
+原文连接:https://www.cnblogs.com/ydwzhang/p/11208149.html</div><br>
+    <p>说明：PHP5.5已不支持win2003了，Win2003最高能安装PHP5.4.30。</p>
+<h3>安装好系统；并且安装好IIS6。</h3>
+<p>具体安装方法可查看：<a href="http://down.chinaz.com/server/201102/11_1.htm">http://down.chinaz.com/server/201102/11_1.htm</a>。</p>
+<h3>下载并安装IIS FastCGI</h3>
+<p>下载地址：<a href="http://www.iis.net/download/fastcgi">http://www.iis.net/download/fastcgi</a>。选择 x86或者download x86，下载下来名称为fcgisetup_1.5_x86_rtw.msi。安装后会在C:\WINDOWS\system32\inetsrv\目录下多出了5个文件：</p>
+<p>fcgiconfig.js,fcgiext.dll,fcgiext.ini,fcgilicense.rtf,fcgireadme.htm</p>
+<p>这个时候在IIS6的"WEB服务扩展"里就多出了一个FastCGI Handler。如图：</p>
+<p><a class="cboxElement" href="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置0.jpg" rel="example_group"><img class=" size-full wp-image-479 aligncenter" src="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置0.jpg" alt="e07af3f4-e942-37e5-84f4-696a65a63690[1]" width="627" height="333" /></a></p>
+<h3>安装PHP环境</h3>
+<p>我的环境中我就没有特意去装PHP了；我直接装了一个XAMPP；大家可以去网上下一个XAMPP。然后直接安装好就好了；这里暂时不详细写安装过程了。</p>
+<h3>配置PHP环境</h3>
+<ul>
+<li>环境变量修改</li>
+</ul>
+<p>我的电脑-&gt;属性-&gt;高级-&gt;环境变量-&gt;系统变量，在Path的最后面中加上：D:\Program Files (x86)\XAMPP\php\ 这段链接不是写死这个的；要看你装XAMPP装在什么地方。如图：</p>
+<p><a class="cboxElement" href="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置1.jpg" rel="example_group"><img class=" size-full wp-image-480 aligncenter" src="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置1.jpg" alt="2015-01-13_16-21-02" width="489" height="527" /></a></p>
+<ul>
+<li>注册PHP到FastCGI</li>
+</ul>
+<p>打开C:\WINDOWS\system32\inetsrv\fcgiext.ini文件，在文件最后加上下面的语句：</p>
+<src class="dp-highlighter"><ol class="dp-c" start="1">
+<li class="alt">[Types](这个是文件原来就有的，在[Types]后面加上下面的语句就可以，要全部哦不然会报错的。)</li>
+<li>php=PHP</li>
+<li class="alt">[PHP]</li>
+<li>ExePath=E:\PHP\php-cgi.exe</li>
+<li class="alt">InstanceMaxRequests=10000</li>
+<li>EnvironmentVars=PHP_FCGI_MAX_REQUESTS:10000</li>
+<li class="alt">ActivityTimeout=3600</li>
+<li>RequestTimeout=3600</li>
+</ol>
+<p>如图：<a class="cboxElement" href="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置2.jpg" rel="example_group"><img class="alignnone size-full wp-image-481" src="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置2.jpg" alt="2015-01-13_16-23-56" width="809" height="150" /></a></p>
+<p><strong>记住！是加载文件的最后面！因为一般&nbsp;fcgiext.ini 文件一般会有两个 [Types] 结点。</strong></p>
+<h3>PHP.ini的修改</h3>
+<p>PHP安装目录下是没有PHP.ini这个文件的，只有php.ini-development和php.ini-production，我们把php.ini-development改为php.ini。不过如果你安装的是XAMPP的话；一般都会自带一个，这为我们省了很多的事情。</p>
+<p>首先建一个文件夹命名为TMP，位置随意，我这里放在E:\PHP\tmp。 (upload_tmp_dir会用到，upload_tmp_dir是用来定义上传文件存放的临时路径，这里可以修改并给它定义一个绝对路径，同时需要有读、写权限)。用搜索(快捷键：Ctrl+F)的方式把下面的关键字改成现在的值：</p>
+<p>short_open_tag = Off&nbsp;&nbsp;&nbsp; (这个它本来默认就是这样我们就不要改了。)</p>
+<p>upload_tmp_dir =改为upload_tmp_dir="D:\Program Files (x86)\XAMPP\php\tmp"</p>
+<p>cgi.force_redirect = 1改为cgi.force_redirect=0</p>
+<p>fastcgi.impersonate = 1;改为 fastcgi.impersonate=1;</p>
+<p>extension_dir = "ext"改为extension_dir="D:\Program Files (x86)\XAMPP\php\ext"</p>
+<p>date.timezone =改为date.timezone =PRC(如果不修改date.timezone，打开网页的时候蛮有可能提示500错误。也有人把值改为Asia/Shanghai，我没试过你们可以试试。)</p>
+<h3>Internet信息服务（IIS）管理器的修改</h3>
+<p>网站-&gt;属性-&gt;配置-&gt;新增一个ISAPI拓展。如图：</p>
+<p><a class="cboxElement" href="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置3.jpg" rel="example_group"><img class=" size-full wp-image-482 aligncenter" src="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置3.jpg" alt="28fc6463-9bd4-3ccf-9976-4dadf953f522[1]" width="472" height="453" /></a></p>
+<p><a class="cboxElement" href="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置4.jpg" rel="example_group"><img class=" size-full wp-image-484 aligncenter" src="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置4.jpg" alt="b40cf2f7-e76e-387d-8e12-1cc07291ac34[1]" width="406" height="443" /></a></p>
+<p><a class="cboxElement" href="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置5.jpg" rel="example_group"><img class=" size-full wp-image-485 aligncenter" src="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置5.jpg" alt="98c80d1c-b894-3b3b-b83e-36fcf5e539c4[1]" width="429" height="243" /></a></p>
+<p>可执行文件填写C:\WINDOWS\system32\inetsrv\fcgiext.dll</p>
+<p>扩展名填写.php。</p>
+<p>动作-&gt;限制为GET,HEAD,POST。</p>
+<p>网站-&gt;属性-&gt;文档-&gt;添加默认内容index.php。这里全部配置好了，一定要把IIS服务重启一下。</p>
+<h3>测试一下</h3>
+<p>新建一个TXT文件，写入如下内容：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php
+phpinfo();
+?&gt;</code></pre>
+
+<p>另存为：default.php 将文件放在你的站点的根目录；访问一下；如果可以访问就是OK啦。</p>
+<h3>常见报错</h3>
+<p>若出现如同下面的错误，说明你的电脑没有安装VC9运行库 即VISUAL C++ 2008</p>
+<p>Microsoft Visual C++ 2008 Redistributable Package (x86)</p>
+<p>下载地址：<a href="http://www.microsoft.com/downloads/zh-cn/details.aspx?FamilyID=9B2DA534-3E03-4391-8A4D-074B9F2BC1BF&amp;displaylang=zh-cn">http://www.microsoft.com/downloads/zh-cn/details.aspx?FamilyID=9B2DA534-3E03-4391-8A4D-074B9F2BC1BF&amp;displaylang=zh-cn</a></p>
+<p>下载后安装就可以了。</p>
+<p>错误图示：</p>
+<src class="cnblogs_code">
+<src class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a title="复制代码"><img src="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置6.jpg" alt="复制代码" /></a></span>
+<pre><code>FastCGI Error
+The FastCGI Handler was unable to process the request.
+-------------------------------------------------------
+Error Details:
+Error Number: 14001 (0x800736b1).
+Error Description: ????????????????????????????
+HTTP Error 500 - Server Error.
+Internet Information Services (IIS)</code></pre>
+<src class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a title="复制代码"><img src="./images/WIN2003+IIS6+FastCGI+PHP5.4.30的安装配置6.jpg" alt="复制代码" /></a></span>
+
+<p>转自：<a title="http://www.destlive.com/478.html" href="http://www.destlive.com/478.html" target="_blank">http://www.destlive.com/478.html</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

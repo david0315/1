@@ -1,0 +1,90 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修简单的PHP上传图片实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>简单的PHP上传图片实例</center></div><div class='banquan'>原文出处:本文由博客园博主mrlime提供。<br/>
+原文连接:https://www.cnblogs.com/mrlime/p/11831018.html</div><br>
+    <p>分享一个简单的PHP上传图片实例，本实例主要介绍了上传图片的一些限制判断和上传图片的方法。</p>
+<p><img src="./images/简单的PHP上传图片实例0.jpg" alt="" width="314" height="145" /></p>
+<p><br />首先我们在form表单加上上传附件#file,上传按钮#imgbut，记得给form 表单加上multipart/form-data，否则上传不了图片。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">enctype</span><span style="color: #0000ff;">="multipart/form-data"</span><span style="color: #ff0000;"> action</span><span style="color: #0000ff;">="upload.php?action=img"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="post"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="imge"</span><span style="color: #0000ff;">&gt;</span> 
+<span style="color: #008080;">2</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">value</span><span style="color: #0000ff;">="导入文件"</span><span style="color: #ff0000;"> type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="img"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="file"</span> <span style="color: #0000ff;">/&gt;</span> 
+<span style="color: #008080;">3</span>     <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="imgbut"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="btn"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="上传图片"</span> <span style="color: #0000ff;">/&gt;</span> 
+<span style="color: #008080;">4</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p><br />上传之前各种限制判断：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_FILES</span>["img"]["error"] &gt; 0<span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 2</span>         <span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$_FILES</span>["img"]["error"<span style="color: #000000;">]) { 
+</span><span style="color: #008080;"> 3</span>             <span style="color: #0000ff;">case</span> 1 : 
+<span style="color: #008080;"> 4</span>                 <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值&lt;br&gt;');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 5</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 6</span>             <span style="color: #0000ff;">case</span> 2 : 
+<span style="color: #008080;"> 7</span>                 <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 8</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 9</span>             <span style="color: #0000ff;">case</span> 3 : 
+<span style="color: #008080;">10</span>                 <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('文件只有部分被上传');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;">11</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">12</span>             <span style="color: #0000ff;">case</span> 4 : 
+<span style="color: #008080;">13</span>                 <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('没有文件被上传');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;">14</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">15</span>             <span style="color: #0000ff;">default</span> : 
+<span style="color: #008080;">16</span>                 <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('末知错误');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">18</span>         <span style="color: #0000ff;">exit</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">20</span>     <span style="color: #800080;">$maxsize</span> = 1000000<span style="color: #000000;">; 
+</span><span style="color: #008080;">21</span>     <span style="color: #008000;">//</span><span style="color: #008000;">step 2 使用$_FILES["pic"]["size"] 限制大小 单位字节 2M=2000000 </span>
+<span style="color: #008080;">22</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_FILES</span>["img"]["size"] &gt; <span style="color: #800080;">$maxsize</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">23</span>         <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('上传的文件太大，不能超过{<span style="color: #800080;">$maxsize</span>}字节');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;">24</span>         <span style="color: #0000ff;">exit</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">26</span>     <span style="color: #008000;">//</span><span style="color: #008000;">step 3 使用$_FILES["pic"]["type"]或是文件的扩展名 限制类型 MIME image/gif image/png  gif png jpg </span>
+<span style="color: #008080;">27</span>     <span style="color: #800080;">$allowtype</span> = <span style="color: #0000ff;">array</span>("png", "gif", "jpg", "jpeg"<span style="color: #000000;">); 
+</span><span style="color: #008080;">28</span>     <span style="color: #800080;">$arr</span> = <span style="color: #008080;">explode</span>(".", <span style="color: #800080;">$_FILES</span>["img"]["name"<span style="color: #000000;">]); 
+</span><span style="color: #008080;">29</span>     <span style="color: #800080;">$hz</span> = <span style="color: #800080;">$arr</span>[<span style="color: #008080;">count</span>(<span style="color: #800080;">$arr</span>) - 1<span style="color: #000000;">]; 
+</span><span style="color: #008080;">30</span>     <span style="color: #0000ff;">if</span> (!<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$hz</span>, <span style="color: #800080;">$allowtype</span><span style="color: #000000;">)) { 
+</span><span style="color: #008080;">31</span>         <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('这是不允许的类型');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;">32</span>         <span style="color: #0000ff;">exit</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">33</span> }</code></pre>
+
+<p><br />上传图片：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$filepath</span> = "uploads/"<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 2</span>     <span style="color: #008000;">//</span><span style="color: #008000;">为了符合UBB的路径 </span>
+<span style="color: #008080;"> 3</span>     <span style="color: #800080;">$randname</span> = <span style="color: #008080;">date</span>("Y") . <span style="color: #008080;">date</span>("m") . <span style="color: #008080;">date</span>("d") . <span style="color: #008080;">date</span>("H") . <span style="color: #008080;">date</span>("i") . <span style="color: #008080;">date</span>("s") . <span style="color: #008080;">rand</span>(100, 999) . "." . <span style="color: #800080;">$hz</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 4</span>     <span style="color: #008000;">//</span><span style="color: #008000;">将临时位置的文件移动到指定的目录上即可 </span>
+<span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>["img"]["tmp_name"<span style="color: #000000;">])) { 
+</span><span style="color: #008080;"> 6</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$_FILES</span>["img"]["tmp_name"], <span style="color: #800080;">$filepath</span> . <span style="color: #800080;">$randname</span><span style="color: #000000;">)) { 
+</span><span style="color: #008080;"> 7</span>             <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('上传成功');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 8</span>             <span style="color: #008080;">session_start</span><span style="color: #000000;">(); 
+</span><span style="color: #008080;"> 9</span>             <span style="color: #800080;">$_SESSION</span>['images'] = <span style="color: #800080;">$filepath</span> . <span style="color: #800080;">$randname</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">10</span>             <span style="color: #008000;">//</span><span style="color: #008000;">echo $_SESSION['images']; </span>
+<span style="color: #008080;">11</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">12</span>             <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('上传失败');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">14</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">15</span>         <span style="color: #0000ff;">echo</span> "&lt;script type='text/javascript'&gt;alert('不是一个上传文件');history.back();&lt;/script&gt;"<span style="color: #000000;">; 
+</span><span style="color: #008080;">16</span> }</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/210.html" target="_blank">https://www.sucaihuo.com/php/210.html</a> 转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

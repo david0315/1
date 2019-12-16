@@ -1,0 +1,38 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修laravel队列' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>laravel队列</center></div><div class='banquan'>原文出处:本文由博客园博主久伴成忆提供。<br/>
+原文连接:https://www.cnblogs.com/starluke/p/11783924.html</div><br>
+    <p><span style="font-size: 18px;"><strong>对列作用</strong></span><br />　　队列的目的是将耗时的任务延时处理，比如发送邮件，从而大幅度缩短Web请求和相应的时间。<br />　　队列进程原理：写一个死循环的脚本在Linux系统持续运行，新的队列任务push到这个脚本中。<br /><br /><br /><span style="font-size: 18px;"><strong>一、配置</strong></span><br />    　　队列 配置文件存放在config/queue.php 。在该文件中你将会找到框架自带的每一个队列驱动的连接配置，包括数据库、<br />Beanstalkd、 IronMQ、 Amazon SQS、 Redis 以及同步（本地使用）驱动。其中还包含了一个 null 队列驱动以拒绝队<br />列任务。默认是sync,即同步的,直接处理,无队列.要将其修改为对应的类型,如database等。<br />　　<strong>这次主要探讨 使用database 保存队列任务。 </strong></p>
+<p>// 在.env 文件中修改：<br />QUEUE_DRIVER=database</p>
+<p>// 清除配置缓存。这是个巨坑，测试时因为没执行这一步导致配置不生效，懵逼了许久<br />php artisan config:cache<br /><br /><span style="font-size: 18px;"><strong>二、依赖</strong></span><br /><strong>　　1.数据库依赖：</strong>为了使用database 队列驱动，需要一张数据库表来存放任务，要生成创建该表的迁移，<br />运行 Artisan 命令queue:table ，迁移被创建好了之后，使用migrate 命令运行迁移：<br /><br /><br />　　php artisan queue:table<br />　　php artisan migrate</p>
+<p>// 数据库会生成以下两张表：<br />　　jobs<br />　　migrations</p>
+<p><span style="font-size: 18px;"><strong>2.其他队列类型依赖</strong></span><br />　　下面是以上列出队列驱动需要安装的依赖：<br />　　&bull; Amazon SQS: aws/aws-sdk-php ~3.0<br />　　&bull; Beanstalkd: pda/pheanstalk ~3.0<br />　　&bull; IronMQ: iron-io/iron_mq ~2.0<br />　　&bull; Redis: predis/predis ~1.0<br /><span style="font-size: 18px;"><strong>&nbsp;注意：</strong></span></p>
+<p>　　1、因为我使用两套环境（虚拟机、本地，两套环境共享项目目录），正常访问的是虚拟机的数据库。但使用 php artisan migrate <br />　　相关命令时报 2002 拒绝连接错误 ，因为在控制台访问到了本地的数据库。所以数据库配置：<br />　　DB_HOST=localhost<br />　　修改为 具体的ip:<br />　　DB_HOST=192.168.82.52<br />　　<strong>清除缓存：</strong><br />　　php artisan config:cache</p>
+<p>　　2、报错：SQLSTATE[42000]: 1071 Specified key was too long; max key length is 767 bytes<br />动配置迁移生成的默认字符串长度，你可以通过调用 AppServiceProvider 中的 Schema::defaultStringLength 方法来配置它。<br />　　局部配置：在报错的迁移脚本中加 Schema::defaultStringLength(191);<br />　　全局配置：在App\Providers\AppServiceProvider 的boot方法加Schema::defaultStringLength(191);<br /><br /><span style="font-size: 18px;"><strong>三、生成任务类</strong></span><br />　　1、通常，所有的任务类都保存在 app/Jobs 目录.如果 app/Jobs 不存在，在运行 Artisan 命令 make:job 的时候，<br />它将会自动创建。你可以通过 Artisan CLI 来生成队列任务类：</p>
+<p>    　　php artisan make:job queueTest</p>
+<p>　　生成的类 queueTest 都实现了 Illuminate\Contracts\Queue\ShouldQueue 接口, <br />告诉 Laravel 将该任务推送到队列，而不是立即运行。<br /><br />2、在 queueTest.php 的代码如下：<br />public function handle()<br />    {<br />        sleep(5);<br />        Zhang::insert([ 'name' =&gt; 'queue.' . time() .uniqid(), 'time' =&gt; time()]);<br />    }</p>
+<p><br />// 在TestController.php 控制器的推送任务如下：<br /> public function queueTest()<br />    {<br />        for($i = 0; $i &lt; 100; $i ++) {<br />            dispatch(new queueTest("ssss".$i));<br />        }<br />        exit('程序结束');<br />    }</p>
+<p>// routes添加路由：<br />Route::get('/queue', 'TestController@queue' );<br /><br /><span style="font-size: 18px;"><strong>四、启动队列监听</strong></span><br /><strong>基本命令：</strong></p>
+<p>    php artisan queue:listen  //监听队列请求，只要运行着，就能一直接受请求，除非手动终止；</p>
+<p>其他类型的监听、守护进程请参考顶部资料。<br /><br /><span style="font-size: 18px;"><strong>五、测试成功</strong></span><br />　　在浏览器开几个窗口同时访问该地址：localhost/queue , 出现以下情况说明队列任务推送成功：<br /> 　　1、访问后，浏览器立即打印 '程序结束' ，说明任务已经压入队列;<br /> 　　2、进入数据库查看jods表，会发现很多还没执行完的任务；<br /> 　　3、在控制台会监听到正在运行的进程：<br /> 　　[2018-01-03 11:53:46] Processing: App\Jobs\queueTest<br /> 　　[2018-01-03 11:53:56] Processed:  App\Jobs\queueTest<br /> 　　[2018-01-03 11:53:57] Processing: App\Jobs\queueTest<br /><span style="font-size: 18px;"><strong>总结</strong></span><br />以上只是对laravel队列的一些基于database的基础运用，队列的知识远远不止这些。如果你有好的例子分享，欢迎留言。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

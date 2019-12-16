@@ -1,0 +1,162 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP队列的实现详细操作步骤' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP队列的实现详细操作步骤</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11890577.html</div><br>
+    <p>队列是一种特殊的线性表，它只允许在表的前端，可以称之为front，进行删除操作；而在表的后端，可以称之为rear进行插入操作。队列和堆栈一样，是一种操作受限制的线性表，和堆栈不同之处在于：队列是遵循&ldquo;先进先出&rdquo;原则，而堆栈遵循的是&ldquo;先进后出&rdquo;原则。队列进行插入操作的端称为队尾，进行删除操作的称为队头，只允许在队尾进行插入操作，在队头进行删除操作。</p>
+<p><br />队列的数据元素又称为队列元素，在队尾中插入一个元素称为入队，在队头删除一个元素称为出队。具体实现参考代码：</p>
+<p>代码：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">* php队列算法
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">* Author Been
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">* QQ:281443751
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">* Email:binbin1129@126.com
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">*</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 8</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> data {
+</span><span style="color: #008080;"> 9</span>   <span style="color: #008000;">//</span><span style="color: #008000;">数据</span>
+<span style="color: #008080;">10</span>   <span style="color: #0000ff;">private</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$data</span><span style="color: #000000;">){
+</span><span style="color: #008080;">13</span>     <span style="color: #800080;">$this</span>-&gt;data=<span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">14</span>     <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$data</span>.":哥进队了！&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getData(){
+</span><span style="color: #008080;">18</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">data;
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">20</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct(){
+</span><span style="color: #008080;">21</span>     <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$this</span>-&gt;data."：哥走了！&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">24</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> queue{
+</span><span style="color: #008080;">25</span>   <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$front</span>;<span style="color: #008000;">//</span><span style="color: #008000;">队头</span>
+<span style="color: #008080;">26</span>   <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$rear</span>;<span style="color: #008000;">//</span><span style="color: #008000;">队尾</span>
+<span style="color: #008080;">27</span>   <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$queue</span>=<span style="color: #0000ff;">array</span>('0'=&gt;'队尾');<span style="color: #008000;">//</span><span style="color: #008000;">存储队列</span>
+<span style="color: #008080;">28</span>   <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$maxsize</span>;<span style="color: #008000;">//</span><span style="color: #008000;">最大数</span>
+<span style="color: #008080;">29</span> 
+<span style="color: #008080;">30</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$size</span><span style="color: #000000;">){
+</span><span style="color: #008080;">31</span>     <span style="color: #800080;">$this</span>-&gt;initQ(<span style="color: #800080;">$size</span><span style="color: #000000;">);
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">33</span>   <span style="color: #008000;">//</span><span style="color: #008000;">初始化队列</span>
+<span style="color: #008080;">34</span>   <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> initQ(<span style="color: #800080;">$size</span><span style="color: #000000;">){
+</span><span style="color: #008080;">35</span>     <span style="color: #800080;">$this</span>-&gt;front=0<span style="color: #000000;">;
+</span><span style="color: #008080;">36</span>     <span style="color: #800080;">$this</span>-&gt;rear=0<span style="color: #000000;">;
+</span><span style="color: #008080;">37</span>     <span style="color: #800080;">$this</span>-&gt;maxsize=<span style="color: #800080;">$size</span><span style="color: #000000;">;
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">39</span>   <span style="color: #008000;">//</span><span style="color: #008000;">判断队空</span>
+<span style="color: #008080;">40</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> QIsEmpty(){
+</span><span style="color: #008080;">41</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;front==<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">rear;
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">43</span>   <span style="color: #008000;">//</span><span style="color: #008000;">判断队满</span>
+<span style="color: #008080;">44</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> QIsFull(){
+</span><span style="color: #008080;">45</span>     <span style="color: #0000ff;">return</span> (<span style="color: #800080;">$this</span>-&gt;front-<span style="color: #800080;">$this</span>-&gt;rear)==<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">maxsize;
+</span><span style="color: #008080;">46</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">47</span>   <span style="color: #008000;">//</span><span style="color: #008000;">获取队首数据</span>
+<span style="color: #008080;">48</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getFrontDate(){
+</span><span style="color: #008080;">49</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;queue[<span style="color: #800080;">$this</span>-&gt;front]-&gt;<span style="color: #000000;">getData();
+</span><span style="color: #008080;">50</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">51</span>   <span style="color: #008000;">//</span><span style="color: #008000;">入队</span>
+<span style="color: #008080;">52</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> InQ(<span style="color: #800080;">$data</span><span style="color: #000000;">){
+</span><span style="color: #008080;">53</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;QIsFull())<span style="color: #0000ff;">echo</span> <span style="color: #800080;">$data</span>.":我一来咋就满了！（队满不能入队，请等待！）&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;">54</span>     <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">55</span>       <span style="color: #800080;">$this</span>-&gt;front++<span style="color: #000000;">;
+</span><span style="color: #008080;">56</span>       <span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span>=<span style="color: #800080;">$this</span>-&gt;front;<span style="color: #800080;">$i</span>&gt;<span style="color: #800080;">$this</span>-&gt;rear;<span style="color: #800080;">$i</span>--<span style="color: #000000;">){
+</span><span style="color: #008080;">57</span>         <span style="color: #008000;">//</span><span style="color: #008000;">echo $data;</span>
+<span style="color: #008080;">58</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;queue[<span style="color: #800080;">$i</span>])<span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$this</span>-&gt;queue[<span style="color: #800080;">$i</span><span style="color: #000000;">]);
+</span><span style="color: #008080;">59</span>         <span style="color: #800080;">$this</span>-&gt;queue[<span style="color: #800080;">$i</span>]=<span style="color: #800080;">$this</span>-&gt;queue[<span style="color: #800080;">$i</span>-1<span style="color: #000000;">];
+</span><span style="color: #008080;">60</span> <span style="color: #000000;">      }
+</span><span style="color: #008080;">61</span>       <span style="color: #800080;">$this</span>-&gt;queue[<span style="color: #800080;">$this</span>-&gt;rear+1]=<span style="color: #0000ff;">new</span> data(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #008080;">62</span>       <span style="color: #008000;">//</span><span style="color: #008000;">print_r($this-&gt;queue);
+</span><span style="color: #008080;">63</span> <span style="color: #008000;">      //echo $this-&gt;front;</span>
+<span style="color: #008080;">64</span>       <span style="color: #0000ff;">echo</span> '入队成功！&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #008080;">65</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">66</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">67</span>   <span style="color: #008000;">//</span><span style="color: #008000;">出队</span>
+<span style="color: #008080;">68</span>   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> OutQ(){
+</span><span style="color: #008080;">69</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;QIsEmpty())<span style="color: #0000ff;">echo</span> "队空不能出队！&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;">70</span>     <span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;">71</span>       <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$this</span>-&gt;queue[<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">front]);
+</span><span style="color: #008080;">72</span>       <span style="color: #800080;">$this</span>-&gt;front--<span style="color: #000000;">;
+</span><span style="color: #008080;">73</span>       <span style="color: #008000;">//</span><span style="color: #008000;">print_r($this-&gt;queue);
+</span><span style="color: #008080;">74</span> <span style="color: #008000;">      //echo $this-&gt;front;</span>
+<span style="color: #008080;">75</span>       <span style="color: #0000ff;">echo</span> "出队成功！&lt;br&gt;"<span style="color: #000000;">;
+</span><span style="color: #008080;">76</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">77</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">78</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">79</span> <span style="color: #800080;">$q</span>=<span style="color: #0000ff;">new</span> queue(3<span style="color: #000000;">);
+</span><span style="color: #008080;">80</span> <span style="color: #800080;">$q</span>-&gt;InQ("小苗"<span style="color: #000000;">);
+</span><span style="color: #008080;">81</span> <span style="color: #800080;">$q</span>-&gt;InQ('马帅'<span style="color: #000000;">);
+</span><span style="color: #008080;">82</span> <span style="color: #800080;">$q</span>-&gt;InQ('溜冰'<span style="color: #000000;">);
+</span><span style="color: #008080;">83</span> <span style="color: #800080;">$q</span>-&gt;InQ('张世佳'<span style="color: #000000;">);
+</span><span style="color: #008080;">84</span> <span style="color: #800080;">$q</span>-&gt;<span style="color: #000000;">OutQ();
+</span><span style="color: #008080;">85</span> <span style="color: #800080;">$q</span>-&gt;InQ("周瑞晓"<span style="color: #000000;">);
+</span><span style="color: #008080;">86</span> <span style="color: #800080;">$q</span>-&gt;<span style="color: #000000;">OutQ();
+</span><span style="color: #008080;">87</span> <span style="color: #800080;">$q</span>-&gt;<span style="color: #000000;">OutQ();
+</span><span style="color: #008080;">88</span> <span style="color: #800080;">$q</span>-&gt;<span style="color: #000000;">OutQ();
+</span><span style="color: #008080;">89</span> <span style="color: #800080;">$q</span>-&gt;OutQ();</code></pre>
+
+<p>&nbsp;</p>
+
+<p>本案例中有两个类：</p>
+<p>　第一个是data类，用于实现数据的存放以及队列元素的入队出队情况；</p>
+<p>　　第二个是queue类，用于队列元素的一些入队出队操作。</p>
+<p>队列中包含四个属性：</p>
+<p>front(队列的头部）</p>
+<p>　　rear(队列的尾部)</p>
+<p>　　maxsize(队列的长度，即队列元素个数)</p>
+<p>　　queue(存放所有已入队队列元素的对象)</p>
+<p>场景说明：</p>
+<p>1.初始化队列时，生成一个队列，传入一个参数作为maxsize初始化队列把队尾rear设为0，队头front也设为0，此时queue中只有0号元素，并且rear和front都指向它。</p>
+<p>2.入队时，先需要判断队列是否已满（front-rear == maxsize）,如果已满不可在插入，如果未满则允许插入。插入时，front自增，然后依次让队列所有元素向前移动一位（让出队尾位置以便插入新元素），然后生成新的data对象插入到队尾位置。</p>
+<p>3.出队时，判断队列是否为空（front == rear），如果为空时，无法出队。如果不为空时，删除front指向的对象，并且front自减，完成出队。</p>
+<p>运行结果如下:</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>小苗:<span style="color: #000000;">哥进队了！
+ 入队成功
+ 马帅</span>:<span style="color: #000000;">哥进队了！
+ 入队成功
+ 溜冰</span>:<span style="color: #000000;">哥进队了！
+ 入队成功
+ 张世佳</span>:<span style="color: #000000;">我一来咋就满了！（队满不能入队，请等待！）
+ 小苗：哥走了！
+ 出队成功！
+ 周瑞晓</span>:<span style="color: #000000;">哥进队了！
+ 入队成功
+ 马帅：哥走了！
+ 出队成功！
+ 溜冰：哥走了！
+ 出队成功！
+ 周瑞晓：哥走了！
+ 出队成功！
+ 队空不能出队！
+ 队空不能出队！</span></code></pre>
+
+<p>&nbsp;</p>
+<ul>
+<li>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></li>
+</ul>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

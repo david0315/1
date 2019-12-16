@@ -1,0 +1,128 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修服务端php之文件上传' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>服务端php之文件上传</center></div><div class='banquan'>原文出处:本文由博客园博主小方哥&#183;提供。<br/>
+原文连接:https://www.cnblogs.com/duxiu-fang/p/10824955.html</div><br>
+    <h1>知识点</h1>
+<ul>
+<li><strong>echo $_SERVER['PHP_SELF'];</strong>　　自动获取当前文件的路劲（即提交地址为当前页面）</li>
+<li>当一个表单有文件域（即文件上传）的时候，<strong>method</strong>（提交方式）要设置<strong>post</strong>,这样更加安全，<strong>enctype</strong>这个属性为编码类型，固定格式为 <strong>multipart/form-data<br /></strong></li>
+<li>当文件上传成功后，系统会在服务端开辟一个临时目录来存放上传的文件，而上传之后，会立马消除这个目录</li>
+<li><strong>UPLOAD_ERR_OK</strong>（这是一个记号,其值为0时)</li>
+<li>PHP 中设置全局变量的两种方式:
+<ul>
+<li>(1) global $message;</li>
+<li>(2) $GLOBALS['message']</li>
+
+</ul>
+
+</li>
+
+</ul>
+<h1>$avator['error']分析</h1>
+<ul>
+<li>其值为0(UPLOAD_ERR_OK)时：表示文件上传成功</li>
+<li>其值为1(UPLOAD_ERR_INT_SIZE)：表示文件超过了 php.ini 文档中的 upload_max_filesize （服务端支持的单个文件上传的大小）的值。当出现这个情况时，只要根据情况增大这个值即可</li>
+<li>其值为2(UPLOAD_ERR_FORM_SIZE)：表示上传的文件超过了HTML表单中MAX_FILE_SIZE选项指定的值</li>
+<li>其值为3(UPLOAD_ERR_PARTIAL)：表示只有部分被上传</li>
+<li>其值为4(UPLOAD_ERR_NO_FILE)：表示没有文件被上传</li>
+
+</ul>
+<h1>错误分析</h1>
+<ul>
+<li><strong>Warning</strong>: POST Content-Length of 17545049 bytes exceeds the limit of 8388608 bytes in&nbsp;<strong>Unknown</strong>&nbsp;on line&nbsp;<strong>0</strong></li>
+<li>当出现上面这句警告的时候，表示超过了服务端所支持的最大的请求体的体积，只需再 php.ini 文档中增大 post_max_size 的大小即可</li>
+
+</ul>
+<h1>测试代码</h1>
+<p>　　html</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="&lt;?php echo $_SERVER['PHP_SELF']; ?&gt;"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="post"</span><span style="color: #ff0000;"> enctype</span><span style="color: #0000ff;">="multipart/form-data"</span><span style="color: #0000ff;">&gt;</span>
+        
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="file"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="avator"</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">button </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #0000ff;">&gt;</span>上传<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">button</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #008000;">&lt;!--</span><span style="color: #008000;"> 当 $message 有值的时候显示 </span><span style="color: #008000;">--&gt;</span>
+        <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php if (isset($message)): </span><span style="color: #0000ff;">?&gt;</span>
+            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">p </span><span style="color: #ff0000;">style</span><span style="color: #0000ff;">="color: red;"</span><span style="color: #0000ff;">&gt;</span><span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php echo $message; </span><span style="color: #0000ff;">?&gt;</span><span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">p</span><span style="color: #0000ff;">&gt;</span>
+        <span style="color: #0000ff;">&lt;?</span><span style="color: #ff00ff;">php endif </span><span style="color: #0000ff;">?&gt;</span>
+    <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>　　php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+
+</span><span style="color: #0000ff;">function</span><span style="color: #000000;"> upload () {
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_FILES</span>['avator'<span style="color: #000000;">])) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> $message 要设置为全局变量</span>
+        <span style="color: #800080;">$GLOBALS</span>['message'] = '亲，您传的是什么啊！'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #800080;">$avator</span> = <span style="color: #800080;">$_FILES</span>['avator'<span style="color: #000000;">];
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> $avator =&gt; array(5) {
+          //   ["name"]=&gt;
+          //   string(9) "pic02.jpg"
+          //   ["type"]=&gt;
+          //   string(10) "image/jpeg"
+          //   ["tmp_name"]=&gt;
+          //   string(26) "C:\Windows\Temp\phpBBB.tmp"  //临时目录
+          //   ["error"]=&gt;
+          //   int(0)
+          //   ["size"]=&gt;
+          //   int(560586)
+          // }</span>
+
+    <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$avator</span>['error'<span style="color: #000000;">];
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 
+    // 上传失败时，$avator['error'] = 4
+    // echo $avator['error'];
+    // UPLOAD_ERR_OK === 0 </span>
+    <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$avator</span>['error'] !==<span style="color: #000000;"> UPLOAD_ERR_OK) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 服务端没有接收到上传的文件</span>
+        <span style="color: #800080;">$GLOBALS</span>['message'] = '上传失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 接收到了文件
+    // 将文件从临时目录移动到网站根目录</span>
+    <span style="color: #800080;">$source_file</span> = <span style="color: #800080;">$avator</span>["tmp_name"];    <span style="color: #008000;">//</span><span style="color: #008000;">源文件
+    // 移动的目录路劲中文件夹必须先存在，否则报错</span>
+    <span style="color: #800080;">$target_file</span> = 'uploadFile/' . <span style="color: #800080;">$avator</span>["name"];<span style="color: #008000;">//</span><span style="color: #008000;">目标放在哪里</span>
+    <span style="color: #800080;">$moved</span> = <span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$source_file</span>, <span style="color: #800080;">$target_file</span><span style="color: #000000;">);
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$moved</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$GLOBALS</span>['message'] = '上传失败'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 移动成功(上传成功)</span>
+    <span style="color: #0000ff;">echo</span> '亲，上传成功了哟！'<span style="color: #000000;">;
+}
+
+</span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$_SERVER</span>['REQUEST_METHOD'] === 'POST'<span style="color: #000000;">) {
+    upload();
+}
+
+</span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

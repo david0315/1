@@ -1,0 +1,84 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修 PHP+Swoole并发编程的魅力' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center> PHP+Swoole并发编程的魅力</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11836701.html</div><br>
+    <p>PHP语言是一个短生命周期的Web编程语言，很多PHPer已经形成了fpm下编程的思维定势。实际上在Swoole出现之后，这种串行化编程的模式早已被打破。使用Swoole完全可以轻易实现更灵活的并发编程。</p>
+<p>场景介绍<br />假设我们要做一个石头剪刀布的Web游戏，3个玩家同时提交竞猜后显示胜者。在传统串行化Web编程中，我们一般思路是这样：</p>
+<p>设置&nbsp;form&nbsp;表单，用户提交竞猜后保存到&nbsp;MySQL/Redis&nbsp;存储<br />添加一个查看结果按钮，如果未全部完成，显示正在等待其他人提交。当3个人全部提交时，查询存储，并显示最终结果<br />并发编程<br />这个场景就可以使用Swoole实现并发编程，无需依赖&nbsp;MySQL/Redis&nbsp;存储，在内存中可以完成竞猜。</p>
+<p>当有用户提交竞猜时，hold&nbsp;住请求，不返回结果，用户进入等待状态。当前请求和连接保持在内存中<br />当3个人全部提交时，从内存中取出相关请求的内容，计算并遍历向所有请求发送响应<br />编码实现</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #800080;">$server</span> = <span style="color: #0000ff;">new</span> Swoole\Http\Server('127.0.0.1', 9501,<span style="color: #000000;"> SWOOLE_BASE);
+</span><span style="color: #008080;"> 3</span> <span style="color: #800080;">$result</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;"> 4</span> <span style="color: #800080;">$server</span>-&gt;on('request', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$req</span>, <span style="color: #800080;">$resp</span>) <span style="color: #0000ff;">use</span>(&amp;<span style="color: #800080;">$result</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 5</span> <span style="color: #800080;">$resp</span>-&gt;<span style="color: #008080;">header</span>('Content-Type', 'text/html; charset=UTF-8'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$req</span>-&gt;server['request_method'] == 'GET'<span style="color: #000000;">) {
+</span><span style="color: #008080;"> 7</span> <span style="color: #800080;">$resp</span>-&gt;<span style="color: #008080;">end</span>('
+<span style="color: #008080;"> 8</span> <span style="color: #000000;">&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt;
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">&lt;form method="post" action=""&gt;
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">&lt;input type="radio" value="石头" name="result"&gt;石头
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">&lt;input type="radio" value="剪刀" name="result"&gt;剪刀
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">&lt;input type="radio" value="布" name="result"&gt;布
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">&lt;button type="submit"&gt;提交&lt;/button&gt;
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">&lt;/form&gt;
+</span><span style="color: #008080;">15</span> '<span style="color: #000000;">);
+</span><span style="color: #008080;">16</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">17</span> <span style="color: #800080;">$result</span>[<span style="color: #800080;">$req</span>-&gt;get['name']] = [<span style="color: #800080;">$req</span>, <span style="color: #800080;">$resp</span><span style="color: #000000;">];
+</span><span style="color: #008080;">18</span> <span style="color: #0000ff;">if</span> (<span style="color: #008080;">count</span>( <span style="color: #800080;">$result</span>) == 3<span style="color: #000000;">) {
+</span><span style="color: #008080;">19</span> <span style="color: #800080;">$out</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;">20</span> <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$result</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$arr</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">21</span> [<span style="color: #800080;">$_req</span>, <span style="color: #800080;">$_resp</span>] = <span style="color: #800080;">$arr</span><span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> <span style="color: #800080;">$out</span> .= <span style="color: #800080;">$_req</span>-&gt;get['name'] ." : ". <span style="color: #800080;">$_req</span>-&gt;post['result']."&lt;br /&gt;\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">24</span> <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$result</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$arr</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">25</span> [<span style="color: #800080;">$_req</span>, <span style="color: #800080;">$_resp</span>] = <span style="color: #800080;">$arr</span><span style="color: #000000;">;
+</span><span style="color: #008080;">26</span> <span style="color: #800080;">$_resp</span>-&gt;<span style="color: #008080;">end</span>(<span style="color: #800080;">$out</span><span style="color: #000000;">);
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">28</span> <span style="color: #800080;">$result</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">});
+</span><span style="color: #008080;">32</span> <span style="color: #800080;">$server</span>-&gt;start();</code></pre>
+
+<p>&nbsp;</p>
+<p>执行程序</p>
+<src class="cnblogs_code">
+<pre><code>php game.php</code></pre>
+
+<p>&nbsp;</p>
+<p>打开3个Chrome的Tab页。并且URL中传入name分别为A、B、C代表3个用户。</p>
+<p>&nbsp;<img src="./images/ PHP+Swoole并发编程的魅力0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;<img src="./images/ PHP+Swoole并发编程的魅力1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;<img src="./images/ PHP+Swoole并发编程的魅力2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>在第一个、第二个提交结果时，并未返回任何结果，Chrome正在转圈等待服务器返回结果。第三个表单提交时3个Tab页同时返回结果。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>并发难题<br />并发编程比串行编程更强大，也更复杂。并发编程会遇到之前串行编程所没有的新问题，如：</p>
+<p>数据同步问题<br />上下文管理问题<br />时序问题<br />这需要开发者具备更严谨的工程思维能力，也需要开发者具备更深厚的编程功底。</p>
+<p>思维转变<br />Swoole其实颠覆了以往PHP的编程模式，使得程序员的视野不再局限于一次请求的处理，不再局限于对于数据库CURD操作、接口调用。配合使用Swoole4提供的协程编程能力，就可以在内存空间内实现各种复杂的交互。</p>
+<p>新的编程模式，可以让PHPer轻松地去实现网络游戏、服务器系统、智能家居、物联网等项目。<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

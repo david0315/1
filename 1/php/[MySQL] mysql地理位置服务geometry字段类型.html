@@ -1,0 +1,30 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[MySQL] mysql地理位置服务geometry字段类型' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[MySQL] mysql地理位置服务geometry字段类型</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11454633.html</div><br>
+    <p>这个字段类型是mysql5.7新增的功能,主要就是解决坐标存储和距离计算的常见问题</p>
+<p>创建表:<br />CREATE TABLE `service` (<br />  `id` bigint(20) NOT NULL AUTO_INCREMENT,<br />  `name` varchar(128) NOT NULL DEFAULT '',<br />  `content` varchar(128) NOT NULL DEFAULT '',<br />  `tel` varchar(20) NOT NULL DEFAULT '',<br />  `location` geometry NOT NULL,<br />  PRIMARY KEY (`id`),<br />  KEY `location` (`location`(32))<br />) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8</p>
+<p><br />插入坐标<br />insert into service (name,content,tel,location)values("陶士涵",'牛逼','18898989898',ST_GeomFromText('POINT(116.28828 40.053257)'));<br />读取坐标<br />select *,astext(location) from service;<br />查询距离<br />SELECT  name,content,tel,  (st_distance (location,point(116.282459,40.047955) ) *111195) AS distance  FROM  service  ORDER BY distance;<br />判断距离<br />SELECT  name,content,tel,astext(location),FLOOR(st_distance (location,point(116.282459,40.047955) ) *111195) AS distance  FROM  service having distance &lt; 1000  ORDER BY distance;</p>
+<p><img src="./images/[MySQL] mysql地理位置服务geometry字段类型0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,95 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Yii2 的安装及简单使用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Yii2 的安装及简单使用</center></div><div class='banquan'>原文出处:本文由博客园博主幽篁晓筑提供。<br/>
+原文连接:https://www.cnblogs.com/woods1815/p/10745484.html</div><br>
+    <p>&nbsp;</p>
+<p>前段时间第一次使用Yii2框架，碰到了一些问题，这里记录一下。</p>
+<h2>Yii2安装：通过composer安装</h2>
+<p>1、首先要安装composer，我在另外一篇博客中介绍了<a href="https://www.cnblogs.com/woods1815/p/9607146.html" rel="nofollow" target="_blank">如何在Windows下安装composer</a>。</p>
+<p>2、全局设置 Composer 使用中国镜像：</p>
+<src class="cnblogs_code">
+<pre><code>composer config -g repo.packagist composer https:<span style="color: #008000;">//</span><span style="color: #008000;">packagist.phpcomposer.com</span></code></pre>
+
+<p>3、安装composer-asset-plugin（如果不安装composer-asset-plugin后面安装yii2时会出现问题，这里默认安装最新版）</p>
+<src class="cnblogs_code">
+<pre><code>composer <span style="color: #0000ff;">global</span> <span style="color: #0000ff;">require</span> "fxp/composer-asset-plugin"</code></pre>
+
+<p>4、（1）安装基础版，projectName是自己的项目名。</p>
+<src class="cnblogs_code">
+<pre><code>composer create-project --prefer-dist yiisoft/yii2-app-basic projectName</code></pre>
+
+<p>（2）安装高级版。（高级版区分了前后台目录backend，frontend）</p>
+<src class="cnblogs_code">
+<pre><code>composer create-project --prefer-dist yiisoft/yii2-app-advanced projectName</code></pre>
+
+<p><strong>注</strong>：高级版安装后需要初始化，双击根目录下的"init.bat"文件，选择"0"(表示开发环境)，之后选择"yes"就可以了，会自动生成入口文件。</p>
+<p>5、配置域名信息就可以访问了。（高级版需要分别配置前后台域名）</p>
+<p>&nbsp;</p>
+<h3>可能出现的问题：</h3>
+<p>安装下来后可能会出现的问题：<span style="color: #ff0000;">找不到vendor文件夹</span>。</p>
+<p><strong>原因</strong>：composer-asset-plugin没有安装或者版本太低</p>
+<p><strong>解决办法</strong>：找到文件的根目录，即composer.json文件目录，打开命令行执行：composer update</p>
+<p>&nbsp;</p>
+<h2>Yii 2的简单使用：</h2>
+<h3><a name="t3"></a>1、路由优化</h3>
+<p>找到 /frontend/config/main.php 文件，找到以下代码，去掉注释，运行后发现可以去掉"?r="使用"/"代替，但是还是不能去掉index.php。</p>
+<src class="cnblogs_code">
+<pre><code>'urlManager' =&gt;<span style="color: #000000;"> [
+    </span>'enablePrettyUrl' =&gt; <span style="color: #0000ff;">true</span>,   <span style="color: #008000;">//</span><span style="color: #008000;"> 美化url去掉 ?r=</span>
+    'showScriptName' =&gt; <span style="color: #0000ff;">false</span>,   <span style="color: #008000;">//</span><span style="color: #008000;"> 隐藏index.php</span>
+    'rules' =&gt;<span style="color: #000000;"> [
+    ]</span>,<span style="color: #000000;">
+]</span>,</code></pre>
+
+<p>要去掉index.php，还需要在入口文件下添加<span style="color: #ff0000;">.htaccess</span>文件，文件内容如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">#</span><span style="color: #008000;"> use mod_rewrite for pretty URL support</span>
+<span style="color: #000000;">RewriteEngine on
+</span><span style="color: #008000;">#</span><span style="color: #008000;"> if a directory or a file exists, use the request directly</span>
+RewriteCond %{REQUEST_FILENAME} !-<span style="color: #000000;">f
+RewriteCond </span>%{REQUEST_FILENAME} !-<span style="color: #000000;">d
+</span><span style="color: #008000;">#</span><span style="color: #008000;"> otherwise forward the request to index.php</span>
+RewriteRule . index.php</code></pre>
+
+<p><strong>注</strong>：这个需要前后端都配置一遍。</p>
+<p>&nbsp;</p>
+<h3>2、驼峰命名路径访问</h3>
+<p>在yii2中如果使用驼峰命名，则默认使用"-"，如要访问UserAdminController控制器下的actionTestUser方法，则访问路径为：/user-admin/test-user</p>
+<p>&nbsp;</p>
+<h3>3、使用post方法访问</h3>
+<p>在Yii2中如果不做处理，使用post访问会报错。这是因为Yii2使用post请求时默认会使用CSRF验证。</p>
+<p>这里可以在表单中加入验证或者后台可以取消掉CSRF验证。</p>
+<h4>方法一：在表单中加入验证：（如果能使用这种方法最好）</h4>
+<src class="cnblogs_code">
+<pre><code>&lt;input name="_csrf" type="hidden" id="_csrf" value="&lt;?= Yii::<span style="color: #800080;">$app</span>-&gt;request-&gt;csrfToken ?&gt;" /&gt;</code></pre>
+
+<h4>方法二：全局配置，在配置文件中加入 'enableCsrfValidation' =&gt; false</h4>
+<p>在config文件夹下找到"components"配置下的"request"配置，在里面加入'enableCsrfValidation' =&gt; false表示取消掉CSRF验证。</p>
+<h4>方法三：局部配置，在单个控制器下配置</h4>
+<p>可以在单个控制器下添加代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span> <span style="color: #800080;">$enableCsrfValidation</span> = <span style="color: #0000ff;">false</span>;</code></pre>
+
+<p>这样在这个控制器下的方法就可以使用post请求了。</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

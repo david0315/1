@@ -1,0 +1,53 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP]引用返回与节省内存' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP]引用返回与节省内存</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10791660.html</div><br>
+    <p>PHP中的引用是什么:<br />1.在 PHP 中引用意味着用不同的名字访问同一个变量内容<br />2.引用可以被看作是 Unix 文件系统中的硬链接。</p>
+<p><br />3.使用unset的话,只是删除他这个名字自身对内容的引用,并没有删除内容本身<br />php &gt; $a="test";$b=&amp;$a;unset($a);var_dump($b);<br />string(4) "test"<br />php &gt; $a="test";$b=&amp;$a;unset($b);var_dump($a);<br />string(4) "test"</p>
+<p><br />4.设置为null,就是把原内容修改为null,所有对该内容的引用，获取的都是null<br />php &gt; $a="test";$b=&amp;$a;$b=null;var_dump($a);         <br />NULL<br />php &gt; $a="test";$b=&amp;$a;$a=null;var_dump($b);<br />NULL</p>
+<p><br />php的引用返回与节省内存:<br />1.这里必须在两个地方都用 &amp; 符号&mdash;&mdash;指出返回的是一个引用，而不是通常的一个拷贝，同样也指出 $myValue 是作为引用的绑定，而不是通常的赋值<br />2.返回的必须是类属性的形式</p>
+<p>使用引用返回所占内存是221344 ; 不使用引用返回多次调用后占884968</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+$start=memory_get_usage();
+
+class Test{
+        public $test="";
+        public function &amp;myTest(){
+                $this-&gt;test='';
+                $this-&gt;test=file_get_contents("cacert.pem");
+                return $this-&gt;test;
+        }   
+}
+$obj=new Test();
+$str=&amp;$obj-&gt;myTest();
+$str2=&amp;$obj-&gt;myTest();
+$str3=&amp;$obj-&gt;myTest();
+$str4=&amp;$obj-&gt;myTest();
+
+var_dump(memory_get_usage()-$start);
+                  
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

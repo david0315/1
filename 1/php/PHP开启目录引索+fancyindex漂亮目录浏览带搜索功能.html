@@ -1,0 +1,75 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP开启目录引索+fancyindex漂亮目录浏览带搜索功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP开启目录引索+fancyindex漂亮目录浏览带搜索功能</center></div><div class='banquan'>原文出处:本文由博客园博主Cherrison_Time提供。<br/>
+原文连接:https://www.cnblogs.com/Cherrison-Time/p/11570041.html</div><br>
+    <h1 style="text-align: center;">PHP开启目录引索</h1>
+<p><span style="font-size: 18px;"><strong><span style="color: #ff9900;">一. 前言</span></strong></span></p>
+<p>　　<span style="color: #0000ff;"><strong><span style="font-size: 16px;">不知为何对nginx情有独钟, 最近练习php, 为了方便写代码, 便想要开启nginx的目录索引功能, 显然不如Apache开启的方便, 几次尝试都崩了... 我这个小白确实有点看不懂nginx的配置文件.</span></strong></span></p>
+<p><span style="color: #0000ff;"><strong><span style="font-size: 16px;">　　不过最后还是成功了, 记录一下, 万一哪天忘了, 回来看看.</span></strong></span></p>
+<p><span style="color: #0000ff;"><strong><span style="font-size: 16px;">　　我们都知道在apache下可以配置访问web服务器的某个路径时，自动显示其目录下面的文件列表的，其实Nginx一点也不比apache弱，它当然也可以实现这个功能，而且还非常容易和简单；(嗯, 确实是这样, 不会懵逼, 会点就是几行代码的事情)</span></strong></span></p>
+<p><span style="color: #ff6600; font-size: 18px;"><strong>二. 解决过程</strong></span></p>
+<p>　　</p>
+<src class="cnblogs_code">
+<pre><code><strong><span style="font-size: 16px;">worker_processes  <span style="color: #800080;">1</span><span style="color: #000000;">;
+error_log  logs</span>/<span style="color: #000000;">error.log  notice;
+events {
+    worker_connections  </span><span style="color: #800080;">1024</span><span style="color: #000000;">;
+}
+http {
+    include mime.types;
+    default_type  application</span>/octet-<span style="color: #000000;">stream;
+    sendfile    on;
+    keepalive_timeout  </span><span style="color: #800080;">65</span><span style="color: #000000;">;
+server {
+        listen        </span><span style="color: #800080;">80</span><span style="color: #000000;">;
+        server_name  localhost;<br />　　　　　　# 这个就是你代码的运行目录, 最好使用绝对路径吧
+        root   </span><span style="color: #800000;">"</span><span style="color: #800000;">D:/phpstudy_pro/WWW</span><span style="color: #800000;">"</span><span style="color: #000000;">; 
+        location </span>/<span style="color: #000000;"> {
+            index index.php index.html;<br />　　　　　　　　# 下面的三行代码就开启了nginx的目录引索
+            autoindex on;　　　　
+            autoindex_exact_size off;
+            autoindex_localtime on;
+        }
+}
+}</span></span></strong></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="color: #3366ff;"><strong><span style="font-size: 16px;">这样我们就配置好了, 不够好像有个小问题....</span></strong></span></p>
+<p><span style="color: #3366ff;"><span style="font-size: 16px;"><strong>哦, 看看这个界面:</strong></span></span></p>
+<p><span style="color: #3366ff;"><span style="font-size: 16px;"><strong>　　<img src="./images/PHP开启目录引索+fancyindex漂亮目录浏览带搜索功能0.jpg" alt="" /></strong></span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="color: #3366ff;"><strong><span style="font-size: 16px;">　　nginx自带的目录索引，功能简单、样式也不好看, 不得不承认没有Apache的默认样式好看, 不够嘿嘿, 广大nginx爱好者, 已经给出了他们的解决办法.</span></strong></span></p>
+<p><span style="color: #3366ff;"><strong><span style="font-size: 16px;">使用fancyindex插件来做索引，配上一个漂亮的主题的同时还有搜索的功能.</span></strong></span></p>
+<p><strong>　　<span style="color: #3366ff; font-size: 16px;">接下来我们一起来配置吧!</span></strong></p>
+<p><strong><span style="color: #3366ff; font-size: 16px;">　　首先是下载这两个, 文件链接给出</span></strong></p>
+<p>　　https://github.com/aperezdc/ngx-fancyindex/archive/v0.4.3.zip<br />　　https://github.com/Naereen/Nginx-Fancyindex-Theme/archive/master.zip<br /><br /></p>
+<p><img src="./images/PHP开启目录引索+fancyindex漂亮目录浏览带搜索功能1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 16px;"><strong><span style="color: #808000;">添加好这个模块选好主题 , 就这样了; </span></strong></span></p>
+<p><span style="font-size: 16px;"><strong><span style="color: #808000;">详细添加过程下次再写........&nbsp;</span></strong></span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

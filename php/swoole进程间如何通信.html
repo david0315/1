@@ -1,0 +1,56 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修swoole进程间如何通信' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>swoole进程间如何通信</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11973746.html</div><br>
+    <p><img src="./images/swoole进程间如何通信0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>Swoole进程间通信的方式</p>
+<p>管道pipe</p>
+<p>管道用于进程之间的数据交互，Linux系统本身提供了pipe函数用于创建一个半双工通信管道。半双工的通信方式中数据只能单向流动（一端只读一端只写），只能在具有亲缘关系（父子进程）的进程之间使用。</p>
+<p>管道是进程间通信IPC中最基础的方式，管道有两种类型分别是命名管道、匿名管道。</p>
+<p>匿名管道：专门用于具有血缘关系的进程之间，完成数据传递。命名管道：可以用在任何两个进程之间，Swoole中的管道都是匿名管道。</p>
+<p>在Swoole中利用eventfd和UnixSock封装了两种管道，使得进程之间的通信更加灵活。</p>
+<p>Swoole的Process模块内置了管道的方式用于进程间通信，在构建Process实例时只要开启了$pipe_type选项，Swoole底层会自动创建一个管道，这里需要说明的时，虽然名字上叫做管道，但实际上在新版Swoole中底层通信是通过UnixSock实现的，所以并不是真正意义上的Linux Pipe。</p>
+<p>创建进程</p>
+<p><img src="./images/swoole进程间如何通信1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>管道类型$pipe_type可分为三种：</strong></p>
+<p>0表示不创建管道</p>
+<p>1表示创建SOCK_STREAM类型的管道</p>
+<p>2表示创建SOCK_DGRAM类型的管道</p>
+<p>当启用$redirect_stdin_stdout后，$pipe_type选项将忽略用户参数，强制为1。</p>
+<p><strong>管道描述符</strong></p>
+<p>当进程被fork出来后，父进程和子进程中的Process对象会被设置上一个名为pipe的成员变量，存放着底层UnixSocket的描述符，父进程和子进程可以通过这个管道描述符来发送数据，也可以直接调用Process提供的read/write接口来收发数据。</p>
+<p><img src="./images/swoole进程间如何通信2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>管道读写</strong></p>
+<p>swoole_process-&gt;write(string $data) 向进程的管道中写入数据</p>
+<p>swoole_process-&gt;read(int $buffer_size = 8192) 从进程的管道中读取数据</p>
+<p>以上就是swoole进程间如何通信的详细内容，更多请关注我吧</p>
+<p>有需要学习交流的友人请加入Swoole交流群的咱们一起，有问题一起交流，一起进步！前提是你是学技术的。感谢阅读！</p>
+<p><a class="LinkCard LinkCard--noImage" href="https://link.zhihu.com/?target=https%3A//jq.qq.com/%3F_wv%3D1027%26k%3D5mcCu53" target="_blank" data-draft-node="block" data-draft-type="link-card" data-za-detail-view-id="172"><span class="LinkCard-content"><span class="LinkCard-text"><span class="LinkCard-title" data-text="true">点此加入该群<span class="LinkCard-meta">​jq.qq.com</span></span></span></span></a></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

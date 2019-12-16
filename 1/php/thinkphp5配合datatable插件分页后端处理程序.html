@@ -1,0 +1,345 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修thinkphp5配合datatable插件分页后端处理程序' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>thinkphp5配合datatable插件分页后端处理程序</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11811971.html</div><br>
+    <p><strong>thinkphp5配合datatable插件分页后端处理程序</strong><br /><strong>第一版DataTable.php v.1.0</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Db;
+</span><span style="color: #008080;">  3</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">  4</span> <span style="color: #008000;">* DataTable.php.
+</span><span style="color: #008080;">  5</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">  6</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">  7</span> <span style="color: #008000;">* datatable结合thinkphp5使用的分页后台处理程序.
+</span><span style="color: #008080;">  8</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">  9</span> <span style="color: #008000;">* @author B.I.T.
+</span><span style="color: #008080;"> 10</span> <span style="color: #008000;">* @copyright Copyright (c) 2018-2019, B.I.T.
+</span><span style="color: #008080;"> 11</span> <span style="color: #008000;">* @license
+</span><span style="color: #008080;"> 12</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 13</span> <span style="color: #008000;">* @see 初始化
+</span><span style="color: #008080;"> 14</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 15</span> <span style="color: #008000;">* @version v.1.0
+</span><span style="color: #008080;"> 16</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 17</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> DataTable
+</span><span style="color: #008080;"> 18</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 19</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 20</span> <span style="color: #008000;">* 数据库对象
+</span><span style="color: #008080;"> 21</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 22</span> <span style="color: #008000;">* @var objectc
+</span><span style="color: #008080;"> 23</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 24</span> <span style="color: #0000ff;">public</span> <span style="color: #800080;">$_db</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 25</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 26</span> <span style="color: #008000;">* 表名.
+</span><span style="color: #008080;"> 27</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 28</span> <span style="color: #008000;">* @var string
+</span><span style="color: #008080;"> 29</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 30</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_table</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 31</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 32</span> <span style="color: #008000;">* 表格重绘次数.
+</span><span style="color: #008080;"> 33</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 34</span> <span style="color: #008000;">* @var int
+</span><span style="color: #008080;"> 35</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 36</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_draw</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 37</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 38</span> <span style="color: #008000;">* 排序的是哪行.
+</span><span style="color: #008080;"> 39</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 40</span> <span style="color: #008000;">* @var int
+</span><span style="color: #008080;"> 41</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 42</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_order_column</span>; <span style="color: #008000;">//</span><span style="color: #008000;">排序的行</span>
+<span style="color: #008080;"> 43</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 44</span> <span style="color: #008000;">* 排序方式
+</span><span style="color: #008080;"> 45</span> <span style="color: #008000;">* asc desc.
+</span><span style="color: #008080;"> 46</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 47</span> <span style="color: #008000;">* @var string
+</span><span style="color: #008080;"> 48</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 49</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_order_dir</span>; <span style="color: #008000;">//</span><span style="color: #008000;">排序方式 asc desc</span>
+<span style="color: #008080;"> 50</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 51</span> <span style="color: #008000;">* 查询的数据.
+</span><span style="color: #008080;"> 52</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 53</span> <span style="color: #008000;">* @var string
+</span><span style="color: #008080;"> 54</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 55</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_search</span> = ''; <span style="color: #008000;">//</span><span style="color: #008000;">查询的字符串</span>
+<span style="color: #008080;"> 56</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 57</span> <span style="color: #008000;">* 查询开始的位置.
+</span><span style="color: #008080;"> 58</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 59</span> <span style="color: #008000;">* @var int
+</span><span style="color: #008080;"> 60</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 61</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_start</span>; <span style="color: #008000;">//</span><span style="color: #008000;">开始的位置</span>
+<span style="color: #008080;"> 62</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 63</span> <span style="color: #008000;">* 每页显示的条目数.
+</span><span style="color: #008080;"> 64</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 65</span> <span style="color: #008000;">* @var int
+</span><span style="color: #008080;"> 66</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 67</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_length</span>; <span style="color: #008000;">//</span><span style="color: #008000;">查询的长度</span>
+<span style="color: #008080;"> 68</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 69</span> <span style="color: #008000;">* 过滤后的条目数量.
+</span><span style="color: #008080;"> 70</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 71</span> <span style="color: #008000;">* @var integer
+</span><span style="color: #008080;"> 72</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 73</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_recordsFiltered</span> = 0; <span style="color: #008000;">//</span><span style="color: #008000;">过滤后的条目数量</span>
+<span style="color: #008080;"> 74</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 75</span> <span style="color: #008000;">* 总的条目数量.
+</span><span style="color: #008080;"> 76</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 77</span> <span style="color: #008000;">* @var integer
+</span><span style="color: #008080;"> 78</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 79</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_recordsTotal</span> = 0; <span style="color: #008000;">//</span><span style="color: #008000;">总的条目数量</span>
+<span style="color: #008080;"> 80</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 81</span> <span style="color: #008000;">* 返回的数据 没用到.
+</span><span style="color: #008080;"> 82</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 83</span> <span style="color: #008000;">* @var [type]
+</span><span style="color: #008080;"> 84</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 85</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_return</span>; <span style="color: #008000;">//</span><span style="color: #008000;">没用到</span>
+<span style="color: #008080;"> 86</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 87</span> <span style="color: #008000;">* 存放构造函数的第二个参数.
+</span><span style="color: #008080;"> 88</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 89</span> <span style="color: #008000;">* @var [type]
+</span><span style="color: #008080;"> 90</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 91</span> <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$_info</span>; <span style="color: #008000;">//</span><span style="color: #008000;">存放构造函数的第二个参数</span>
+<span style="color: #008080;"> 92</span> 
+<span style="color: #008080;"> 93</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 94</span> <span style="color: #008000;">* 构造函数 处理datatables发送的数据，用户自定义条件，.
+</span><span style="color: #008080;"> 95</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 96</span> <span style="color: #008000;">* @param array $dataTableGet dataTable前台传递过来的数组
+</span><span style="color: #008080;"> 97</span> <span style="color: #008000;">* @param array $info 构造好的数组结构如下
+</span><span style="color: #008080;"> 98</span> <span style="color: #008000;">* example array( //表示 select ID AS sum,ID,USERNMAE 其中 sum用来统计数据的总条数
+</span><span style="color: #008080;"> 99</span> <span style="color: #008000;">* "select"=array(
+</span><span style="color: #008080;">100</span> <span style="color: #008000;">* "ID"=&gt;"sum",
+</span><span style="color: #008080;">101</span> <span style="color: #008000;">* "0"=&gt;'ID',
+</span><span style="color: #008080;">102</span> <span style="color: #008000;">* "1"=&gt;"USERNAME",
+</span><span style="color: #008080;">103</span> <span style="color: #008000;">* )，
+</span><span style="color: #008080;">104</span> <span style="color: #008000;">* "order"=&gt;array( //前台会发送过来根据哪一列排序 接收过来的值就是 键值，对应到数据表中的字段就是值，前台有几个列能够排序这里就需要有几个对应的键值队
+</span><span style="color: #008080;">105</span> <span style="color: #008000;">* "0"=&gt;"ID",
+</span><span style="color: #008080;">106</span> <span style="color: #008000;">* "2"=&gt;"USERNAME",
+</span><span style="color: #008080;">107</span> <span style="color: #008000;">* ),
+</span><span style="color: #008080;">108</span> <span style="color: #008000;">* "where"=&gt;array( //and和or可以同时调用 但是or是用来做查询的 and则是初始数据的查询条件
+</span><span style="color: #008080;">109</span> <span style="color: #008000;">* "and"=&gt;array( //表示会查询state=1 and level=2 and (a=1 or a=2) 的数据
+</span><span style="color: #008080;">110</span> <span style="color: #008000;">* "state"=&gt;'1',
+</span><span style="color: #008080;">111</span> <span style="color: #008000;">* "level"=&gt;"2",
+</span><span style="color: #008080;">112</span> <span style="color: #008000;">* "a"=&gt;[1,2]
+</span><span style="color: #008080;">113</span> <span style="color: #008000;">* ),
+</span><span style="color: #008080;">114</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">115</span> <span style="color: #008000;">* 注："or" 用户搜索的时候存在一个问题，参与搜索查询的列必须为同一类型比如id和name字段就不可以一起搜索会出现输入 
+</span><span style="color: #008080;">116</span> <span style="color: #008000;">* "qwer" sql为 (id like 0 or name like %qwer%)的情况
+</span><span style="color: #008080;">117</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">118</span> <span style="color: #008000;">* "or"=&gt;array("ID","USERNAME"), //用户查询的时候回根据这里的参数作为查询的列 例如 当search=root时 就会查询 ID like %root% or USERNAME like %root%
+</span><span style="color: #008080;">119</span> <span style="color: #008000;">* "or2"=&gt;[ //这里面的会用or连接 几乎很少用 例如下面的数组会变成: a=1 or a=2 or b=2
+</span><span style="color: #008080;">120</span> <span style="color: #008000;">* a=&gt;[1,2],
+</span><span style="color: #008080;">121</span> <span style="color: #008000;">* b=&gt;[2]
+</span><span style="color: #008080;">122</span> <span style="color: #008000;">* ]
+</span><span style="color: #008080;">123</span> <span style="color: #008000;">* ),
+</span><span style="color: #008080;">124</span> <span style="color: #008000;">* "join"=&gt;array(
+</span><span style="color: #008080;">125</span> <span style="color: #008000;">* 'class'=&gt;array('student.class_id','class.id'),
+</span><span style="color: #008080;">126</span> <span style="color: #008000;">* 'sex'=&gt;array('student.class_id','sex.id')
+</span><span style="color: #008080;">127</span> <span style="color: #008000;">* )
+</span><span style="color: #008080;">128</span> <span style="color: #008000;">* )
+</span><span style="color: #008080;">129</span> <span style="color: #008000;">* @param string $db 数据库对象
+</span><span style="color: #008080;">130</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">131</span> <span style="color: #008000;">* @return object this
+</span><span style="color: #008080;">132</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">133</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$dataTableGet</span>, <span style="color: #800080;">$info</span> = <span style="color: #0000ff;">array</span>(), <span style="color: #800080;">$table</span> = ''<span style="color: #000000;">)
+</span><span style="color: #008080;">134</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">135</span> <span style="color: #800080;">$this</span>-&gt;_init(<span style="color: #800080;">$dataTableGet</span><span style="color: #000000;">);
+</span><span style="color: #008080;">136</span> <span style="color: #800080;">$this</span>-&gt;_table = <span style="color: #800080;">$table</span><span style="color: #000000;">;
+</span><span style="color: #008080;">137</span> <span style="color: #800080;">$this</span>-&gt;_db = Db::table(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_table);
+</span><span style="color: #008080;">138</span> <span style="color: #800080;">$this</span>-&gt;_info = <span style="color: #800080;">$info</span><span style="color: #000000;">;
+</span><span style="color: #008080;">139</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">140</span> 
+<span style="color: #008080;">141</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">142</span> <span style="color: #008000;">* 初始化参数,检查数据格式.
+</span><span style="color: #008080;">143</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">144</span> <span style="color: #008000;">* @param array $data datatables发送过来的数据
+</span><span style="color: #008080;">145</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">146</span> <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> _init(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;">147</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">148</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">149</span> <span style="color: #800080;">$this</span>-&gt;_draw = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['draw']) ? <span style="color: #800080;">$data</span>['draw'] : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">150</span> <span style="color: #800080;">$this</span>-&gt;_length = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['length']) ? <span style="color: #008080;">intval</span>(<span style="color: #800080;">$data</span>['length']) : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">151</span> <span style="color: #800080;">$this</span>-&gt;_start = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['start']) ? <span style="color: #008080;">intval</span>(<span style="color: #800080;">$data</span>['start']) : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">152</span> <span style="color: #800080;">$this</span>-&gt;_order_column = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['order']['0']['column']) ? <span style="color: #008080;">intval</span>(<span style="color: #800080;">$data</span>['order']['0']['column']) : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">153</span> <span style="color: #800080;">$this</span>-&gt;_order_dir = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['order']['0']['dir']) ? <span style="color: #800080;">$data</span>['order']['0']['dir'] : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">154</span> <span style="color: #800080;">$this</span>-&gt;_search = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['search']['value']) ? <span style="color: #800080;">$data</span>['search']['value'] : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">155</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">156</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">157</span> 
+<span style="color: #008080;">158</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">159</span> <span style="color: #008000;">* 输出datatables需要的数据格式，还需要打成json的格式才行.
+</span><span style="color: #008080;">160</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">161</span> <span style="color: #008000;">* @param bool $debug true 会输出一些调试信息 默认false
+</span><span style="color: #008080;">162</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">163</span> <span style="color: #008000;">* @return array atatables需要的数据格式
+</span><span style="color: #008080;">164</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">165</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> output(<span style="color: #800080;">$debug</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">)
+</span><span style="color: #008080;">166</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">167</span> <span style="color: #800080;">$data</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_info;
+</span><span style="color: #008080;">168</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['select']) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>['select'<span style="color: #000000;">])) {
+</span><span style="color: #008080;">169</span> <span style="color: #800080;">$selectSql</span> = <span style="color: #800080;">$this</span>-&gt;_getSelectSql(<span style="color: #800080;">$data</span>['select'<span style="color: #000000;">]);
+</span><span style="color: #008080;">170</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">171</span> <span style="color: #800080;">$selectSql</span> = '*'<span style="color: #000000;">;
+</span><span style="color: #008080;">172</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">173</span> <span style="color: #800080;">$this</span>-&gt;_db = <span style="color: #800080;">$this</span>-&gt;_db-&gt;field(<span style="color: #800080;">$selectSql</span><span style="color: #000000;">);
+</span><span style="color: #008080;">174</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['join']) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>['join'<span style="color: #000000;">])) {
+</span><span style="color: #008080;">175</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span>['join'] <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">176</span> <span style="color: #800080;">$this</span>-&gt;_db = <span style="color: #800080;">$this</span>-&gt;_db-&gt;<span style="color: #008080;">join</span>(<span style="color: #800080;">$key</span>,<span style="color: #800080;">$value</span>[0].' = '.<span style="color: #800080;">$value</span>[1<span style="color: #000000;">]);
+</span><span style="color: #008080;">177</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">178</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">179</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['order']) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>['order'<span style="color: #000000;">])) {
+</span><span style="color: #008080;">180</span> <span style="color: #800080;">$orderSql</span> = <span style="color: #800080;">$this</span>-&gt;_getOrderSql(<span style="color: #800080;">$data</span>['order'<span style="color: #000000;">]);
+</span><span style="color: #008080;">181</span> <span style="color: #800080;">$this</span>-&gt;_db = <span style="color: #800080;">$this</span>-&gt;_db-&gt;order(<span style="color: #800080;">$orderSql</span><span style="color: #000000;">);
+</span><span style="color: #008080;">182</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">183</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['where']) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>['where'<span style="color: #000000;">])) {
+</span><span style="color: #008080;">184</span> <span style="color: #800080;">$and</span> = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['where']['and']) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>['where']['and']) ? <span style="color: #800080;">$data</span>['where']['and'] : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">185</span> <span style="color: #800080;">$or</span> = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['where']['or']) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>['where']['or']) ? <span style="color: #800080;">$data</span>['where']['or'] : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">186</span> <span style="color: #800080;">$or2</span> = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>['where']['or2']) &amp;&amp; !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$data</span>['where']['or2']) ? <span style="color: #800080;">$data</span>['where']['or2'] : <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">187</span> <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$and</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">188</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$and</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">189</span> <span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$value</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">190</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$value</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">191</span> <span style="color: #800080;">$this</span>-&gt;_db = <span style="color: #800080;">$this</span>-&gt;_db-&gt;whereOr(<span style="color: #800080;">$key</span>,<span style="color: #800080;">$v</span><span style="color: #000000;">);
+</span><span style="color: #008080;">192</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">193</span> <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$and</span>[<span style="color: #800080;">$key</span><span style="color: #000000;">]);
+</span><span style="color: #008080;">194</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">195</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">196</span> <span style="color: #800080;">$this</span>-&gt;_db = <span style="color: #800080;">$this</span>-&gt;_db-&gt;where(<span style="color: #800080;">$and</span><span style="color: #000000;">);
+</span><span style="color: #008080;">197</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">198</span> <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$or</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">199</span> <span style="color: #800080;">$or_val</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;">200</span> <span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0; <span style="color: #800080;">$i</span> &lt; <span style="color: #008080;">count</span>(<span style="color: #800080;">$or</span>); <span style="color: #800080;">$i</span>++<span style="color: #000000;">) { 
+</span><span style="color: #008080;">201</span> <span style="color: #800080;">$or_val</span> .= <span style="color: #800080;">$i</span> == <span style="color: #008080;">count</span>(<span style="color: #800080;">$or</span>)-1 ? <span style="color: #800080;">$or</span>[<span style="color: #800080;">$i</span>] : <span style="color: #800080;">$or</span>[<span style="color: #800080;">$i</span>].'|'<span style="color: #000000;">;
+</span><span style="color: #008080;">202</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">203</span> <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$this</span>-&gt;_search)&amp;&amp;<span style="color: #800080;">$this</span>-&gt;_search!=''<span style="color: #000000;">){
+</span><span style="color: #008080;">204</span> <span style="color: #800080;">$this</span>-&gt;_db = <span style="color: #800080;">$this</span>-&gt;_db-&gt;where(<span style="color: #800080;">$or_val</span>,'like','%'.<span style="color: #800080;">$this</span>-&gt;_search.'%'<span style="color: #000000;">);
+</span><span style="color: #008080;">205</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">206</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">207</span> <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$or2</span><span style="color: #000000;">)){
+</span><span style="color: #008080;">208</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$or2</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">209</span> <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$value</span>)) <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">210</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$value</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">211</span> <span style="color: #800080;">$this</span>-&gt;_db = <span style="color: #800080;">$this</span>-&gt;_db-&gt;whereOr(<span style="color: #800080;">$key</span>,<span style="color: #800080;">$v</span><span style="color: #000000;">);
+</span><span style="color: #008080;">212</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">213</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">214</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">215</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">216</span> <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;_start) &amp;&amp; <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_length)) {
+</span><span style="color: #008080;">217</span> <span style="color: #800080;">$this</span>-&gt;_db = <span style="color: #800080;">$this</span>-&gt;_db-&gt;limit(<span style="color: #800080;">$this</span>-&gt;_start,<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_length);
+</span><span style="color: #008080;">218</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">219</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$debug</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">220</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$this</span>-&gt;_db-&gt;fetchSql(<span style="color: #0000ff;">true</span>)-&gt;select());<span style="color: #0000ff;">die</span><span style="color: #000000;">;
+</span><span style="color: #008080;">221</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">222</span> <span style="color: #800080;">$db1</span> = <span style="color: #0000ff;">clone</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_db;
+</span><span style="color: #008080;">223</span> <span style="color: #800080;">$info</span> = <span style="color: #800080;">$this</span>-&gt;_db-&gt;<span style="color: #000000;">select();
+</span><span style="color: #008080;">224</span> <span style="color: #800080;">$this</span>-&gt;_recordsTotal = <span style="color: #800080;">$db1</span>-&gt;<span style="color: #008080;">count</span><span style="color: #000000;">();
+</span><span style="color: #008080;">225</span> <span style="color: #800080;">$this</span>-&gt;_recordsFiltered = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_recordsTotal;
+</span><span style="color: #008080;">226</span> <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">227</span> 'draw' =&gt; <span style="color: #008080;">intval</span>(<span style="color: #800080;">$this</span>-&gt;_draw),
+<span style="color: #008080;">228</span> 'recordsTotal' =&gt; <span style="color: #008080;">intval</span>(<span style="color: #800080;">$this</span>-&gt;_recordsTotal),
+<span style="color: #008080;">229</span> 'recordsFiltered' =&gt; <span style="color: #008080;">intval</span>(<span style="color: #800080;">$this</span>-&gt;_recordsFiltered),
+<span style="color: #008080;">230</span> 'data' =&gt; <span style="color: #800080;">$info</span>,
+<span style="color: #008080;">231</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">232</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">233</span> 
+<span style="color: #008080;">234</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">235</span> <span style="color: #008000;">* 当前台需要排序的时候会根据需要排序的列对应的表中的值排序
+</span><span style="color: #008080;">236</span> <span style="color: #008000;">* 构建排序的sql.
+</span><span style="color: #008080;">237</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">238</span> <span style="color: #008000;">* @param array $data 构造函数第二个参数order部分
+</span><span style="color: #008080;">239</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">240</span> <span style="color: #008000;">* @return string 排序部分的sql语句
+</span><span style="color: #008080;">241</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">242</span> <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> _getOrderSql(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;">243</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">244</span> <span style="color: #800080;">$sql</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;">245</span> <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">246</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">247</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$key</span> == <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_order_column) {
+</span><span style="color: #008080;">248</span> <span style="color: #800080;">$sql</span> = "{<span style="color: #800080;">$value</span>} ".<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">_order_dir;
+</span><span style="color: #008080;">249</span> <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">250</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">251</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">252</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">253</span> <span style="color: #0000ff;">return</span> <span style="color: #800080;">$sql</span><span style="color: #000000;">;
+</span><span style="color: #008080;">254</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">255</span> 
+<span style="color: #008080;">256</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">257</span> <span style="color: #008000;">* 构建select部分的sql语句.
+</span><span style="color: #008080;">258</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">259</span> <span style="color: #008000;">* @param array $data 构造函数第二个参数select部分
+</span><span style="color: #008080;">260</span> <span style="color: #008000;">*
+</span><span style="color: #008080;">261</span> <span style="color: #008000;">* @return string select部分的语句
+</span><span style="color: #008080;">262</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">263</span> <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> _getSelectSql(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;">264</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">265</span> <span style="color: #800080;">$list</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">266</span> <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">267</span> <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_numeric</span>(<span style="color: #800080;">$key</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">268</span> <span style="color: #008080;">array_push</span>(<span style="color: #800080;">$list</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">);
+</span><span style="color: #008080;">269</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">270</span> <span style="color: #008080;">array_push</span>(<span style="color: #800080;">$list</span>, <span style="color: #800080;">$key</span>.' AS '.<span style="color: #800080;">$value</span><span style="color: #000000;">);
+</span><span style="color: #008080;">271</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">272</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">273</span> <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$list</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">274</span> <span style="color: #800080;">$selectSql</span> = <span style="color: #008080;">implode</span>(',', <span style="color: #800080;">$list</span><span style="color: #000000;">);
+</span><span style="color: #008080;">275</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">276</span> <span style="color: #800080;">$selectSql</span> = '*'<span style="color: #000000;">;
+</span><span style="color: #008080;">277</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">278</span> <span style="color: #0000ff;">return</span> <span style="color: #800080;">$selectSql</span><span style="color: #000000;">;
+</span><span style="color: #008080;">279</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">280</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p><strong>控制器类调用</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #000000;">namespace app\index\controller;
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Controller;
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Db;
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> DataTable;
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #0000ff;">class</span> Index <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Controller
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">11</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #0000ff;">list</span><span style="color: #000000;">()
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">return</span> view('index/list'<span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">15</span> 
+<span style="color: #008080;">16</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> list_ajax()
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">18</span> <span style="color: #800080;">$get</span> = input('get.'<span style="color: #000000;">);
+</span><span style="color: #008080;">19</span> <span style="color: #800080;">$where</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;">20</span> <span style="color: #800080;">$data</span>['select'] = ['think_user.id'=&gt;'t_id','think_user.uname','think_user.upwd','think_banji.banji_name','think_user.status'<span style="color: #000000;">];
+</span><span style="color: #008080;">21</span> <span style="color: #800080;">$data</span>['order'] = ['0'=&gt;'think_user.id','1'=&gt;'think_user.uname','2'=&gt;'think_user.upwd','3'=&gt;'think_banji.banji_name'<span style="color: #000000;">];
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">//</span><span style="color: #008000;"> $data['where']['and'] = ['think_user.status'=&gt;1,'think_user.id'=&gt;[1,2]];</span>
+<span style="color: #008080;">23</span> <span style="color: #800080;">$data</span>['where']['or'] = ['think_user.uname','think_user.upwd'<span style="color: #000000;">];
+</span><span style="color: #008080;">24</span> <span style="color: #800080;">$data</span>['join'] =<span style="color: #000000;"> [
+</span><span style="color: #008080;">25</span> 'think_banji'=&gt;['think_user.banji_id','think_banji.id'],
+<span style="color: #008080;">26</span> <span style="color: #000000;">];
+</span><span style="color: #008080;">27</span> <span style="color: #800080;">$a</span> = <span style="color: #0000ff;">new</span> DataTable(<span style="color: #800080;">$get</span>, <span style="color: #800080;">$data</span>, 'think_user'<span style="color: #000000;">);
+</span><span style="color: #008080;">28</span> <span style="color: #0000ff;">return</span> <span style="color: #800080;">$a</span>-&gt;<span style="color: #000000;">output();
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">30</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

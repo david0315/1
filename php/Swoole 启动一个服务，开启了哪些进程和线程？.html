@@ -1,0 +1,112 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole 启动一个服务，开启了哪些进程和线程？' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole 启动一个服务，开启了哪些进程和线程？</center></div><div class='banquan'>原文出处:本文由博客园博主新亮笔记提供。<br/>
+原文连接:https://www.cnblogs.com/xinliangcoder/p/11075473.html</div><br>
+    <src class="toc">
+    <p class="toc-title">目录</p>
+    <src class="toc-list">
+        <ul>
+        <li><a href="#概述">概述</a></li>
+        <li><a href="#代码">代码</a></li>
+        <li><a href="#小结">小结</a></li>
+        </ul>
+    
+
+<h2 id="概述">概述</h2>
+<p>Swoole 启动一个服务，开启了哪些进程和线程？</p>
+<p>为了解决这个问题，咱们启动一个最简单的服务，一起看看究竟启动了哪些进程和线程？</p>
+<p>然后结合官网运行流程图，对每个进程和线程进行归类。</p>
+<p>服务启动后打印出当前 Swoole 版本 和 当前 CPU 核数。</p>
+<p>打印 Swoole 版本，是让大家可以下载这个版本 去运行代码。</p>
+<p>打印 CPU 核数，是因为这个参数下面会用到。</p>
+<p>废话不多说，直接看代码吧。</p>
+<h2 id="代码">代码</h2>
+<p><strong>serv.php</strong></p>
+<pre><code><code>&lt;?php
+
+class Server
+{
+    private $serv;
+
+    public function __construct() {
+        $this-&gt;serv = new swoole_server(&quot;0.0.0.0&quot;, 9502);
+        $this-&gt;serv-&gt;set([
+            &#39;worker_num&#39;      =&gt; 3,
+            &#39;task_worker_num&#39; =&gt; 3,
+        ]);
+        $this-&gt;serv-&gt;on(&#39;Start&#39;, function ($serv) {
+            echo &quot;SWOOLE:&quot;.SWOOLE_VERSION . &quot; 服务已启动&quot;.PHP_EOL;
+            echo &quot;SWOOLE_CPU_NUM:&quot;.swoole_cpu_num().PHP_EOL;
+        });
+        $this-&gt;serv-&gt;on(&#39;Receive&#39;, function ($serv, $fd, $from_id, $data) { });
+        $this-&gt;serv-&gt;on(&#39;Task&#39;, function ($serv, $task) { });
+        $this-&gt;serv-&gt;on(&#39;Finish&#39;, function ($serv, $task_id, $data) {});
+        $this-&gt;serv-&gt;start();
+    }
+}
+$server = new Server();</code></code></pre>
+<p>上面的代码简单说下，创建了一个 TCP 服务器，启动了 3 个 worker 进程， 3 个 task 进程，因为启用了 task 功能，所以必须注册 onTask、onFinish 2 个事件的回调函数。</p>
+<p>咱们运行一下：</p>
+<p><img src="https://img2018.cnblogs.com/blog/389840/201906/389840-20190624094237391-692186684.png" /></p>
+<p>使用 ps 查看下：</p>
+<p><img src="https://img2018.cnblogs.com/blog/389840/201906/389840-20190624094253269-1464355926.png" /></p>
+<p>16390 的父进程是 16389。</p>
+<p>16393、16394、16395、16396、16397、16398 的父进程是 16390。</p>
+<p>有没有发现，16391、16392 去哪啦？是不是很奇怪。</p>
+<p>再用 pstree 查看下：</p>
+<p><img src="https://img2018.cnblogs.com/blog/389840/201906/389840-20190624094300958-77030200.png" /></p>
+<p>出来了吧，16391、16392 是线程 与 16390 进程一个层级。</p>
+<p>现在我们了解了，启动的这个服务使用了 8 个进程、2 个线程。</p>
+<p>我们一起看下官方 Swoole Server 的文档：</p>
+<p><a href="https://wiki.swoole.com/wiki/page/p-server.html" class="uri">https://wiki.swoole.com/wiki/page/p-server.html</a></p>
+<p>看下这张图：</p>
+<p><img src="https://img2018.cnblogs.com/blog/389840/201906/389840-20190624094310133-2093666520.png" /></p>
+<p>通过上面的图，我们可以得到结论：</p>
+<p>16389 是 Master 进程。</p>
+<p>16390 是 Manager 进程。</p>
+<p>16391、16392 是 Reactor 线程。</p>
+<p>16393、16394、16395、16396、16397、16398 包括 3 个 Worker 进程，3 个 Task 进程。</p>
+<h2 id="小结">小结</h2>
+<p><strong>一、为什么是 3 个 Worker 进程、3 个 Task 进程？</strong></p>
+<p>因为，在创建服务的时候我们进行了设置 worker_num = 3, task_worker_num = 3。</p>
+<p>worker_num 如果不进行设置，默认为 SWOOLE_CPU_NUM，在上面咱们打印出来了，默认为 2，最大不超过，SWOOLE_CPU_NUM * 1000，具体详情，看官方文档。</p>
+<p>worker_num 文档：</p>
+<p><a href="https://wiki.swoole.com/wiki/page/275.html" class="uri">https://wiki.swoole.com/wiki/page/275.html</a></p>
+<p>task_worker_num 文档：</p>
+<p><a href="https://wiki.swoole.com/wiki/page/276.html" class="uri">https://wiki.swoole.com/wiki/page/276.html</a></p>
+<p><strong>二、为什么是 2 个 Reactor 线程？它是干什么的？</strong></p>
+<p>因为，Reactor 线程数，默认为 SWOOLE_CPU_NUM，也可以通过 reactor_num 参数进行设置。</p>
+<p>reactor_num 文档：</p>
+<p><a href="https://wiki.swoole.com/wiki/page/281.html" class="uri">https://wiki.swoole.com/wiki/page/281.html</a></p>
+<p>它是真正处理 TCP 连接，收发数据的线程。</p>
+<p>Reactor线程 文档：</p>
+<p><a href="https://wiki.swoole.com/wiki/page/347.html" class="uri">https://wiki.swoole.com/wiki/page/347.html</a></p>
+<p><strong>三、Reactor、Worker、TaskWorker 的关系是什么样的？</strong></p>
+<blockquote>
+<p>一个通俗的比喻，假设Server就是一个工厂，那Reactor就是销售，接受客户订单。而Worker就是工人，当销售接到订单后，Worker去工作生产出客户要的东西。而TaskWorker可以理解为行政人员，可以帮助Worker干些杂事，让Worker专心工作。</p>
+</blockquote>
+<p>官方已经解释的很详细了，看官方文档吧：</p>
+<p><a href="https://wiki.swoole.com/wiki/page/163.html" class="uri">https://wiki.swoole.com/wiki/page/163.html</a></p>
+<p>如果你想学习 Swoole 可以看下这个 <a href="https://mp.weixin.qq.com/s/jSnd3tLNLatU5UkNaV5xfw">《Swoole 文章汇总（10 篇）》</a>。</p>
+<p>本文欢迎转发，转发请注明作者和出处，谢谢！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

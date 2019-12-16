@@ -1,0 +1,91 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[小程序]微信小程序登陆并获取用户信息' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[小程序]微信小程序登陆并获取用户信息</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11408746.html</div><br>
+    <p>1.小程序js端调用框架登陆API，获取到一个临时code,拿着这个code去调用自己的服务端接口</p>
+<p>2.在自己的服务器端，使用app_id app_secrect code可以获取到用户的openid，这个id是用户唯一的id并且不会改变,可以把这个id返回给小程序端<br />小程序端本地保存openid</p>
+<p>3.获取用户信息很简单，并且不需要自己的服务器处理，只需要小程序端提供的API。<br />前端页面wxml使用一个按钮，按钮里增加几个属性，就可以回调到小程序js部分的方法上，并且带着用户的个人信息，如昵称 头像等</p>
+<p>4.这个时候就可以把该用户的openid 和 昵称，头像，一块调用自己服务端接口，保存到数据库中</p>
+<p>index.js</p>
+<src class="cnblogs_code">
+<pre><code>const app =<span style="color: #000000;"> getApp()
+
+Page({
+  data: {
+    openid:</span>""<span style="color: #000000;">
+  },
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">按钮回调的方法</span>
+  getPerson:<span style="color: #0000ff;">function</span><span style="color: #000000;">(e){
+    console.log(</span><span style="color: #0000ff;">this</span><span style="color: #000000;">.data.openid);
+    console.log(e);
+  },
+  onLoad: </span><span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+    </span><span style="color: #0000ff;">var</span> self=<span style="color: #0000ff;">this</span><span style="color: #000000;">;
+    wx.login({
+      success(res) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">js调用登陆命令获取到code</span>
+        <span style="color: #0000ff;">if</span><span style="color: #000000;"> (res.code) {
+          </span><span style="color: #008000;">//</span><span style="color: #008000;">通过code调用自己服务接口获取到openid</span>
+<span style="color: #000000;">          wx.request({
+            url: </span>'https://api.sopans.com/third/wxOpenId.php'<span style="color: #000000;">,
+            data: {
+              code: res.code
+            },
+            success:</span><span style="color: #0000ff;">function</span><span style="color: #000000;">(wxInfo){
+              console.log(wxInfo);
+              self.data.openid </span>=<span style="color: #000000;"> wxInfo.data.openid
+            }
+          })
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+          console.log(</span>'登录失败！' +<span style="color: #000000;"> res.errMsg)
+        }
+      }
+    })
+  },
+})</span></code></pre>
+
+<p>index.wxml</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">button </span><span style="color: #ff0000;">open-type</span><span style="color: #0000ff;">="getUserInfo"</span><span style="color: #ff0000;"> bindgetuserinfo</span><span style="color: #0000ff;">="getPerson"</span><span style="color: #0000ff;">&gt;</span>获取用户信息<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">button</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<src class="cnblogs_code">
+<pre><code>        <span style="color: #800080;">$appid</span> = ''; <span style="color: #008000;">//</span><span style="color: #008000;"> 小程序APPID</span>
+        <span style="color: #800080;">$secret</span> = ''; <span style="color: #008000;">//</span><span style="color: #008000;"> 小程序secret</span>
+        <span style="color: #800080;">$code</span>=<span style="color: #800080;">$_GET</span>['code'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$url</span> = 'https://api.weixin.qq.com/sns/jscode2session?appid=' . <span style="color: #800080;">$appid</span> . '&amp;secret='.<span style="color: #800080;">$secret</span>.'&amp;js_code='.<span style="color: #800080;">$code</span>.'&amp;grant_type=authorization_code'<span style="color: #000000;">;    
+            
+        </span><span style="color: #800080;">$curl</span> =<span style="color: #000000;"> curl_init();
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_RETURNTRANSFER, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_TIMEOUT, 500<span style="color: #000000;">);
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">false</span><span style="color: #000000;">);
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_SSL_VERIFYHOST, <span style="color: #0000ff;">false</span><span style="color: #000000;">);
+        curl_setopt(</span><span style="color: #800080;">$curl</span>, CURLOPT_URL, <span style="color: #800080;">$url</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$res</span> = curl_exec(<span style="color: #800080;">$curl</span><span style="color: #000000;">);
+        curl_close(</span><span style="color: #800080;">$curl</span><span style="color: #000000;">);
+        
+        </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$res</span>; <span style="color: #008000;">//</span><span style="color: #008000;"> 这里是获取到的信息</span></code></pre>
+
+<p><img src="./images/[小程序]微信小程序登陆并获取用户信息0.jpg" alt="" /></p>
+<p><img src="./images/[小程序]微信小程序登陆并获取用户信息1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

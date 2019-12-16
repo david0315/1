@@ -1,0 +1,213 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修如何基于 PHP-X 快速开发一个 PHP 扩展' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>如何基于 PHP-X 快速开发一个 PHP 扩展</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11806117.html</div><br>
+    <h2>0x01 起步</h2>
+<p>PHP-X本身基于C++11开发，使用cmake进行编译配置。首先，你需要确定所有依赖项已安装好。包括：</p>
+<ul>
+<li>gcc-4.8 或更高版本</li>
+<li>PHP7.0 或更高版本，需要php7-dev 开发包</li>
+<li>cmake-2.8 或更高版本</li>
+</ul>
+<p>然后安装PHP-X。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>git <span style="color: #0000ff;">clone</span> https:<span style="color: #008000;">//</span><span style="color: #008000;">github.com/swoole/PHP-X.git</span>
+cd PHP-<span style="color: #000000;">X
+cmake </span>.<span style="color: #000000;">
+make </span>-j 4<span style="color: #000000;">
+sudo make install</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>未出现任何编译错误，会成功编译出libphpx.so，并安装到系统的lib目录。头文件会复制到系统的include目录。这时需要执行 sudo ldconfig刷新so文件缓存。</p>
+<h2>0x02 新建工程</h2>
+<p>使用任意开发工具，新建一个<a class=" external" href="https://link.zhihu.com/?target=http%3A//test.cc" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">http://<span class="visible">test.cc</span></span></a>源文件。首先需要引入phpx.h头文件。然后使用using引入phpx的命名空间。PHP官方未使用C++，因此phpx直接使用了php作为命名空间。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">#</span><span style="color: #008000;">include &lt;phpx.h&gt;</span>
+<span style="color: #000000;">using namespace std;
+using namespace php;</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>创建扩展使用PHPX_EXTENSION宏来实现。在这宏中只需要new Extension即可创建扩展。构造方法接受2个参数，第一个是扩展的名称，第二个是扩展的版本号。在PHPX_EXTENSION宏中return这个扩展对象的指针。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">PHPX_EXTENSION()
+{
+    Extension </span>*ext = <span style="color: #0000ff;">new</span> Extension("test", "0.0.1"<span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> ext;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<blockquote>这里必须使用 new Extension，而不能直接在栈上创建对象</blockquote>
+<h2>0x03 增加函数</h2>
+<p>一个PHP扩展的主要作用就是提供扩展函数，扩展函数由于是用C/C++代码实现，因此它的性能会比PHP用户函数性能高几十甚至上百倍。在phpx中实现函数非常简单。使用PHPX_FUNCTION来实现扩展函数，然后调用Extension::registerFunction来注册扩展函数。</p>
+<blockquote>PHPX_FN是一个助手宏，实际上展开就是"cpp_hello_world", cpp_hello_world PHPX_FUNCTION展开后，包含了2个变量，第一个是参数args，第二个是返回值retval <br />通过操作args和retval两个变量，就可以实现函数的输入和输出</blockquote>
+<p>这里我们的代码非常简单，cpp_test($str, $n)，调用这个函数返回一个$n个$str的数组。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">#</span><span style="color: #008000;">include &lt;phpx.h&gt;</span>
+<span style="color: #008080;"> 2</span> <span style="color: #000000;">using namespace std;
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">using namespace php;
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #008000;">//</span><span style="color: #008000;">声明函数</span>
+<span style="color: #008080;"> 6</span> <span style="color: #000000;">PHPX_FUNCTION(cpp_test);
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #000000;">PHPX_EXTENSION()
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">10</span>     Extension *ext = <span style="color: #0000ff;">new</span> Extension("test", "0.0.1"<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>     ext-&gt;<span style="color: #000000;">registerFunction(PHPX_FN(cpp_test));
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">return</span><span style="color: #000000;"> ext;
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span> <span style="color: #008000;">//</span><span style="color: #008000;">实现函数</span>
+<span style="color: #008080;">16</span> <span style="color: #000000;">PHPX_FUNCTION(cpp_test)
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">18</span>     <span style="color: #008000;">//</span><span style="color: #008000;">args[1] 就是这个扩展函数的第 2 个参数</span>
+<span style="color: #008080;">19</span>     long n = args[1].<span style="color: #000000;">toInt();
+</span><span style="color: #008080;">20</span>     
+<span style="color: #008080;">21</span>     <span style="color: #008000;">//</span><span style="color: #008000;">将返回值 retval 初始化为数组</span>
+<span style="color: #008080;">22</span>     <span style="color: #0000ff;">Array</span><span style="color: #000000;"> _array(retval);
+</span><span style="color: #008080;">23</span>     
+<span style="color: #008080;">24</span>     <span style="color: #0000ff;">for</span>(int i = 0; i &lt; n; i++<span style="color: #000000;">)
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">26</span>         <span style="color: #008000;">//</span><span style="color: #008000;">args[0] 就是这个扩展函数的第 1 个参数
+</span><span style="color: #008080;">27</span> <span style="color: #008000;">        //append 方法表示向数组中追加元素</span>
+<span style="color: #008080;">28</span>         _array.append(args[0<span style="color: #000000;">]);
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">30</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<h2>0x04 编译扩展</h2>
+<p>编写一个Makefile文件。内容如下：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> PHP_INCLUDE = `php-config --<span style="color: #000000;">includes`
+</span><span style="color: #008080;"> 2</span> PHP_LIBS = `php-config --<span style="color: #000000;">libs`
+</span><span style="color: #008080;"> 3</span> PHP_LDFLAGS = `php-config --<span style="color: #000000;">ldflags`
+</span><span style="color: #008080;"> 4</span> PHP_INCLUDE_DIR = `php-config --<span style="color: #0000ff;">include</span>-<span style="color: #008080;">dir</span><span style="color: #000000;">`
+</span><span style="color: #008080;"> 5</span> <span style="color: #ff00ff;">PHP_EXTENSION_DIR</span> = `php-config --extension-<span style="color: #008080;">dir</span><span style="color: #000000;">`
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> test.so: test.<span style="color: #000000;">cc
+</span><span style="color: #008080;"> 8</span>     c++ -DHAVE_CONFIG_H -g -o test.so -O0 -fPIC -shared test.cc -std=c++11 ${PHP_INCLUDE} -I${PHP_INCLUDE_DIR} -<span style="color: #000000;">lphpx
+</span><span style="color: #008080;"> 9</span>     
+<span style="color: #008080;">10</span> install: test.<span style="color: #000000;">so
+</span><span style="color: #008080;">11</span>     cp test.so ${<span style="color: #ff00ff;">PHP_EXTENSION_DIR</span>}/
+<span style="color: #008080;">12</span> clean:
+<span style="color: #008080;">13</span>     rm *.so</code></pre>
+
+<p>&nbsp;</p>
+
+<p>php-config 这个工具是PHP提供的，使用php-config可以得到PHP的安装路径、头文件目录、扩展目录、其他额外的编译参数等等。</p>
+<p>这个Makefile支持了3个指令，make编译，make clean清理，make install安装到扩展目录中。</p>
+<blockquote>这里可能需要root权限，使用sudo make install进行安装 <br />直接从网页复制，可能会出现tab制表符被替换为空格，请手工编辑一下Makefile使用tab缩进  MacOS下需要在c++编译参数中增加-undefined dynamic_lookup</blockquote>
+<p>编写好之后执行make install，就会编译扩展并将扩展test.so安装到PHP的扩展目录中。这时需要修改php.ini加入extension=test.so加载扩展。</p>
+<p>使用php -m来观察你的扩展是否正常加载。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> php -<span style="color: #000000;">m
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">[PHP Modules]
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">Core
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">ctype
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">curl
+</span><span style="color: #008080;"> 6</span> <span style="color: #008080;">date</span>
+<span style="color: #008080;"> 7</span> <span style="color: #000000;">dom
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">fileinfo
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">filter
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">gd
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">hash
+</span><span style="color: #008080;">12</span> <span style="color: #008080;">iconv</span>
+<span style="color: #008080;">13</span> <span style="color: #000000;">inotify
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">json
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">libxml
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">mbstring
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">mcrypt
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">memcached
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">mongodb
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">mysqli
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">mysqlnd
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">openssl
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">pcntl
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">pcre
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">PDO
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">pdo_mysql
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">pdo_sqlite
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">Phar
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">posix
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">redis
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">Reflection
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">session
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">SimpleXML
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">sockets
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">SPL
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">sqlite3
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">standard
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">swoole
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">test
+</span><span style="color: #008080;">40</span> <span style="color: #000000;">tokenizer
+</span><span style="color: #008080;">41</span> <span style="color: #000000;">xml
+</span><span style="color: #008080;">42</span> <span style="color: #000000;">xmlreader
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">xmlwriter
+</span><span style="color: #008080;">44</span> <span style="color: #000000;">yac
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">zlib
+</span><span style="color: #008080;">46</span> <span style="color: #000000;">zmq
+</span><span style="color: #008080;">47</span> 
+<span style="color: #008080;">48</span> [Zend Modules]</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这里看到test，表明你的扩展已经加载成功了，现在就可以调用cpp_test这个扩展函数了。</p>
+<h2>0x05 执行</h2>
+<p>编写一个test.php，内容为：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008080;">var_dump</span>(cpp_test("hello", 3<span style="color: #000000;">));
+</span><span style="color: #008080;"> 3</span> 执行test.<span style="color: #000000;">php：
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> php test.<span style="color: #000000;">php
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">array</span>(3<span style="color: #000000;">) {
+</span><span style="color: #008080;"> 7</span>   [0]=&gt;
+<span style="color: #008080;"> 8</span>   <span style="color: #0000ff;">string</span>(5) "hello"
+<span style="color: #008080;"> 9</span>   [1]=&gt;
+<span style="color: #008080;">10</span>   <span style="color: #0000ff;">string</span>(5) "hello"
+<span style="color: #008080;">11</span>   [2]=&gt;
+<span style="color: #008080;">12</span>   <span style="color: #0000ff;">string</span>(5) "hello"
+<span style="color: #008080;">13</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>可以看到执行结果符合预期。那么恭喜你，现在你已经成功地开发了一个PHP扩展了。是不是很简单？</p>
+<h2>0x06 更多</h2>
+<p>上面的例子还比较简单，只是编写了一个扩展函数。要真正在实际项目中使用PHP-X你还有很多工作要做。</p>
+<ul>
+<li>需要C++的功底</li>
+<li>了解更多PHP-X的 <a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//wiki.swoole.com/wiki/index/prid-15" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">API</a></li>
+</ul>
+<p>另外配合使用Eclipse等IDE工具，可以实现API自动提示和补齐，开发起来会更顺手。</p>
+<p>相比Zend API，PHP-X要简单易用地多了，相信你不会花太多时间就可以掌握此项技能。在接下来我会撰写更多教程，教大家如何使用PHP-X实现扩展类、资源、回调函数等更复杂的功能。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

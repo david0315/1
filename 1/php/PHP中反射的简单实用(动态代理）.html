@@ -1,0 +1,66 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中反射的简单实用(动态代理）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中反射的简单实用(动态代理）</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10743074.html</div><br>
+    <p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">class</span> <span style="color: #008080;">mysql</span><span style="color: #000000;">{
+    </span><span style="color: #0000ff;">function</span> connect(<span style="color: #800080;">$db</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "连接mysql数据库${db[0]} \r\n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> oracle{
+    </span><span style="color: #0000ff;">function</span> connect(<span style="color: #800080;">$db</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "连接oracle数据库${db[0]} \r\n"<span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> sqlproxy{
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$target</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$tar</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;target[] = <span style="color: #0000ff;">new</span> <span style="color: #800080;">$tar</span><span style="color: #000000;">();
+    }
+
+    </span><span style="color: #0000ff;">function</span> __call(<span style="color: #800080;">$name</span>,<span style="color: #800080;">$args</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$this</span>-&gt;target <span style="color: #0000ff;">as</span> <span style="color: #800080;">$obj</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$r</span> = <span style="color: #0000ff;">new</span> ReflectionClass(<span style="color: #800080;">$obj</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$method</span> = <span style="color: #800080;">$r</span>-&gt;getMethod(<span style="color: #800080;">$name</span><span style="color: #000000;">)){
+                    </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$method</span>-&gt;isPublic() &amp;&amp; !<span style="color: #800080;">$method</span>-&gt;<span style="color: #000000;">isAbstract()){
+                        </span><span style="color: #800080;">$method</span>-&gt;invoke(<span style="color: #800080;">$obj</span>,<span style="color: #800080;">$args</span><span style="color: #000000;">);
+                    }
+            }
+        }
+    }
+}
+
+</span><span style="color: #800080;">$mysql</span> = <span style="color: #0000ff;">new</span> sqlproxy('mysql'<span style="color: #000000;">);
+</span><span style="color: #800080;">$mysql</span>-&gt;connect('member'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$oracle</span> = <span style="color: #0000ff;">new</span> sqlproxy('oracle'<span style="color: #000000;">);
+</span><span style="color: #800080;">$oracle</span>-&gt;connect('member');</code></pre>
+
+<p>这里 sqlproxy起到一个代理的作用，使用时无需关注 mysql和oracle的实现</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

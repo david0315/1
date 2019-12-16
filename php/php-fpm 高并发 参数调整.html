@@ -1,0 +1,116 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php-fpm 高并发 参数调整' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php-fpm 高并发 参数调整</center></div><div class='banquan'>原文出处:本文由博客园博主宋国杰提供。<br/>
+原文连接:https://www.cnblogs.com/sgj123/p/10939961.html</div><br>
+    <p><span style="font-size: 16px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;工作中经常会遇到会给客户配置服务器，其中有的客户还会有并发量要求，其中也会必须要用负载均衡承载压力的。增加服务器数量肯定能有效的提升服务器承载能力，但只有根据目前已有配置设置好单台服务器才能更好的发挥出服务器的性能。调整好一台服务器后剩下的就更简单了 &nbsp;拿着快照复制n多台。</span></p>
+<p><span style="font-size: 16px;">&nbsp; &nbsp; &nbsp; &nbsp; 今天就说一下php服务器的配置，之前说过opcache 今天说一下lnmp下基本配置（个人经验总结，如有不妥之处望大神提示一下）。</span></p>
+<p><span style="font-size: 16px;">&nbsp; &nbsp; &nbsp; &nbsp;服务器中找到php-fpm.conf配置（有的会在引入的www.conf中）</span></p>
+<p><span style="font-size: 16px;">&nbsp; &nbsp; &nbsp;&nbsp;</span></p>
+<src class="cnblogs_code">
+<pre><code>[<span style="color: #0000ff;">global</span><span style="color: #000000;">]
+pid </span>= /usr/local/php/<span style="color: #0000ff;">var</span>/run/php-<span style="color: #000000;">fpm.pid
+error_log </span>= /usr/local/php/<span style="color: #0000ff;">var</span>/log/php-<span style="color: #000000;">fpm.log
+log_level </span>=<span style="color: #000000;"> notice
+
+[www]
+listen </span>= /tmp/php-<span style="color: #000000;">cgi.sock
+listen.backlog </span>= -<span style="color: #800080;">1</span><span style="color: #000000;">
+listen.allowed_clients </span>= <span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span><span style="color: #000000;">
+listen.owner </span>=<span style="color: #000000;"> www
+listen.group </span>=<span style="color: #000000;"> www
+listen.mode </span>= <span style="color: #800080;">0666</span><span style="color: #000000;">
+user </span>=<span style="color: #000000;"> www
+group </span>=<span style="color: #000000;"> www
+pm </span>= <span style="color: #0000ff;">static</span><span style="color: #000000;">
+pm.max_children </span>= 2<span style="color: #800080;">00</span><span style="color: #000000;">
+pm.start_servers </span>= <span style="color: #800080;">40</span><span style="color: #000000;">
+pm.min_spare_servers </span>= <span style="color: #800080;">10</span><span style="color: #000000;">
+pm.max_spare_servers </span>= <span style="color: #800080;">20</span><span style="color: #000000;">
+pm.max_requests</span>=<span style="color: #800080;">1000</span><span style="color: #000000;">
+request_terminate_timeout </span>= <span style="color: #800080;">100</span><span style="color: #000000;">
+request_slowlog_timeout </span>= <span style="color: #800080;">0</span><span style="color: #000000;">
+slowlog </span>= <span style="color: #0000ff;">var</span>/log/slow.log</code></pre>
+
+<p style="margin-left: 30px;"><strong><span><span style="font-family: 黑体; font-size: 14pt;">一. pm= static</span></span></strong></p>
+<p style="margin-left: 30px;">首先说一下pm这个值 &nbsp; pm = dynamic 这个是php的进程数是动态的 &nbsp;会根据访问量来确定来回增加</p>
+<p style="margin-left: 30px;">而在高负载的php环境下我推荐设置 &nbsp;pm= static php-fpm进程数固定</p>
+<p style="margin-left: 30px;"><span style="font-size: 18px;"><strong><strong>二. &nbsp;pm.max_children=???</strong><br /></strong></span></p>
+<p style="margin-left: 30px;">当用静态模式下 进程数确定根据 pm.max_children来进进行确定 &nbsp; &nbsp;那么问题来了我的服务器应该设定多少php-fpm呢 ?</p>
+<p style="margin-left: 30px;">&nbsp;</p>
+<p>&nbsp; &nbsp; 从理论的角度上说php-fpm进程数越多越好，相当于一个酒店有很多个充足的服务员来为你服务肯定会比较爽啊 ，你也不需要等待。</p>
+<p>&nbsp; &nbsp; &nbsp;但是。。。。现实上总是残酷的 &nbsp; php-fpm的进程数会受到你的内存大小的限制。一般情况下我们 &nbsp; &nbsp;进程数 =用机器内存（M）除以2 &nbsp;再除以20(M);</p>
+<p>&nbsp; &nbsp; &nbsp;当然这个也不是绝对的 &nbsp; 你需要知道:</p>
+<ol>
+<li>&nbsp;你可以分配给php多大内存 ：你的服务器上是不是单纯的php服务器 &nbsp;有没有比较耗费内存的其他程序（mysql）。</li>
+<li>&nbsp;你的每个php-fpm内存占多大 ：内存占用多大要根据你的php代码质量和处理的相关业务。当然你可以用命令去统计你的php-fpm平均占用内存大小。</li>
+
+
+
+
+
+</ol>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; 有人会问我如果设置不恰当会有什么状况出现呢？</p>
+<p>&nbsp;　 &nbsp;　当数值偏小时请求到nginx会无法分配到php-fpm进程 导致502错误</p>
+<p>　　 &nbsp;&nbsp;<img src="https://img2018.cnblogs.com/blog/1695101/201905/1695101-20190528192757954-79523377.png" alt="" /></p>
+<p>&nbsp; &nbsp;　　当数值偏大如果没有大访问量还好 &nbsp;如果访问量较大的话 内存都会被php占光了。导致系统响应缓慢 &nbsp; cpu-system &nbsp;升高 系统不断的去调整内存分配</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 严重时会导致较高的 cup-wait 较高 &nbsp; 内存不够用了 &nbsp;直接写磁盘 &nbsp;磁盘io直线增加 。cpu使用率也开始爆满。（如图所示）</p>
+<p>　　　　<img src="https://img2018.cnblogs.com/blog/1695101/201905/1695101-20190528195124580-366023241.png" alt="" /></p>
+<h1>&nbsp; &nbsp; 三.<strong>request_terminate_timeout</strong></h1>
+<p>&nbsp;　　计算方式如下：如果你的服务器性能足够好，且宽带资源足够充足，PHP脚本没有循环或BUG的话你可以直接将&rdquo;request_terminate_timeout&rdquo;设 置成0s。0s的含义是让PHP-CGI一直执行下去而没有时间限制。</p>
+<p>　　&nbsp;而如果你做不到这一点，也就是说你的PHP-CGI可能出现某个BUG，或者你的宽带不够充足或者其他的原因导致你的PHP-CGI能够假死那么就建议你给&rdquo;request_terminate_timeout&rdquo;赋一个值，这个值可以根 据你服务器的性能进行设定。</p>
+<p style="margin-left: 30px;">一般来说性能越好你可以设置越高，20分钟-30分钟都可以。由于我的服务器PHP脚本需要长时间运行，有的可能会超过10分钟因此我设置了900秒，这样不会导致PHP-CGI死掉而出现502 Bad gateway这个错误。</p>
+<p style="margin-left: 30px;">&nbsp;</p>
+<h1 style="margin-left: 30px;">四.pm.max_requests</h1>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; 这个参数的含义是php-fpm工作进程处理完多少请求后自动重启，主要目的就是为了控制请求处理过程中的内存溢出，使得内存占用在一个可接受的范围内。比较适用于服务器搭载项目比较杂乱，有点请求会比较占用内存</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; 导致php-fpm占用比较大。在经过一定次数请求后会结束掉进程，释放自己的内存。如果这个值太小就会导致所有的工作进程几乎同时达到这个值并且进入需要重启的状态，当所有的工作进程都在同一时刻重启就会发生在</p>
+<p>　　数秒内甚至更长的时间PHP将停止响应直到所有的进程均重启完为止。这是不能接受的，所以我一般会把这个值设置为PHP启动后第一批工作进程达到此值需要重启时，第一个进程重启与最后一个进程重启之间的时间相差</p>
+<p>　　1分钟以上，一般在压力比较大的晚上这个差值将会扩大到5分钟左右，此时对进程重启对服务器的负面影响就可以忽略了。</p>
+<p>&nbsp;</p>
+<p>　　下面补充几个命令统计相关php-fpm 相关数据 &nbsp;</p>
+<p>&nbsp;&nbsp;</p>
+<p>&nbsp;</p>
+<p style="margin-left: 30px;">1、查看php-fpm的进程个数</p>
+<src class="cnblogs_code" style="margin-left: 30px;">
+<pre><code>ps -ef |grep "php-fpm"|grep "pool"|wc -l</code></pre>
+
+<p style="margin-left: 30px;">2、查看每个php-fpm占用的内存大小</p>
+<src class="cnblogs_code" style="margin-left: 30px;">
+<pre><code>ps -ylC php-fpm --sort:rss</code></pre>
+
+<p style="margin-left: 30px;">3.查看PHP-FPM在你的机器上的平均内存占用</p>
+<src class="cnblogs_code" style="margin-left: 30px;">
+<pre><code>ps --no-headers -o "rss,cmd" -C php-fpm | awk '{ sum+=$1 } END { printf ("%d%s\n", sum/NR/1024,"M") }'</code></pre>
+
+<p style="margin-left: 30px;">4.查看单个php-fpm进程消耗内存的明细</p>
+<src class="cnblogs_code" style="margin-left: 30px;">
+<pre><code>pmap $(pgrep php-fpm) | less</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;　　补充一下与技术无关的：</p>
+<p>　　很多技术人员认为我把一台服务器性能压榨到极限，别人四台服务器承载的压力我一台服务器就承载住了，认为自己很厉害</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp;其实这种思维是不对的。客户要的是做活动时服务的稳定，用户要的是流畅的体验。 该增加机器的时候增加机器，最重要的</p>
+<p>　　是活动能正常稳定的进行。</p>
+<p>&nbsp;</p>
+<p>&nbsp;今天就这样吧 &nbsp;以后再有进行补充 &nbsp;后面再完善一下nginx 和内核方面的</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

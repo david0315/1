@@ -1,0 +1,563 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修简单的权限管理php' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>简单的权限管理php</center></div><div class='banquan'>原文出处:本文由博客园博主维京人~提供。<br/>
+原文连接:https://www.cnblogs.com/mzzone/p/11910594.html</div><br>
+    <p>转发自https://www.cnblogs.com/shenzikun1314/p/6604867.html#4262295</p>
+<p>&nbsp;</p>
+<ul>
+<li><span style="text-decoration: underline;"><strong>首先，要明白的基础理论是用户，角色，权限之间的关系是一对多，还是多对多。据此来建立表。</strong></span></li>
+</ul>
+<p>&nbsp;</p>
+<p>一个用户可以属于多个角色，比如邓超。他是孙俪的丈夫，同时是他小孩的父亲，还是他老爸的儿子。那么这里他一共有丈夫，父亲，儿子3个角色。</p>
+<p>一个角色可以有多个用户。比如学生（角色），张三，李四，王五等。</p>
+<p>所以用户跟角色是多对多的关系。</p>
+<p>&nbsp;</p>
+<p>一个角色可以多个权限。比如把文章模块分为查看，修改，添加，删除这4个权限。普通用户只有查看的权限，但管理员他可以同时有这4个权限。</p>
+<p>一个权限也可以被多个角色同时拥有。普通用户和管理员都有查看权限。</p>
+<p>所以权限跟角色也是多对多的关系。</p>
+<hr />
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<ul>
+<li><span style="text-decoration: underline;"><strong>下面开始建表</strong></span></li>
+</ul>
+<p>第一张用户表</p>
+<p><img src="./images/简单的权限管理php0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>第二张角色表</p>
+<p>&nbsp;</p>
+<p><img src="./images/简单的权限管理php1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;第三张权限表</p>
+<p><img src="./images/简单的权限管理php2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;接下来是2张中间表。</p>
+<p>用户-角色表（要设置多对多的外键关联关系）</p>
+<p><img src="./images/简单的权限管理php3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;最后一张角色-权限表（设置多对多的关联关系）</p>
+<p><img src="./images/简单的权限管理php4.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<hr />
+<p>&nbsp;</p>
+<ul>
+<li>接下来是代码</li>
+</ul>
+<p>第一个guanli.php,用到ajax等jquery语法，要引用jquery文件。这个页面是修改用户的角色权限</p>
+<p><img src="./images/简单的权限管理php5.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">error_reporting</span>(<span style="color: #ff00ff;">E_ALL</span> ^<span style="color: #000000;"> E_DEPRECATED);
+        </span><span style="color: #0000ff;">include</span>("DB.class.php"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$sql</span> = "select * from qx_user"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$arr</span> = <span style="color: #800080;">$dao</span>-&gt;getAll(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($arr);
+        // exit;</span>
+        <span style="color: #800080;">$sql</span> = "select * from qx_juese"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$arr2</span> = <span style="color: #800080;">$dao</span>-&gt;getAll(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">){
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($v);
+            // exit;</span>
+<span style="color: #000000;">        }
+        </span>?&gt;
+&lt;!DOCTYPE html <span style="color: #0000ff;">PUBLIC</span> "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+&lt;title&gt;无标题文档&lt;/title&gt;
+        &lt;script src="assets/js/jquery-1.8.2.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- &lt;script src="../../dist/js/jquery-1.11.2.min.js"&gt;&lt;/script&gt; --&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;h1&gt;用户与角色管理&lt;/h1&gt;
+&lt;div&gt;<span style="color: #000000;">
+请选择用户：
+    </span>&lt;select id="user"&gt;
+        &lt;?php <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">     var_dump($v);
+        // exit;</span>
+         ?&gt;
+
+            &lt;option value="&lt;?php echo"<span style="color: #800080;">$v</span>[id]" ?&gt;"&gt; &lt;?php <span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$v</span>[username]";?&gt;&lt;/option&gt;
+        &lt;?php } ?&gt;
+    &lt;/select&gt;
+&lt;/div&gt;
+&lt;br /&gt;
+&lt;div&gt;<span style="color: #000000;">
+请选择角色：
+
+</span>&lt;?php <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr2</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v2</span>){ ?&gt;
+&lt;input type='checkbox' value="&lt;?php echo"<span style="color: #800080;">$v2</span>[id]" ?&gt;" <span style="color: #0000ff;">class</span>='ck' /&gt;&lt;?php <span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$v2</span>[juese_name]" ?&gt;
+        &lt;?php } ?&gt;
+
+&lt;/div&gt;
+&lt;br /&gt;
+
+&lt;input type="button" value="确定" id="btn" /&gt;
+
+&lt;/body&gt;
+&lt;script type="text/javascript"&gt;<span style="color: #000000;">
+$(document)</span>.ready(<span style="color: #0000ff;">function</span><span style="color: #000000;">(e) {
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">选中默认角色</span>
+<span style="color: #000000;">    Xuan();
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">当用户选中变化的时候，去选中相应角色</span>
+    $("#user").change(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+            Xuan();
+        })
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">点击确定保存角色信息</span>
+    $("#btn").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){
+            </span><span style="color: #0000ff;">var</span> uid = $("#user").<span style="color: #000000;">val();
+            </span><span style="color: #0000ff;">var</span> juese = ""<span style="color: #000000;">;
+            </span><span style="color: #0000ff;">var</span> ck = $(".ck"<span style="color: #000000;">);
+            </span><span style="color: #0000ff;">for</span>(<span style="color: #0000ff;">var</span> i=0;i&lt;ck.length;i++<span style="color: #000000;">)
+            {
+                </span><span style="color: #0000ff;">if</span>(ck.eq(i).prop("checked"<span style="color: #000000;">))
+                {
+                    juese </span>+= ck.eq(i).val()+"|"<span style="color: #000000;">;
+                }
+            }
+            juese </span>= juese.<span style="color: #008080;">substr</span>(0,juese.length-1<span style="color: #000000;">);
+            $</span>.<span style="color: #000000;">ajax({
+                    url</span>:"chuli.php",<span style="color: #000000;">
+                    data</span>:{uid:uid,juese:juese,type:1},<span style="color: #000000;">
+                    type</span>:"POST",<span style="color: #000000;">
+                    dataType</span>:"TEXT",<span style="color: #000000;">
+                    success</span>: <span style="color: #0000ff;">function</span><span style="color: #000000;">(data){
+                            alert(</span>"保存成功！"<span style="color: #000000;">);
+                        }
+                });
+        })
+});
+</span><span style="color: #008000;">//</span><span style="color: #008000;">选中默认角色</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> Xuan()
+{
+    </span><span style="color: #0000ff;">var</span> uid = $("#user").<span style="color: #000000;">val();
+    $</span>.<span style="color: #000000;">ajax({
+        url</span>:"chuli.php",<span style="color: #000000;">
+        data</span>:{uid:uid,type:0},<span style="color: #000000;">
+        type</span>:"POST",<span style="color: #000000;">
+        dataType</span>:"TEXT",<span style="color: #000000;">
+        success</span>: <span style="color: #0000ff;">function</span><span style="color: #000000;">(data){
+                </span><span style="color: #008000;">//</span><span style="color: #008000;"> var juese = data.trim().split("|");
+                // var ck = $(".ck");
+                // ck.prop("checked",false);
+                // for(var i=0;i&lt;ck.length;i++)
+                // {
+                //     if(juese.indexOf(ck.eq(i).val())&gt;=0)
+                //     {
+                //         ck.eq(i).prop("checked",true);
+                //     }
+                // }
+                // console.log(data);</span>
+                <span style="color: #0000ff;">var</span> obj = <span style="color: #0000ff;">eval</span>('(' + data + ')'<span style="color: #000000;">);
+                console</span>.<span style="color: #008080;">log</span><span style="color: #000000;">(obj);
+                </span><span style="color: #0000ff;">var</span> str=""<span style="color: #000000;">;
+                </span><span style="color: #0000ff;">for</span>(<span style="color: #0000ff;">var</span> i=0;i&lt;obj.length;i++<span style="color: #000000;">){
+                    str</span>+=" "<span style="color: #000000;">;
+                    str</span>+=obj[i].<span style="color: #000000;">juese_id;
+                }
+                str</span>=$.<span style="color: #008080;">trim</span><span style="color: #000000;">(str)
+                console</span>.<span style="color: #008080;">log</span>($.<span style="color: #008080;">trim</span><span style="color: #000000;">(str));
+
+                </span><span style="color: #0000ff;">var</span> ck = $(".ck"<span style="color: #000000;">);
+                ck</span>.prop("checked",<span style="color: #0000ff;">false</span><span style="color: #000000;">);
+                </span><span style="color: #0000ff;">for</span>(<span style="color: #0000ff;">var</span> i=0;i&lt;ck.length;i++<span style="color: #000000;">)
+                {
+                    </span><span style="color: #0000ff;">if</span>(str.indexOf(ck.eq(i).val())&gt;=0<span style="color: #000000;">)
+                    {
+                        ck</span>.eq(i).prop("checked",<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+                    }
+                }
+                
+            }
+        });
+}
+</span>&lt;/script&gt;
+&lt;/html&gt;</code></pre>
+
+<p>第二个登录页面login.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;!</span><span style="color: #ff00ff;">DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">html </span><span style="color: #ff0000;">xmlns</span><span style="color: #0000ff;">="http://www.w3.org/1999/xhtml"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">meta </span><span style="color: #ff0000;">http-equiv</span><span style="color: #0000ff;">="Content-Type"</span><span style="color: #ff0000;"> content</span><span style="color: #0000ff;">="text/html; charset=utf-8"</span> <span style="color: #0000ff;">/&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>无标题文档<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">title</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">head</span><span style="color: #0000ff;">&gt;</span>
+
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">h1</span><span style="color: #0000ff;">&gt;</span>登录页面<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">h1</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">form </span><span style="color: #ff0000;">action</span><span style="color: #0000ff;">="logincl.php"</span><span style="color: #ff0000;"> method</span><span style="color: #0000ff;">="post"</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="text"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="username"</span> <span style="color: #0000ff;">/&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="password"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="pwd"</span> <span style="color: #0000ff;">/&gt;</span>
+<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="submit"</span><span style="color: #ff0000;"> value</span><span style="color: #0000ff;">="登录"</span> <span style="color: #0000ff;">/&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">form</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">body</span><span style="color: #0000ff;">&gt;</span>
+<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">html</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>第三个页面处理登录页面logincl.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">header</span>('content-type: text/html; charset=utf-8'<span style="color: #000000;">);
+</span><span style="color: #008080;">session_start</span><span style="color: #000000;">();
+</span><span style="color: #0000ff;">include</span>("DB.class.php"<span style="color: #000000;">);
+</span><span style="color: #800080;">$username</span> = <span style="color: #800080;">$_POST</span>["username"<span style="color: #000000;">];
+</span><span style="color: #800080;">$pwd</span> = <span style="color: #800080;">$_POST</span>["pwd"<span style="color: #000000;">];
+  </span><span style="color: #008000;">//</span><span style="color: #008000;"> $uid=$_POST["uid"];
+
+// $sql="select pwd from qx_user where uid='{$uid}'";
+// $mm = $dao-&gt;getOne($sql); 
+
+// if($mm==$pwd &amp;&amp; !empty($pwd))
+// {
+//     $_SESSION["uid"]=$uid;
+//     header("location:main.php");
+// }</span>
+
+
+<span style="color: #800080;">$username</span> = <span style="color: #800080;">$_POST</span>['username'<span style="color: #000000;">];
+  </span><span style="color: #008000;">//</span><span style="color: #008000;"> 获取post传过来的密码</span>
+   <span style="color: #800080;">$password</span> = <span style="color: #800080;">$_POST</span>['pwd'<span style="color: #000000;">];
+ 
+
+ </span><span style="color: #800080;">$sql</span> = "select * from qx_user where username = '<span style="color: #800080;">$username</span>' and pwd = '<span style="color: #800080;">$pwd</span>' "<span style="color: #000000;">;
+ </span><span style="color: #800080;">$res</span> = <span style="color: #800080;">$dao</span>-&gt;getRow(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+
+
+
+  
+     </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$res</span>){<span style="color: #008000;">//</span><span style="color: #008000;">如果存在,跳回本页面</span>
+        <span style="color: #800080;">$_SESSION</span>['username'] = <span style="color: #800080;">$username</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$_SESSION</span>["uid"]=<span style="color: #800080;">$res</span>["id"<span style="color: #000000;">];
+
+          </span><span style="color: #0000ff;">echo</span> '<span style="color: #000000;">&lt;script language="JavaScript"&gt;;
+          alert("登录成功");location.href="main.php";&lt;/script&gt;;</span>'<span style="color: #000000;">;
+          
+          </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+
+         
+     }</span><span style="color: #0000ff;">else</span>{<span style="color: #008000;">//</span><span style="color: #008000;">如果不存在</span>
+        
+        <span style="color: #0000ff;">echo</span> '<span style="color: #000000;">&lt;script language="JavaScript"&gt;;
+          alert("登录失败");&lt;/script&gt;;</span>'<span style="color: #000000;">;
+        
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">注册成功之后跳转到指定页面</span>
+        <span style="color: #0000ff;">echo</span> "&lt;script&gt;location.href='#'&lt;/script&gt;"<span style="color: #000000;">;
+     }</span></code></pre>
+
+<p>第4个页面查看权限main.php，输出登录的用户的所有权限u1和u2对比</p>
+<p>&nbsp;</p>
+<p><img src="./images/简单的权限管理php6.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>第二次登录u2</p>
+<p><img src="./images/简单的权限管理php7.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?php  <span style="color: #008080;">session_start</span>(); ?&gt;
+
+&lt;!DOCTYPE html <span style="color: #0000ff;">PUBLIC</span> "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+&lt;title&gt;无标题文档&lt;/title&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;h1&gt;<span style="color: #000000;">
+当前用户：</span>&lt;?php <span style="color: #0000ff;">echo</span> "<span style="color: #800080;">$_SESSION</span>[username]";?&gt;
+&lt;/h1&gt;
+&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">error_reporting</span>(<span style="color: #ff00ff;">E_ALL</span> ^<span style="color: #000000;"> E_DEPRECATED);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> session_start();</span>
+<span style="color: #0000ff;">include</span>("DB.class.php"<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_SESSION</span>["uid"<span style="color: #000000;">]))
+{
+    </span><span style="color: #008080;">header</span>("location:qx_login.php"<span style="color: #000000;">);
+    </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+}
+</span><span style="color: #008000;">//</span><span style="color: #008000;">登录者用户名</span>
+<span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_SESSION</span>["uid"<span style="color: #000000;">];
+
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">根据用户名查角色</span>
+<span style="color: #800080;">$sjs</span> = "select juese_id from qx_user_juese where user_id='{<span style="color: #800080;">$uid</span>}'"<span style="color: #000000;">;
+</span><span style="color: #800080;">$ajs</span> = <span style="color: #800080;">$dao</span>-&gt;getAll(<span style="color: #800080;">$sjs</span><span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($ajs);
+// exit;
+//定义一个存放功能代号的数组</span>
+<span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008000;">//</span><span style="color: #008000;">根据角色代号查功能代号</span>
+<span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$ajs</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$vjs</span><span style="color: #000000;">)
+{
+        </span><span style="color: #800080;">$jsid</span> = <span style="color: #800080;">$vjs</span>['juese_id']; <span style="color: #008000;">//</span><span style="color: #008000;">角色代号</span>
+        <span style="color: #800080;">$sgn</span> = "select quanxian_id from qx_js_qx where juese_id='{<span style="color: #800080;">$jsid</span>}'"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$strgn</span> = <span style="color: #800080;">$dao</span>-&gt;getAll(<span style="color: #800080;">$sgn</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> $agn = explode("|",$strgn);
+        // var_dump($strgn);
+        // echo "xxx";
+        // exit;</span>
+        <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$strgn</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$vgn</span><span style="color: #000000;">)
+        {
+            
+            </span><span style="color: #008080;">array_push</span>(<span style="color: #800080;">$arr</span>,<span style="color: #800080;">$vgn</span>['quanxian_id'<span style="color: #000000;">]);
+
+            
+        }    
+}
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">去重，显示
+// var_dump($arr);
+//         exit;</span>
+<span style="color: #800080;">$arr</span> = <span style="color: #008080;">array_unique</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($arr);
+//         exit;</span>
+<span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">)
+{
+    </span><span style="color: #800080;">$sql</span> = "select * from qx_quanxian where id='{<span style="color: #800080;">$v</span>}'"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$attr</span> = <span style="color: #800080;">$dao</span>-&gt;getRow(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+
+    
+    
+     </span><span style="color: #008000;">//</span><span style="color: #008000;"> var_dump($attr);
+     //     exit;
+     // echo "{$attr['id']},{$attr['qx_name']}";</span>
+     <span style="color: #0000ff;">echo</span> "&lt;div code='{<span style="color: #800080;">$attr</span>["id"]}'&gt;{<span style="color: #800080;">$attr</span>["qx_name"]}&lt;/div&gt;"<span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> &lt;input type='checkbox' value="$attr[id]" class='ck' /&gt;</span>
+<span style="color: #000000;">        
+}
+
+</span>?&gt;
+
+
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<p>第5个工具类代码DB.class.php，在构造函数__construct()中修改默认的配置参数，数据库名，用户名，密码等。否则会连接数据库失败。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> namespace Frame\libs;</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> DB{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">主机地址</span>
+    <span style="color: #0000ff;">var</span> <span style="color: #800080;">$host</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">用户名</span>
+    <span style="color: #0000ff;">var</span> <span style="color: #800080;">$username</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">密码</span>
+    <span style="color: #0000ff;">var</span> <span style="color: #800080;">$password</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">数据库名</span>
+    <span style="color: #0000ff;">var</span> <span style="color: #800080;">$dbname</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">字符集</span>
+    <span style="color: #0000ff;">var</span> <span style="color: #800080;">$charset</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">数据库连接对象，主要用在mysql_query($sql,$this-&gt;con);</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #800080;">$con</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">外界获取的mysqlDB类操作对象</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #800080;">$dao</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">获得mysqlDB类对象(单例)</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> getInstance(<span style="color: #800080;">$config</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">if</span>(!<span style="color: #0000ff;">isset</span>(self::<span style="color: #800080;">$dao</span><span style="color: #000000;">)){
+            self</span>::<span style="color: #800080;">$dao</span> = <span style="color: #0000ff;">new</span> self(<span style="color: #800080;">$config</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">return</span> self::<span style="color: #800080;">$dao</span><span style="color: #000000;">;
+    } 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">private禁止外部new，减少new带来的开销，并设置默认的配置。</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$config</span><span style="color: #000000;">){
+        </span><strong><span style="color: #800080;">$this</span>-&gt;host = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$config</span>['host'])?<span style="color: #800080;">$config</span>['host']:'<span style="color: #ff0000;">localhost</span>'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;port = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$config</span>['port'])?<span style="color: #800080;">$config</span>['port']:'3306'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;username = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$config</span>['username'])?<span style="color: #800080;">$config</span>['username']:'<span style="color: #ff0000;">root</span>'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;password = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$config</span>['password'])?<span style="color: #800080;">$config</span>['password']:'<span style="color: #ff0000;">root</span>'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;dbname = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$config</span>['dbname'])?<span style="color: #800080;">$config</span>['dbname']:'<span style="color: #ff0000;">bishe</span>'<span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;charset = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$config</span>['charset'])?<span style="color: #800080;">$config</span>['charset']:'utf8'<span style="color: #000000;">;
+        </span></strong><span style="color: #008000;">//</span><span style="color: #008000;">连接数据库</span>
+        <span style="color: #800080;">$this</span>-&gt;con = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">connect();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">设置数据库名，默认为test</span>
+        <span style="color: #800080;">$this</span>-&gt;useDb(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">dbname);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">设置字符集，默认为utf8。 </span>
+        <span style="color: #800080;">$this</span>-&gt;setCharset(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">charset);
+
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">禁止外部克隆</span>
+    <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __clone(){
+
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">连接不成功在这个分段找。</span>
+    <span style="color: #008000;">//</span><span style="color: #008000;">////////////////////////////////////////////////////
+    //连接数据库</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> connect(){
+         </span><span style="color: #800080;">$con</span> = 
+        <span style="color: #008080;">mysql_connect</span>("<span style="color: #800080;">$this</span>-&gt;host:<span style="color: #800080;">$this</span>-&gt;port","<span style="color: #800080;">$this</span>-&gt;username","<span style="color: #800080;">$this</span>-&gt;password") or <span style="color: #0000ff;">die</span>("连接数据库失败"<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$con</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">1.执行增、删、改sql语句 </span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$res</span> = <span style="color: #008080;">mysql_query</span>(<span style="color: #800080;">$sql</span>,<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">con);
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">){
+             </span><span style="color: #008000;">//</span><span style="color: #008000;"> echo "&lt;br/&gt;sql语句：".$sql."&lt;br&gt;";
+             // var_dump($res);</span>
+             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+             
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">要是增删改有问题可以在这里输出sql调试。</span>
+        }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #0000ff;">echo</span> "&lt;br/&gt;sql语句：".<span style="color: #800080;">$sql</span><span style="color: #000000;">;
+            </span><span style="color: #0000ff;">echo</span> "&lt;br/出错信息&gt;：".<span style="color: #008080;">mysql_error</span><span style="color: #000000;">();
+            </span><span style="color: #0000ff;">echo</span> "&lt;br/出错代码&gt;：".<span style="color: #008080;">mysql_errno</span><span style="color: #000000;">();
+            </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">额外设置字符集</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> setCharset(<span style="color: #800080;">$charset</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$sql</span> = "set names '<span style="color: #800080;">$charset</span>'"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span>) or <span style="color: #0000ff;">die</span>("set"<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">die();</span>
+<span style="color: #000000;">    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">额外设置数据库</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> useDb(<span style="color: #800080;">$dbname</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$sql</span> = "use <span style="color: #800080;">$dbname</span>"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span>) or <span style="color: #0000ff;">die</span>("use");<span style="color: #008000;">//</span><span style="color: #008000;">or die()函数前面需返回对应的true或false;</span>
+<span style="color: #000000;">    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">//////////////////////////////////////////////////////
+    //查找出错在这个部分找。
+    //4.将查到的结果集转为单个数据，这里是索引数组的第一个字段。</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getOne(<span style="color: #800080;">$sql</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$rec</span> = <span style="color: #008080;">mysql_query</span>(<span style="color: #800080;">$sql</span>,<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">con);
+        </span><span style="color: #800080;">$res</span> = <span style="color: #008080;">mysql_fetch_row</span>(<span style="color: #800080;">$rec</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">){
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$res</span>[0<span style="color: #000000;">];
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">可能修改的函数全部放在上面，以便查找。下方函数基本不会修改。
+    //编号1~4是高频率使用的函数。
+    //2.获取一行数据（一维）</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getRow(<span style="color: #800080;">$sql</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$rec</span> = <span style="color: #008080;">mysql_query</span>(<span style="color: #800080;">$sql</span>,<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">con);
+        </span><span style="color: #800080;">$res</span> = <span style="color: #008080;">mysql_fetch_assoc</span>(<span style="color: #800080;">$rec</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">){
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$res</span><span style="color: #000000;">;
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">3.获取所有数据（二维）</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getAll(<span style="color: #800080;">$sql</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$rec</span> = <span style="color: #008080;">mysql_query</span>(<span style="color: #800080;">$sql</span>,<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">con);
+        </span><span style="color: #800080;">$arr</span> = <span style="color: #0000ff;">array</span>();<span style="color: #008000;">//</span><span style="color: #008000;">定义 一个数组</span>
+        <span style="color: #0000ff;">while</span>(<span style="color: #800080;">$res</span> = <span style="color: #008080;">mysql_fetch_assoc</span>(<span style="color: #800080;">$rec</span><span style="color: #000000;">)){
+            </span><span style="color: #800080;">$arr</span>[] = <span style="color: #800080;">$res</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">){
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$arr</span><span style="color: #000000;">;
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        }
+    }
+
+}
+
+</span><span style="color: #800080;">$dao</span> = DB::getInstance(<span style="color: #0000ff;">null</span><span style="color: #000000;">);
+</span>?&gt;</code></pre>
+
+<p>第6个chuli.php.这个页面是用来处理guanli.php发过来的ajax请求。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">error_reporting</span>(<span style="color: #ff00ff;">E_ALL</span> ^<span style="color: #000000;"> E_DEPRECATED);
+
+</span><span style="color: #0000ff;">include</span>("DB.class.php"<span style="color: #000000;">);
+
+
+</span><span style="color: #800080;">$type</span> = <span style="color: #800080;">$_POST</span>["type"<span style="color: #000000;">];
+
+</span><span style="color: #0000ff;">switch</span>(<span style="color: #800080;">$type</span><span style="color: #000000;">)
+{
+    </span><span style="color: #0000ff;">case</span> 0:
+        <span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_POST</span>["uid"<span style="color: #000000;">];
+        </span><span style="color: #800080;">$sql</span> = "select juese_id from qx_user_juese where user_id='{<span style="color: #800080;">$uid</span>}'"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$data</span> = <span style="color: #800080;">$dao</span>-&gt;getAll(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> $id_list="xx";
+        // foreach($data as $v)
+        // {
+            
+        //     $id_list =","+"$v[juese_id]";
+
+        //     echo json_encode($id_list);
+        //     exit;
+
+
+        // }
+            // echo json_encode($data);</span>
+
+        <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">case</span> 1:
+        <span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_POST</span>["uid"<span style="color: #000000;">];
+        </span><span style="color: #800080;">$juese</span> = <span style="color: #800080;">$_POST</span>["juese"<span style="color: #000000;">];
+        </span><span style="color: #800080;">$sdel</span> = "delete from qx_user_juese where user_id='{<span style="color: #800080;">$uid</span>}'"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$dao</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sdel</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$arr</span> = <span style="color: #008080;">explode</span>("|",<span style="color: #800080;">$juese</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">)
+        {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> echo $v;</span>
+            <span style="color: #800080;">$sql</span> = "insert into qx_user_juese values('{<span style="color: #800080;">$uid</span>}','{<span style="color: #800080;">$v</span>}')"<span style="color: #000000;">;
+            </span><span style="color: #800080;">$dao</span>-&gt;<span style="color: #008080;">exec</span>(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">echo</span> "OK"<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<ul>
+<li>总结</li>
+</ul>
+<p>难点是guanli页面的ajax请求。</p>
+<p><img src="./images/简单的权限管理php8.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>js解析二维数组</p>
+<p><img src="./images/简单的权限管理php9.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><img src="./images/简单的权限管理php10.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>（完）</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

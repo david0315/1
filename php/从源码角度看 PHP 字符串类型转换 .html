@@ -1,0 +1,178 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修从源码角度看 PHP 字符串类型转换 ' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>从源码角度看 PHP 字符串类型转换 </center></div><div class='banquan'>原文出处:本文由博客园博主tosser提供。<br/>
+原文连接:https://www.cnblogs.com/tosser/p/11877828.html</div><br>
+    <p><span style="font-size: 14px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PHP 的类型转换是比较方便的，但是越是容易使用的东西，底层的实现越是复杂，而且在使用中像我这样的新手也往往不清楚转换后的结果到底是什么。<span style="font-size: 14px;">有时候，对于 Java 这种强类型的语言，使用的时候需要强制进行转换，这样多半转换后的结果是可以预料的，至少自己是想这么做的。</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14px;"><strong>通过实例看转换</strong></span></p>
+<p><span style="font-size: 14px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 写个关于 PHP 类型转换的代码测试一下吧，看看大家是否能知道输出结果。<span style="font-size: 14px;">把 <span style="color: #ff0000;"><strong>各种数据类型</strong> 都转换为 <span style="color: #ff0000;"><strong>字符串类型</strong>试试。</span></span></span></span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #800080;">$var</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var</span>, "\r\n"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> 
+<span style="color: #008080;"> 6</span> <span style="color: #800080;">$var</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var</span>, "\r\n"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> <span style="color: #800080;">$var</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var</span>, "\r\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span> <span style="color: #800080;">$var</span> = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var</span>, "\r\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span> <span style="color: #800080;">$var</span> = 1.1<span style="color: #000000;">;
+</span><span style="color: #008080;">16</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var</span>, "\r\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span> <span style="color: #800080;">$var1</span> = &amp;<span style="color: #800080;">$var</span><span style="color: #000000;">;
+</span><span style="color: #008080;">18</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var1</span>, "\r\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">19</span> 
+<span style="color: #008080;">20</span> <span style="color: #800080;">$var1</span> = 'string111'<span style="color: #000000;">;
+</span><span style="color: #008080;">21</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var1</span>, "\r\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span> <span style="color: #800080;">$var</span> = [1, 2, 3<span style="color: #000000;">];
+</span><span style="color: #008080;">24</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var</span>, "\r\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">25</span> 
+<span style="color: #008080;">26</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Obj
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">28</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$field</span><span style="color: #000000;">;
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span> <span style="color: #800080;">$var</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Obj();
+</span><span style="color: #008080;">32</span> <span style="color: #0000ff;">echo</span> '$var:', <span style="color: #800080;">$var</span>, "\r\n";</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 代码很简单，大家可以猜猜输出结果，然后再和运行结果比对一下，运行结果如下：</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> $ php <span style="color: #0000ff;">string</span>.<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #800080;">$var</span>:
+<span style="color: #008080;"> 3</span> <span style="color: #800080;">$var</span>:
+<span style="color: #008080;"> 4</span> <span style="color: #800080;">$var</span>:1
+<span style="color: #008080;"> 5</span> <span style="color: #800080;">$var</span>:1
+<span style="color: #008080;"> 6</span> <span style="color: #800080;">$var</span>:1.1
+<span style="color: #008080;"> 7</span> <span style="color: #800080;">$var</span>:1.1
+<span style="color: #008080;"> 8</span> <span style="color: #800080;">$var</span>:<span style="color: #000000;">string111
+</span><span style="color: #008080;"> 9</span> <span style="color: #800080;">$var</span>:
+<span style="color: #008080;">10</span> Notice: <span style="color: #0000ff;">Array</span> to <span style="color: #0000ff;">string</span> conversion in C:\Users\Administrator\Desktop\<span style="color: #0000ff;">string</span>.<span style="color: #000000;">php
+</span><span style="color: #008080;">11</span> on line 24
+<span style="color: #008080;">12</span> 
+<span style="color: #008080;">13</span> Call Stack:
+<span style="color: #008080;">14</span>     0.0010     405568   1. {main}() C:\Users\Administrator\Desktop\<span style="color: #0000ff;">string</span>.php:0
+<span style="color: #008080;">15</span> 
+<span style="color: #008080;">16</span> <span style="color: #0000ff;">Array</span>
+<span style="color: #008080;">17</span> <span style="color: #800080;">$var</span>:
+<span style="color: #008080;">18</span> Catchable fatal error: <span style="color: #0000ff;">Object</span> of <span style="color: #0000ff;">class</span> Obj could not be converted to <span style="color: #0000ff;">string</span><span style="color: #000000;"> in C
+</span><span style="color: #008080;">19</span> :\Users\Administrator\Desktop\<span style="color: #0000ff;">string</span>.php on line 32
+<span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span> Call Stack:
+<span style="color: #008080;">22</span>     0.0010     405568   1. {main}() C:\Users\Administrator\Desktop\<span style="color: #0000ff;">string</span>.php:0</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 不知道是否实际的运行结果和猜测的结果是否一致。<br /></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong><span style="font-size: 14px;">PHP 源码中各类型转换为字符串类型的处理</span></strong></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 对于各种类型之间的赋值，并转换为字符串，使用真的是非常的方便。但是，实际的功劳都是 PHP 底层的复杂处理。看一下关于各种类型转换为字符串类型的源代码的处理。</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> ZEND_API zend_string* ZEND_FASTCALL _zval_get_string_func(zval *op) <span style="color: #008000;">/*</span><span style="color: #008000;"> {{{ </span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span> try_again:
+<span style="color: #008080;"> 4</span>   <span style="color: #0000ff;">switch</span><span style="color: #000000;"> (Z_TYPE_P(op)) {
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">case</span> IS_UNDEF:
+<span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">case</span> <span style="color: #008080;">IS_NULL</span>:
+<span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">case</span> IS_FALSE:
+<span style="color: #008080;"> 8</span>       <span style="color: #0000ff;">return</span><span style="color: #000000;"> ZSTR_EMPTY_ALLOC();
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">case</span> IS_TRUE:
+<span style="color: #008080;">10</span>       <span style="color: #0000ff;">return</span> ZSTR_CHAR('1'<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>     <span style="color: #0000ff;">case</span> <span style="color: #008080;">IS_RESOURCE</span>:<span style="color: #000000;"> {
+</span><span style="color: #008080;">12</span>       char buf[<span style="color: #008080;">sizeof</span>("Resource id #") +<span style="color: #000000;"> MAX_LENGTH_OF_LONG];
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">      int len;
+</span><span style="color: #008080;">14</span> 
+<span style="color: #008080;">15</span>       len = snprintf(buf, <span style="color: #008080;">sizeof</span>(buf), "Resource id #" ZEND_LONG_FMT,<span style="color: #000000;"> (zend_long)Z_RES_HANDLE_P(op));
+</span><span style="color: #008080;">16</span>       <span style="color: #0000ff;">return</span> zend_string_init(buf, len, 0<span style="color: #000000;">);
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span>     <span style="color: #0000ff;">case</span> <span style="color: #008080;">IS_LONG</span>:<span style="color: #000000;"> {
+</span><span style="color: #008080;">19</span>       <span style="color: #0000ff;">return</span><span style="color: #000000;"> zend_long_to_str(Z_LVAL_P(op));
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">21</span>     <span style="color: #0000ff;">case</span> <span style="color: #008080;">IS_DOUBLE</span>:<span style="color: #000000;"> {
+</span><span style="color: #008080;">22</span>       <span style="color: #0000ff;">return</span> zend_strpprintf(0, "%.*G", (int) EG(precision),<span style="color: #000000;"> Z_DVAL_P(op));
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">24</span>     <span style="color: #0000ff;">case</span> <span style="color: #008080;">IS_ARRAY</span>:
+<span style="color: #008080;">25</span>       zend_error(<span style="color: #ff00ff;">E_NOTICE</span>, "Array to string conversion"<span style="color: #000000;">);
+</span><span style="color: #008080;">26</span>       <span style="color: #0000ff;">return</span> zend_string_init("Array", <span style="color: #008080;">sizeof</span>("Array")-1, 0<span style="color: #000000;">);
+</span><span style="color: #008080;">27</span>     <span style="color: #0000ff;">case</span> <span style="color: #008080;">IS_OBJECT</span>:<span style="color: #000000;"> {
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">      zval tmp;
+</span><span style="color: #008080;">29</span>       <span style="color: #0000ff;">if</span> (Z_OBJ_HT_P(op)-&gt;<span style="color: #000000;">cast_object) {
+</span><span style="color: #008080;">30</span>         <span style="color: #0000ff;">if</span> (Z_OBJ_HT_P(op)-&gt;cast_object(op, &amp;tmp, <span style="color: #008080;">IS_STRING</span>) ==<span style="color: #000000;"> SUCCESS) {
+</span><span style="color: #008080;">31</span>           <span style="color: #0000ff;">return</span><span style="color: #000000;"> Z_STR(tmp);
+</span><span style="color: #008080;">32</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">33</span>       } <span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> (Z_OBJ_HT_P(op)-&gt;<span style="color: #000000;">get) {
+</span><span style="color: #008080;">34</span>         zval *z = Z_OBJ_HT_P(op)-&gt;get(op, &amp;<span style="color: #000000;">tmp);
+</span><span style="color: #008080;">35</span>         <span style="color: #0000ff;">if</span> (Z_TYPE_P(z) != <span style="color: #008080;">IS_OBJECT</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">36</span>           zend_string *str =<span style="color: #000000;"> zval_get_string(z);
+</span><span style="color: #008080;">37</span> <span style="color: #000000;">          zval_ptr_dtor(z);
+</span><span style="color: #008080;">38</span>           <span style="color: #0000ff;">return</span><span style="color: #000000;"> str;
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">40</span> <span style="color: #000000;">        zval_ptr_dtor(z);
+</span><span style="color: #008080;">41</span> <span style="color: #000000;">      }
+</span><span style="color: #008080;">42</span>       zend_error(EG(<span style="color: #0000ff;">exception</span>) ? <span style="color: #ff00ff;">E_ERROR</span> : E_RECOVERABLE_ERROR, "Object of class %s could not be converted to string", ZSTR_VAL(Z_OBJCE_P(op)-&gt;<span style="color: #000000;">name));
+</span><span style="color: #008080;">43</span>       <span style="color: #0000ff;">return</span><span style="color: #000000;"> ZSTR_EMPTY_ALLOC();
+</span><span style="color: #008080;">44</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">45</span>     <span style="color: #0000ff;">case</span> IS_REFERENCE:
+<span style="color: #008080;">46</span>       op =<span style="color: #000000;"> Z_REFVAL_P(op);
+</span><span style="color: #008080;">47</span> <span style="color: #000000;">      goto try_again;
+</span><span style="color: #008080;">48</span>     <span style="color: #0000ff;">case</span> <span style="color: #008080;">IS_STRING</span>:
+<span style="color: #008080;">49</span>       <span style="color: #0000ff;">return</span><span style="color: #000000;"> zend_string_copy(Z_STR_P(op));
+</span><span style="color: #008080;">50</span> <span style="color: #000000;">    EMPTY_SWITCH_DEFAULT_CASE()
+</span><span style="color: #008080;">51</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">52</span>   <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">NULL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">53</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">54</span> <span style="color: #008000;">/*</span><span style="color: #008000;"> }}} </span><span style="color: #008000;">*/</span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 从上面的源码中可以看出，对于类型的转换，PHP 底层的源码使用了 switch ... case 的结构，在进行转换的时候需要对逐个的类型进行匹配后，再进行转换。当然，从源码的角度去看待上面的 PHP 类型转换的代码就非常的清晰明了了。<br /></span></p>
+<p><span style="font-size: 14px;">&nbsp;</span></p>
+<p><strong><span style="font-size: 14px;">最后</span></strong></p>
+<p>
+<span style="font-size: 14px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 读 PHP 的源码有一段时间了，进度比较慢，说实话，对于写 PHP 的代码没有什么提高，或者对我来说没有遇到什么让我提高的地方。单纯的出于对知识求甚解的原因吧。</span></p>
+<p>&nbsp;</p>
+<hr />
+<p>&nbsp;</p>
+<p style="text-align: center;"><span style="font-size: 14px;"><strong>我的微信公众号：&ldquo;码农UP2U&rdquo;</strong></span></p>
+<p style="text-align: center;"><span style="font-size: 14px;"><strong><img src="./images/从源码角度看 PHP 字符串类型转换 0.jpg" alt="" /></strong></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

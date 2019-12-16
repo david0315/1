@@ -1,0 +1,183 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP微信商户支付企业付款到零钱功能' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP微信商户支付企业付款到零钱功能</center></div><div class='banquan'>原文出处:本文由博客园博主下页、再停留提供。<br/>
+原文连接:https://www.cnblogs.com/zxf100/p/11130509.html</div><br>
+    <p><strong>一 开通条件，就是首先要在微信平台设置好。</strong></p>
+<p><strong><img src="./images/PHP微信商户支付企业付款到零钱功能0.jpg" alt="" /></strong></p>
+<p><strong>以下微信文档里有的，我这里大概掠几项比较重要的。</strong></p>
+<p><strong>付款资金</strong></p>
+<p>企业付款到零钱资金使用商户号余额资金。</p>
+<p>&nbsp;</p>
+<p><strong>根据商户号的账户开通情况，实际出款账户有做区别：</strong></p>
+<p>◆ 默认情况下，企业付款到零钱使用商户号基本户（或余额账户）余额。如商户号已开通运营账户，则企业付款到零钱使用运营账户内的资金。</p>
+<p>◆ 基本户（或上述其他出款账户）的资金来源，可能是交易结算款项（仅基本户），或给账户充值的资金。当出款账户余额不足时，付款将因余额不足而付款失败。</p>
+<p><strong>付款规则</strong></p>
+<p><strong>付款方式</strong></p>
+<p>◆ 支持API接口或网页操作，付款至目标用户。</p>
+<p><strong>收款用户身份指定</strong></p>
+<p>◆ 通过APPID+OPENID指定收款用户。</p>
+<p>◆ APPID需要为申请商户号时的APPID，或者与商户号有绑定关系。</p>
+<p>◆ OPENID的获取方式，可参照：https://mp.weixin.qq.com/wiki?t=resource/res_main&amp;id=mp1421140839</p>
+<p><strong>付款额度</strong></p>
+<p>◆ 不支持给非实名用户打款</p>
+<p>◆ 给同一个实名用户付款，单笔单日限额2W/2W</p>
+<p>◆ 一个商户同一日付款总额限额100W</p>
+<p>&nbsp;</p>
+<p>注意：以上规则中的限额2w、100w由于计算规则与风控策略的关系，不是完全精确值，金额仅做参考，请不要依赖此金额做系统处理，应以接口实际返回和查询结果为准，请知晓。</p>
+<p><strong>收款用户身份校验</strong></p>
+<p>◆ 针对付款的目标用户，提供可校验真实姓名的功能</p>
+<p><strong>查询付款情况</strong></p>
+<p>◆ 已付款的记录，企业可通过企业付款查询查看相应数据，或者查询商户号资金流水。</p>
+<p><strong>付款频次</strong></p>
+<p>◆ 默认每天最多可向同一个用户付款10次，可以在商户平台--API安全进行设置</p>
+<p><strong>其他注意事项</strong></p>
+<p>◆ 付款金额必须小于或等于商户当前可用余额的金额；</p>
+<p>&nbsp;</p>
+<h3><strong>二 &nbsp;接口地址</strong></h3>
+<h3>接口链接：https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers</h3>
+<p>请求参数：</p>
+<p>具体参看官方企业付款开发文档说明</p>
+<p><img src="./images/PHP微信商户支付企业付款到零钱功能1.jpg" alt="" /></p>
+<p><strong>PHP代码示例调用，这里是写在一个文件里，看每个方法就知道是干嘛用的咯。</strong></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">企业付款到微信零钱，PHP接口调用方法</span>
+<span style="color: #008080;">define</span>("APPID", "wx875439864"); <span style="color: #008000;">//</span><span style="color: #008000;">商户账号appid</span>
+<span style="color: #008080;">define</span>("MCHID", "190023450990"); <span style="color: #008000;">//</span><span style="color: #008000;"> 商户号</span>
+<span style="color: #008080;">define</span>("SECRECT_KEY", "145535866885");  <span style="color: #008000;">//</span><span style="color: #008000;">支付密钥签名</span>
+<span style="color: #008080;">define</span>("IP", "120.178.12.52");   <span style="color: #008000;">//</span><span style="color: #008000;">IP</span>
+
+<span style="color: #0000ff;">function</span> createNoncestr(<span style="color: #800080;">$length</span> =32<span style="color: #000000;">) 
+{
+    </span><span style="color: #800080;">$chars</span> = "abcdefghijklmnopqrstuvwxyz0123456789"<span style="color: #000000;">;  
+    </span><span style="color: #800080;">$str</span> =""<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">for</span> ( <span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; <span style="color: #800080;">$length</span>; <span style="color: #800080;">$i</span>++<span style="color: #000000;"> )  {  
+        </span><span style="color: #800080;">$str</span>.= <span style="color: #008080;">substr</span>(<span style="color: #800080;">$chars</span>, <span style="color: #008080;">mt_rand</span>(0, <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$chars</span>)-1), 1<span style="color: #000000;">);  
+    }  
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$str</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #0000ff;">function</span><span style="color: #000000;"> unicode() {
+    </span><span style="color: #800080;">$str</span> = <span style="color: #008080;">uniqid</span>(<span style="color: #008080;">mt_rand</span>(),1<span style="color: #000000;">);
+    </span><span style="color: #800080;">$str</span>=<span style="color: #008080;">sha1</span>(<span style="color: #800080;">$str</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">md5</span>(<span style="color: #800080;">$str</span><span style="color: #000000;">);
+}
+</span><span style="color: #0000ff;">function</span> arraytoxml(<span style="color: #800080;">$data</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$str</span>='&lt;xml&gt;'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$str</span>.='&lt;'.<span style="color: #800080;">$k</span>.'&gt;'.<span style="color: #800080;">$v</span>.'&lt;/'.<span style="color: #800080;">$k</span>.'&gt;'<span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$str</span>.='&lt;/xml&gt;'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$str</span><span style="color: #000000;">;
+}
+</span><span style="color: #0000ff;">function</span> xmltoarray(<span style="color: #800080;">$xml</span><span style="color: #000000;">) { 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">禁止引用外部xml实体 </span>
+    libxml_disable_entity_loader(<span style="color: #0000ff;">true</span><span style="color: #000000;">); 
+    </span><span style="color: #800080;">$xmlstring</span> = <span style="color: #008080;">simplexml_load_string</span>(<span style="color: #800080;">$xml</span>, 'SimpleXMLElement',<span style="color: #000000;"> LIBXML_NOCDATA); 
+    </span><span style="color: #800080;">$val</span> = json_decode(json_encode(<span style="color: #800080;">$xmlstring</span>),<span style="color: #0000ff;">true</span><span style="color: #000000;">); 
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$val</span><span style="color: #000000;">;
+} 
+
+</span><span style="color: #0000ff;">function</span> curl(<span style="color: #800080;">$param</span>="",<span style="color: #800080;">$url</span><span style="color: #000000;">) {
+    </span><span style="color: #800080;">$postUrl</span> = <span style="color: #800080;">$url</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$curlPost</span> = <span style="color: #800080;">$param</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$ch</span> = curl_init();                                      <span style="color: #008000;">//</span><span style="color: #008000;">初始化curl</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_URL,<span style="color: #800080;">$postUrl</span>);                 <span style="color: #008000;">//</span><span style="color: #008000;">抓取指定网页</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_HEADER, 0);                    <span style="color: #008000;">//</span><span style="color: #008000;">设置header</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_RETURNTRANSFER, 1);            <span style="color: #008000;">//</span><span style="color: #008000;">要求结果为字符串且输出到屏幕上</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_POST, 1);                      <span style="color: #008000;">//</span><span style="color: #008000;">post提交方式</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_POSTFIELDS, <span style="color: #800080;">$curlPost</span>);           <span style="color: #008000;">//</span><span style="color: #008000;"> 增加 HTTP Header（头）里的字段 </span>
+    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span style="color: #0000ff;">FALSE</span>);        <span style="color: #008000;">//</span><span style="color: #008000;"> 终止从服务端进行验证</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span style="color: #0000ff;">FALSE</span><span style="color: #000000;">);
+    curl_setopt(</span><span style="color: #800080;">$ch</span>,CURLOPT_SSLCERT,ROOT_PATH .'/wxpay/cacert/apiclient_cert.pem'); <span style="color: #008000;">//</span><span style="color: #008000;">这个是证书的位置绝对路径</span>
+    curl_setopt(<span style="color: #800080;">$ch</span>,CURLOPT_SSLKEY,ROOT_PATH .'/wxpay/cacert/apiclient_key.pem'); <span style="color: #008000;">//</span><span style="color: #008000;">这个也是证书的位置绝对路径</span>
+    <span style="color: #800080;">$data</span> = curl_exec(<span style="color: #800080;">$ch</span>);                                 <span style="color: #008000;">//</span><span style="color: #008000;">运行curl</span>
+    curl_close(<span style="color: #800080;">$ch</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+}
+
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">
+$amount 发送的金额（分）目前发送金额不能少于1元
+$re_openid, 发送人的 openid
+$desc  //  企业付款描述信息 (必填)
+$check_name    收款用户姓名 (选填)
+</span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> sendMoney(<span style="color: #800080;">$amount</span>,<span style="color: #800080;">$re_openid</span>,<span style="color: #800080;">$desc</span>='测试',<span style="color: #800080;">$check_name</span>=''<span style="color: #000000;">){
+
+    </span><span style="color: #800080;">$total_amount</span> = (100) * <span style="color: #800080;">$amount</span><span style="color: #000000;">;
+
+    </span><span style="color: #800080;">$data</span>=<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+        </span>'mch_appid'=&gt;APPID,<span style="color: #008000;">//</span><span style="color: #008000;">商户账号appid</span>
+        'mchid'=&gt; MCHID,<span style="color: #008000;">//</span><span style="color: #008000;">商户号</span>
+        'nonce_str'=&gt;createNoncestr(),<span style="color: #008000;">//</span><span style="color: #008000;">随机字符串</span>
+        'partner_trade_no'=&gt; <span style="color: #008080;">date</span>('YmdHis').<span style="color: #008080;">rand</span>(1000, 9999),<span style="color: #008000;">//</span><span style="color: #008000;">商户订单号</span>
+        'openid'=&gt; <span style="color: #800080;">$re_openid</span>,<span style="color: #008000;">//</span><span style="color: #008000;">用户openid</span>
+        'check_name'=&gt;'NO_CHECK',<span style="color: #008000;">//</span><span style="color: #008000;">校验用户姓名选项,</span>
+        're_user_name'=&gt; <span style="color: #800080;">$check_name</span>,<span style="color: #008000;">//</span><span style="color: #008000;">收款用户姓名</span>
+        'amount'=&gt;<span style="color: #800080;">$total_amount</span>,<span style="color: #008000;">//</span><span style="color: #008000;">金额</span>
+        'desc'=&gt; <span style="color: #800080;">$desc</span>,<span style="color: #008000;">//</span><span style="color: #008000;">企业付款描述信息</span>
+        'spbill_create_ip'=&gt; IP,<span style="color: #008000;">//</span><span style="color: #008000;">Ip地址</span>
+<span style="color: #000000;">    );
+    </span><span style="color: #800080;">$secrect_key</span>=SECRECT_KEY;<span style="color: #008000;">//</span><span style="color: #008000;">/这个就是个API密码。MD5 32位。</span>
+    <span style="color: #800080;">$data</span>=<span style="color: #008080;">array_filter</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+    </span><span style="color: #008080;">ksort</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$str</span>=''<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">) {
+       </span><span style="color: #800080;">$str</span>.=<span style="color: #800080;">$k</span>.'='.<span style="color: #800080;">$v</span>.'&amp;'<span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$str</span>.='key='.<span style="color: #800080;">$secrect_key</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$data</span>['sign']=<span style="color: #008080;">md5</span>(<span style="color: #800080;">$str</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$xml</span>=arraytoxml(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+
+    </span><span style="color: #800080;">$url</span>='https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers'; <span style="color: #008000;">//</span><span style="color: #008000;">调用接口</span>
+    <span style="color: #800080;">$res</span>=curl(<span style="color: #800080;">$xml</span>,<span style="color: #800080;">$url</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$return</span>=xmltoarray(<span style="color: #800080;">$res</span><span style="color: #000000;">);
+
+
+    </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$return</span><span style="color: #000000;">);
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">返回来的结果
+    // [return_code] =&gt; SUCCESS [return_msg] =&gt; Array ( ) [mch_appid] =&gt; wxd44b890e61f72c63 [mchid] =&gt; 1493475512 [nonce_str] =&gt; 616615516 [result_code] =&gt; SUCCESS [partner_trade_no] =&gt; 20186505080216815 
+    // [payment_no] =&gt; 1000018361251805057502564679 [payment_time] =&gt; 2018-05-15 15:29:50</span>
+
+
+    <span style="color: #800080;">$responseObj</span> = <span style="color: #008080;">simplexml_load_string</span>(<span style="color: #800080;">$res</span>, 'SimpleXMLElement',<span style="color: #000000;"> LIBXML_NOCDATA);
+    </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$res</span>= <span style="color: #800080;">$responseObj</span>-&gt;return_code;  <span style="color: #008000;">//</span><span style="color: #008000;">SUCCESS  如果返回来SUCCESS,则发生成功，处理自己的逻辑</span>
+
+    <span style="color: #0000ff;">return</span> <span style="color: #800080;">$res</span><span style="color: #000000;">;
+}
+
+</span>?&gt;</code></pre>
+
+<p><strong>三 调用方法 &nbsp;：</strong></p>
+<p>直接在你写的方法里调用此方法就好了</p>
+<src class="cnblogs_code">
+<pre><code>sendMoney(1,'ewrwexe32423423423423423','xxxx测试');</code></pre>
+
+<p>返回的结果，成功的话就直接print出来，失败的话也要抛出异常。如果你还是不懂，请查看之前分享过的这篇文章。</p>
+<p>微信企业付款到个人零钱功能，很简单的就实现咯！</p>
+<p>效果图如下</p>
+<p><img src="./images/PHP微信商户支付企业付款到零钱功能2.jpg" alt="" /></p>
+<p>转自&ldquo;php自学中心 - <a href="http://www.startphp.cn/detail/75" target="_blank">PHP微信商户支付企业付款到零钱功能</a>&rdquo;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

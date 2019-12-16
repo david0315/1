@@ -1,0 +1,214 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php内存管理机制与垃圾回收机制' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php内存管理机制与垃圾回收机制</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11885828.html</div><br>
+    <h2><strong>一、内存管理机制</strong></h2>
+<p>先看一段代码：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="12">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">//</span><span style="color: #008000;">内存管理机制</span>
+<span style="color: #008080;"> 3</span> <span style="color: #008080;">var_dump</span>(memory_get_usage());<span style="color: #008000;">//</span><span style="color: #008000;">获取内存方法，加上true返回实际内存，不加则返回表现内存</span>
+<span style="color: #008080;"> 4</span> <span style="color: #800080;">$a</span> = "laruence"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> <span style="color: #008080;">var_dump</span><span style="color: #000000;">(memory_get_usage());
+</span><span style="color: #008080;"> 6</span> <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 7</span> <span style="color: #008080;">var_dump</span><span style="color: #000000;">(memory_get_usage());
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">//</span><span style="color: #008000;">输出(在我的个人电脑上, 可能会因为系统,PHP版本,载入的扩展不同而不同):
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">//int 240552
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">//int 240720
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">//int 240552</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>定义变量之后，内存增加，清除变量之后，内存恢复（有些可能不会恢复和以前一样），好像定义变量时申请了一次内存，其实不是这样的，php会预先申请一块内存，不会每次定义变量就申请内存。</p>
+<p>首先我们要打破一个思维: PHP不像C语言那样, 只有你显示的调用内存分配相关API才会有内存的分配. 也就是说, 在PHP中, 有很多我们看不到的内存分配过程.<br />比如对于:<br /><strong>$a = "laruence";</strong><br /><strong>隐式的内存分配点就有:</strong><br />1.1. 为变量名分配内存, 存入符号表<br />2.2. 为变量值分配内存<br />所以, 不能只看表象.<br />第二, 别怀疑,PHP的unset确实会释放内存, 但这个释放不是C编程意义上的释放, 不是交回给OS.<br />对于PHP来说, 它自身提供了一套和C语言对内存分配相似的内存管理API:　</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="11">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">emalloc(size_t size);
+</span><span style="color: #008080;">2</span> efree(void *<span style="color: #000000;">ptr);
+</span><span style="color: #008080;">3</span> ecalloc(size_t nmemb,<span style="color: #000000;"> size_t size);
+</span><span style="color: #008080;">4</span> erealloc(void *ptr,<span style="color: #000000;"> size_t size);
+</span><span style="color: #008080;">5</span> estrdup(<span style="color: #0000ff;">const</span> char *<span style="color: #000000;">s);
+</span><span style="color: #008080;">6</span> estrndup(<span style="color: #0000ff;">const</span> char *s, unsigned int length);</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>这些API和C的API意义对应, 在PHP内部都是通过这些API来管理内存的.<br />当我们调用emalloc申请内存的时候, PHP并不是简单的向OS要内存, 而是会像OS要一个大块的内存, 然后把其中的一块分配给申请者, 这样当再有逻辑来申请内存的时候, 就不再需要向OS申请内存了, 避免了频繁的系统调用.</p>
+<p><strong>比如以下的例子:</strong></p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="10">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008080;">var_dump</span>(memory_get_usage(<span style="color: #0000ff;">true</span>));<span style="color: #008000;">//</span><span style="color: #008000;">注意获取的是real_size</span>
+<span style="color: #008080;">2</span> <span style="color: #800080;">$a</span> = "laruence"<span style="color: #000000;">;
+</span><span style="color: #008080;">3</span> <span style="color: #008080;">var_dump</span>(memory_get_usage(<span style="color: #0000ff;">true</span><span style="color: #000000;">));
+</span><span style="color: #008080;">4</span> <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> <span style="color: #008080;">var_dump</span>(memory_get_usage(<span style="color: #0000ff;">true</span><span style="color: #000000;">));
+</span><span style="color: #008080;">6</span> <span style="color: #008000;">//</span><span style="color: #008000;">输出
+</span><span style="color: #008080;">7</span> <span style="color: #008000;">//int 262144
+</span><span style="color: #008080;">8</span> <span style="color: #008000;">//int 262144
+</span><span style="color: #008080;">9</span> <span style="color: #008000;">//int 262144</span></code></pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_drag_handler" style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" />
+<p>也就是我们在定义变量$a的时候, PHP并没有向系统申请新内存.同样的, 在我们调用efree释放内存的时候, PHP也不会把内存还给OS, 而会把这块内存, 归入自己维护的空闲内存列表. 而对于小块内存来说, 更可能的是, 把它放到内存缓存列表中去</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="9">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;$a = \&amp;quot;hello\&amp;quot;;\n//定义变量时，存储两个方面：\n//1.变量名，存储在符号表\n//2.变量值存储在内存空间\n//3.在删除变量的时候，会将变量值存储的空间释放，而变量名所在的符号表不会减小（只增不减）\n&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">$a = "hello";
+//定义变量时，存储两个方面：
+//1.变量名，存储在符号表
+//2.变量值存储在内存空间
+//3.在删除变量的时候，会将变量值存储的空间释放，而变量名所在的符号表不会减小（只增不减）
+</code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p><strong>只增不减的数组</strong><br />Hashtable是PHP的核心结构, 数组也是用她来表示的, 而符号表也是一种关联数组, 对于如下代码:</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="8">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008080;">var_dump</span><span style="color: #000000;">(memory_get_usage());
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;100;<span style="color: #800080;">$i</span>++<span style="color: #000000;">)
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 4</span>     <span style="color: #800080;">$a</span> = "test".<span style="color: #800080;">$i</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>     $<span style="color: #800080;">$a</span> = "hello"<span style="color: #000000;">;    
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 7</span> <span style="color: #008080;">var_dump</span><span style="color: #000000;">(memory_get_usage());
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">for</span>(<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;100;<span style="color: #800080;">$i</span>++<span style="color: #000000;">)
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">10</span>     <span style="color: #800080;">$a</span> = "test".<span style="color: #800080;">$i</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>     <span style="color: #0000ff;">unset</span>($<span style="color: #800080;">$a</span><span style="color: #000000;">);    
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">13</span> <span style="color: #008080;">var_dump</span>(memory_get_usage());</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>我们定义了100个变量, 然后又按个Unset了他们, 来看看输出:</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="7">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">int 242104
+//int 259768
+//int 242920</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>怎么少了这么多内存?<br />这是因为对于Hashtable来说, 定义它的时候, 不可能一次性分配足够多的内存块, 来保存未知个数的元素, 所以PHP会在初始化的时候, 只是分配一小部分内存块给HashTable, 当不够用的时候再RESIZE扩容。而Hashtable, 只能扩容, 不会减少,</p>
+<p>对于上面的例子, 当我们存入100个变量的时候, 符号表不够用了, 做了一次扩容, 而当我们依次unset掉这100个变量以后, 变量占用的内存是释放了(118848 &ndash; 104448), 但是符号表并没有缩小, 所以这些少的内存是被符号表本身占去了&hellip;</p>
+<p>&nbsp;</p>
+<p><strong>二、垃圾回收机制</strong></p>
+<p>PHP变量存储在一个zval容器里面的<br />1.变量类型</p>
+<p>2. 变量值</p>
+<p>3. is_ref 代表是否有地址引用</p>
+<p>4. refcount 指向该值的变量数量</p>
+<p>变量赋值的时候：is_ref为false， refcount为1</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="6">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$a</span> = 1<span style="color: #000000;">;
+</span><span style="color: #008080;">2</span> xdebug_debug_zval('a'<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> <span style="color: #0000ff;">echo</span> <span style="color: #ff00ff;">PHP_EOL</span>;<span style="color: #008000;">//</span><span style="color: #008000;">换行符，提高代码的源代码级可移植性</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>输出：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="5">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;a:\n\n(refcount=1, is_ref=0),\nint\n\n 1\n&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="hljs">a:</code></code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> (refcount=1, is_ref=0),
+<span style="color: #008080;">2</span> int 1</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>将变量a的值赋给变量b，变量b不会立刻去在内存中存储值，而是先指向变量a的值，一直到变量a有任何操作的时候</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="4">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$b</span> = <span style="color: #800080;">$a</span><span style="color: #000000;">;
+</span><span style="color: #008080;">2</span> xdebug_debug_zval('a'<span style="color: #000000;">);
+</span><span style="color: #008080;">3</span> <span style="color: #0000ff;">echo</span> <span style="color: #ff00ff;">PHP_EOL</span>;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>输出：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="3">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> a:
+<span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> (refcount=2, is_ref=0),
+<span style="color: #008080;"> 4</span> <span style="color: #000000;">int
+</span><span style="color: #008080;"> 5</span> 
+<span style="color: #008080;"> 6</span>  1
+<span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #800080;">$c</span> = &amp;<span style="color: #800080;">$a</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span> xdebug_debug_zval('a'<span style="color: #000000;">);
+</span><span style="color: #008080;">10</span> <span style="color: #0000ff;">echo</span> <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span> xdebug_debug_zval('b'<span style="color: #000000;">);
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">echo</span> <span style="color: #ff00ff;">PHP_EOL</span>;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>输出：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="2">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> a:
+<span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> (refcount=2, is_ref=1),
+<span style="color: #008080;"> 4</span> <span style="color: #000000;">int
+</span><span style="color: #008080;"> 5</span> 
+<span style="color: #008080;"> 6</span>  1
+<span style="color: #008080;"> 7</span> b:
+<span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span> (refcount=1, is_ref=0),
+<span style="color: #008080;">10</span> <span style="color: #000000;">int
+</span><span style="color: #008080;">11</span> 
+<span style="color: #008080;">12</span>  1</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>因为程序又操作了变量a，所以变量b会自己申请一块内存将值放进去。<br />所以变量a的zval容器中refcount会减1变为1，变量c指向a，所以refcount会加1变为2，is_ref变为true</p>
+<p>垃圾回收<br />1.在5.2版本或之前版本，PHP会根据refcount值来判断是不是垃圾<br />如果refcount值为0，PHP会当做垃圾释放掉<br />这种回收机制有缺陷，对于环状引用的变量无法回收</p>
+<p>环状引用：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$attr</span> = <span style="color: #0000ff;">array</span>("hello"<span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$attr</span>[]= &amp;<span style="color: #800080;">$attr</span><span style="color: #000000;">;
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span> xdebug_debug_zval('attr'<span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> <span style="color: #0000ff;">echo</span> <span style="color: #ff00ff;">PHP_EOL</span>;</code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>输出：</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> attr:
+<span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> (refcount=2, is_ref=1),
+<span style="color: #008080;"> 4</span> <span style="color: #0000ff;">array</span> (size=2<span style="color: #000000;">)
+</span><span style="color: #008080;"> 5</span>   0 =&gt; (refcount=1, is_ref=0),
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">string</span>
+<span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>  'hello' (length=5<span style="color: #000000;">)
+</span><span style="color: #008080;"> 9</span>   1 =&gt; (refcount=2, is_ref=1),
+<span style="color: #008080;">10</span>     &amp;<span style="color: #0000ff;">array</span></code></pre>
+
+<p>&nbsp;</p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p>2.在5.3之后版本改进了垃圾回收机制<br />如果发现一个zval容器中的refcount在增加，说明不是垃圾<br />如果发现一个zval容器中的refcount在减少，如果减到了0，直接当做垃圾回收<br />如果发现一个zval容器中的refcount在减少，并没有减到0，PHP会把该值放到缓冲区，当做有可能是垃圾的怀疑对象<br />当缓冲区达到临界值，PHP会自动调用一个方法取遍历每一个值，如果发现是垃圾就清理</p>
+<ul>
+<li>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></li>
+</ul>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

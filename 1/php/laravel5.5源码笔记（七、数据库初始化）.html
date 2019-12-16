@@ -1,0 +1,402 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修laravel5.5源码笔记（七、数据库初始化）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>laravel5.5源码笔记（七、数据库初始化）</center></div><div class='banquan'>原文出处:本文由博客园博主我也很惆怅提供。<br/>
+原文连接:https://www.cnblogs.com/wyycc/p/10438667.html</div><br>
+    <p class="ql-long-15911801">laravel中的数据库也是以服务提供者进行初始化的名为DatabaseServiceProvider，在config文件的<strong>providers</strong>数组中有写。路径为<span style="color: #ff0000;">vendor\laravel\framework\src\Illuminate\Database\DatabaseServiceProvider.php</span></p>
+<p class="ql-long-15911801">跟以往的serviceProvider一样在register方法中注册，在boot方法中引导加载。</p>
+<p class="ql-long-15911801">来看一下register方法。为了保险起见它先通过Model将之前的加载数据给清除掉了。随后开始注册各种数据库连接所用到的对象，通过singleton方法注册一个单例的延迟加载对象到容器中。将DB门面类绑定到了DatabaseManager类中。</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> register()
+    {
+        Model</span>::<span style="color: #000000;">clearBootedModels();
+
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">registerConnectionServices();
+
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">registerEloquentFactory();
+
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">registerQueueableEntityResolver();
+    }
+
+    </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> registerConnectionServices()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> The connection factory is used to create the actual connection instances on
+        // the database. We will inject the factory into the manager so that it may
+        // make the connections while they are actually needed and not of before.</span>
+        <span style="color: #800080;">$this</span>-&gt;app-&gt;singleton('db.factory', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$app</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> ConnectionFactory(<span style="color: #800080;">$app</span><span style="color: #000000;">);
+        });
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> The database manager is used to resolve various connections, since multiple
+        // connections might be managed. It also implements the connection resolver
+        // interface which may be used by other components requiring connections.</span>
+        <span style="color: #800080;">$this</span>-&gt;app-&gt;singleton('db', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$app</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> DatabaseManager(<span style="color: #800080;">$app</span>, <span style="color: #800080;">$app</span>['db.factory'<span style="color: #000000;">]);
+        });
+
+        </span><span style="color: #800080;">$this</span>-&gt;app-&gt;bind('db.connection', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$app</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$app</span>['db']-&gt;<span style="color: #000000;">connection();
+        });
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Register the Eloquent factory instance in the container.
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> registerEloquentFactory()
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;app-&gt;singleton(FakerGenerator::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$app</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> FakerFactory::create(<span style="color: #800080;">$app</span>['config']-&gt;get('app.faker_locale', 'en_US'<span style="color: #000000;">));
+        });
+
+        </span><span style="color: #800080;">$this</span>-&gt;app-&gt;singleton(EloquentFactory::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$app</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">return</span> EloquentFactory::<span style="color: #000000;">construct(
+                </span><span style="color: #800080;">$app</span>-&gt;make(FakerGenerator::<span style="color: #0000ff;">class</span>), <span style="color: #800080;">$this</span>-&gt;app-&gt;databasePath('factories'<span style="color: #000000;">)
+            );
+        });
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Register the queueable entity resolver implementation.
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> registerQueueableEntityResolver()
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;app-&gt;singleton(EntityResolver::<span style="color: #0000ff;">class</span>, <span style="color: #0000ff;">function</span><span style="color: #000000;"> () {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> QueueEntityResolver;
+        });
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p class="ql-long-15911801">数据库连接对象ConnectionFactory。这个连接工厂类之中的各种方法都是在创建配置，以及通过配置数组，返回对应的数据库连接实例。这个类中的方法大多是对数据库的连接做一些配置，然后根据这些配置来返回相应的数据库连接实例。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Create a new connection instance.
+     *
+     * @param  string   $driver
+     * @param  \PDO|\Closure     $connection
+     * @param  string   $database
+     * @param  string   $prefix
+     * @param  array    $config
+     * @return \Illuminate\Database\Connection
+     *
+     * @throws \InvalidArgumentException
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> createConnection(<span style="color: #800080;">$driver</span>, <span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span> = '', <span style="color: #0000ff;">array</span> <span style="color: #800080;">$config</span> =<span style="color: #000000;"> [])
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$resolver</span> = Connection::getResolver(<span style="color: #800080;">$driver</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$resolver</span>(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$driver</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">case</span> 'mysql':
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> MySqlConnection(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">case</span> 'pgsql':
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> PostgresConnection(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">case</span> 'sqlite':
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> SQLiteConnection(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">case</span> 'sqlsrv':
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> SqlServerConnection(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> InvalidArgumentException("Unsupported driver [<span style="color: #800080;">$driver</span>]"<span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p class="ql-long-15911801">数据库管理对象DatabaseManager。这个数据库管理类之中的各种方法也是通过各种数据库配置来调用ConnectionFactory工厂来返回数据库连接实例，它会通过配置read,write来返回相应的读写pdo实例。以及包含了数据库实例的创建与断开销毁等。set、get各种配置。如setPdoForType方法来设置数据库连接的读写分离（设置只读、只写）。那么这个类的上游方法在哪里呢。它是从哪里被调用的呢？我们开头提了一句，DB门面类所绑定的类，就是这个类，但是如果我们去这个类中寻找常用的talbe()、query()等方法，肯定是一无所获的，不过我们会发现__call()方法，这个魔术方法会在调用不存在的方法时执行，看一下它的内容。它只有一句代码，从$this-&gt;connection()这个对象中，执行相应的方法并返回结果。是的，laravel的源码封装度太高了，这里我们暂时只需要知道$this-&gt;connection()代表了数据库连接实例就好。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __call(<span style="color: #800080;">$method</span>, <span style="color: #800080;">$parameters</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;connection()-&gt;<span style="color: #800080;">$method</span>(...<span style="color: #800080;">$parameters</span><span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p class="ql-long-15911801">&nbsp;</p>
+<p class="ql-long-15911801">刚刚说到数据库连接实例，现在我们就来探寻这个实例是如何被创建出来的。如下makeConnection方法所示，通过刚刚说到的ConnectionFactory来返回数据库连接实例。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Prepare the read / write mode for database connection instance.
+     *
+     * @param  \Illuminate\Database\Connection  $connection
+     * @param  string  $type
+     * @return \Illuminate\Database\Connection
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> setPdoForType(Connection <span style="color: #800080;">$connection</span>, <span style="color: #800080;">$type</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$type</span> == 'read'<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$connection</span>-&gt;setPdo(<span style="color: #800080;">$connection</span>-&gt;<span style="color: #000000;">getReadPdo());
+        } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$type</span> == 'write'<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$connection</span>-&gt;setReadPdo(<span style="color: #800080;">$connection</span>-&gt;<span style="color: #000000;">getPdo());
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$connection</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Make the database connection instance.
+     *
+     * @param  string  $name
+     * @return \Illuminate\Database\Connection
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> makeConnection(<span style="color: #800080;">$name</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$config</span> = <span style="color: #800080;">$this</span>-&gt;configuration(<span style="color: #800080;">$name</span><span style="color: #000000;">);
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> First we will check by the connection name to see if an extension has been
+        // registered specifically for that connection. If it has we will call the
+        // Closure and pass it the config allowing it to resolve the connection.</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;extensions[<span style="color: #800080;">$name</span><span style="color: #000000;">])) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">call_user_func</span>(<span style="color: #800080;">$this</span>-&gt;extensions[<span style="color: #800080;">$name</span>], <span style="color: #800080;">$config</span>, <span style="color: #800080;">$name</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> Next we will check to see if an extension has been registered for a driver
+        // and will call the Closure if so, which allows us to have a more generic
+        // resolver for the drivers themselves which applies to all connections.</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$this</span>-&gt;extensions[<span style="color: #800080;">$driver</span> = <span style="color: #800080;">$config</span>['driver'<span style="color: #000000;">]])) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">call_user_func</span>(<span style="color: #800080;">$this</span>-&gt;extensions[<span style="color: #800080;">$driver</span>], <span style="color: #800080;">$config</span>, <span style="color: #800080;">$name</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;factory-&gt;make(<span style="color: #800080;">$config</span>, <span style="color: #800080;">$name</span><span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>好的，看到DatabaseManager如何创建出数据库连接实例，又要把视线跳到之前说的ConnectionFactory类中了。$this-&gt;factory-&gt;make($config, $name);最后返回了make方法，我们就从这个方法入手，请看下列代码。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Establish a PDO connection based on the configuration.
+     *
+     * @param  array   $config
+     * @param  string  $name
+     * @return \Illuminate\Database\Connection
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> make(<span style="color: #0000ff;">array</span> <span style="color: #800080;">$config</span>, <span style="color: #800080;">$name</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">合并配置数组</span>
+        <span style="color: #800080;">$config</span> = <span style="color: #800080;">$this</span>-&gt;parseConfig(<span style="color: #800080;">$config</span>, <span style="color: #800080;">$name</span><span style="color: #000000;">);
+
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$config</span>['read'<span style="color: #000000;">])) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;createReadWriteConnection(<span style="color: #800080;">$config</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;createSingleConnection(<span style="color: #800080;">$config</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Create a single database connection instance.
+     *
+     * @param  array  $config
+     * @return \Illuminate\Database\Connection
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> createSingleConnection(<span style="color: #0000ff;">array</span> <span style="color: #800080;">$config</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$pdo</span> = <span style="color: #800080;">$this</span>-&gt;createPdoResolver(<span style="color: #800080;">$config</span><span style="color: #000000;">);
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">createConnection(
+            </span><span style="color: #800080;">$config</span>['driver'], <span style="color: #800080;">$pdo</span>, <span style="color: #800080;">$config</span>['database'], <span style="color: #800080;">$config</span>['prefix'], <span style="color: #800080;">$config</span><span style="color: #000000;">
+        );
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Create a new connection instance.
+     *
+     * @param  string   $driver
+     * @param  \PDO|\Closure     $connection
+     * @param  string   $database
+     * @param  string   $prefix
+     * @param  array    $config
+     * @return \Illuminate\Database\Connection
+     *
+     * @throws \InvalidArgumentException
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> createConnection(<span style="color: #800080;">$driver</span>, <span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span> = '', <span style="color: #0000ff;">array</span> <span style="color: #800080;">$config</span> =<span style="color: #000000;"> [])
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$resolver</span> = Connection::getResolver(<span style="color: #800080;">$driver</span><span style="color: #000000;">)) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$resolver</span>(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$driver</span><span style="color: #000000;">) {
+            </span><span style="color: #0000ff;">case</span> 'mysql':
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> MySqlConnection(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">case</span> 'pgsql':
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> PostgresConnection(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">case</span> 'sqlite':
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> SQLiteConnection(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">case</span> 'sqlsrv':
+                <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> SqlServerConnection(<span style="color: #800080;">$connection</span>, <span style="color: #800080;">$database</span>, <span style="color: #800080;">$prefix</span>, <span style="color: #800080;">$config</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> InvalidArgumentException("Unsupported driver [<span style="color: #800080;">$driver</span>]"<span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>可以看到，经过一系列的方法跳转，我们终于通过数据库配置，得到了mysql等数据库的连接对象。</p>
+<p>&nbsp;</p>
+<p>数据库工厂类ConnectionFactory返回的实例连接，我们拿mysql举例。返回的便是MySqlConnection这个类<span style="color: #ff0000;">\vendor\laravel\framework\src\Illuminate\Database\MySqlConnection.php</span></p>
+<p>进入这个类文件，可以看见都是获取grammar相关的方法，这些方法暂时先不去看它。秘密在于它的父类Connection类。（<span style="color: #ff0000;">\vendor\laravel\framework\src\Illuminate\Database\Connection.php</span>）先看它的构造方法，从这个方法我们可以知道，所有模型对象也好，DB对象也好，底层都是通过pdo去连接执行的，另外呢，tablePrefix数据表前缀，以及数据库连接配置也是在这里进行加载的。useDefaultQueryGrammar这俩个方法就不去深究了。我们来看点有趣的。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Create a new database connection instance.
+     *
+     * @param  \PDO|\Closure     $pdo
+     * @param  string   $database
+     * @param  string   $tablePrefix
+     * @param  array    $config
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$pdo</span>, <span style="color: #800080;">$database</span> = '', <span style="color: #800080;">$tablePrefix</span> = '', <span style="color: #0000ff;">array</span> <span style="color: #800080;">$config</span> =<span style="color: #000000;"> [])
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;pdo = <span style="color: #800080;">$pdo</span><span style="color: #000000;">;
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> First we will setup the default properties. We keep track of the DB
+        // name we are connected to since it is needed when some reflective
+        // type commands are run such as checking whether a table exists.</span>
+        <span style="color: #800080;">$this</span>-&gt;database = <span style="color: #800080;">$database</span><span style="color: #000000;">;
+
+        </span><span style="color: #800080;">$this</span>-&gt;tablePrefix = <span style="color: #800080;">$tablePrefix</span><span style="color: #000000;">;
+
+        </span><span style="color: #800080;">$this</span>-&gt;config = <span style="color: #800080;">$config</span><span style="color: #000000;">;
+
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> We need to initialize a query grammar and the query post processors
+        // which are both very important parts of the database abstractions
+        // so we initialize these to their default values while starting.</span>
+        <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">useDefaultQueryGrammar();
+
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">useDefaultPostProcessor();
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>有趣的是什么呢？就是这个table()方法了。我们都知道，在laravel中既可以使用模型的方式去进行数据库操作，也可以使用DB::table()的方式，而我们平时使用较多的table()方法的真身，就在这个类里了。这个table方法只做了一件事，就是从$this-&gt;query()这个对象中from一个表，然后返回的对象就可以通过链式调用的方式去做其他操作了。接下来看这个$this-&gt;query()，这个方法也只做了一件事，new一个QueryBuilder对象。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Begin a fluent query against a database table.
+     *
+     * @param  string  $table
+     * @return \Illuminate\Database\Query\Builder
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> table(<span style="color: #800080;">$table</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;query()-&gt;from(<span style="color: #800080;">$table</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Get a new query builder instance.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> query()
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> QueryBuilder(
+            </span><span style="color: #800080;">$this</span>, <span style="color: #800080;">$this</span>-&gt;getQueryGrammar(), <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getPostProcessor()
+        );
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>而QueryBuilder这个对象就是我们平时使用的eloquent orm 的入口，我们平时使用的那些方便的数据库操作方法都是从这里进入。</p>
+<p>&nbsp;通过一系列跳转，我们会发现，这个QueryBuilder的真身在</p>
+<p><span style="color: #ff0000;">\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php</span>这个类中，名为Builder类。</p>
+<p>来到这个类文件中，稍微浏览一下，感觉发现了宝藏，里面那些where()、join()、get()、find()方法，不正是我们常用的各种方便的orm方法么？</p>
+<p>来来回回绕了这么大一个圈终于找到，我们常用的函数是从何而来，但是现在还有一个疑问了。现在我们一路跟踪到的线索，都是从DB::table()这种方式跟踪而来，那么model的方式是怎么调用的呢？</p>
+<p>让我们随便新建一个模型类，然后找到它的父类Model</p>
+<p><span style="color: #ff0000;">vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php</span></p>
+<p>浏览一番过后，我们发现了比较眼熟的fill()、all()、save()等方法，然后我们会发现这些方法中，大部分都有$this-&gt;newModelQuery();这么一句，我们根据这一线索一路跟踪，一路尾行，最终我们会发现new QueryBuilder这句代码又出现了。</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Get a new query builder for the model's table.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> newQuery()
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;registerGlobalScopes(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">newQueryWithoutScopes());
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Register the global scopes for this builder instance.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
+     * @return \Illuminate\Database\Eloquent\Builder
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> registerGlobalScopes(<span style="color: #800080;">$builder</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$this</span>-&gt;getGlobalScopes() <span style="color: #0000ff;">as</span> <span style="color: #800080;">$identifier</span> =&gt; <span style="color: #800080;">$scope</span><span style="color: #000000;">) {
+            </span><span style="color: #800080;">$builder</span>-&gt;withGlobalScope(<span style="color: #800080;">$identifier</span>, <span style="color: #800080;">$scope</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$builder</span><span style="color: #000000;">;
+    }
+
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Get a new query builder instance for the connection.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> newBaseQueryBuilder()
+    {
+        </span><span style="color: #800080;">$connection</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getConnection();
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> QueryBuilder(
+            </span><span style="color: #800080;">$connection</span>, <span style="color: #800080;">$connection</span>-&gt;getQueryGrammar(), <span style="color: #800080;">$connection</span>-&gt;<span style="color: #000000;">getPostProcessor()
+        );
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>是的，再次跳转后，我们便又回到了<span style="color: #ff0000;">\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php</span>这个类中。</p>
+<p>至于那些model里没写的方法为什么可以直接调用？你去model类里找一找看有没有__call这个魔术方法，看它里面写了些什么</p>
+<src class="cnblogs_code">
+<pre><code>    <span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * Handle dynamic method calls into the model.
+     *
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return mixed
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __call(<span style="color: #800080;">$method</span>, <span style="color: #800080;">$parameters</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$method</span>, ['increment', 'decrement'<span style="color: #000000;">])) {
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #800080;">$method</span>(...<span style="color: #800080;">$parameters</span><span style="color: #000000;">);
+        }
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;newQuery()-&gt;<span style="color: #800080;">$method</span>(...<span style="color: #800080;">$parameters</span><span style="color: #000000;">);
+    }</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>到这里，数据库服务是怎么启动的，DB门面、model类为什么能直接执行orm方法，相信我们已经有清晰的认识了。至于orm是怎么转化成sql语句执行的，且听下回分解~</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p class="ql-long-15911801">&nbsp;</p>
+<p class="ql-long-15911801">&nbsp;</p>
+<p class="ql-long-15911801">&nbsp;</p>
+<p class="ql-long-15911801">&nbsp;</p>
+<p class="ql-long-15911801">&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

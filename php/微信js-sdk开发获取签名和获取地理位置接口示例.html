@@ -1,0 +1,192 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修微信js-sdk开发获取签名和获取地理位置接口示例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>微信js-sdk开发获取签名和获取地理位置接口示例</center></div><div class='banquan'>原文出处:本文由博客园博主alisleepy提供。<br/>
+原文连接:https://www.cnblogs.com/alisleepy/p/10610303.html</div><br>
+    <h2 id="微信js-sdk开发获取签名和获取地理位置接口示例">###微信js-sdk开发获取签名和获取地理位置接口示例</h2>
+<p>前言：在做微信公众号开发时需要获取用户的地理位置信息，之前通过高德或者百度、腾讯等地图的api时发现经常获取不到，毕竟第三方的东西，后来改为采用微信内置的js-sdk中的获取地理位置接口，在这主要记录下签名的获取（麻烦点）和一个获取地理位置的例子。</p>
+<h4 id="准备工作">准备工作：</h4>
+<ol>
+<li>微信测试号appid和appsecret<br />
+获取地址：<a href="https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&amp;t=sandbox/index" title="微信测试账号获取">微信测试账号获取</a></li>
+<li>在测试账号里先填写接口配置信息和js接口安全域名（这个是必须的）</li>
+<li>示例：页面中需要点击图标获取地理位置信息<br />
+流程如下：<br />
+点击按钮-&gt;触发事件去获取-&gt;ajax异步获取签名-&gt;拿签名去获取地理位置-&gt;得到经纬度-&gt;高德api再去逆地理编码获取真实地址信息</li>
+</ol>
+<h5 id="前端代码如下主要是使用js-sdk直接拿来用就行换下ajax请求地址">前端代码如下：（主要是使用js-sdk，直接拿来用就行，换下ajax请求地址）</h5>
+<pre><code><code>&lt;!--引入js-sdk--&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://res.wx.qq.com/open/js/jweixin-1.4.0.js&quot;&gt;&lt;/script&gt;
+
+&lt;!--点击图标触发事件--&gt;
+&lt;img onclick=&quot;getCurrentLocation()&quot; src=&quot;__PUBLIC__/img/gap.png&quot;&gt;
+
+//根据微信js-sdk内置接口 getCurrentLocation
+function getCurrentLocation(){
+    //这个是获取签名时的url，动态变化，所以在前段获取，后端传入直接使用
+    var url = location.href.split(&#39;#&#39;)[0];
+    var ajaxUrl = &#39;/*****/getWxsdkSign&#39;;   //ajax异步获取微信签名sign
+    $.get(ajaxUrl, {url : url}, function(json){
+        if(json.code == 0){
+            let sdkSign = json.data; // 后台返回的值
+            wx.config({
+                debug: false, // ture会alert全部信息，上线时改为false
+                appId: sdkSign.appId, // 必填，公众号唯一标识
+                timestamp: sdkSign.timestamp, // 必填，生成签名的时间戳
+                nonceStr: sdkSign.nonceStr, // 必填，生成签名的随机串
+                signature: sdkSign.signature,// 必填，签名
+                jsApiList: [&#39;getLocation&#39;,] // 必填，需要调用的接口列表，本需求里只是获取位置信息，具体的接口名称查阅js-sdk文档
+            });
+            //获取地理位置（经纬度）
+            wx.getLocation({
+                type: &#39;gcj02&#39;, // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入&#39;gcj02&#39;
+                success: function (res) {
+                    var latitude = res.latitude;   //纬度，浮点数
+                    var longitude = res.longitude; //经度，浮点数
+                    //以下这部分内容就是再通过异步操作逆地理编码获取真实的地址信息
+                    getLocationBylatlng(latitude, longitude);
+                }
+            });
+        }else{
+            //TODO 获取签名失败的处理，未获取到地理位置
+            *****************
+            *****************
+        }
+    },&#39;json&#39;);
+}</code></code></pre>
+<h5 id="后端代码如下主要是用来获取js-sdk的签名非常重要">后端代码如下：（主要是用来获取js-sdk的签名，非常重要）</h5>
+<pre><code><code>/*---------------------------------获取js-sdk签名   start--------------------------------*/
+    /**
+     * 获取js-sdk调用权限，获取签名
+     */
+    public function getWxsdkSign(){
+        $appId = $this-&gt;appid; //这里填appid
+        $appsecret = $this-&gt;appsecret; //这里填appsecret
+        //一般$url是固定的，可以写死，但是我的项目中地址是动态的，所以由前段传入
+        $url = I(&#39;get.url&#39;);   //获取签名的页面的url地址，由于是动态地址，所以由前段传入
+        // 获取accesstoken
+        $accessToken = $this-&gt;getAccessToken();
+        if(empty($accessToken)){
+            $this-&gt;ajaxReturn([&#39;code&#39;=&gt;-1, &#39;msg&#39;=&gt;&#39;accessToken未获取到&#39;]);
+        }
+        // 获取jsapi_ticket
+        $jsapi_ticket = $this-&gt;_getJsapiTicket($accessToken);
+        if(empty($jsapi_ticket)){
+            $this-&gt;ajaxReturn([&#39;code&#39;=&gt;-1, &#39;msg&#39;=&gt;&#39;jsapi_ticket未获取到&#39;]);
+        }
+        $nonceStr = $this-&gt;make_nonceStr();        //获取随机字符串
+        $timestamp = time();
+        $signature = $this-&gt;make_signature($nonceStr,$timestamp,$jsapi_ticket,$url);
+        $sdkSign = array(
+            &#39;appId&#39;     =&gt; $this-&gt;appid,      //appid
+            &#39;signature&#39; =&gt; $signature,        //签名
+            &#39;timestamp&#39; =&gt; $timestamp,        //时间戳
+            &#39;nonceStr&#39;  =&gt; $nonceStr,         //随机字符串
+        );
+        $this-&gt;ajaxReturn([&#39;code&#39;=&gt;0, &#39;data&#39;=&gt;$sdkSign]);
+    }
+    
+    /**
+     * 此AccessToken   与 getUserAccessToken不一样，注意一下定要全局缓存，否则每日次数限制很快就GG了
+     * 获得AccessToken
+     */
+    private function getAccessToken()
+    {
+        //获取缓存（我用的是自己封装的Memcached类，Vender引入的直接使用）
+        Vendor(&#39;Memcacheds.Memcacheds&#39;);
+        $memcached = new \Memcacheds();
+        $access = $memcached-&gt;get_cache(&#39;access_token&#39;);
+        // 缓存不存在-重新创建
+        if (empty($access)) {
+            // 获取 access token
+            $url = &quot;https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&amp;appid={$this -&gt; appid}&amp;secret={$this-&gt;appsecret}&quot;;
+            $accessToken = file_get_contents($url);
+            $accessToken = json_decode($accessToken);
+            // 保存至缓存
+            $access = $accessToken-&gt;access_token;
+            $memcached-&gt;set_cache(&#39;access_token&#39;, $access, 7000);
+        }
+        return $access;
+    }
+    
+    /**
+     * 获取JS证明 注意一下定要全局缓存，否则每日次数限制很快就GG了
+     * @param $accessToken
+     */
+    private function _getJsapiTicket($accessToken)
+    {
+        Vendor(&#39;Memcacheds.Memcacheds&#39;);
+        $memcached = new \Memcacheds();
+        //获取缓存
+        $ticket = $memcached-&gt;get_cache(&#39;jsapi_ticket&#39;);
+        //缓存不存在-重新创建
+        if (empty($ticket)) {
+            // 获取js_ticket
+            $url = &quot;https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=&quot; . $accessToken . &quot;&amp;type=jsapi&quot;;
+            $jsTicket = file_get_contents($url);
+            $jsTicket = json_decode($jsTicket);
+            //保存至缓存
+            $ticket = $jsTicket-&gt;ticket;
+            $memcached-&gt;set_cache(&#39;jsapi_ticket&#39;, $ticket, 7000);
+        }
+        return $ticket;
+    }
+
+    //获取随机字符串
+    public function make_nonceStr(){
+        $codeSet = &#39;1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&#39;;
+        for ($i = 0; $i&lt;16; $i++) {
+            $codes[$i] = $codeSet[mt_rand(0, strlen($codeSet)-1)];
+        }
+        $nonceStr = implode($codes);
+        return $nonceStr;
+    }
+
+    /**
+     * 获取签名
+     * @param string $nonceStr  随机字符串
+     * @param int    $timestamp 时间戳
+     * @param string $jsapi_ticket 获取的ticket凭据
+     * @param string $url       获取签名的页面的url &#39;http://*****&#39; eg:&#39;http://wx.alisleept.top/index.php&#39;
+     */
+    function make_signature($nonceStr,$timestamp,$jsapi_ticket,$url){
+        $tmpArr = array(
+            &#39;noncestr&#39; =&gt; $nonceStr,
+            &#39;timestamp&#39; =&gt; $timestamp,
+            &#39;jsapi_ticket&#39; =&gt; $jsapi_ticket,
+            &#39;url&#39; =&gt; $url
+        );
+        ksort($tmpArr, SORT_STRING);
+        $string1 = http_build_query( $tmpArr );
+        $string1 = urldecode( $string1 );
+        $signature = sha1( $string1 );
+        return $signature;
+    }
+    /*---------------------------------获取js-sdk签名   end--------------------------------*/</code></code></pre>
+<p>以上php部分就是完全的异步获取签名的代码，里边只需要注意</p>
+<ol>
+<li><strong>appid</strong> 和 <strong>appsecret</strong> 修改为自己的</li>
+<li>注意<strong>access_token</strong>和<strong>jsapi_ticket</strong>的缓存</li>
+<li>注意$url换成自己的，我这个是动态的，所以前段传回的</li>
+</ol>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

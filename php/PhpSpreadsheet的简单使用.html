@@ -1,0 +1,196 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PhpSpreadsheet的简单使用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PhpSpreadsheet的简单使用</center></div><div class='banquan'>原文出处:本文由博客园博主幽篁晓筑提供。<br/>
+原文连接:https://www.cnblogs.com/woods1815/p/11372007.html</div><br>
+    <p>&nbsp;</p>
+<p>由于PHPExcel已经不再维护，PhpSpreadsheet是PHPExcel的下一个版本。PhpSpreadsheet是一个用纯PHP编写的库，并引入了命名空间，PSR规范等。这里简单介绍下PhpSpreadsheet的导入导出功能。</p>
+<h2>1、安装</h2>
+<ul>
+<li>使用composer安装：</li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>composer <span style="color: #0000ff;">require</span> phpoffice/phpspreadsheet</code></pre>
+
+<ul>
+<li>GitHub下载：</li>
+</ul>
+<p>&nbsp; &nbsp;<a href="https://github.com/PHPOffice/PhpSpreadsheet" rel="nofollow" data-token="98677d531a1cc8e541a79e52e4520d71">https://github.com/PHPOffice/PhpSpreadsheet</a></p>
+<p>&nbsp;</p>
+<h2>2、excel文件导出</h2>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * excel文件导出
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> export()
+{
+    </span><span style="color: #0000ff;">require_once</span> __DIR__ . '/vendor/autoload.php'<span style="color: #000000;">;
+ 
+    </span><span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+        [</span>'title1' =&gt; '111', 'title2' =&gt; '222'],<span style="color: #000000;">
+        [</span>'title1' =&gt; '111', 'title2' =&gt; '222'],<span style="color: #000000;">
+        [</span>'title1' =&gt; '111', 'title2' =&gt; '222'<span style="color: #000000;">]
+    ];
+    </span><span style="color: #800080;">$title</span> = ['第一行标题', '第二行标题'<span style="color: #000000;">];
+ 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> Create new Spreadsheet object</span>
+    <span style="color: #800080;">$spreadsheet</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    </span><span style="color: #800080;">$sheet</span> = <span style="color: #800080;">$spreadsheet</span>-&gt;<span style="color: #000000;">getActiveSheet();
+ 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 方法一，使用 setCellValueByColumnAndRow
+    //表头
+    //设置单元格内容</span>
+    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$title</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 单元格内容写入</span>
+        <span style="color: #800080;">$sheet</span>-&gt;setCellValueByColumnAndRow(<span style="color: #800080;">$key</span> + 1, 1, <span style="color: #800080;">$value</span><span style="color: #000000;">);
+    }
+    </span><span style="color: #800080;">$row</span> = 2; <span style="color: #008000;">//</span><span style="color: #008000;"> 从第二行开始</span>
+    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$item</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$column</span> = 1<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$item</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 单元格内容写入</span>
+            <span style="color: #800080;">$sheet</span>-&gt;setCellValueByColumnAndRow(<span style="color: #800080;">$column</span>, <span style="color: #800080;">$row</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$column</span>++<span style="color: #000000;">;
+        }
+        </span><span style="color: #800080;">$row</span>++<span style="color: #000000;">;
+    }
+ 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 方法二，使用 setCellValue
+    //表头
+    //设置单元格内容</span>
+    <span style="color: #800080;">$titCol</span> = 'A'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$title</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 单元格内容写入</span>
+        <span style="color: #800080;">$sheet</span>-&gt;setCellValue(<span style="color: #800080;">$titCol</span> . '1', <span style="color: #800080;">$value</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$titCol</span>++<span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$row</span> = 2; <span style="color: #008000;">//</span><span style="color: #008000;"> 从第二行开始</span>
+    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$item</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$dataCol</span> = 'A'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$item</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 单元格内容写入</span>
+            <span style="color: #800080;">$sheet</span>-&gt;setCellValue(<span style="color: #800080;">$dataCol</span> . <span style="color: #800080;">$row</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$dataCol</span>++<span style="color: #000000;">;
+        }
+        </span><span style="color: #800080;">$row</span>++<span style="color: #000000;">;
+    }
+ 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> Redirect output to a client&rsquo;s web browser (Xlsx)</span>
+    <span style="color: #008080;">header</span>('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'<span style="color: #000000;">);
+    </span><span style="color: #008080;">header</span>('Content-Disposition: attachment;filename="01simple.xlsx"'<span style="color: #000000;">);
+    </span><span style="color: #008080;">header</span>('Cache-Control: max-age=0'<span style="color: #000000;">);
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> If you're serving to IE 9, then the following may be needed</span>
+    <span style="color: #008080;">header</span>('Cache-Control: max-age=1'<span style="color: #000000;">);
+ 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> If you're serving to IE over SSL, then the following may be needed</span>
+    <span style="color: #008080;">header</span>('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); <span style="color: #008000;">//</span><span style="color: #008000;"> Date in the past</span>
+    <span style="color: #008080;">header</span>('Last-Modified: ' . <span style="color: #008080;">gmdate</span>('D, d M Y H:i:s') . ' GMT'); <span style="color: #008000;">//</span><span style="color: #008000;"> always modified</span>
+    <span style="color: #008080;">header</span>('Cache-Control: cache, must-revalidate'); <span style="color: #008000;">//</span><span style="color: #008000;"> HTTP/1.1</span>
+    <span style="color: #008080;">header</span>('Pragma: public'); <span style="color: #008000;">//</span><span style="color: #008000;"> HTTP/1.0</span>
+ 
+    <span style="color: #800080;">$writer</span> = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter(<span style="color: #800080;">$spreadsheet</span>, 'Xlsx'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$writer</span>-&gt;save('php://output'<span style="color: #000000;">);
+    </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>结果：</p>
+<p><img src="./images/PhpSpreadsheet的简单使用0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<h2>3、excel文件保存到本地</h2>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * excel文件保存到本地
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> save()
+{
+    </span><span style="color: #0000ff;">require_once</span> __DIR__ . '/vendor/autoload.php'<span style="color: #000000;">;
+ 
+    </span><span style="color: #800080;">$data</span> =<span style="color: #000000;"> [
+        [</span>'title1' =&gt; '111', 'title2' =&gt; '222'],<span style="color: #000000;">
+        [</span>'title1' =&gt; '111', 'title2' =&gt; '222'],<span style="color: #000000;">
+        [</span>'title1' =&gt; '111', 'title2' =&gt; '222'<span style="color: #000000;">]
+    ];
+    </span><span style="color: #800080;">$title</span> = ['第一行标题', '第二行标题'<span style="color: #000000;">];
+ 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> Create new Spreadsheet object</span>
+    <span style="color: #800080;">$spreadsheet</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    </span><span style="color: #800080;">$sheet</span> = <span style="color: #800080;">$spreadsheet</span>-&gt;<span style="color: #000000;">getActiveSheet();
+ 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">表头
+    //设置单元格内容</span>
+    <span style="color: #800080;">$titCol</span> = 'A'<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$title</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> 单元格内容写入</span>
+        <span style="color: #800080;">$sheet</span>-&gt;setCellValue(<span style="color: #800080;">$titCol</span> . '1', <span style="color: #800080;">$value</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$titCol</span>++<span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$row</span> = 2; <span style="color: #008000;">//</span><span style="color: #008000;"> 从第二行开始</span>
+    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$item</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$dataCol</span> = 'A'<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$item</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$value</span><span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;"> 单元格内容写入</span>
+            <span style="color: #800080;">$sheet</span>-&gt;setCellValue(<span style="color: #800080;">$dataCol</span> . <span style="color: #800080;">$row</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$dataCol</span>++<span style="color: #000000;">;
+        }
+        </span><span style="color: #800080;">$row</span>++<span style="color: #000000;">;
+    }
+ 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> Save</span>
+    <span style="color: #800080;">$writer</span> = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter(<span style="color: #800080;">$spreadsheet</span>, 'Xlsx'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$writer</span>-&gt;save('01simple.xlsx'<span style="color: #000000;">);
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<h2>4、读取excel文件内容</h2>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 读取excel文件内容
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> read()
+{
+    </span><span style="color: #0000ff;">require_once</span> __DIR__ . '/vendor/autoload.php'<span style="color: #000000;">;
+    </span><span style="color: #800080;">$inputFileName</span> = <span style="color: #008080;">dirname</span>(<span style="color: #ff00ff;">__FILE__</span>) . '/01simple.xlsx'<span style="color: #000000;">;
+    </span><span style="color: #800080;">$spreadsheet</span> = \PhpOffice\PhpSpreadsheet\IOFactory::load(<span style="color: #800080;">$inputFileName</span><span style="color: #000000;">);
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> 方法二</span>
+    <span style="color: #800080;">$sheetData</span> = <span style="color: #800080;">$spreadsheet</span>-&gt;getActiveSheet()-&gt;toArray(<span style="color: #0000ff;">null</span>, <span style="color: #0000ff;">true</span>, <span style="color: #0000ff;">true</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$sheetData</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>结果：</p>
+<p><img src="./images/PhpSpreadsheet的简单使用1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<h2>可能出现的问题：</h2>
+<h3>1、Fatal error: Uncaught Error: Class 'PhpOffice\PhpSpreadsheet\Spreadsheet' not found</h3>
+<p>这是因为没有自动加载。可以手动引入加载文件。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">require_once</span> __DIR__ . '/vendor/autoload.php';</code></pre>
+
+<p>或者：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">require_once</span> __DIR__ . '/vendor/phpoffice/phpspreadsheet/src/Bootstrap.php';</code></pre>
+
+<p>&nbsp;</p>
+<h3>2、Fatal error: Interface 'Psr\SimpleCache\CacheInterface' not found</h3>
+<p>这是因为没有psr文件，缺少simple-cache模块。如果使用composer安装的话会自动生成。没有的话可以手动下载。</p>
+<p>GitHub下载地址：<a href="https://github.com/php-fig/simple-cache/releases" target="_blank">https://github.com/php-fig/simple-cache/releases</a></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

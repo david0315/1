@@ -1,0 +1,138 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现Redis分布式锁' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现Redis分布式锁</center></div><div class='banquan'>原文出处:本文由博客园博主久伴成忆提供。<br/>
+原文连接:https://www.cnblogs.com/starluke/p/11733220.html</div><br>
+    <src><strong>&nbsp;锁在我们的日常开发可谓用得比较多。通常用来解决资源并发的问题。特别是多机集群情况下，资源争抢的问题。但是，很多新手在锁的处理上常常会犯一些问题。今天我们来深入理解锁。</strong>
+<p><span style="font-size: 18px;"><strong>一、Redis 锁错误使用之一</strong></span><br />我曾经见过有的项目把查询结果存储到 Redis 当中时的伪代码如下：</p>
+<src>$redis&nbsp; &nbsp; = new \Redis('127.0.0.1', 6379);
+<src>$cacheKey = 'query_cache';
+<src>$result&nbsp; &nbsp;= $redis-&gt;get($cacheKey);
+<src>if ($result) { // 缓存有效则直接返回。
+<src>&nbsp; &nbsp; return $result;
+<src>} else { // 缓存失效则重新获取并存储到 Redis。
+<src>&nbsp; &nbsp; $mysqlResult = [];&nbsp;
+<src>&nbsp; &nbsp; $redis-&gt;set($cacheKey, json_encode($mysqlResult), 3600);
+<src>&nbsp; &nbsp; return $mysqlResult;
+<src>}
+<p>初看代码并不会发现问题所在。通常情况下，当服务器资源压力非常小的时候，这段代码不会有任何问题。并且，真的可以提升服务器吞吐性能。</p>
+<p>假如，这个位置的代码出现了单点压力呢？比如，这个功能是统计结果，查询数据库需要花 5s。而且，由于该功能比较常用，单位时间内达到了 1000 次/秒。</p>
+<p>这时就会出现并发穿透问题。</p>
+<p>1000 个请求同时到达这个程序位置，都去读取缓存是否存在。假如此时缓存不存在。这 1000 个请求都会得到不存在的结果。并且都会执行到去数据库取缓存结果的步骤。同时也会把结果重写到 Redis。</p>
+<p>那就导致了这一瞬间单点压力导致穿透到数据库，造成数据库压力瞬间到达峰值。如果我们的数据库的性能处理不了这么大的压力，就会导致数据库服务器 CPU 直接爆满。响应给前端的数据就会陷入停顿状态。</p>
+<p>所以，这段代码是不正确的锁使用。</p>
+<p><span style="font-size: 18px;"><strong>二、Redis 锁错误使用之二</strong></span><br />在第一点中，我们发现了问题。于是，就有人想着去优化它。于是就有了下面的代码：</p>
+<src>$redis&nbsp; &nbsp; = new \Redis('127.0.0.1', 6379);
+<src>$lockKey&nbsp; = 'query_cache_lock'; // 锁专用的 KEY。
+<src>$cacheKey = 'query_cache'; // 存储查询结果的 KEY。
+<src>$result&nbsp; &nbsp;= $redis-&gt;get($cacheKey);
+<src>if ($result) { // 缓存有效则直接返回。
+<src>&nbsp; &nbsp; return $result;
+<src>} else { // 缓存失效则重新获取并存储到 Redis。
+<src>&nbsp; &nbsp; if ($redis-&gt;setNx($lockKey) === false) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; throw new \Exception("服务器火爆，请稍候重试");
+<src>&nbsp; &nbsp; } else {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $mysqlResult = [];&nbsp;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $redis-&gt;set($cacheKey, json_encode($mysqlResult), 3600);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $redis-&gt;delete($lockKey); // 锁用完了要解锁。删掉就是解锁。
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return $mysqlResult;
+<src>&nbsp; &nbsp; }
+<src>}
+<p>这段代码就完全避免了第一点中的并发穿透的问题。但是，相对第一点，代码也多增加了几行。不过性能依然强劲。</p>
+<p>即使如此，这段代码依然存在三个问题：<br />1）并发越大，第一个取到锁的请求能正常响应，后续的请求就会得到一个&ldquo;服务器火爆，请稍候重试&rdquo;的异常提示。<br />2）没办法对后续请求取锁失效加一个等待时间。<br />3）如果代码执行到&nbsp;<code>$redis-&gt;delete($lockKey)</code>&nbsp;之前程序异常了。那么锁就不能正常释放。后续的锁也无法正常取到锁了。</p>
+<p>针对第 1） 点，这个是用户体验极差的。<br />针对第 2） 点，它是解决第一点的方案。<br />针对第 3） 点，它是我们必须解决的问题。否则，我们的分布式锁将无法正常使用。</p>
+<p><span style="font-size: 18px;"><strong>三、正确的分布式锁</strong></span><br />正常的分布式锁要满足以下几点要求：<br />1）能解决并发时资源争抢。这是最核心的需求。<br />2）锁能正常添加与释放。不能出现死锁。<br />3）锁能实现等待，否则不能最大保证用户的体验。</p>
+<p><strong>针对以上三点，得出 Redis 分布式锁示例</strong></p>
+<src>class RedisMutexLock
+<src>{
+<src>&nbsp; &nbsp; /**
+<src>&nbsp; &nbsp; &nbsp;* 缓存 Redis 连接。
+<src>&nbsp; &nbsp; &nbsp;*
+<src>&nbsp; &nbsp; &nbsp;* @return void
+<src>&nbsp; &nbsp; &nbsp;*/
+<src>&nbsp; &nbsp; public static function getRedis()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; // 这行代码请根据自己项目替换为自己的获取 Redis 连接。
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return YCache::getRedisClient();
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; /**
+<src>&nbsp; &nbsp; &nbsp;* 获得锁,如果锁被占用,阻塞,直到获得锁或者超时。
+<src>&nbsp; &nbsp; &nbsp;* -- 1、如果 $timeout 参数为 0,则立即返回锁。
+<src>&nbsp; &nbsp; &nbsp;* -- 2、建议 timeout 设置为 0,避免 redis 因为阻塞导致性能下降。请根据实际需求进行设置。
+<src>&nbsp; &nbsp; &nbsp;*
+<src>&nbsp; &nbsp; &nbsp;* @param&nbsp; string&nbsp; $key&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;缓存KEY。
+<src>&nbsp; &nbsp; &nbsp;* @param&nbsp; int&nbsp; &nbsp; &nbsp;$timeout&nbsp; &nbsp; &nbsp;取锁超时时间。单位(秒)。等于0,如果当前锁被占用,则立即返回失败。如果大于0,则反复尝试获取锁直到达到该超时时间。
+<src>&nbsp; &nbsp; &nbsp;* @param&nbsp; int&nbsp; &nbsp; &nbsp;$lockSecond&nbsp; 锁定时间。单位(秒)。
+<src>&nbsp; &nbsp; &nbsp;* @param&nbsp; int&nbsp; &nbsp; &nbsp;$sleep&nbsp; &nbsp; &nbsp; &nbsp;取锁间隔时间。单位(微秒)。当锁为占用状态时。每隔多久尝试去取锁。默认 0.1 秒一次取锁。
+<src>&nbsp; &nbsp; &nbsp;* @return bool 成功:true、失败:false
+<src>&nbsp; &nbsp; &nbsp;*/
+<src>&nbsp; &nbsp; public static function lock($key, $timeout = 0, $lockSecond = 20, $sleep = 100000)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if (strlen($key) === 0) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; //&nbsp;项目抛异常方法
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; YCore::exception(500, '缓存KEY没有设置');
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $start = self::getMicroTime();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $redis = self::getRedis();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; do {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // [1] 锁的 KEY 不存在时设置其值并把过期时间设置为指定的时间。锁的值并不重要。重要的是利用 Redis 的特性。
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $acquired = $redis-&gt;set("Lock:{$key}", 1, ['NX', 'EX' =&gt; $lockSecond]);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if ($acquired) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; break;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if ($timeout === 0) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; break;
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; usleep($sleep);
+<src>&nbsp; &nbsp; &nbsp; &nbsp; } while (!is_numeric($timeout) || (self::getMicroTime()) &lt; ($start + ($timeout * 1000000)));
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return $acquired ? true : false;
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; /**
+<src>&nbsp; &nbsp; &nbsp;* 释放锁
+<src>&nbsp; &nbsp; &nbsp;*
+<src>&nbsp; &nbsp; &nbsp;* @param&nbsp; mixed&nbsp; $key&nbsp; 被加锁的KEY。
+<src>&nbsp; &nbsp; &nbsp;* @return void
+<src>&nbsp; &nbsp; &nbsp;*/
+<src>&nbsp; &nbsp; public static function release($key)
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; if (strlen($key) === 0) {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // 项目抛异常方法
+<src>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; YCore::exception(500, '缓存KEY没有设置');
+<src>&nbsp; &nbsp; &nbsp; &nbsp; }
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $redis = self::getRedis();
+<src>&nbsp; &nbsp; &nbsp; &nbsp; $redis-&gt;del("Lock:{$key}");
+<src>&nbsp; &nbsp; }
+<src>&nbsp;
+<src>&nbsp; &nbsp; /**
+<src>&nbsp; &nbsp; &nbsp;* 获取当前微秒。
+<src>&nbsp; &nbsp; &nbsp;*
+<src>&nbsp; &nbsp; &nbsp;* @return bigint
+<src>&nbsp; &nbsp; &nbsp;*/
+<src>&nbsp; &nbsp; protected static function getMicroTime()
+<src>&nbsp; &nbsp; {
+<src>&nbsp; &nbsp; &nbsp; &nbsp; return bcmul(microtime(true), 1000000);
+<src>&nbsp; &nbsp; }
+<src>}<br /><strong>以上是在项目中一些的用到的之处，大家可以更换为自己项目</strong>
+<p><span style="color: #ff6600; font-size: 18px;">进阶之路：<a href="https://jq.qq.com/?_wv=1027&amp;k=5jZlevv" target="_blank"><span style="color: #ff6600;">想要了解更多的进阶优化知识点的话可以点击这里奥！</span></a></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

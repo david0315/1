@@ -1,0 +1,30 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[Go] golang的MPG调度模型' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[Go] golang的MPG调度模型</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11295950.html</div><br>
+    <p>MPG模式运行状态1<br />1）当前程序有三个M,如果三个M都在一个cpu运行，就是并发，如果在不同的cpu运行就是并行<br />2）M1,M2,M3正在执行一个G,M1的协程队列有三个，M2的协程队列有三个，M3的协程队列有两个<br />3）从上图可以看到：Go的协程是轻量级的线程，是逻辑态的，Go可以容易的起上万个协程<br />4）其他程序c/java的多线程，往往是内核态的，比较重量级，几千个线程就有可能耗光cpu资源</p>
+<p>MPG模式运行状态2<br />1）分成两个部分来看<br />2）原来的情况是M1主线程正在执行G1协程，另外有三个协程在等待<br />3）如果G1协程阻塞，比如读取文件或者数据库<br />4）这时就会创建M2主线程（也可能是从已有的线程池中取出M2）并且将等待的三个协程挂到M2下执行，M1主线程下的G1仍然执行文件的读写<br />5）这样的MPG调度模式，既可以让G1执行，也不会让队列的其他协程一直阻塞</p>
+<p>&nbsp;</p>
+<p><img src="./images/[Go] golang的MPG调度模型0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

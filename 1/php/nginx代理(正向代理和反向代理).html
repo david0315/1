@@ -1,0 +1,171 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修nginx代理(正向代理和反向代理)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>nginx代理(正向代理和反向代理)</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/11249712.html</div><br>
+    <p><span style="font-size: 18px;"><span style="background-color: #ff9900;">&nbsp;</span> 正向代理</span></p>
+<p><span style="font-size: 18px;">　　<img src="./images/nginx代理(正向代理和反向代理)0.jpg" alt="" /></span></p>
+<p>　　是一个位于客户端和原始服务器(origin server)之间的服务器，为了从原始服务器取得内容，客户端向代理发送一个请求并指定目标(原始服务器)，然后代理向原始服务器转交请求并将获得的内容返回给客户端（目的是为了保护客户端用户）</p>
+<p>　　配置文件：</p>
+<p>　　</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">server {
+    # 配置DNS解析IP地址，比如 Google Public DNS，以及超时时间（5秒）
+    resolver </span><span style="color: #800080;">8.8</span>.<span style="color: #800080;">8.8</span><span style="color: #000000;">;    # 必需
+    resolver_timeout 5s;
+
+    # 监听端口
+    listen </span><span style="color: #800080;">8080</span><span style="color: #000000;">;
+
+    access_log  </span>/home/reistlin/logs/<span style="color: #000000;">proxy.access.log;
+    error_log   </span>/home/reistlin/logs/<span style="color: #000000;">proxy.error.log;
+
+    location </span>/<span style="color: #000000;"> {
+        # 配置正向代理参数
+        proxy_pass $scheme:</span><span style="color: #008000;">//</span><span style="color: #008000;">$host$request_uri;</span>
+        # 解决如果URL中带<span style="color: #800000;">"</span><span style="color: #800000;">.</span><span style="color: #800000;">"</span><span style="color: #000000;">后Nginx 503错误
+        proxy_set_header Host $http_host;
+
+        # 配置缓存大小
+        proxy_buffers </span><span style="color: #800080;">256</span><span style="color: #000000;"> 4k;
+        # 关闭磁盘缓存读写减少I</span>/<span style="color: #000000;">O
+        proxy_max_temp_file_size </span><span style="color: #800080;">0</span><span style="color: #000000;">;
+         # 代理连接超时时间
+        proxy_connect_timeout </span><span style="color: #800080;">30</span><span style="color: #000000;">;
+
+        # 配置代理服务器HTTP状态缓存时间
+        proxy_cache_valid </span><span style="color: #800080;">200</span> <span style="color: #800080;">302</span><span style="color: #000000;"> 10m;
+        proxy_cache_valid </span><span style="color: #800080;">301</span><span style="color: #000000;"> 1h;
+        proxy_cache_valid any 1m;
+    }
+}</span></code></pre>
+
+<p>&nbsp;注意：&nbsp; 1.不要设置server_name指令</p>
+<p>　　　　2.我们测试的时候可以使用谷歌浏览器，在谷歌浏览器的高级设置里面设置代理，代理地址就是我们nginx的&nbsp; http://ip:端口号</p>
+<p><span style="font-size: 18px;"><span style="background-color: #ff9900;">&nbsp;</span> 反向代理</span></p>
+<p><span style="font-size: 18px;">　　<img src="./images/nginx代理(正向代理和反向代理)1.jpg" alt="" width="628" height="395" /></span></p>
+<p><span style="font-size: 18px;">　　<span style="font-size: 15px;">反向代理也是在客户端和服务器端的一个代理服务器，但是这个代理服务器的目的是用来保护服务器端的，当外网客户端来访问我们的服务器时为了避免暴露应用服务器的实际ip地址，我们会让客端访问代理服务器，然后代理服务器再根据客户端的请求去实际的应用服务器获取响应内容并返回客户端。</span></span></p>
+<ul>
+<li><span style="font-size: 18px; background-color: #ff9900; color: #ffffff;"><span style="font-size: 18px; background-color: #ff9900;"><span style="font-size: 15px;">proxy_pass&nbsp;</span></span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_pass URL</code></pre>
+
+<p><span style="font-size: 18px; background-color: #ffffff;"><span style="font-size: 15px;">设置代理服务器的地址，可以是主机名称、IP地址加端口号等形式。</span></span></p>
+</li>
+</ul>
+<p><span style="font-size: 18px; background-color: #ffffff;"><span style="font-size: 15px;">　　　注意：1.当代理的是一组服务器时可以使用 upstream 指令来设置。</span></span></p>
+<p><span style="font-size: 18px; background-color: #ffffff;"><span style="font-size: 15px;">　　　　　　2. 当URL中含有uri时，（例如 "http://127.0.0.1:8080/"、"http://127.0.0.1:8080/demo.html"）不管客户端访问的是地址中的uri是什么，代理服务器都会代理到 URL的地址；当URL中不包含uri时（例如："http://127.0.0.1:8080"），那么当客户端访问服务器时，代理服务器会根据客户端请求的uri来访问具体的URL地址。</span></span></p>
+<ul>
+<li><span style="font-size: 18px; background-color: #ff9900; color: #ffffff;"><span style="font-size: 18px; background-color: #ff9900; color: #ffffff;"><span style="font-size: 15px;">proxy_pass_request_body</span></span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_pass_request_body  on|off</code></pre>
+
+<p>用于配置是否将客户端的请求的请求体发送给代理服务器。</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_pass_request_headers</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_pass_request_headers on|off</code></pre>
+
+<p>用于配置是否将客户端的请求的头信息发送给代理服务器。</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_set_header</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_set_header  field  value</code></pre>
+
+<p>可以更改nginx接收到的客户端请求的请求头信息，然后将新的请求头信息发送给被代理的服务器。</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_set_body</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_set_body  value</code></pre>
+
+<p>ngin接收到客户端的请求后使用该指令可以修改request中的body体，然后将请求转发给代理服务器</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_connect_timeout</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_connect_timeout  time</code></pre>
+
+<p>nginx服务器与被代理服务器之间尝试建立连接的的超时时间，默认为60s。</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_read_timeout</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_read_timeot  time</code></pre>
+
+<p>nginx服务器接收被代理服务器数据时最大的等待时间，默认为60s。</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_send_timeout</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_send_timeout time</code></pre>
+
+<p>nginx服务器发送数据至被代理服务器的最大等待时间，例如60s内没有发出一个字节则默认断开连接，默认60s。</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_http_version</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_http_version  <span style="color: #800080;">1.0</span>|<span style="color: #800080;">1.1</span></code></pre>
+
+<p>nginx 服务器提供代理服务的http协议版本</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_method</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_method method</code></pre>
+
+<p>nginx服务器设置请求被代理服务器时使用的请求方法，一般为POST或者GET</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_ignore_client_abort</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_ignore_client_abort  on|off</code></pre>
+
+<p>当客户端中断网络请求时，nginx服务是否中断对代理服务器的请求，默认off</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_ignore_headers</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_ignore_headers  field...</code></pre>
+
+<p>nginx服务器接收到被代理服务器的响应数据后，不会处理被设置的头域</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_redirect</span></span>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">proxy_redirect  redirect  replacement; #使用replacement替换redirect
+proxy_redirect  </span><span style="color: #0000ff;">default</span><span style="color: #000000;">;   #使用location块的uri替换掉 proxy_pass 后的变量
+proxy_redirect   off;     #当前作用域下所有 proxy_redirect 指令全部失效</span></code></pre>
+
+<p>如果需要修改从被代理服务器传来的应答头中的"Location"和"Refresh"字段，可以用这个指令设置</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;"><span style="background-color: #ff9900; color: #ffffff;">proxy_intercept_errors</span></span>
+<src class="cnblogs_code">
+<pre><code>proxy_intercept_errors  on|off</code></pre>
+
+<p>该指令开启时，当被代理服务器返回http状态码为400或者大于400时，nginx服务器会使用自己定义（使用error_page指令）的响应错误页面，如果为off时直接返回状态码</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_next_upstream</span>
+<src class="cnblogs_code">
+<pre><code>proxy_next_upstream  status</code></pre>
+
+<p>当被代理的服务器是一个 使用upstream指令配置的一组服务器时，服务器组中的服务器遵循upstream指令配置的的轮训规则，同时也可以使用该指令来设置发生哪些异常时使用组内的下一个服务器处理请求。可选值：error&nbsp;|&nbsp;timeout&nbsp;|&nbsp;invalid_header&nbsp;|&nbsp;http_500&nbsp;|&nbsp;http_502&nbsp;|&nbsp;http_503&nbsp;|&nbsp;http_504&nbsp;|&nbsp;http_403&nbsp;|&nbsp;http_404&nbsp;|&nbsp;off&nbsp;...；其中off指无法将请求发送给被代理服务器</p>
+</li>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_ssl_session_reuse</span>
+<src class="cnblogs_code">
+<pre><code>proxy_ssl_session_reuse  on|off</code></pre>
+
+<p>用于配置是否使用基于SSL安全协议的的会话连接（https://）被代理服务器，默认为开启状态</p>
+</li>
+</ul>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

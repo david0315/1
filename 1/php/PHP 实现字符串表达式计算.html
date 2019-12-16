@@ -1,0 +1,215 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 实现字符串表达式计算' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 实现字符串表达式计算</center></div><div class='banquan'>原文出处:本文由博客园博主Jioby提供。<br/>
+原文连接:https://www.cnblogs.com/shockerli/p/php-expression-string.html</div><br>
+    <blockquote>
+<p>什么是字符串表达式？即，将我们常见的表达式文本写到了字符串中，如：<code>&quot;$age &gt;= 20&quot;</code>，<code>$age</code> 的值是动态的整型变量。</p>
+<p>什么是字符串表达式计算？即，我们需要一段程序来执行动态的表达式，如给定一个含表达式的字符串变量并计算其结果，而表达式字符串是动态的，比如为客户A执行的表达式是 <code>$orderCount &gt;= 10</code>，而为客户B执行的表达式是 <code>$orderTotal &gt;= 1000</code>。</p>
+<p>场景在哪儿？同一份程序具有完全通用性，但差异就其中一个表达式而已，那么我们需要将其抽象出来，让表达式变成动态的、可配置的、或可生成的。</p>
+</blockquote>
+<h2 id="方案一eval-函数">方案一：eval 函数</h2>
+<p><a href="https://www.php.net/manual/zh/function.eval.php"><code>eval</code></a> 函数可能是我们第一个想到的方案，也是最简单直接的方案。我们来试验下：</p>
+<pre><code><code>$a = 10;
+var_dump(eval(&#39;return $a &gt; 5;&#39;));
+
+// 输出:
+// bool(true)</code></code></pre>
+<p>嗯~完全能满足我们的需求，因为 <code>eval</code> 函数执行的 PHP 表达式，只要字符串内表达式符合 PHP 语法就行。</p>
+<p>但需注意的是，<code>eval</code> 函数<strong>可执行任意 PHP 代码</strong>，也就意味着权限大、风险高、<strong>不安全</strong>。如果你的字符串表达式来自于外部输入，那务必注意了请自行做好安全检查和过滤，并考虑风险。当然，执行的是外部输入表达式，非常不建议使用此函数。</p>
+<h2 id="方案二include-临时文件">方案二：include 临时文件</h2>
+<p>如何实现？将字符串表达式写入一个临时文件，然后 <code>include</code> 这个临时文件，执行完成后再删除这个临时文件。</p>
+<p>方案依然很简单。需要考虑的有：</p>
+<ul>
+<li>临时文件会很多，一个请求就有很多个，文件的过期和删除务必考虑在内</li>
+<li>文件的读写，也就牵扯到了磁盘 IO，那性能必定受到严重影响</li>
+</ul>
+<p>那这个方案我们还采用吗？</p>
+<h2 id="方案三assert-断言">方案三：assert 断言</h2>
+<p>其实 <a href="https://www.php.net/manual/zh/function.assert.php"><code>assert</code></a> 做不到字符串表达式的计算，但提出来也算个猜想，因为能实现 PHP 表达式是否合法的校验。</p>
+<p>下例演示了如何验证某个字符串表达式是否为合法的 PHP 表达式:</p>
+<pre><code><code>try {
+    assert(&#39;a +== 1&#39;);
+} catch (Throwable $e) {
+    echo $e-&gt;getMessage(), &quot;\n&quot;;
+}</code></code></pre>
+<p><strong>运行结果:</strong></p>
+<pre><code><code>Failure evaluating code: 
+a +== 1</code></code></pre>
+<p>可依然面临一个问题，那就是安全性，因为与 <code>eval</code> 一样能执行任意代码。所以，从 PHP 7.2 开始就不可以再执行字符串类型的表达式了。关于 PHP assert 断言，可参考 <a href="https://shockerli.net/post/php-assert/">你所不知的 PHP 断言(assert)</a></p>
+<h2 id="方案四systemexec-函数">方案四：system/exec 函数</h2>
+<p><a href="https://www.php.net/manual/zh/function.system.php">system</a>、<a href="https://www.php.net/manual/zh/function.exec.php">exec</a>、<a href="https://www.php.net/manual/zh/function.proc-open.php">proc_open</a>、<a href="https://www.php.net/manual/zh/function.shell-exec.php">shell_exec</a>、<a href="https://www.php.net/manual/zh/function.passthru.php">passthru</a> 等系列函数，本质上都是执行外部命令或脚本，以达到执行 PHP 代码的效果，与 include 实现类似，虽能实现但<strong>不安全</strong>。</p>
+<pre><code><code>system(&#39;php -r &quot;echo 1 + 2;&quot;&#39;);
+
+echo exec(&#39;php -r &quot;echo 1 + 2;&quot;&#39;);</code></code></pre>
+<h2 id="方案五create_function-函数">方案五：create_function 函数</h2>
+<p><a href="https://www.php.net/manual/zh/function.create-function.php"><code>create_function</code></a> 函数是匿名函数的前生临时替代品，虽然现今还未废弃。作用是什么呢？允许用字符串创建一个 <code>lambda</code> 风格的匿名函数。</p>
+<p><strong>函数语法定义:</strong></p>
+<pre><code><code>create_function ( string $args , string $code ) : string</code></code></pre>
+<p><strong>使用示例:</strong></p>
+<pre><code><code>$newfunc = create_function(&#39;$a, $b&#39;, &#39;var_dump($a, $b); return $a === $b;&#39;);
+
+var_dump($newfunc(1, 2));</code></code></pre>
+<p><strong>示例输出:</strong></p>
+<pre><code><code>int(1)
+int(2)
+bool(false)</code></code></pre>
+<p>发现完全能实现我们的场景需求~但是又来了，这个函数<strong>不安全</strong>。为什么呢？看下手册中的 Caution：</p>
+<blockquote>
+<p>This function internally performs an eval() and as such has the same security issues as eval(). Additionally it has bad performance and memory usage characteristics.</p>
+<p>If you are using PHP 5.3.0 or newer a native anonymous function should be used instead.</p>
+</blockquote>
+<p><code>create_function</code> 函数底层走的是 <code>eval</code> 函数，所以面临着与 <code>eval</code> 一样的安全问题。并且，<code>create_function</code> 函数性能低下、占用内存高。而这函数最初就是为了匿名函数而生的，从 PHP 5.3.0 开始就内置实现了匿名函数，所以通过 <code>create_function</code> 去创建 <code>lambda</code> 风格自定义函数就毫无存在的必要了。</p>
+<h2 id="方案六include-文件流">方案六：include 文件流</h2>
+<p>为何又是 <a href="https://www.php.net/manual/zh/function.include.php">include</a> ？</p>
+<p>我们从官方手册中了解到，<code>include</code> 语句用于<strong>包含并运行指定文件</strong>，并且支持<strong>远程文件</strong>，比如 <code>include 'http://www.example.com/file.php?foo=1&amp;bar=2';</code>。</p>
+<p>我们还从手册中能找到这句话：</p>
+<blockquote>
+<p>如果“<a href="https://www.php.net/manual/zh/filesystem.configuration.php#ini.allow-url-include">URL include wrappers</a>”在 PHP 中被激活，可以用 URL（通过 HTTP 或者其它支持的封装协议——见<a href="https://www.php.net/manual/zh/wrappers.php">支持的协议和封装协议</a>）而不是本地文件来指定要被包含的文件。</p>
+</blockquote>
+<p>此时，我们是否想起了熟悉的 <code>php://input</code> 等 <code>scheme://...</code> 风格内置或自定义的URL封装协议。而这些协议都有个特点，即可用于类似 <a href="https://www.php.net/manual/zh/function.fopen.php"><code>fopen()</code></a>、<a href="https://www.php.net/manual/zh/function.file-exists.php"><code>file_exists()</code></a> 和 <a href="https://www.php.net/manual/zh/function.file-get-contents.php"><code>file_get_contents()</code></a> 的文件系统函数打开。<code>include</code> 读取文件其实与这些函数是一致的。</p>
+<p>那我们就可以使用 <a href="https://www.php.net/manual/zh/function.stream-wrapper-register.php"><code>stream_wrapper_register()</code></a> 来注册一个用 PHP 类实现的 URL 封装协议。该函数允许用户实现自定义的协议处理器和流，用于所有其它的文件系统函数中（例如 <code>fopen()</code>，<code>fread()</code> 等）。关于如何实现并注册一个 Stream Wrapper，可参考<a href="https://www.php.net/manual/zh/class.streamwrapper.php">官方手册</a>，本文仅提供个最简单的示例，来实现字符串表达式的计算。</p>
+<pre><code><code>class VarStream
+{
+    private $string;
+    private $position;
+
+    public function stream_open($path, $mode, $options, &amp;$opened_path)
+    {
+        $path = explode(&#39;://&#39;, $path, 2)[1];
+
+        // 此处可对传入的参数进行自定义解析，并作进一步的操作
+        $this-&gt;string = $path;
+        $this-&gt;position = 0;
+        return true;
+    }
+
+    public function stream_read($count)
+    {
+        $ret = substr($this-&gt;string, $this-&gt;position, $count);
+        $this-&gt;position += strlen($ret);
+        return $ret;
+    }
+
+    public function stream_eof() {}
+
+    public function stream_stat() {}
+
+}
+
+stream_wrapper_register(&quot;var&quot;, &quot;VarStream&quot;);
+
+try {
+
+    $params = [&#39;count&#39; =&gt; 1];
+    $expression = &#39;($count += 111) - 8&#39;;
+    $result = include &#39;var://&lt;?php extract($params); return &#39; . $expression . &#39;;&#39;;
+    var_dump($result);
+
+} catch (Throwable $t) {
+    echo $t-&gt;getMessage();
+}</code></code></pre>
+<p>输出结果:</p>
+<pre><code><code>int(104)</code></code></pre>
+<h2 id="方案七语法解析">方案七：语法解析</h2>
+<p>这个方案就比较高大上许多，当然实现方式也难了太多。具体就是自己写个语法解析器，将代码字符串解析成 <strong>AST 语法树</strong>，然后再把语法树的内容计算成最终的值。</p>
+<p>怎么实现呢？不用我们自己再去写了，已经有大佬写好了。当然，如果对 AST 语法解析感兴趣，那学习下如何实现是最好不过的了，会解析语法也就意味着可以自己写门语言了呀 😆</p>
+<p>GitHub 中比较有名的 PHP 实现如下 2 个，很多代码静态分析器都是基于这 2 个库开发的。</p>
+<ul>
+<li><a href="https://github.com/nikic/PHP-Parser">PHP-Parser</a> - 最流行</li>
+<li><a href="https://github.com/microsoft/tolerant-php-parser">Tolerant PHP Parser</a> - 微软开源</li>
+</ul>
+<p>我们来看个 <a href="https://github.com/nikic/PHP-Parser"><code>nikic/php-parser</code></a> 的例子：</p>
+<pre><code><code>&lt;?php
+use PhpParser\Error;
+use PhpParser\NodeDumper;
+use PhpParser\ParserFactory;
+
+$code = &lt;&lt;&lt;&#39;CODE&#39;
+&lt;?php
+
+function test($foo)
+{
+    var_dump($foo);
+}
+CODE;
+
+$parser = (new ParserFactory)-&gt;create(ParserFactory::PREFER_PHP7);
+try {
+    $ast = $parser-&gt;parse($code);
+} catch (Error $error) {
+    echo &quot;Parse error: {$error-&gt;getMessage()}\n&quot;;
+    return;
+}
+
+$dumper = new NodeDumper;
+echo $dumper-&gt;dump($ast) . &quot;\n&quot;;</code></code></pre>
+<p>示例输出:</p>
+<pre><code><code>array(
+    0: Stmt_Function(
+        byRef: false
+        name: Identifier(
+            name: test
+        )
+        params: array(
+            0: Param(
+                type: null
+                byRef: false
+                variadic: false
+                var: Expr_Variable(
+                    name: foo
+                )
+                default: null
+            )
+        )
+        returnType: null
+        stmts: array(
+            0: Stmt_Expression(
+                expr: Expr_FuncCall(
+                    name: Name(
+                        parts: array(
+                            0: var_dump
+                        )
+                    )
+                    args: array(
+                        0: Arg(
+                            value: Expr_Variable(
+                                name: foo
+                            )
+                            byRef: false
+                            unpack: false
+                        )
+                    )
+                )
+            )
+        )
+    )
+)</code></code></pre>
+<p>由此，我们可以任意的实现我们所需的，也不用担心安全性问题。</p>
+<p>最后，总结下。我们尝试了很多种方法，都能解决我们或多或少的场景需求，但哪个最适合需要我们自己去考量，但思路值得我们去深入探讨。</p>
+<hr />
+<p>感谢您的阅读，觉得内容不错，点个赞吧 😆</p>
+<blockquote>
+<p>原文地址: <a href="https://shockerli.net/post/php-expression-string?source=cnblogs" class="uri">https://shockerli.net/post/php-expression-string?source=cnblogs</a></p>
+</blockquote>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

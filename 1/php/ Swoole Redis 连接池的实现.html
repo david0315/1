@@ -1,0 +1,375 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修 Swoole Redis 连接池的实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center> Swoole Redis 连接池的实现</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11809147.html</div><br>
+    <p>这篇文章仅仅只实现一个 Redis 连接池，篇幅就太少了，顺便将前几篇整合一下。<br /><br />Demo 中大概包含这些点：<br /><br />&nbsp;&nbsp;&nbsp; 实现 MySQL 连接池<br /><br />&nbsp;&nbsp;&nbsp; 实现 MySQL CURD 方法的定义<br /><br />&nbsp;&nbsp;&nbsp; 实现 Redis 连接池<br /><br />&nbsp;&nbsp;&nbsp; 实现 Redis 方法的定义<br /><br />&nbsp;&nbsp;&nbsp; 满足 HTTP、TCP、WebSocket 调用<br /><br />&nbsp;&nbsp;&nbsp; 提供 Demo 供测试<br /><br />&nbsp;&nbsp;&nbsp; 调整 目录结构<br /><br />HTTP 调用：<br /><br />&nbsp;&nbsp;&nbsp; 实现 读取 MySQL 中数据的 Demo<br /><br />&nbsp;&nbsp;&nbsp; 实现 读取 Redis 中数据的 Demo<br /><br />640?wx_fmt=png<br /><br />TCP 调用：<br /><br />&nbsp;&nbsp;&nbsp; 实现 读取 MySQL 中数据的 Demo<br /><br />&nbsp;&nbsp;&nbsp; 实现 读取 Redis 中数据的 Demo<br /><br /><img src="./images/ Swoole Redis 连接池的实现0.jpg" alt="" width="666" height="958" /><br /><br />WebSocket 调用：<br /><br />&nbsp;&nbsp;&nbsp; 实现 每秒展示 API 调用量 Demo<br /><br />目录结构<br /><br />&nbsp;&nbsp;&nbsp; ├─ client&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ http&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── mysql.php //测试 MySQL 连接&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── redis.php //测试 Redis 连接&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ tcp&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── mysql.php //测试 MySQL 连接&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── redis.php //测试 Redis 连接&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ websocket&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── index.html //实现 API 调用量展示&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; ├─ controller&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ Order.php&nbsp;&nbsp;&nbsp;&nbsp; //实现 MySQL CURD&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ Product.php&nbsp;&nbsp; //实现 Redis 调用&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ Statistic.php //模拟 API 调用数据&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; ├─ server&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ config&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── config.php //默认配置&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── mysql.php&nbsp; //MySQL 配置&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── redis.php&nbsp; //Redis 配置&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ core&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── Common.php //公共方法&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── Core.php&nbsp;&nbsp; //核心文件&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── HandlerException.php //异常处理&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── callback //回调处理&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── OnRequest.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── OnReceive.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── OnTask.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── mysql&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── MysqlDB.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── MysqlPool.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── redis&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── RedisDB.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── RedisPool.php&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp; ├─ log&nbsp; -- 需要 读/写 权限&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp; ├── ...&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp;&nbsp; ├─ index.php //入口文件<br /><br />代码</p>
+<src class="cnblogs_Highlighter">
+<pre><code>server/core/redis/RedisPool.php
+
+    &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    class RedisPool    
+    {    
+        private static $instance;    
+        private $pool;    
+        private $config;    
+        public static function getInstance($config = null)    
+        {    
+            if (empty(self::$instance)) {    
+                if (empty($config)) {    
+                    throw new RuntimeException("Redis config empty");    
+                }    
+                self::$instance = new static($config);    
+            }    
+            return self::$instance;    
+        }    
+        public function __construct($config)    
+        {    
+            if (empty($this-&gt;pool)) {    
+                $this-&gt;config = $config;    
+                $this-&gt;pool = new chan($config['master']['pool_size']);    
+                for ($i = 0; $i &lt; $config['master']['pool_size']; $i++) {    
+                    go(function() use ($config) {    
+                        $redis = new RedisDB();    
+                        $res = $redis-&gt;connect($config);    
+                        if ($res === false) {    
+                            throw new RuntimeException("Failed to connect redis server");    
+                        } else {    
+                            $this-&gt;pool-&gt;push($redis);    
+                        }    
+                    });    
+                }    
+            }    
+        }    
+        public function get()    
+        {    
+            if ($this-&gt;pool-&gt;length() &gt; 0) {    
+                $redis = $this-&gt;pool-&gt;pop($this-&gt;config['master']['pool_get_timeout']);    
+                if (false === $redis) {    
+                    throw new RuntimeException("Pop redis timeout");    
+                }    
+                defer(function () use ($redis) { //释放    
+                    $this-&gt;pool-&gt;push($redis);    
+                });    
+                return $redis;    
+            } else {    
+                throw new RuntimeException("Pool length &lt;= 0");    
+            }    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p>这里我还准备了一分学习图和资料，如下：</p>
+<p><img src="./images/ Swoole Redis 连接池的实现1.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>server/core/redis/RedisDB.php
+
+    &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    class RedisDB    
+    {    
+        private $master;    
+        private $slave;    
+        private $config;    
+        public function __call($name, $arguments)    
+        {    
+            // TODO 主库的操作    
+            $command_master = ['set', 'hset', 'sadd'];    
+            if (!in_array($name, $command_master)) {    
+                $db = $this-&gt;_get_usable_db('slave');    
+            } else {    
+                $db = $this-&gt;_get_usable_db('master');    
+            }    
+            $result = call_user_func_array([$db, $name], $arguments);    
+            return $result;    
+        }    
+        public function connect($config)    
+        {    
+            //主库    
+            $master = new Swoole\Coroutine\Redis();    
+            $res = $master-&gt;connect($config['master']['host'], $config['master']['port']);    
+            if ($res === false) {    
+                throw new RuntimeException($master-&gt;errCode, $master-&gt;errMsg);    
+            } else {    
+                $this-&gt;master = $master;    
+            }    
+            //从库    
+            $slave = new Swoole\Coroutine\Redis();    
+            $res = $slave-&gt;connect($config['slave']['host'], $config['slave']['port']);    
+            if ($res === false) {    
+                throw new RuntimeException($slave-&gt;errCode, $slave-&gt;errMsg);    
+            } else {    
+                $this-&gt;slave = $slave;    
+            }    
+            $this-&gt;config = $config;    
+            return $res;    
+        }    
+        private function _get_usable_db($type)    
+        {    
+            if ($type == 'master') {    
+                if (!$this-&gt;master-&gt;connected) {    
+                    $master = new Swoole\Coroutine\Redis();    
+                    $res = $master-&gt;connect($this-&gt;config['master']['host'], $this-&gt;config['master']['port']);    
+                    if ($res === false) {    
+                        throw new RuntimeException($master-&gt;errCode, $master-&gt;errMsg);    
+                    } else {    
+                        $this-&gt;master = $master;    
+                    }    
+                }    
+                return $this-&gt;master;    
+            } elseif ($type == 'slave') {    
+                if (!$this-&gt;slave-&gt;connected) {    
+                    $slave = new Swoole\Coroutine\Redis();    
+                    $res = $slave-&gt;connect($this-&gt;config['slave']['host'], $this-&gt;config['slave']['port']);    
+                    if ($res === false) {    
+                        throw new RuntimeException($slave-&gt;errCode, $slave-&gt;errMsg);    
+                    } else {    
+                        $this-&gt;slave = $slave;    
+                    }    
+                }    
+                return $this-&gt;slave;    
+            }    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>client/http/redis.php
+
+    &lt;?php    
+    $demo = [    
+        'type'  =&gt; 'SW',    
+        'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+        'param' =&gt; [    
+            'class'  =&gt; 'Product',    
+            'method' =&gt; 'set',    
+            'param' =&gt; [    
+                'key'   =&gt; 'C4649',    
+                'value' =&gt; '订单-C4649'    
+            ],    
+        ],    
+    ];    
+    $ch = curl_init();    
+    $options = [    
+        CURLOPT_URL  =&gt; 'http://10.211.55.4:9509/',    
+        CURLOPT_POST =&gt; 1,    
+        CURLOPT_POSTFIELDS =&gt; json_encode($demo),    
+    ];    
+    curl_setopt_array($ch, $options);    
+    curl_exec($ch);    
+    curl_close($ch);
+</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>client/tpc/redis.php
+
+    &lt;?php    
+    class Client    
+    {    
+        private $client;    
+        public function __construct() {    
+            $this-&gt;client = new swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_ASYNC);    
+            $this-&gt;client-&gt;on('Connect', [$this, 'onConnect']);    
+            $this-&gt;client-&gt;on('Receive', [$this, 'onReceive']);    
+            $this-&gt;client-&gt;on('Close', [$this, 'onClose']);    
+            $this-&gt;client-&gt;on('Error', [$this, 'onError']);    
+        }    
+        public function connect() {    
+            if(!$fp = $this-&gt;client-&gt;connect("0.0.0.0", 9510, 1)) {    
+                echo "Error: {$fp-&gt;errMsg}[{$fp-&gt;errCode}]".PHP_EOL;    
+                return;    
+            }    
+        }    
+        public function onConnect() {    
+            fwrite(STDOUT, "测试RPC (Y or N):");    
+            swoole_event_add(STDIN, function() {    
+                $msg = trim(fgets(STDIN));    
+                if ($msg == 'y') {    
+                    $this-&gt;send();    
+                }    
+                fwrite(STDOUT, "测试RPC (Y or N):");    
+            });    
+        }    
+        public function onReceive($cli, $data) {    
+            echo '[Received]:'.$data;    
+        }    
+        public function send() {    
+            $demo = [    
+                'type'  =&gt; 'SW',    
+                'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+                'param' =&gt; [    
+                    'class'  =&gt; 'Product',    
+                    'method' =&gt; 'get',    
+                    'param' =&gt; [    
+                        'code' =&gt; 'C4649'    
+                    ],    
+                ],    
+            ];    
+            $this-&gt;client-&gt;send(json_encode($demo));    
+        }    
+        public function onClose() {    
+            echo "Client close connection".PHP_EOL;    
+        }    
+        public function onError() {    
+        }    
+    }    
+    $client = new Client();    
+    $client-&gt;connect();
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>client/websocket/index.html
+
+    &lt;!DOCTYPE html&gt;    
+    &lt;html&gt;    
+    &lt;head&gt;    
+        &lt;meta charset="utf-8"&gt;    
+        &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;    
+        &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;    
+        &lt;meta name="description" content=""&gt;    
+        &lt;meta name="keywords" content=""&gt;    
+        &lt;title&gt;Demo&lt;/title&gt;    
+        &lt;script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"&gt;&lt;/script&gt;    
+        &lt;script src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"&gt;&lt;/script&gt;    
+    &lt;/head&gt;    
+    &lt;body&gt;    
+    &lt;!-- 为ECharts准备一个具备大小（宽高）的Dom --&gt;    
+    &lt;div id="main" style="width: 900px;height:400px;"&gt;&lt;/div&gt;    
+    &lt;script type="text/javascript"&gt;    
+        if ("WebSocket" in window) {    
+            // 基于准备好的dom，初始化echarts实例    
+            var myChart = echarts.init(document.getElementById('main'));    
+            var wsServer = 'ws://10.211.55.4:9509';    
+            var ws = new WebSocket(wsServer);    
+            ws.onopen = function (evt) {    
+                if (ws.readyState == 1) {    
+                    console.log('WebSocket 连接成功...');    
+                } else {    
+                    console.log('WebSocket 连接失败...');    
+                }    
+                if (ws.readyState == 1) {    
+                    ws.send('开始请求...');    
+                } else {    
+                    alert('WebSocket 连接失败');    
+                }    
+            };    
+            ws.onmessage = function (evt) {    
+                console.log('Retrieved data from server: ' + evt.data);    
+                var evt_data = jQuery.parseJSON(evt.data);    
+                myChart.setOption({    
+                    xAxis: {    
+                        data : evt_data.time    
+                    },    
+                    series: [{    
+                        data: evt_data.value    
+                    }]    
+                });    
+            };    
+            ws.onerror = function (evt) {    
+                alert('WebSocket 发生错误');    
+                console.log(evt);    
+            };    
+            ws.onclose = function() {    
+                alert('WebSocket 连接关闭');    
+                console.log('WebSocket 连接关闭...');    
+            };    
+            // 指定图表的配置项和数据    
+            $.ajax({    
+                url      : 'http://10.211.55.4:9509/', // 请求url    
+                type     : "post", // 提交方式    
+                dataType : "json", // 数据类型    
+                data : {    
+                    'type'  : 'SW',    
+                    'token' : 'Bb1R3YLipbkTp5p0',    
+                    'param' : {    
+                        'class'  : 'Statistic',    
+                        'method' : 'init'    
+                    }    
+                },    
+                beforeSend:function() {    
+                },    
+                success : function(rs) {    
+                    if (rs.code != 1) {    
+                        alert('获取数据失败');    
+                    } else {    
+                        var option = {    
+                            title: {    
+                                text: 'API 调用量',    
+                                x:'center'    
+                            },    
+                            tooltip: {    
+                                trigger: 'axis',    
+                                axisPointer: {    
+                                    animation: false    
+                                }    
+                            },    
+                            xAxis: {    
+                                type : 'category',    
+                                data : rs.data.time    
+                            },    
+                            yAxis: {    
+                                type: 'value',    
+                                boundaryGap: [0, '100%'],    
+                                name: '使用量',    
+                                splitLine: {    
+                                    show: false    
+                                }    
+                            },    
+                            series: [{    
+                                name: '使用量',    
+                                type: 'line',    
+                                showSymbol: false,    
+                                hoverAnimation: false,    
+                                data: rs.data.value    
+                            }]    
+                        };    
+                        // 使用刚指定的配置项和数据显示图表。    
+                        if (option &amp;&amp; typeof option === "object") {    
+                            myChart.setOption(option, true);    
+                        }    
+                    }    
+                },    
+                error : function(){    
+                    alert('服务器请求异常');    
+                }    
+            });    
+        } else {    
+            alert("您的浏览器不支持 WebSocket!");    
+        }    
+    &lt;/script&gt;    
+    &lt;/body&gt;    
+    &lt;/html&gt;
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />还涉及到，OnMessage.php、OnTask.php 、OnWorkerStart.php 等，就不贴代码了。<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

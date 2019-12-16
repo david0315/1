@@ -1,0 +1,114 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中的session' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中的session</center></div><div class='banquan'>原文出处:本文由博客园博主行走的阳光提供。<br/>
+原文连接:https://www.cnblogs.com/shineguang/p/11123770.html</div><br>
+    <p><span style="font-size: 18px;"><strong>1.1原理</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp;1.session是服务器端的技术</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp;2.session是基于cookie技术的</strong></span></p>
+<p><span style="font-size: 18px;"><strong>1.2session操作</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp;1.默认情况下，会话不会自动开启，通过session_start()开启会话</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp;2.通过session_id()获取会话的编号</strong></span><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp;</strong></span></p>
+<p><span class="md-line md-end-block md-focus"><span class="md-expand">&nbsp; <span style="font-size: 18px;"><strong>&nbsp; &nbsp;3、通过$_SESSION操作会话</strong></span></span></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp;4、会话可以保存除了资源以外的所有类型。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp;5、重复开启会话会报错，一般出现在包含文件中。</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">1.3</span><span class="md-expand">与会话有关的配置</span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="font-size: 16px;">1、session.save_path="<span style="color: #000000;">F:\wamp\tmp\"        session保存的地址
+2、session.auto_start = 1                session自动开启，默认不自动开启
+3、session.save_handler = files            会话以文件的形式保存
+4、session.gc_maxlifetime = 1440            会话的生命周期是1440秒</span></span></code></pre>
+
+<p><span style="font-size: 18px;"><strong>1.4<span class="md-expand">销毁会话</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-expand">&nbsp; &nbsp;</span></strong></span><span style="font-size: 18px;"><strong><span class="md-expand"> &nbsp;&nbsp;</span></strong><strong><span class="md-line md-end-block"><span class="md-expand">通过session_destroy()销毁会话&nbsp;</span></span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">&nbsp; &nbsp; &nbsp; 销毁会话就是删除自己的会话文件。</span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="font-size: 16px;">&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">session_start</span><span style="color: #000000;">();
+</span><span style="color: #008080;">session_destroy</span>();    <span style="color: #008000;">//</span><span style="color: #008000;">销毁会话</span></span></code></pre>
+
+<p><span style="font-size: 18px;"><strong>1.5<span class="md-expand">垃圾回收</span></strong></span><span style="font-size: 18px;"><strong><span class="md-expand">&nbsp; &nbsp; &nbsp;&nbsp;</span></strong></span></p>
+<p><span class="md-line md-end-block md-focus"><span class="md-expand">&nbsp; &nbsp; &nbsp;&nbsp;<span style="font-size: 18px;"><strong> 1、会话文件超过了生命周期是垃圾文件。</strong></span></span></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block">&nbsp; &nbsp; &nbsp; 2、PHP自动进行垃圾回收</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">&nbsp; &nbsp; &nbsp; 3、垃圾回收的概率默认是1/1000</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">1.6</span></strong></span><span style="font-size: 18px;"><strong><span class="md-expand">session和cookie的区别</span></strong></span></p>
+<table style="height: 217px; width: 1462px;" border="0">
+<tbody>
+<tr>
+<td>&nbsp;</td>
+<td>
+<h4 class="md-end-block md-heading md-focus"><span class="md-expand">cookie</span></h4>
+</td>
+<td><br />
+<table class="md-table">
+<thead>
+<tr class="md-end-block md-focus-container"><th><span class="td-span md-focus"><span>session</span></span></th></tr>
+
+</thead>
+
+</table>
+</td>
+</tr>
+<tr>
+<td><br />
+<table class="md-table">
+<tbody>
+<tr class="md-end-block md-focus-container">
+<td><span class="td-span md-focus">保存位置<br /></span></td>
+
+</tr>
+
+</tbody>
+
+</table>
+</td>
+<td>客户端</td>
+<td>服务器端</td>
+</tr>
+<tr>
+<td>
+<table class="md-table" style="height: 36px; width: 72px;">
+<tbody>
+<tr class="md-end-block md-focus-container">
+<td>数据大小</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td>小（4K）</td>
+<td>大</td>
+</tr>
+<tr>
+<td>数据类型</td>
+<td>字符串</td>
+<td>除了资源以外的所有类型</td>
+</tr>
+<tr>
+<td>安全性</td>
+<td>不安全</td>
+<td>安全</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

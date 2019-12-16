@@ -1,0 +1,45 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] time_wait与长连接短连接' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] time_wait与长连接短连接</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11801085.html</div><br>
+    <p>服务端上查看tcp连接的建立情况,直接使用netstat命令来统计,看到了很多的time_wait状态的连接.这些状态是tcp连接中主动关闭的一方会出现的状态.该服务器是nginx的webserver监听80端口,搭配的php-fpm监听9000端口,连接其他服务器数据库3960端口,连接其他服务器的memcache 50028端口.</p>
+<p>&nbsp;</p>
+<p>先查看本机监听80端口的time_wait状态,可以看到不同客户端的ip端口,来连接我的服务端,并且是我服务端主动关闭连接,因此可以看到time_wait,这些对我们服务器没有影响.因为这是http的短连接,肯定是会请求过来就创建一个连接,请求结束就关闭连接.</p>
+<p>网上很多说这些如果太多会占用服务器的端口,根本就是不对的,因为这些是占用的是客户端的端口,服务端只是一个80端口,怎么会占用服务器的端口呢.<br />netstat -altupn|grep ":80"</p>
+<p><img src="./images/[PHP] time_wait与长连接短连接0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;当然如果前面有负载均衡的话,客户端IP是固定的几个,可以把前面的负载均衡机器当成是客户端.</p>
+<p>&nbsp;</p>
+<p>当然如果我们是通过nginx的反代,反代到fpm的9000端口 , 这个时候是我们本机随机开启端口,连接本机的9000端口 ,这个时候是会占用本机端口数的</p>
+<p><img src="./images/[PHP] time_wait与长连接短连接1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>还有就是真正占用服务器端口的是,当需要连接数据库时,比如我需要连接数据库的3960端口,这个时候我的服务器会随机占用本机的端口,连接远程的3960端口.因为php连接数据库是使用的短连接,每次请求都会在创建连接,并且是我服务端主动关闭的连接,所以会有大量time_wait状态,这里会占用本机的端口数,连接mc的50028端口也是会出现同样的情况.<br />netstat -altupn|grep ":3960"</p>
+<p><img src="./images/[PHP] time_wait与长连接短连接2.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>那么如果php使用长连接连接数据库呢?这个时候就是每一个fpm子进程创建一个连接,有多少个子进程就会有多少连接,并且连接是不会断掉的.当然如果子进程的数量特别多,会占用mysql的连接数,所以这里我们的项目里也是使用的短连接.<br />show variables like 'max_connections'</p>
+<p><img src="./images/[PHP] time_wait与长连接短连接3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,52 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修nginx分割日志' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>nginx分割日志</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/11223232.html</div><br>
+    <p>实现nginx日志按照时间分割存储</p>
+<p>backups_log.sh</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">#设置log日志的存储地址
+LOG_PATH</span>=/home/soft/nginx/<span style="color: #000000;">logs
+#设置历史日志的存储地址
+HISTORY_LOG_PATH</span>=/home/soft/nginx/<span style="color: #000000;">history_logs
+#获取分割日志时所需要的时间当做日志文件名称
+TIME</span>=$(<span style="color: #0000ff;">date</span> +%Y-%m-%d<span style="color: #000000;">)
+#将当前日志备份到指定存储目录
+</span><span style="color: #0000ff;">mv</span> ${LOG_PATH}/access.log ${HISTORY_LOG_PATH}/access_log/<span style="color: #000000;">${TIME}_access.log
+#发送信号重新打开日志文件
+</span><span style="color: #0000ff;">kill</span> -USR1 $(<span style="color: #0000ff;">cat</span> ${LOG_PATH}/nginx.pid)</code></pre>
+
+<p>将sh脚本加入到定时任务中，每天23:59执行</p>
+<src class="cnblogs_code">
+<pre><code>crontab -e</code></pre>
+
+<p>添加定时任务</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">59</span> <span style="color: #800080;">23</span> * * * /home/<span style="color: #0000ff;">sh</span>/backups_log.<span style="color: #0000ff;">sh</span></code></pre>
+
+<p>&nbsp;</p>
+<p>注意事项：</p>
+<p>1.在没有执行kill -USR1 nginx_pid 之前，即便已经对文件执行了mv命令也只是改变了文件的名称，nginx还是会向新命名的文件中照常写入日志数据。原因在于linux系统中，内核是根据文件描述符来找文件的</p>
+<p>2.添加定时任务后如果定时任务没有起作用，则使用 ps -aux | grep cron 确认下服务是否已经开启</p>
+<p>3. -USR1 是进程间通信的信号中的一种，至于nginx进程接收到该信号做什么操作是它内部定义的，除此之外我们可以使用 kill -l 确认liunx中包含哪些信号</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

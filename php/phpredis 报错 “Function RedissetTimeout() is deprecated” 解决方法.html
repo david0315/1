@@ -1,0 +1,47 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修phpredis 报错 “Function RedissetTimeout() is deprecated” 解决方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>phpredis 报错 “Function RedissetTimeout() is deprecated” 解决方法</center></div><div class='banquan'>原文出处:本文由博客园博主imzhi提供。<br/>
+原文连接:https://www.cnblogs.com/imzhi/p/phpredis-settimeout-deprecated.html</div><br>
+    <p>项目在本地开发过程中抛出异常：</p>
+<blockquote>
+<p>Function Redis::setTimeout() is deprecated</p>
+</blockquote>
+<p>找到出错代码：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Support\Facades\Redis;
+</span>...<span style="color: #000000;">
+Redis</span>::setTimeout(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$timeout</span>);</code></pre>
+
+<p>项目使用的 phpredis 扩展来操作 redis，phpredis 5.0 版后弃用了非 redis 标准命令的方法（<a href="https://pecl.php.net/package-changelog.php?package=redis&amp;release=5.0.0RC1">https://pecl.php.net/package-changelog.php?package=redis&amp;release=5.0.0RC1</a>）。比如 phpredis 原来的 delete 方法由 del 替代，settimeout 方法由 expire 替代。概括一点：phpredis 方法名使用 redis 标准命令名就总是对的。</p>
+<p>解决代码：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Support\Facades\Redis;
+</span>...<span style="color: #000000;">
+Redis</span>::EXPIRE(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$timeout</span>);</code></pre>
+
+<p>详细的弃用与替代方法名在参考链接中的文章里。</p>
+<p>参考链接：</p>
+<p>Function Redis::delete() is deprecated 的解决方法（<a href="https://blog.csdn.net/xchenhao/article/details/97251618">https://blog.csdn.net/xchenhao/article/details/97251618</a>）<a href="https://blog.csdn.net/xchenhao/article/details/97251618"><br /></a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,75 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中发送qq邮件' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中发送qq邮件</center></div><div class='banquan'>原文出处:本文由博客园博主行走的阳光提供。<br/>
+原文连接:https://www.cnblogs.com/shineguang/p/11273578.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+namespace app\home\logic;
+
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> PHPMailer\PHPMailer\PHPMailer;
+</span><span style="color: #0000ff;">use</span> PHPMailer\PHPMailer\<span style="color: #0000ff;">Exception</span><span style="color: #000000;">;
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> QQmail{
+       </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> qq(<span style="color: #800080;">$addr</span>,<span style="color: #800080;">$code</span><span style="color: #000000;">){
+           </span><span style="color: #800080;">$mail</span> = <span style="color: #0000ff;">new</span> PHPMailer(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+           </span><span style="color: #0000ff;">try</span><span style="color: #000000;">{
+               </span><span style="color: #008000;">//</span><span style="color: #008000;">邮件调试模式</span>
+               <span style="color: #800080;">$mail</span>-&gt;SMTPDebug = 1<span style="color: #000000;">;
+               </span><span style="color: #008000;">//</span><span style="color: #008000;">设置邮件使用SMTP</span>
+               <span style="color: #800080;">$mail</span>-&gt;<span style="color: #000000;">isSMTP();
+               </span><span style="color: #008000;">//</span><span style="color: #008000;"> 设置邮件程序以使用SMTP</span>
+               <span style="color: #800080;">$mail</span>-&gt;Host = 'smtp.qq.com'<span style="color: #000000;">;
+               </span><span style="color: #800080;">$mail</span>-&gt;<span style="color: #000000;">isSMTP();
+               </span><span style="color: #008000;">//</span><span style="color: #008000;"> 设置邮件内容的编码</span>
+               <span style="color: #800080;">$mail</span>-&gt;CharSet='UTF-8'<span style="color: #000000;">;
+               </span><span style="color: #008000;">//</span><span style="color: #008000;"> 启用SMTP验证</span>
+               <span style="color: #800080;">$mail</span>-&gt;SMTPAuth = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+               </span><span style="color: #008000;">//</span><span style="color: #008000;"> SMTP username</span>
+               <span style="color: #800080;">$mail</span>-&gt;Username = '*****@qq.com'<span style="color: #000000;">;
+               </span><span style="color: #008000;">//</span><span style="color: #008000;"> SMTP password</span>
+               <span style="color: #800080;">$mail</span>-&gt;Password = '*******'<span style="color: #000000;">;
+               </span><span style="color: #008000;">//</span><span style="color: #008000;"> 连接的TCP端口
+//            $mail-&gt;Port = 465;
+               //设置发件人昵称</span>
+               <span style="color: #800080;">$mail</span>-&gt;FromName='*****'<span style="color: #000000;">;
+               </span><span style="color: #008000;">//</span><span style="color: #008000;">设置发件人</span>
+               <span style="color: #800080;">$mail</span>-&gt;setFrom('****@qq.com'<span style="color: #000000;">);
+               </span><span style="color: #008000;">//</span><span style="color: #008000;">  添加收件人1</span>
+               <span style="color: #800080;">$mail</span>-&gt;addAddress(<span style="color: #800080;">$addr</span><span style="color: #000000;">);
+               </span><span style="color: #008000;">//</span><span style="color: #008000;"> 将电子邮件格式设置为HTML</span>
+               <span style="color: #800080;">$mail</span>-&gt;isHTML(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+               </span><span style="color: #800080;">$mail</span>-&gt;Subject = '标题'<span style="color: #000000;">;
+               </span><span style="color: #800080;">$mail</span>-&gt;Body    = '文本'<span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">            $mail-&gt;AltBody = '这是非HTML邮件客户端的纯文本';</span>
+               <span style="color: #800080;">$mail</span>-&gt;<span style="color: #000000;">send();
+               </span><span style="color: #0000ff;">echo</span> 'Message has been sent'<span style="color: #000000;">;
+
+           }</span><span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">){
+               </span><span style="color: #0000ff;">echo</span> 'Mailer Error: ' . <span style="color: #800080;">$mail</span>-&gt;<span style="color: #000000;">ErrorInfo;
+           }
+       }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

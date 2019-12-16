@@ -1,0 +1,73 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Thinkphp5 自定义上传文件名' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Thinkphp5 自定义上传文件名</center></div><div class='banquan'>原文出处:本文由博客园博主Rowan88提供。<br/>
+原文连接:https://www.cnblogs.com/rowan88/p/11229705.html</div><br>
+    <p>这几天在做tp5的上传文件模块，项目需求是要把文件名在上传之后修改为 用户名+原文件名的组合形式，在网上找了一会儿发现好像没有类似的文章。。。只好自己去研究研究了。</p>
+<p>之前查看过看云上面的官方手册，文件上传那一块真的是讲的含糊，对于我们这个为了项目自学tp5的大学生来说到处都是知识盲区啊。</p>
+<p>Tp5文件相关操作模块都在 thinkphp\library\think\File.php里面，我们找到第335行附近的<span style="color: #ff6600; background-color: #ffffff;">move()</span>函数&nbsp;</p>
+<src class="cnblogs_code">
+<p>　　</p>
+<p> /**<br />     * 移动文件<br />     * @access public<br />     * @param  string      $path     保存路径<br />     * @param  string|bool $savename 保存的文件名 默认自动生成<br />     * @param  boolean     $replace  同名文件是否覆盖<br />     * @return false|File<br />     */</p>
+<p>&nbsp; &nbsp;public function move($path, $savename = true, $replace = true){</p>
+
+
+
+
+
+
+
+
+<p>上面写的 $savename 是一个String或者bool类型，所以直接传入文件名或者文件名变量就行了</p>
+<p>在自己的控制器代码里写上：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$saveName</span> = 'Tom'<span style="color: #000000;">;
+</span><span style="color: #800080;">$info</span> = <span style="color: #800080;">$file</span>-&gt;move('./Upload',<span style="color: #800080;">$saveName</span>,<span style="color: #0000ff;">false</span>);</code></pre>
+
+<p>再上传一次就可以看到上传的文件已经被修改为了Tom。</p>
+<p><img src="./images/Thinkphp5 自定义上传文件名0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>存进数据库的名字也是Tom，说明文件名是完全改了的。</p>
+<p><img src="./images/Thinkphp5 自定义上传文件名1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>现在的需求是修改名字为：用户id_文件名，但是我获取文件的方法是使用request获取：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$file</span> = request()-&gt;<span style="color: #008080;">file</span>('files');</code></pre>
+
+<p>研究了半天发现好像没有可以在存入服务器之前获取到 $file的文件名，我的解决办法是：在前端的form表单添加一个hidden的隐藏输入框：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">input </span><span style="color: #ff0000;">type</span><span style="color: #0000ff;">="hidden"</span><span style="color: #ff0000;"> name</span><span style="color: #0000ff;">="fileName"</span><span style="color: #ff0000;"> id</span><span style="color: #0000ff;">="file_name"</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p>&nbsp;</p>
+<p>通过js获取到要上传的文件名，再把隐藏输入框的内容用js修改为获取到的文件名：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">var</span> fileinfo = document.getElementById('files').files[0<span style="color: #000000;">];
+</span><span style="color: #008000;">//</span><span style="color: #008000;">js获取文件名字</span>
+<span style="color: #0000ff;">var</span> name =<span style="color: #000000;"> fileinfo.name;
+</span><span style="color: #0000ff;">var</span> fileN = document.getElementById('file_name'<span style="color: #000000;">);
+fileN.value </span>= name;    </code></pre>
+
+<p>&nbsp;</p>
+<p>这样再提交文件的时候就可以把文件名传到后台。</p>
+<p>由此可得，需要什么功能直接去框架的文件里面去找，感觉比看手册详细多了！</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

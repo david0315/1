@@ -1,0 +1,236 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php实现大文件断点续传下载实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php实现大文件断点续传下载实例</center></div><div class='banquan'>原文出处:本文由博客园博主mrlime提供。<br/>
+原文连接:https://www.cnblogs.com/mrlime/p/11615025.html</div><br>
+    <p>php实现大文件断点续传下载实例，看完你就知道超过100M以上的大文件如何断点传输了，这个功能还是比较经典实用的，毕竟大文件上传功能经常用得到。</p>
+<p><img src="./images/php实现大文件断点续传下载实例0.jpg" alt="" width="238" height="321" /></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">require_once</span>('download.class.php'<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 2</span> date_default_timezone_set('Asia/Shanghai'<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 3</span> <span style="color: #008080;">error_reporting</span>(<span style="color: #ff00ff;">E_STRICT</span><span style="color: #000000;">); 
+</span><span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">function</span> errorHandler(<span style="color: #800080;">$errno</span>, <span style="color: #800080;">$errstr</span>, <span style="color: #800080;">$errfile</span>, <span style="color: #800080;">$errline</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">echo</span> '&lt;p&gt;error:', <span style="color: #800080;">$errstr</span>, '&lt;/p&gt;'<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">exit</span><span style="color: #000000;">(); 
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">} 
+</span><span style="color: #008080;"> 9</span>  
+<span style="color: #008080;">10</span> <span style="color: #008080;">set_error_handler</span>('errorHandler'<span style="color: #000000;">); 
+</span><span style="color: #008080;">11</span> <span style="color: #008080;">define</span>('IS_DEBUG', <span style="color: #0000ff;">true</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #800080;">$filePath</span> = 'test.zip'<span style="color: #000000;">; 
+</span><span style="color: #008080;">14</span> <span style="color: #800080;">$mimeType</span> = 'audio/x-matroska'<span style="color: #000000;">; 
+</span><span style="color: #008080;">15</span> <span style="color: #800080;">$range</span> = <span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_SERVER</span>['HTTP_RANGE']) ? <span style="color: #800080;">$_SERVER</span>['HTTP_RANGE'] : <span style="color: #0000ff;">null</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">16</span> <span style="color: #0000ff;">if</span><span style="color: #000000;"> (IS_DEBUG) { 
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">//</span><span style="color: #008000;">    $range = "bytes=1000-1999\n2000"; 
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">//    $range = "bytes=1000-1999,2000";  
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">//    $range = "bytes=1000-1999,-2000";  
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">//    $range = "bytes=1000-1999,2000-2999";  </span>
+<span style="color: #008080;">21</span> <span style="color: #000000;">} 
+</span><span style="color: #008080;">22</span> <span style="color: #008080;">set_time_limit</span>(0<span style="color: #000000;">); 
+</span><span style="color: #008080;">23</span> <span style="color: #800080;">$transfer</span> = <span style="color: #0000ff;">new</span> Transfer(<span style="color: #800080;">$filePath</span>, <span style="color: #800080;">$mimeType</span>, <span style="color: #800080;">$range</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">24</span> <span style="color: #0000ff;">if</span><span style="color: #000000;"> (IS_DEBUG) { 
+</span><span style="color: #008080;">25</span>     <span style="color: #800080;">$transfer</span>-&gt;setIsLog(<span style="color: #0000ff;">true</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">} 
+</span><span style="color: #008080;">27</span> <span style="color: #800080;">$transfer</span>-&gt;send();</code></pre>
+
+<p>download.class.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;">  2</span> <span style="color: #008000;"> * 文件传输，支持断点续传。 
+</span><span style="color: #008080;">  3</span> <span style="color: #008000;"> * 2g以上超大文件也有效 
+</span><span style="color: #008080;">  4</span> <span style="color: #008000;"> * @author MoXie 
+</span><span style="color: #008080;">  5</span>  <span style="color: #008000;">*/</span> 
+<span style="color: #008080;">  6</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Transfer { 
+</span><span style="color: #008080;">  7</span>  
+<span style="color: #008080;">  8</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;">  9</span> <span style="color: #008000;">     * 缓冲单元 
+</span><span style="color: #008080;"> 10</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 11</span>     <span style="color: #0000ff;">const</span> BUFF_SIZE = 5120; <span style="color: #008000;">//</span><span style="color: #008000;"> 1024 * 5 </span>
+<span style="color: #008080;"> 12</span>  
+<span style="color: #008080;"> 13</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 14</span> <span style="color: #008000;">     * 文件地址 
+</span><span style="color: #008080;"> 15</span> <span style="color: #008000;">     * @var &lt;String&gt; 
+</span><span style="color: #008080;"> 16</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 17</span>  
+<span style="color: #008080;"> 18</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$filePath</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 19</span>  
+<span style="color: #008080;"> 20</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 21</span> <span style="color: #008000;">     * 文件大小 
+</span><span style="color: #008080;"> 22</span> <span style="color: #008000;">     * @var &lt;String&gt; Php超大数字 字符串形式描述 
+</span><span style="color: #008080;"> 23</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 24</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$fileSize</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 25</span>  
+<span style="color: #008080;"> 26</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 27</span> <span style="color: #008000;">     * 文件类型 
+</span><span style="color: #008080;"> 28</span> <span style="color: #008000;">     * @var &lt;String&gt; 
+</span><span style="color: #008080;"> 29</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 30</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$mimeType</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 31</span>  
+<span style="color: #008080;"> 32</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 33</span> <span style="color: #008000;">     * 请求区域（范围） 
+</span><span style="color: #008080;"> 34</span> <span style="color: #008000;">     * @var &lt;String&gt; 
+</span><span style="color: #008080;"> 35</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 36</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$range</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 37</span>  
+<span style="color: #008080;"> 38</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 39</span> <span style="color: #008000;">     * 是否写入日志 
+</span><span style="color: #008080;"> 40</span> <span style="color: #008000;">     * @var &lt;Boolean&gt; 
+</span><span style="color: #008080;"> 41</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 42</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$isLog</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 43</span>  
+<span style="color: #008080;"> 44</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 45</span> <span style="color: #008000;">     * 
+</span><span style="color: #008080;"> 46</span> <span style="color: #008000;">     * @param &lt;String&gt; $filePath 文件路径 
+</span><span style="color: #008080;"> 47</span> <span style="color: #008000;">     * @param &lt;String&gt; $mimeType  文件类型 
+</span><span style="color: #008080;"> 48</span> <span style="color: #008000;">     * @param &lt;String&gt; $range 请求区域（范围） 
+</span><span style="color: #008080;"> 49</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 50</span>     <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$filePath</span>, <span style="color: #800080;">$mimeType</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$range</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 51</span>         <span style="color: #800080;">$this</span>-&gt;filePath = <span style="color: #800080;">$filePath</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 52</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">fileSize</span> = <span style="color: #008080;">sprintf</span>('%u', <span style="color: #008080;">filesize</span>(<span style="color: #800080;">$filePath</span><span style="color: #000000;">)); 
+</span><span style="color: #008080;"> 53</span>         <span style="color: #800080;">$this</span>-&gt;mimeType = (<span style="color: #800080;">$mimeType</span> != <span style="color: #0000ff;">null</span>) ? <span style="color: #800080;">$mimeType</span> : "application/octet-stream"; <span style="color: #008000;">//</span><span style="color: #008000;">  bin </span>
+<span style="color: #008080;"> 54</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">range</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$range</span><span style="color: #000000;">); 
+</span><span style="color: #008080;"> 55</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;"> 56</span>  
+<span style="color: #008080;"> 57</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 58</span> <span style="color: #008000;">     *  获取文件区域 
+</span><span style="color: #008080;"> 59</span> <span style="color: #008000;">     * @return &lt;Map&gt; {'start':long,'end':long} or null 
+</span><span style="color: #008080;"> 60</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 61</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getRange() { 
+</span><span style="color: #008080;"> 62</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 63</span> <span style="color: #008000;">         *  Range: bytes=-128 
+</span><span style="color: #008080;"> 64</span> <span style="color: #008000;">         *  Range: bytes=-128 
+</span><span style="color: #008080;"> 65</span> <span style="color: #008000;">         *  Range: bytes=28-175,382-399,510-541,644-744,977-980 
+</span><span style="color: #008080;"> 66</span> <span style="color: #008000;">         *  Range: bytes=28-175\n380 
+</span><span style="color: #008080;"> 67</span> <span style="color: #008000;">         *  type 1 
+</span><span style="color: #008080;"> 68</span> <span style="color: #008000;">         *  RANGE: bytes=1000-9999 
+</span><span style="color: #008080;"> 69</span> <span style="color: #008000;">         *  RANGE: bytes=2000-9999 
+</span><span style="color: #008080;"> 70</span> <span style="color: #008000;">         *  type 2 
+</span><span style="color: #008080;"> 71</span> <span style="color: #008000;">         *  RANGE: bytes=1000-1999 
+</span><span style="color: #008080;"> 72</span> <span style="color: #008000;">         *  RANGE: bytes=2000-2999 
+</span><span style="color: #008080;"> 73</span> <span style="color: #008000;">         *  RANGE: bytes=3000-3999 
+</span><span style="color: #008080;"> 74</span>          <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 75</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">range</span><span style="color: #000000;">)) { 
+</span><span style="color: #008080;"> 76</span>             <span style="color: #800080;">$range</span> = <span style="color: #008080;">preg_replace</span>('/[\s|,].*/', '', <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">range</span><span style="color: #000000;">); 
+</span><span style="color: #008080;"> 77</span>             <span style="color: #800080;">$range</span> = <span style="color: #008080;">explode</span>('-', <span style="color: #008080;">substr</span>(<span style="color: #800080;">$range</span>, 6<span style="color: #000000;">)); 
+</span><span style="color: #008080;"> 78</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">count</span>(<span style="color: #800080;">$range</span>) &lt; 2<span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 79</span>                 <span style="color: #800080;">$range</span>[1] = <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">fileSize</span>; <span style="color: #008000;">//</span><span style="color: #008000;"> Range: bytes=-100 </span>
+<span style="color: #008080;"> 80</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;"> 81</span>             <span style="color: #800080;">$range</span> = <span style="color: #008080;">array_combine</span>(<span style="color: #0000ff;">array</span>('start', 'end'), <span style="color: #800080;">$range</span><span style="color: #000000;">); 
+</span><span style="color: #008080;"> 82</span>             <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$range</span>['start'<span style="color: #000000;">])) { 
+</span><span style="color: #008080;"> 83</span>                 <span style="color: #800080;">$range</span>['start'] = 0<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 84</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;"> 85</span>             <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$range</span>['end']) || <span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$range</span>['end'<span style="color: #000000;">])) { 
+</span><span style="color: #008080;"> 86</span>                 <span style="color: #800080;">$range</span>['end'] = <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">fileSize</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 87</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;"> 88</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$range</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 89</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;"> 90</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">null</span><span style="color: #000000;">; 
+</span><span style="color: #008080;"> 91</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;"> 92</span>  
+<span style="color: #008080;"> 93</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;"> 94</span> <span style="color: #008000;">     * 向客户端发送文件 
+</span><span style="color: #008080;"> 95</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 96</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> send() { 
+</span><span style="color: #008080;"> 97</span>         <span style="color: #800080;">$fileHande</span> = <span style="color: #008080;">fopen</span>(<span style="color: #800080;">$this</span>-&gt;filePath, 'rb'<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 98</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$fileHande</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 99</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> setting </span>
+<span style="color: #008080;">100</span>             <span style="color: #008080;">ob_end_clean</span>(); <span style="color: #008000;">//</span><span style="color: #008000;"> clean cache </span>
+<span style="color: #008080;">101</span>             <span style="color: #008080;">ob_start</span><span style="color: #000000;">(); 
+</span><span style="color: #008080;">102</span>             <span style="color: #008080;">ini_set</span>('output_buffering', 'Off'<span style="color: #000000;">); 
+</span><span style="color: #008080;">103</span>             <span style="color: #008080;">ini_set</span>('zlib.output_compression', 'Off'<span style="color: #000000;">); 
+</span><span style="color: #008080;">104</span>             <span style="color: #800080;">$magicQuotes</span> = <span style="color: #008080;">get_magic_quotes_gpc</span><span style="color: #000000;">(); 
+</span><span style="color: #008080;">105</span> <span style="color: #008000;">//</span><span style="color: #008000;">            set_magic_quotes_runtime(0); 
+</span><span style="color: #008080;">106</span> <span style="color: #008000;">            // init </span>
+<span style="color: #008080;">107</span>             <span style="color: #800080;">$lastModified</span> = <span style="color: #008080;">gmdate</span>('D, d M Y H:i:s', <span style="color: #008080;">filemtime</span>(<span style="color: #800080;">$this</span>-&gt;filePath)) . ' GMT'<span style="color: #000000;">; 
+</span><span style="color: #008080;">108</span>             <span style="color: #800080;">$etag</span> = <span style="color: #008080;">sprintf</span>('w/"%s:%s"', <span style="color: #008080;">md5</span>(<span style="color: #800080;">$lastModified</span>), <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">fileSize</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">109</span>             <span style="color: #800080;">$ranges</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getRange(); 
+</span><span style="color: #008080;">110</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> headers </span>
+<span style="color: #008080;">111</span>             <span style="color: #008080;">header</span>(<span style="color: #008080;">sprintf</span>('Last-Modified: %s', <span style="color: #800080;">$lastModified</span><span style="color: #000000;">)); 
+</span><span style="color: #008080;">112</span>             <span style="color: #008080;">header</span>(<span style="color: #008080;">sprintf</span>('ETag: %s', <span style="color: #800080;">$etag</span><span style="color: #000000;">)); 
+</span><span style="color: #008080;">113</span>             <span style="color: #008080;">header</span>(<span style="color: #008080;">sprintf</span>('Content-Type: %s', <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">mimeType)); 
+</span><span style="color: #008080;">114</span>             <span style="color: #800080;">$disposition</span> = 'attachment'<span style="color: #000000;">; 
+</span><span style="color: #008080;">115</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strpos</span>(<span style="color: #800080;">$this</span>-&gt;mimeType, 'image/') !== <span style="color: #0000ff;">FALSE</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">116</span>                 <span style="color: #800080;">$disposition</span> = 'inline'<span style="color: #000000;">; 
+</span><span style="color: #008080;">117</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">118</span>             <span style="color: #008080;">header</span>(<span style="color: #008080;">sprintf</span>('Content-Disposition: %s; filename="%s"', <span style="color: #800080;">$disposition</span>, <span style="color: #008080;">basename</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">filePath))); 
+</span><span style="color: #008080;">119</span>  
+<span style="color: #008080;">120</span>             <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$ranges</span> != <span style="color: #0000ff;">null</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">121</span>                 <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">isLog) { 
+</span><span style="color: #008080;">122</span>                     <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">log</span>(json_encode(<span style="color: #800080;">$ranges</span>) . ' ' . <span style="color: #800080;">$_SERVER</span>['HTTP_RANGE'<span style="color: #000000;">]); 
+</span><span style="color: #008080;">123</span> <span style="color: #000000;">                } 
+</span><span style="color: #008080;">124</span>                 <span style="color: #008080;">header</span>('HTTP/1.1 206 Partial Content'<span style="color: #000000;">); 
+</span><span style="color: #008080;">125</span>                 <span style="color: #008080;">header</span>('Accept-Ranges: bytes'<span style="color: #000000;">); 
+</span><span style="color: #008080;">126</span>                 <span style="color: #008080;">header</span>(<span style="color: #008080;">sprintf</span>('Content-Length: %u', <span style="color: #800080;">$ranges</span>['end'] - <span style="color: #800080;">$ranges</span>['start'<span style="color: #000000;">])); 
+</span><span style="color: #008080;">127</span>                 <span style="color: #008080;">header</span>(<span style="color: #008080;">sprintf</span>('Content-Range: bytes %s-%s/%s', <span style="color: #800080;">$ranges</span>['start'], <span style="color: #800080;">$ranges</span>['end'], <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">fileSize</span><span style="color: #000000;">)); 
+</span><span style="color: #008080;">128</span>                 <span style="color: #008000;">//</span> 
+<span style="color: #008080;">129</span>                 <span style="color: #008080;">fseek</span>(<span style="color: #800080;">$fileHande</span>, <span style="color: #008080;">sprintf</span>('%u', <span style="color: #800080;">$ranges</span>['start'<span style="color: #000000;">])); 
+</span><span style="color: #008080;">130</span>             } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">131</span>                 <span style="color: #008080;">header</span>("HTTP/1.1 200 OK"<span style="color: #000000;">); 
+</span><span style="color: #008080;">132</span>                 <span style="color: #008080;">header</span>(<span style="color: #008080;">sprintf</span>('Content-Length: %s', <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">fileSize</span><span style="color: #000000;">)); 
+</span><span style="color: #008080;">133</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">134</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> read file </span>
+<span style="color: #008080;">135</span>             <span style="color: #800080;">$lastSize</span> = 0<span style="color: #000000;">; 
+</span><span style="color: #008080;">136</span>             <span style="color: #0000ff;">while</span> (!<span style="color: #008080;">feof</span>(<span style="color: #800080;">$fileHande</span>) &amp;&amp; !<span style="color: #008080;">connection_aborted</span><span style="color: #000000;">()) { 
+</span><span style="color: #008080;">137</span>                 <span style="color: #800080;">$lastSize</span> = <span style="color: #008080;">sprintf</span>("%u", <span style="color: #008080;">bcsub</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">fileSize</span>, <span style="color: #008080;">sprintf</span>("%u", <span style="color: #008080;">ftell</span>(<span style="color: #800080;">$fileHande</span><span style="color: #000000;">)))); 
+</span><span style="color: #008080;">138</span>                 <span style="color: #0000ff;">if</span> (<span style="color: #008080;">bccomp</span>(<span style="color: #800080;">$lastSize</span>, self::BUFF_SIZE) &gt; 0<span style="color: #000000;">) { 
+</span><span style="color: #008080;">139</span>                     <span style="color: #800080;">$lastSize</span> = self::<span style="color: #000000;">BUFF_SIZE; 
+</span><span style="color: #008080;">140</span> <span style="color: #000000;">                } 
+</span><span style="color: #008080;">141</span>                 <span style="color: #0000ff;">echo</span> <span style="color: #008080;">fread</span>(<span style="color: #800080;">$fileHande</span>, <span style="color: #800080;">$lastSize</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">142</span>                 <span style="color: #008080;">ob_flush</span><span style="color: #000000;">(); 
+</span><span style="color: #008080;">143</span>                 <span style="color: #008080;">flush</span><span style="color: #000000;">(); 
+</span><span style="color: #008080;">144</span> <span style="color: #000000;">            } 
+</span><span style="color: #008080;">145</span>             <span style="color: #008080;">set_magic_quotes_runtime</span>(<span style="color: #800080;">$magicQuotes</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">146</span>             <span style="color: #008080;">ob_end_flush</span><span style="color: #000000;">(); 
+</span><span style="color: #008080;">147</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">148</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$fileHande</span> != <span style="color: #0000ff;">null</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">149</span>             <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$fileHande</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">150</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">151</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">152</span>  
+<span style="color: #008080;">153</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;">154</span> <span style="color: #008000;">     * 设置记录 
+</span><span style="color: #008080;">155</span> <span style="color: #008000;">     * @param &lt;Boolean&gt; $isLog  是否记录 
+</span><span style="color: #008080;">156</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;">157</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> setIsLog(<span style="color: #800080;">$isLog</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">158</span>         <span style="color: #800080;">$this</span>-&gt;isLog = <span style="color: #800080;">$isLog</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">159</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">160</span>  
+<span style="color: #008080;">161</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;">162</span> <span style="color: #008000;">     * 记录 
+</span><span style="color: #008080;">163</span> <span style="color: #008000;">     * @param &lt;String&gt; $msg  记录信息 
+</span><span style="color: #008080;">164</span>      <span style="color: #008000;">*/</span> 
+<span style="color: #008080;">165</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">log</span>(<span style="color: #800080;">$msg</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">166</span>         <span style="color: #0000ff;">try</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">167</span>             <span style="color: #800080;">$handle</span> = <span style="color: #008080;">fopen</span>('transfer_log.txt', 'a'<span style="color: #000000;">); 
+</span><span style="color: #008080;">168</span>             <span style="color: #008080;">fwrite</span>(<span style="color: #800080;">$handle</span>, <span style="color: #008080;">sprintf</span>('%s : %s' . <span style="color: #ff00ff;">PHP_EOL</span>, <span style="color: #008080;">date</span>('Y-m-d H:i:s'), <span style="color: #800080;">$msg</span><span style="color: #000000;">)); 
+</span><span style="color: #008080;">169</span>             <span style="color: #008080;">fclose</span>(<span style="color: #800080;">$handle</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">170</span>         } <span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">171</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> null; </span>
+<span style="color: #008080;">172</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">173</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">174</span>  
+<span style="color: #008080;">175</span> }</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/277.html" target="_blank">https://www.sucaihuo.com/php/277.html</a> 转载请注明出处！</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

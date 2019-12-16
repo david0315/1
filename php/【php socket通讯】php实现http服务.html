@@ -1,0 +1,194 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【php socket通讯】php实现http服务' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【php socket通讯】php实现http服务</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/11139112.html</div><br>
+    <p><span style="font-size: 15px;">http服务是建立在tcp服务之上的，它是tcp/ip协议的应用，前面我们已经实现了tcp服务，并且使用三种不同的方式连接tcp服务</span></p>
+<h1 class="postTitle eye-protector-processed"><span style="font-size: 15px;"><a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/itsuibi/p/10861642.html">php中连接tcp服务的三种方式</a></span></h1>
+<p><span style="font-size: 15px;">既然http也是tcp应用层的一种，那么我们直接使用浏览器来连接tcp服务可不可以？答案是可以的，只不过连接之后直接返回给浏览器的信息，浏览器不能够正确的识别出来。那么怎么才能让浏览器正确的识别tcp服务返回的信息呢？</span></p>
+<p><span style="font-size: 15px;">这个时候我们就需要使用到http协议啦，至于http传输中都传了哪些信息可以在浏览器中 f12 查看</span></p>
+<p><span style="font-size: 15px;">目录结构：</span></p>
+<p><img style="font-size: 15px;" src="./images/【php socket通讯】php实现http服务0.jpg" alt="" /></p>
+<p>http_serv.php文件</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+* Http 服务器类
+</span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Http{
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$host</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$port</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">private</span> <span style="color: #800080;">$_root</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$mime_types</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(
+        </span>'avi' =&gt; 'video/x-msvideo',
+        'bmp' =&gt; 'image/bmp',
+        'css' =&gt; 'text/css',
+        'doc' =&gt; 'application/msword',
+        'gif' =&gt; 'image/gif',
+        'htm' =&gt; 'text/html',
+        'html' =&gt; 'text/html',
+        'ico' =&gt; 'image/x-icon',
+        'jpe' =&gt; 'image/jpeg',
+        'jpeg' =&gt; 'image/jpeg',
+        'jpg' =&gt; 'image/jpeg',
+        'js' =&gt; 'application/x-javascript',
+        'mpeg' =&gt; 'video/mpeg',
+        'ogg' =&gt; 'application/ogg',
+        'png' =&gt; 'image/png',
+        'rtf' =&gt; 'text/rtf',
+        'rtx' =&gt; 'text/richtext',
+        'swf' =&gt; 'application/x-shockwave-flash',
+        'wav' =&gt; 'audio/x-wav',
+        'wbmp' =&gt; 'image/vnd.wap.wbmp',
+        'zip' =&gt; 'application/zip',<span style="color: #000000;">
+      );
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * @param string $host 监听地址
+     * @param int $port 监听端口
+     * @param string $_root 网站根目录
+    </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$host</span>,<span style="color: #800080;">$port</span>,<span style="color: #800080;">$_root</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;host = <span style="color: #800080;">$host</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;port = <span style="color: #800080;">$port</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;_root = <span style="color: #800080;">$_root</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+    * 启动http服务
+    </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> start(){
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">创建socket套接字</span>
+        <span style="color: #800080;">$socket</span> = socket_create(AF_INET, SOCK_STREAM,<span style="color: #000000;"> SOL_TCP);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">设置阻塞模式</span>
+        socket_set_block(<span style="color: #800080;">$socket</span><span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">为套接字绑定ip和端口</span>
+        socket_bind(<span style="color: #800080;">$socket</span>,<span style="color: #800080;">$this</span>-&gt;host,<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">port);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">监听socket</span>
+        socket_listen(<span style="color: #800080;">$socket</span>,4<span style="color: #000000;">);
+
+        </span><span style="color: #0000ff;">while</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">)
+        {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">接收客户端请求</span>
+            <span style="color: #0000ff;">if</span>((<span style="color: #800080;">$msgsocket</span> = socket_accept(<span style="color: #800080;">$socket</span>)) !== <span style="color: #0000ff;">false</span><span style="color: #000000;">){
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">读取请求内容</span>
+                <span style="color: #800080;">$buf</span> = socket_read(<span style="color: #800080;">$msgsocket</span>, 9024<span style="color: #000000;">);
+                
+                </span><span style="color: #008080;">preg_match</span>("/\/(.*) HTTP\/1\.1/",<span style="color: #800080;">$buf</span>,<span style="color: #800080;">$matchs</span><span style="color: #000000;">);
+                
+                </span><span style="color: #008080;">preg_match</span>("/Accept: (.*?),/",<span style="color: #800080;">$buf</span>,<span style="color: #800080;">$matchss</span><span style="color: #000000;">);
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">获取接收文件类型</span>
+                <span style="color: #800080;">$type</span> = <span style="color: #008080;">explode</span>("/",<span style="color: #800080;">$matchss</span>[1])[0<span style="color: #000000;">];
+
+                </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$type</span>=="text"<span style="color: #000000;">){
+                    </span><span style="color: #800080;">$content</span> = <span style="color: #800080;">$this</span>-&gt;GetString(<span style="color: #800080;">$matchs</span>[1<span style="color: #000000;">]);
+                }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                    </span><span style="color: #800080;">$content</span> = <span style="color: #800080;">$this</span>-&gt;GetImg(<span style="color: #800080;">$matchs</span>[1<span style="color: #000000;">]);
+                }
+
+                socket_write(</span><span style="color: #800080;">$msgsocket</span>,<span style="color: #800080;">$content</span>,<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$content</span><span style="color: #000000;">));
+
+                socket_close(</span><span style="color: #800080;">$msgsocket</span><span style="color: #000000;">);
+            }
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 组装消息头信息模板
+     * @param int $code 状态码
+     * @param string $status 状态名称
+     * @param string $content 发送的文本内容
+     * @param string $content_type 发送的内容类型
+     * @return string
+    *</span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> GetHeaders(<span style="color: #800080;">$code</span>,<span style="color: #800080;">$status</span>,<span style="color: #800080;">$content</span>="",<span style="color: #800080;">$content_type</span>="text/html;charset=utf-8"<span style="color: #000000;">){
+        </span><span style="color: #800080;">$header</span> = ''<span style="color: #000000;">;
+        </span><span style="color: #800080;">$header</span> .= "HTTP/1.1 {<span style="color: #800080;">$code</span>} {<span style="color: #800080;">$status</span>}\r\n"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$header</span> .= "Date: ".<span style="color: #008080;">gmdate</span>('D, d M Y H:i:s T')."\r\n"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$header</span> .= "Content-Type: {<span style="color: #800080;">$content_type</span>}\r\n"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$header</span> .= "Content-Length: ".<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$content</span>)."\r\n\r\n";<span style="color: #008000;">//</span><span style="color: #008000;">必须2个\r\n表示头部信息结束</span>
+        <span style="color: #800080;">$header</span> .= <span style="color: #800080;">$content</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$header</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+    * 组装文本发送信息
+     * @param string $url_path
+     * @return string
+    *</span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> GetString(<span style="color: #800080;">$url_path</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;getRealPath(<span style="color: #800080;">$url_path</span><span style="color: #000000;">)){
+            </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_readable</span>(<span style="color: #800080;">$this</span>-&gt;getRealPath(<span style="color: #800080;">$url_path</span><span style="color: #000000;">))){
+                </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;GetHeaders(200,"OK",<span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$this</span>-&gt;getRealPath(<span style="color: #800080;">$url_path</span>)),<span style="color: #800080;">$this</span>-&gt;getMime(<span style="color: #800080;">$url_path</span><span style="color: #000000;">));
+            }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;GetHeaders(401,"Unauthorized"<span style="color: #000000;">);
+            }
+            
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;GetHeaders(404,"Not Found"<span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+    * 组装资源返回信息
+     * @param string $url_path
+     * @return string
+    *</span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> GetImg(<span style="color: #800080;">$url_path</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$this</span>-&gt;getRealPath(<span style="color: #800080;">$url_path</span><span style="color: #000000;">)){
+
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;GetHeaders(200,"OK",<span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$this</span>-&gt;getRealPath(<span style="color: #800080;">$url_path</span>)),<span style="color: #800080;">$this</span>-&gt;getMime(<span style="color: #800080;">$url_path</span><span style="color: #000000;">));
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+           </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;GetHeaders(404,"Not Found"<span style="color: #000000;">);
+        }
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取资源类型
+     * @param string $path
+     * @return mixed
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getMime(<span style="color: #800080;">$path</span><span style="color: #000000;">){
+       </span><span style="color: #800080;">$type</span> = <span style="color: #008080;">explode</span>(".",<span style="color: #800080;">$path</span><span style="color: #000000;">);
+       </span><span style="color: #800080;">$mime</span> = <span style="color: #800080;">$this</span>-&gt; mime_types[<span style="color: #800080;">$type</span>[1<span style="color: #000000;">]]; 
+       </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$mime</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取访问资源的真实地址
+     * @param $url_path
+     * @return bool|string
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getRealPath(<span style="color: #800080;">$url_path</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">realpath</span>(<span style="color: #800080;">$this</span>-&gt;_root."/".<span style="color: #800080;">$url_path</span><span style="color: #000000;">);
+    }
+
+}
+
+</span><span style="color: #800080;">$server</span> = <span style="color: #0000ff;">new</span> Http("127.0.0.1",3046,"wwwroot"<span style="color: #000000;">);
+</span><span style="color: #800080;">$server</span>-&gt;start();</code></pre>
+
+<p>效果图：</p>
+<p>&nbsp;<img src="./images/【php socket通讯】php实现http服务1.jpg" alt="" /></p>
+<p>github地址：&nbsp;<a href="https://github.com/enjoysmilehappy/http_server">https://github.com/enjoysmilehappy/http_server</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

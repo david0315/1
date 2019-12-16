@@ -1,0 +1,77 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 扩展与 ZEND 引擎的整合' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 扩展与 ZEND 引擎的整合</center></div><div class='banquan'>原文出处:本文由博客园博主tosser提供。<br/>
+原文连接:https://www.cnblogs.com/tosser/p/11522548.html</div><br>
+    <p>&nbsp; &nbsp; &nbsp; &nbsp; PHP 扩展是对 PHP 功能的一个补充，编写完 PHP 扩展以后， ZEND 引擎需要获取到 PHP 扩展的信息，比如 phpinfo() 函数是如何列出 PHP 扩展的信息，PHP 扩展中的函数如何提供给 PHP 程序员使用，这些是开发 PHP 扩展需要了解的内容。</p>
+<p>&nbsp;</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;这些内容并不复杂，在开发 PHP 扩展时只要愿意去了解一下相关的部分就可以了，在这里，我给出一个简单的介绍。</p>
+<p>&nbsp;</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; PHP 扩展中负责提供信息的结构体为 zend_module_entry，该结构体的定义如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">struct</span><span style="color: #000000;"> _zend_module_entry {
+</span><span style="color: #008080;"> 2</span>     unsigned <span style="color: #0000ff;">short</span><span style="color: #000000;"> size;
+</span><span style="color: #008080;"> 3</span>     unsigned <span style="color: #0000ff;">int</span><span style="color: #000000;"> zend_api;
+</span><span style="color: #008080;"> 4</span>     unsigned <span style="color: #0000ff;">char</span><span style="color: #000000;"> zend_debug;
+</span><span style="color: #008080;"> 5</span>     unsigned <span style="color: #0000ff;">char</span><span style="color: #000000;"> zts;
+</span><span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">const</span> <span style="color: #0000ff;">struct</span> _zend_ini_entry *<span style="color: #000000;">ini_entry;
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">const</span> <span style="color: #0000ff;">struct</span> _zend_module_dep *<span style="color: #000000;">deps;
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">const</span> <span style="color: #0000ff;">char</span> *<span style="color: #000000;">name;
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">const</span> <span style="color: #0000ff;">struct</span> _zend_function_entry *<span style="color: #000000;">functions;
+</span><span style="color: #008080;">10</span>     <span style="color: #0000ff;">int</span> (*<span style="color: #000000;">module_startup_func)(INIT_FUNC_ARGS);
+</span><span style="color: #008080;">11</span>     <span style="color: #0000ff;">int</span> (*<span style="color: #000000;">module_shutdown_func)(SHUTDOWN_FUNC_ARGS);
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">int</span> (*<span style="color: #000000;">request_startup_func)(INIT_FUNC_ARGS);
+</span><span style="color: #008080;">13</span>     <span style="color: #0000ff;">int</span> (*<span style="color: #000000;">request_shutdown_func)(SHUTDOWN_FUNC_ARGS);
+</span><span style="color: #008080;">14</span>     <span style="color: #0000ff;">void</span> (*<span style="color: #000000;">info_func)(ZEND_MODULE_INFO_FUNC_ARGS);
+</span><span style="color: #008080;">15</span>     <span style="color: #0000ff;">const</span> <span style="color: #0000ff;">char</span> *<span style="color: #000000;">version;
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">    size_t globals_size;
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">#ifdef ZTS
+</span><span style="color: #008080;">18</span>     ts_rsrc_id*<span style="color: #000000;"> globals_id_ptr;
+</span><span style="color: #008080;">19</span> <span style="color: #0000ff;">#else</span>
+<span style="color: #008080;">20</span>     <span style="color: #0000ff;">void</span>*<span style="color: #000000;"> globals_ptr;
+</span><span style="color: #008080;">21</span> <span style="color: #0000ff;">#endif</span>
+<span style="color: #008080;">22</span>     <span style="color: #0000ff;">void</span> (*globals_ctor)(<span style="color: #0000ff;">void</span> *<span style="color: #0000ff;">global</span><span style="color: #000000;">);
+</span><span style="color: #008080;">23</span>     <span style="color: #0000ff;">void</span> (*globals_dtor)(<span style="color: #0000ff;">void</span> *<span style="color: #0000ff;">global</span><span style="color: #000000;">);
+</span><span style="color: #008080;">24</span>     <span style="color: #0000ff;">int</span> (*post_deactivate_func)(<span style="color: #0000ff;">void</span><span style="color: #000000;">);
+</span><span style="color: #008080;">25</span>     <span style="color: #0000ff;">int</span><span style="color: #000000;"> module_started;
+</span><span style="color: #008080;">26</span>     unsigned <span style="color: #0000ff;">char</span><span style="color: #000000;"> type;
+</span><span style="color: #008080;">27</span>     <span style="color: #0000ff;">void</span> *<span style="color: #000000;">handle;
+</span><span style="color: #008080;">28</span>     <span style="color: #0000ff;">int</span><span style="color: #000000;"> module_number;
+</span><span style="color: #008080;">29</span>     <span style="color: #0000ff;">const</span> <span style="color: #0000ff;">char</span> *<span style="color: #000000;">build_id;
+</span><span style="color: #008080;">30</span> };</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; 有了上面的结构体以后，那么 PHP 扩展的信息就已经有了，那么就可以将该结构体的信息提供给 ZEND 引擎，获取该结构体信息的函数为 get_module()，该函数的定义如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">#define</span> ZEND_GET_MODULE(name) \
+<span style="color: #008080;">2</span> <span style="color: #000000;">    BEGIN_EXTERN_C()\
+</span><span style="color: #008080;">3</span>     ZEND_DLEXPORT zend_module_entry *get_module(<span style="color: #0000ff;">void</span>) { <span style="color: #0000ff;">return</span> &amp;<span style="color: #000000;">name##_module_entry; }\
+</span><span style="color: #008080;">4</span>     END_EXTERN_C()</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; get_module() 函数返回一个 zend_module_entry 结构体的指针，通过 ## 完成字符串的拼接，然后通过&nbsp;&amp; 取地址符获得结构体的内容即可。</p>
+<p>&nbsp;</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;通过这两部分就可以完成 PHP 扩展到 ZEND 引擎的整合，不过好在 zend_module_entry 结构体会由扩展模板生成工具进行填充，而 get_module() 函数也不需要我们自己去调用，但是整合的原理还是要大体了解一下的，具体信息可以阅读相关的源码去进行理解。</p>
+<p>&nbsp;</p>
+<hr />
+<p>&nbsp;</p>
+<p><strong><strong>我的</strong>微信公众号：&ldquo;码农UP2U&rdquo;</strong></p>
+<p><strong><img src="./images/PHP 扩展与 ZEND 引擎的整合0.jpg" alt="" /></strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

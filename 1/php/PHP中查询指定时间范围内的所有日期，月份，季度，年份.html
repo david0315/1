@@ -1,0 +1,89 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中查询指定时间范围内的所有日期，月份，季度，年份' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中查询指定时间范围内的所有日期，月份，季度，年份</center></div><div class='banquan'>原文出处:本文由博客园博主幽篁晓筑提供。<br/>
+原文连接:https://www.cnblogs.com/woods1815/p/10958642.html</div><br>
+    <p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 查询指定时间范围内的所有日期，月份，季度，年份
+ *
+ * @param $startDate   指定开始时间，Y-m-d格式
+ * @param $endDate     指定结束时间，Y-m-d格式
+ * @param $type        类型，day 天，month 月份，quarter 季度，year 年份
+ * @return array
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> getDateByInterval(<span style="color: #800080;">$startDate</span>, <span style="color: #800080;">$endDate</span>, <span style="color: #800080;">$type</span><span style="color: #000000;">)
+{
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">date</span>('Y-m-d', <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$startDate</span>)) != <span style="color: #800080;">$startDate</span> || <span style="color: #008080;">date</span>('Y-m-d', <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$endDate</span>)) != <span style="color: #800080;">$endDate</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">return</span> '日期格式不正确'<span style="color: #000000;">;
+    }
+ 
+    </span><span style="color: #800080;">$tempDate</span> = <span style="color: #800080;">$startDate</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$returnData</span> =<span style="color: #000000;"> [];
+    </span><span style="color: #800080;">$i</span> = 0<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$type</span> == 'day') {    <span style="color: #008000;">//</span><span style="color: #008000;"> 查询所有日期</span>
+        <span style="color: #0000ff;">while</span> (<span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$tempDate</span>) &lt; <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$endDate</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$tempDate</span> = <span style="color: #008080;">date</span>('Y-m-d', <span style="color: #008080;">strtotime</span>('+' . <span style="color: #800080;">$i</span> . ' day', <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$startDate</span><span style="color: #000000;">)));
+            </span><span style="color: #800080;">$returnData</span>[] = <span style="color: #800080;">$tempDate</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$i</span>++<span style="color: #000000;">;
+        }
+    } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$type</span> == 'month') {    <span style="color: #008000;">//</span><span style="color: #008000;"> 查询所有月份以及开始结束时间</span>
+        <span style="color: #0000ff;">while</span> (<span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$tempDate</span>) &lt; <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$endDate</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$temp</span> =<span style="color: #000000;"> [];
+            </span><span style="color: #800080;">$month</span> = <span style="color: #008080;">strtotime</span>('+' . <span style="color: #800080;">$i</span> . ' month', <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$startDate</span><span style="color: #000000;">));
+            </span><span style="color: #800080;">$temp</span>['name'] = <span style="color: #008080;">date</span>('Y-m', <span style="color: #800080;">$month</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$temp</span>['startDate'] = <span style="color: #008080;">date</span>('Y-m-01', <span style="color: #800080;">$month</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$temp</span>['endDate'] = <span style="color: #008080;">date</span>('Y-m-t', <span style="color: #800080;">$month</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$tempDate</span> = <span style="color: #800080;">$temp</span>['endDate'<span style="color: #000000;">];
+            </span><span style="color: #800080;">$returnData</span>[] = <span style="color: #800080;">$temp</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$i</span>++<span style="color: #000000;">;
+        }
+    } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$type</span> == 'quarter') {    <span style="color: #008000;">//</span><span style="color: #008000;"> 查询所有季度以及开始结束时间</span>
+        <span style="color: #0000ff;">while</span> (<span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$tempDate</span>) &lt; <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$endDate</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$temp</span> =<span style="color: #000000;"> [];
+            </span><span style="color: #800080;">$quarter</span> = <span style="color: #008080;">strtotime</span>('+' . <span style="color: #800080;">$i</span> . ' month', <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$startDate</span><span style="color: #000000;">));
+            </span><span style="color: #800080;">$q</span> = <span style="color: #008080;">ceil</span>(<span style="color: #008080;">date</span>('n', <span style="color: #800080;">$quarter</span>) / 3<span style="color: #000000;">);
+            </span><span style="color: #800080;">$temp</span>['name'] = <span style="color: #008080;">date</span>('Y', <span style="color: #800080;">$quarter</span>) . '第' . <span style="color: #800080;">$q</span> . '季度'<span style="color: #000000;">;
+            </span><span style="color: #800080;">$temp</span>['startDate'] = <span style="color: #008080;">date</span>('Y-m-01', <span style="color: #008080;">mktime</span>(0, 0, 0, <span style="color: #800080;">$q</span> * 3 - 3 + 1, 1, <span style="color: #008080;">date</span>('Y', <span style="color: #800080;">$quarter</span><span style="color: #000000;">)));
+            </span><span style="color: #800080;">$temp</span>['endDate'] = <span style="color: #008080;">date</span>('Y-m-t', <span style="color: #008080;">mktime</span>(23, 59, 59, <span style="color: #800080;">$q</span> * 3, 1, <span style="color: #008080;">date</span>('Y', <span style="color: #800080;">$quarter</span><span style="color: #000000;">)));
+            </span><span style="color: #800080;">$tempDate</span> = <span style="color: #800080;">$temp</span>['endDate'<span style="color: #000000;">];
+            </span><span style="color: #800080;">$returnData</span>[] = <span style="color: #800080;">$temp</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$i</span> = <span style="color: #800080;">$i</span> + 3<span style="color: #000000;">;
+        }
+    } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$type</span> == 'year') {    <span style="color: #008000;">//</span><span style="color: #008000;"> 查询所有年份以及开始结束时间</span>
+        <span style="color: #0000ff;">while</span> (<span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$tempDate</span>) &lt; <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$endDate</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$temp</span> =<span style="color: #000000;"> [];
+            </span><span style="color: #800080;">$year</span> = <span style="color: #008080;">strtotime</span>('+' . <span style="color: #800080;">$i</span> . ' year', <span style="color: #008080;">strtotime</span>(<span style="color: #800080;">$startDate</span><span style="color: #000000;">));
+            </span><span style="color: #800080;">$temp</span>['name'] = <span style="color: #008080;">date</span>('Y', <span style="color: #800080;">$year</span>) . '年'<span style="color: #000000;">;
+            </span><span style="color: #800080;">$temp</span>['startDate'] = <span style="color: #008080;">date</span>('Y-01-01', <span style="color: #800080;">$year</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$temp</span>['endDate'] = <span style="color: #008080;">date</span>('Y-12-31', <span style="color: #800080;">$year</span><span style="color: #000000;">);
+            </span><span style="color: #800080;">$tempDate</span> = <span style="color: #800080;">$temp</span>['endDate'<span style="color: #000000;">];
+            </span><span style="color: #800080;">$returnData</span>[] = <span style="color: #800080;">$temp</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$i</span>++<span style="color: #000000;">;
+        }
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$returnData</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

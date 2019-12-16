@@ -1,0 +1,147 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Symfony 服务配置 看这一篇就够了' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Symfony 服务配置 看这一篇就够了</center></div><div class='banquan'>原文出处:本文由博客园博主爱你们的小森提供。<br/>
+原文连接:https://www.cnblogs.com/foreverno9/p/9999085.html</div><br>
+    <p>对于刚接触 Symfony 的新手来说，如何配置服务是一件很困难的事情。虽然在 Symfony 的新版本的框架中加入了自动加载（autowire），基本上满足了一般的需求，但是如果你想深入了解&ldquo;服务&rdquo;这个概念，并且能够娴熟的使用，就需要能够手动配置完整的工程级别的服务配置。</p>
+<p>可惜，对于服务的诸多配置官方文档上的介绍是分功能来描述的，并没有一个列表性质的总结。网上有一些但是也不够全面。</p>
+<p>本文总结了大部分的服务配置以及语法，相信能够满足大规模项目中的99%配置需求。</p>
+<p>本文没有对 tag，decorates 配置进行介绍，后续的文章会补上，感兴趣的同学可以关注我的博客。</p>
+<p>如何阅读本文，</p>
+<p>如何阅读本文，</p>
+<p>如何阅读本文，</p>
+<p>重要的事情说了三遍了，如果你有服务配置的基础，而只是对某个配置不太了解的话，大可以直接从下面的配置中查看（像手册一样）。如果你是新手小白，那么请注意阅读方法：文章分两部分，一部分是服务配置 yaml 格式的文件，后续会补上 xml 以及 PHP 的版本，xml 格式比较严谨（大部分的官方 bundle 采用的都是 xml），而 PHP 代码实现则可以对配置内部如何实现有比较直观清晰的认识。另一部分是服务对应的 PHP 代码，几个简单的类而已。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> <span style="color: #008000;">#</span><span style="color: #008000;"> config/service.yaml</span>
+<span style="color: #008080;">  2</span> 
+<span style="color: #008080;">  3</span> parameters:
+<span style="color: #008080;">  4</span>     email_address: admin@email.<span style="color: #000000;">com
+</span><span style="color: #008080;">  5</span> 
+<span style="color: #008080;">  6</span> services:
+<span style="color: #008080;">  7</span> <span style="color: #008000;">#</span><span style="color: #008000;">    使用 FQCN 的形式定义一个服务名（推荐）</span>
+<span style="color: #008080;">  8</span>     App\Services\Email:
+<span style="color: #008080;">  9</span> <span style="color: #008000;">#</span><span style="color: #008000;">        服务实现的类</span>
+<span style="color: #008080;"> 10</span>         <span style="color: #0000ff;">class</span>:<span style="color: #000000;"> App\Services\Email
+</span><span style="color: #008080;"> 11</span> <span style="color: #008000;">#</span><span style="color: #008000;">        true 则可以通过 get(\App\Services\Email::class) 方法获取到，false 不可以</span>
+<span style="color: #008080;"> 12</span>         <span style="color: #0000ff;">public</span>: <span style="color: #0000ff;">true</span>
+<span style="color: #008080;"> 13</span> <span style="color: #008000;">#</span><span style="color: #008000;">        当该服务在多个地方被注入或获取时，返回不同的实例，如果是 true 则返回同一个实例</span>
+<span style="color: #008080;"> 14</span>         shared: <span style="color: #0000ff;">false</span>
+<span style="color: #008080;"> 15</span> <span style="color: #008000;">#</span><span style="color: #008000;">        关闭 autowire</span>
+<span style="color: #008080;"> 16</span>         autowire: <span style="color: #0000ff;">false</span>
+<span style="color: #008080;"> 17</span> <span style="color: #008000;">#</span><span style="color: #008000;">        这个服务（类）的构造方法需要3个参数，第一个参数引用了一个 parameter，第二个参数是一个固定值，<br />    #        第三个参数引用了一个服务，第四个</span>
+<span style="color: #008080;"> 18</span> <span style="color: #008000;">#</span><span style="color: #008000;">        参数是一个可选的服务，存在就引用，不存在就使用服务（类）中的默认值（请查看 App\Services\Email 的构造方法）</span>
+<span style="color: #008080;"> 19</span> <span style="color: #008000;">#</span><span style="color: #008000;">        %xxx% 表示引用一个 parameters 中定义的变量，@xxx 表示引用一个服务</span>
+<span style="color: #008080;"> 20</span>         arguments: ["%email_address%", 10, "@app.logger", '@?app.not_exist'] <span style="color: #008000;">#</span><span style="color: #008000;"> 等价于下面的设置</span>
+<span style="color: #008080;"> 21</span> <span style="color: #008000;">#</span><span style="color: #008000;">        arguments:</span>
+<span style="color: #008080;"> 22</span> <span style="color: #008000;">#</span><span style="color: #008000;">            - "%email_address%"</span>
+<span style="color: #008080;"> 23</span> <span style="color: #008000;">#</span><span style="color: #008000;">            - 10</span>
+<span style="color: #008080;"> 24</span> <span style="color: #008000;">#</span><span style="color: #008000;">            - "@app.logger"</span>
+<span style="color: #008080;"> 25</span> <span style="color: #008000;">#</span><span style="color: #008000;">            - '@?app.not_exist'</span>
+<span style="color: #008080;"> 26</span> <span style="color: #008000;">#</span><span style="color: #008000;">        这里需要注意 "" 和 '' 的使用，如果引用的服务名是 FQCN 那么必须使用 ''，<br />    #        如果是普通的字符串服务名那么双引单引都可以</span>
+<span style="color: #008080;"> 27</span> <span style="color: #008000;">#</span><span style="color: #008000;">        等价于上一行，因为在下面关联了这个接口和服务</span>
+<span style="color: #008080;"> 28</span> <span style="color: #008000;">#</span><span style="color: #008000;">        arguments: ["%email_address%", 10, '@App\Services\LoggerInterface']</span>
+<span style="color: #008080;"> 29</span> <span style="color: #008000;">#</span><span style="color: #008000;">        这个服务（类）有一个 server 属性，对这个属性进行赋值操作，赋值了一个数组</span>
+<span style="color: #008080;"> 30</span>         properties:
+<span style="color: #008080;"> 31</span>             server:
+<span style="color: #008080;"> 32</span>                 smtp: smtp.email.<span style="color: #000000;">com
+</span><span style="color: #008080;"> 33</span>                 imap: imap.email.<span style="color: #000000;">com
+</span><span style="color: #008080;"> 34</span> <span style="color: #008000;">#</span><span style="color: #008000;">        这个服务（类）有一个 setTemplate 方法，该方法有两个参数，服务被注入或获取时，会自动调用该方法</span>
+<span style="color: #008080;"> 35</span>         calls:
+<span style="color: #008080;"> 36</span>             - ['setTemplate', ['@app.template', 512]] <span style="color: #008000;">#</span><span style="color: #008000;">等价于下面的设置</span>
+<span style="color: #008080;"> 37</span> <span style="color: #008000;">#</span><span style="color: #008000;">            - method: setTemplate</span>
+<span style="color: #008080;"> 38</span> <span style="color: #008000;">#</span><span style="color: #008000;">              arguments:</span>
+<span style="color: #008080;"> 39</span> <span style="color: #008000;">#</span><span style="color: #008000;">                  - '@app.template'</span>
+<span style="color: #008080;"> 40</span> <span style="color: #008000;">#</span><span style="color: #008000;">                  - 512</span>
+<span style="color: #008080;"> 41</span> 
+<span style="color: #008080;"> 42</span>     App\Services\Logger:
+<span style="color: #008080;"> 43</span>         <span style="color: #0000ff;">class</span>:<span style="color: #000000;"> App\Services\Logger
+</span><span style="color: #008080;"> 44</span>         <span style="color: #0000ff;">public</span>: <span style="color: #0000ff;">true</span>
+<span style="color: #008080;"> 45</span>         shared: <span style="color: #0000ff;">false</span> <span style="color: #008000;">#</span><span style="color: #008000;"> 这里的设置没起作用，不知道为什么</span>
+<span style="color: #008080;"> 46</span> <span style="color: #008000;">#</span><span style="color: #008000;">    给 App\Services\Logger 服务定义一个别名</span>
+<span style="color: #008080;"> 47</span> <span style="color: #008000;">#</span><span style="color: #008000;">    但是不能够通过 get('app.logger') 获取服务，因为没有指定 public，<br />    #    那么在 ResolvePrivatesPass 中就会将 public 设置为 false</span>
+<span style="color: #008080;"> 48</span>     app.logger:
+<span style="color: #008080;"> 49</span>         alias:<span style="color: #000000;"> App\Services\Logger
+</span><span style="color: #008080;"> 50</span> 
+<span style="color: #008080;"> 51</span> <span style="color: #008000;">#</span><span style="color: #008000;">    关联接口和服务，任何一个服务如果注入的是参数类型是 App\Services\LoggerInterface，<br />    #    那么都将获取到 App\Services\Logger 这个服务</span>
+<span style="color: #008080;"> 52</span>     App\Services\LoggerInterface: '@App\Services\Logger'
+<span style="color: #008080;"> 53</span> 
+<span style="color: #008080;"> 54</span> <span style="color: #008000;">#</span><span style="color: #008000;">    使用字符串的形式定义一个服务名（不推荐），app.template 中的 "." 没有任何意义，好看而已</span>
+<span style="color: #008080;"> 55</span>     app.template:
+<span style="color: #008080;"> 56</span>         <span style="color: #0000ff;">class</span>:<span style="color: #000000;"> App\Services\Template
+</span><span style="color: #008080;"> 57</span> <span style="color: #008000;">#</span><span style="color: #008000;">        这个服务（类）的初始化是由 factory 中设置的方法来实现的，也就是说当这个服务被注入或获取时，会静态调用 App\Services\TemplateFactory</span>
+<span style="color: #008080;"> 58</span> <span style="color: #008000;">#</span><span style="color: #008000;">        中的 createTemplate 这个方法</span>
+<span style="color: #008080;"> 59</span> <span style="color: #008000;">#</span><span style="color: #008000;">        下面的语法只适用于静态方法的创建</span>
+<span style="color: #008080;"> 60</span>         factory:
+<span style="color: #008080;"> 61</span>             ['App\Services\TemplateFactory',<span style="color: #000000;"> createTemplate]
+</span><span style="color: #008080;"> 62</span> <span style="color: #008000;">#</span><span style="color: #008000;">        这个静态方法需要一个参数</span>
+<span style="color: #008080;"> 63</span>         arguments:
+<span style="color: #008080;"> 64</span>             - 512
+<span style="color: #008080;"> 65</span> 
+<span style="color: #008080;"> 66</span> <span style="color: #008000;">#</span><span style="color: #008000;">     如果工厂类需要实例化，那么就必须将其定义为一个服务</span>
+<span style="color: #008080;"> 67</span> <span style="color: #008000;">#</span><span style="color: #008000;">    App\Services\TemplateFactory: ~</span>
+<span style="color: #008080;"> 68</span> <span style="color: #008000;">#</span><span style="color: #008000;">    app.template:</span>
+<span style="color: #008080;"> 69</span> <span style="color: #008000;">#</span><span style="color: #008000;">        class: App\Services\Template</span>
+<span style="color: #008080;"> 70</span> <span style="color: #008000;">#</span><span style="color: #008000;">        # 这个 createTemplate 是成员方法，下面的语法只适用于工厂类实例化后调用成员方法的创建</span>
+<span style="color: #008080;"> 71</span> <span style="color: #008000;">#</span><span style="color: #008000;">        factory:</span>
+<span style="color: #008080;"> 72</span> <span style="color: #008000;">#</span><span style="color: #008000;">            'App\Services\TemplateFactory:createTemplate'</span>
+<span style="color: #008080;"> 73</span> <span style="color: #008000;">#</span><span style="color: #008000;">        arguments:</span>
+<span style="color: #008080;"> 74</span> <span style="color: #008000;">#</span><span style="color: #008000;">            - 512</span>
+<span style="color: #008080;"> 75</span> 
+<span style="color: #008080;"> 76</span> <span style="color: #008000;">#</span><span style="color: #008000;">############################# 自动装载 autowire ############################################################</span>
+<span style="color: #008080;"> 77</span> <span style="color: #008000;">#</span><span style="color: #008000;">    如果当前的 services 下面没有定义 _default(或者 _default 下面定义的 autowire:false) 并且 App\Services\TestAutowire\TestAutowire</span>
+<span style="color: #008080;"> 78</span> <span style="color: #008000;">#</span><span style="color: #008000;">    这个服务中也没有定义 autowire，那么默认 autowire 就是 false。autowire:false 意味着如果服务的构造方法中需要参数，则必须手动的在</span>
+<span style="color: #008080;"> 79</span> <span style="color: #008000;">#</span><span style="color: #008000;">    arguments 字段中明确的设置。</span>
+<span style="color: #008080;"> 80</span> <span style="color: #008000;">#</span><span style="color: #008000;">    也就是说所谓的 autowire 就是自动注入构造方法中所需要的参数而无须手动声明。</span>
+<span style="color: #008080;"> 81</span>     App\Services\TestAutowire\TestAutowire:
+<span style="color: #008080;"> 82</span>         <span style="color: #0000ff;">class</span>:<span style="color: #000000;"> App\Services\TestAutowire\TestAutowire
+</span><span style="color: #008080;"> 83</span>         <span style="color: #0000ff;">public</span>: <span style="color: #0000ff;">true</span>
+<span style="color: #008080;"> 84</span>         arguments:
+<span style="color: #008080;"> 85</span>             - '@App\Services\TestAutowire\TestAutowireArg'
+<span style="color: #008080;"> 86</span>     App\Services\TestAutowire\TestAutowireArg:
+<span style="color: #008080;"> 87</span>         <span style="color: #0000ff;">class</span>:<span style="color: #000000;"> App\Services\TestAutowire\TestAutowireArg
+</span><span style="color: #008080;"> 88</span> 
+<span style="color: #008080;"> 89</span> <span style="color: #008000;">#</span><span style="color: #008000;">    设置了 autowire:true 则无需手动设置构造方法的参数了</span>
+<span style="color: #008080;"> 90</span> <span style="color: #008000;">#</span><span style="color: #008000;">    App\Services\TestAutowire\TestAutowire:</span>
+<span style="color: #008080;"> 91</span> <span style="color: #008000;">#</span><span style="color: #008000;">        class: App\Services\TestAutowire\TestAutowire</span>
+<span style="color: #008080;"> 92</span> <span style="color: #008000;">#</span><span style="color: #008000;">        public: true</span>
+<span style="color: #008080;"> 93</span> <span style="color: #008000;">#</span><span style="color: #008000;">        autowire: true</span>
+<span style="color: #008080;"> 94</span> <span style="color: #008000;">#</span><span style="color: #008000;">    App\Services\TestAutowire\TestAutowireArg:</span>
+<span style="color: #008080;"> 95</span> <span style="color: #008000;">#</span><span style="color: #008000;">        class: App\Services\TestAutowire\TestAutowireArg</span>
+<span style="color: #008080;"> 96</span> 
+<span style="color: #008080;"> 97</span> <span style="color: #008000;">#</span><span style="color: #008000;">############################# 父服务与子服务 ############################################################</span>
+<span style="color: #008080;"> 98</span>     App\Services\ParentAndChild\ParentService:
+<span style="color: #008080;"> 99</span>         <span style="color: #0000ff;">class</span>:<span style="color: #000000;"> App\Services\ParentAndChild\ParentService
+</span><span style="color: #008080;">100</span>         <span style="color: #0000ff;">public</span>: <span style="color: #0000ff;">true</span>
+<span style="color: #008080;">101</span>         <span style="color: #0000ff;">abstract</span>: <span style="color: #0000ff;">true</span>
+<span style="color: #008080;">102</span>         arguments:
+<span style="color: #008080;">103</span>             <span style="color: #800080;">$someService1</span>: '@App\Services\ParentAndChild\SomeService1'
+<span style="color: #008080;">104</span>             <span style="color: #800080;">$someService2</span>: '@App\Services\ParentAndChild\SomeService2'
+<span style="color: #008080;">105</span>     App\Services\ParentAndChild\ChildService:
+<span style="color: #008080;">106</span>         <span style="color: #0000ff;">class</span>:<span style="color: #000000;"> App\Services\ParentAndChild\ChildService
+</span><span style="color: #008080;">107</span>         parent:<span style="color: #000000;"> App\Services\ParentAndChild\ParentService
+</span><span style="color: #008080;">108</span>         <span style="color: #0000ff;">public</span>: <span style="color: #0000ff;">true</span>
+<span style="color: #008080;">109</span> <span style="color: #008000;">#</span><span style="color: #008000;">    波浪线表示 null，容器会使用默认的设置，不能通过 get() 获取，因为默认 public:false</span>
+<span style="color: #008080;">110</span>     App\Services\ParentAndChild\SomeService1: ~
+<span style="color: #008080;">111</span>     App\Services\ParentAndChild\SomeService2: ~</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

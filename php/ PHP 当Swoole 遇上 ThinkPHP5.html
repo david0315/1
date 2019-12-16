@@ -1,0 +1,146 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修 PHP 当Swoole 遇上 ThinkPHP5' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center> PHP 当Swoole 遇上 ThinkPHP5</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11799297.html</div><br>
+    <p>本文假设你已经有了 Linux 操作系统的 PHP 环境，强烈推荐使用 Vagrant 来搭建开发环境<br /><br />安装 Swoole PECL 拓展<br />可以通过 pecl 命令或者通过源码包编译安装，本文采用 pecl 命令来安装 Swoole在命令行输入</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="9">
+<src class="cnblogs_code">
+<pre><code>$ &gt; pecl install swoole</code></pre>
+
+<p>&nbsp;</p>
+
+<p>安装 Swoole PECL 拓展，执行命令后通过php -m命令来检查 Swoole 是否安装成功，如果返回的拓展列表中包含swoole则表明已经安装成功，也可以通过phpinfo来检查 Swoole 是否安装成功。<br /><br />安装 ThinkPHP5 框架1.安装 Composer如果已经安装了 Composer 可以跳过本步骤，但是请确定通过composer self-update命令来确保已经使用了最新版本的 Composer 使用以下命令可以直接通过 Composer 官网下载 Composer.phar 并自动安装到/usr/local/bin/目录下</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="8">
+<src class="cnblogs_code">
+<pre><code>$ &gt; php -r "readfile('https://getcomposer.org/installer');" | php -- --install-<span style="color: #008080;">dir</span>=/usr/local/bin/ --filename=<span style="color: #000000;">composer
+$ </span>&gt; composer self-update</code></pre>
+
+<p><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></p>
+
+<p>如果以上安装过程极慢的话，可以尝试用以下方式通过 Composer 国内镜像来安装。</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="7">
+<src class="cnblogs_code">
+<pre><code>$ &gt; php -r "readfile('http://install.phpcomposer.com/installer');" | php -- --install-<span style="color: #008080;">dir</span>=/usr/local/bin/ --filename=<span style="color: #000000;">composer
+$ </span>&gt; composer config -g repo.packagist composer https:<span style="color: #008000;">//</span><span style="color: #008000;">packagist.phpcomposer.com</span>
+$ &gt; composer self-update</code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>2.安装 ThinkPHP5 框架</strong><br />使用以下命令把最新版本的 ThinkPHP5 框架安装到当前目录下的 thinkSwooleFirst 文件夹中</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="6">
+<src class="cnblogs_code">
+<pre><code>$ &gt; composer create-project topthink/think thinkSwooleFirst --prefer-dist</code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>安装 think-swoole Composer 包</strong></p>
+<p>把命令行目录切换到 thinkSwooleFirst 目录，通过 Composer 安装 think-swoole</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="5">
+<src class="cnblogs_code">
+<pre><code>$ &gt; composer <span style="color: #0000ff;">require</span> topthink/think-swoole</code></pre>
+
+<p><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></p>
+
+<p>安装 think-swoole Composer 包之前必须先安装好 Swoole PECL 拓展</p>
+<h3>HelloSwoole</h3>
+<p>当环境全部搭建完成后，我们在application/index/controller目录下建立Demon.php文件，用来书写 Swoole 与 ThinkPHP5 的 TCP 服务器的 Hello World</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="4">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace app\index\controller;
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 必须 use 并继承 \think\swoole\Server 类</span>
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\swoole\Server;
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">class</span> Demon <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Server
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 9</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 监听所有地址</span>
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$host</span> = '0.0.0.0'<span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 监听 9501 端口</span>
+<span style="color: #008080;">12</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$port</span> = 9501<span style="color: #000000;">;
+</span><span style="color: #008080;">13</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 指定运行模式为多进程</span>
+<span style="color: #008080;">14</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$mode</span> =<span style="color: #000000;"> SWOOLE_PROCESS;
+</span><span style="color: #008080;">15</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 指定 socket 的类型为 ipv4 的 tcp socket</span>
+<span style="color: #008080;">16</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$sockType</span> =<span style="color: #000000;"> SWOOLE_SOCK_TCP;
+</span><span style="color: #008080;">17</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 配置项</span>
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$option</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;">19</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">* 
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">         *  设置启动的worker进程数
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">         *  业务代码是全异步非阻塞的，这里设置为CPU的1-4倍最合理
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">         *  业务代码为同步阻塞，需要根据请求响应时间和系统负载来调整
+</span><span style="color: #008080;">23</span>          <span style="color: #008000;">*/</span>
+<span style="color: #008080;">24</span>         'worker_num' =&gt; 4,
+<span style="color: #008080;">25</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 守护进程化</span>
+<span style="color: #008080;">26</span>         'daemonize'  =&gt; <span style="color: #0000ff;">true</span>,
+<span style="color: #008080;">27</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 监听队列的长度</span>
+<span style="color: #008080;">28</span>         'backlog'    =&gt; 128
+<span style="color: #008080;">29</span> <span style="color: #000000;">    ];
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">     * 收到信息时回调函数
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">     * @param \swoole_server $serv swoole_server对象
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">     * @param $fd TCP客户端连接的文件描述符
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">     * @param $from_id TCP连接所在的Reactor线程ID
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">     * @param $data 收到的数据内容
+</span><span style="color: #008080;">37</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">38</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onReceive(\swoole_server <span style="color: #800080;">$server</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$from_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">40</span>         <span style="color: #800080;">$server</span>-&gt;send(<span style="color: #800080;">$fd</span>, 'onReceive: ' . <span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #008080;">41</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">42</span> }</code></pre>
+
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;code&amp;quot;:&amp;quot;\n\n&amp;lt;?php\nnamespace app\\index\\controller;\n\n// 必须 use 并继承 \\think\\swoole\\Server 类\nuse think\\swoole\\Server;\n\nclass Demon extends Server\n{\n    // 监听所有地址\n    protected $host = '0.0.0.0';\n    // 监听 9501 端口\n    protected $port = 9501;\n    // 指定运行模式为多进程\n    protected $mode = SWOOLE_PROCESS;\n    // 指定 socket 的类型为 ipv4 的 tcp socket\n    protected $sockType = SWOOLE_SOCK_TCP;\n    // 配置项\n    protected $option = [\n        /** \n         *  设置启动的worker进程数\n         *  业务代码是全异步非阻塞的，这里设置为CPU的1-4倍最合理\n         *  业务代码为同步阻塞，需要根据请求响应时间和系统负载来调整\n         */\n        'worker_num' =&amp;gt; 4,\n        // 守护进程化\n        'daemonize'  =&amp;gt; true,\n        // 监听队列的长度\n        'backlog'    =&amp;gt; 128\n    ];\n\n    /**\n     * 收到信息时回调函数\n     * @param \\swoole_server $serv swoole_server对象\n     * @param $fd TCP客户端连接的文件描述符\n     * @param $from_id TCP连接所在的Reactor线程ID\n     * @param $data 收到的数据内容\n     */\n    public function onReceive(\\swoole_server $server, $fd, $from_id, $data)\n    {\n        $server-&amp;gt;send($fd, 'onReceive: ' . $data);\n    }\n}&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"></code></pre>
+
+<p>以上代码即使用 ThinkPHP5 和 Swoole 完成了相对简单的 TCP 服务器，接下来就可以运行服务器使用以下命令即可启动 TCP 服务器</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="3">
+<src class="cnblogs_code">
+<pre><code>$ &gt; php <span style="color: #0000ff;">public</span>/index.php index/Demon/start</code></pre>
+
+<p>&nbsp;</p>
+
+<p>我们也可以通过修改配置项deamonize为false，让程序不使用守护进程，更方便我们的调试</p>
+<p>使用守护进程方式我们也可以使用lsof工具来检测，端口是否处于正常状态</p>
+<p>我们也可以通过修改配置项deamonize为false，让程序不使用守护进程，更方便我们的调试</p>
+<p>使用守护进程方式我们也可以使用lsof工具来检测，端口是否处于正常状态</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="2">
+<src class="cnblogs_code">
+<pre><code>$ &gt; lsof -i:9501</code></pre>
+
+<p>&nbsp;</p>
+
+<p>当确认程序正常运行后，使用telnet工具来连接 TCP 服务器，稍后的文章中我们也会讲述如果使用 swoole 的 TCP 客户端来连接 TCP 服务器</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<src class="cnblogs_code">
+<pre><code>telnet 127.0.0.1 9501</code></pre>
+
+<p>&nbsp;</p>
+
+<p>输入hello后会得到以下结果</p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="0">
+<src class="cnblogs_code">
+<pre><code>onReceive: hello</code></pre>
+
+<p>&nbsp;</p>
+<p><strong>phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的</strong>（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群677079770</a></p>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

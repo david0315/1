@@ -1,0 +1,266 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel本地环境搭建：Homestead开发环境的部署' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel本地环境搭建：Homestead开发环境的部署</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11802150.html</div><br>
+    <p>Laravel框架在php开发过程是不断进行优化的，当然也包括了本地环境的开发，下面我们就来具体看看laravel框架中的Homestead 开发环境的部署内容。</p>
+<p>首先白以下几个概念</p>
+<ul class=" list-paddingleft-2">
+<li>
+<p>VirtualBox -- Oracle 公司的虚拟机软件, 能运行在当前大部分流行的系统上;</p>
+</li>
+<li>
+<p>Vagrant 提供一种命令行接口, 允许自动化安装虚拟机, 并且因为是脚本编写成的&nbsp;<code>provision</code>&nbsp;文本文件, 给共享虚拟机配置提供了可能, Homestead 正是构建在 Vagrant 之上;</p>
+</li>
+<li>
+<p>Laravel Homestead 是官方预封装的一个 Vagrant Box，它是一台虚拟机的原型, 用来快速生产一个配置完整的服务器虚拟机, 运行在 VirtualBox 上.</p>
+</li>
+</ul>
+<p>Homestead 生产出来的虚拟机提供了一个完整的开发环境, 有了这个环境, 就不用再担心各种软件的设置会搞乱你的操作系统啦.</p>
+<p>因为是虚拟机, 出现故障的时候, 可以在几分种内完成销毁和重建.</p>
+<p>Homestead 能运行在所有的Windows、Mac和Linux上，它包含了Nginx、PHP 5.5、MySQL、Postgres、Redis、Memcached和你开发 Laravel应用程序需要的所有其它软件。</p>
+<p>在多人协同开的情况下, Homestead 能用来统一开发环境, 让程序员把精力更集中的放在程序业务逻辑上, 免去了各种因为开发环境不一样而造成的混乱.</p>
+<h2>约定</h2>
+<p>假设我们要开发一个项目, 项目的名字叫&nbsp;<code>mytwitter</code>.</p>
+<p>首先在我们存放代码的地方&nbsp;<code>code</code>&nbsp;文件夹里面创建项目根文件夹&nbsp;<code>mytwitter_project</code>, 接下来咱们的操作都在此项目下进行</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">cd ~/codemkdir mytwitter_project</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">cd mytwitter_project</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./images/Laravel本地环境搭建：Homestead开发环境的部署0.jpg" alt="" /><img src="./images/Laravel本地环境搭建：Homestead开发环境的部署1.jpg" alt="" /><img src="./images/Laravel本地环境搭建：Homestead开发环境的部署2.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<h2>安装 virtualbox 和 vagrant</h2>
+<p>在这里下载并安装 VirtualBox , Vagrant .</p>
+<p>直接下载 GUI 安装包安装就行.</p>
+<h2>下载并配置 Homestead</h2>
+<p>Homestead 包括以下两个东西</p>
+<ol class=" list-paddingleft-2">
+<li>
+<p>一个 vagrant box 虚拟机, 里面软件什么都下载好了;</p>
+</li>
+<li>
+<p>Github 代码库, 里面装载着 vagrant 的配置脚本, 用来自动化配置网络, 端口映射, 等一些开发时候用到的配置</p>
+</li>
+</ol>
+<h3>克隆 homestead 项目</h3>
+<p>在文件夹下克隆 homestead 项目到本地</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">git </code><code class="php keyword">clone</code> <code class="php plain">https:</code><code class="php comments">//github.com/laravel/homestead.git Homestead</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<h3>加入 homestead box</h3>
+<p>执行以下命令添加 box</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">vagrant box add laravel/homestead</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>在线下载会很慢一般用迅</p>
+<p>可以下载最新的box文件</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">https:</code><code class="php comments">//atlas.hashicorp.com/laravel/boxes/homestead/versions/0.5.0&nbsp; //新版本地址</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>下载后执行以下命令, 修改&nbsp;<code>/path/to/virtualbox.box</code>&nbsp;为正确的 path.</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">vagrant box add laravel/homestead /path/to/virtualbox.box</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>windows中执行如下命令</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">vagrant box add laravel/homestead file:</code><code class="php comments">///D:/download/virtubox.box</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<h3>修改 homestead 的配置</h3>
+<p>根据你的情况修改 Homestead 项目里面文件 Homestead.yaml , 类似以下</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">---ip: </code><code class="php string">"192.168.10.10"</code><code class="php plain">memory: 2048cpus: 1authorize: /Users/me/.ssh/id_rsa.pub</code></p>
+<p class="line number2 index1 alt1">&nbsp;</p>
+<p class="line number3 index2 alt2"><code class="php plain">keys:&nbsp;&nbsp;&nbsp; - /Users/me/.ssh/id_rsa</code></p>
+<p class="line number4 index3 alt1">&nbsp;</p>
+<p class="line number5 index4 alt2"><code class="php plain">folders:&nbsp;&nbsp;&nbsp; - map: /Users/me/code/mytwitter_project/mytwitter</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">to: /home/vagrant/mytwitter</code></p>
+<p class="line number7 index6 alt2">&nbsp;</p>
+<p class="line number8 index7 alt1"><code class="php plain">sites:&nbsp;&nbsp;&nbsp; - map: mytwitter.app</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">to: /home/vagrant/mytwitter/</code><code class="php keyword">public</code></p>
+<p class="line number10 index9 alt1">&nbsp;</p>
+<p class="line number11 index10 alt2"><code class="php plain">variables:&nbsp;&nbsp;&nbsp; - key: APP_ENV</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">value: local</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<h2>配置 hosts 文件</h2>
+<p>修改本机的 hosts 文件, 允许通过自定义域名访问, 这个域名是在上面的&nbsp;<code>Homestead.yaml</code>&nbsp;里面设置的.</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">sudo vi /etc/hosts</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>添加以下一行</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">127.0.0.1&nbsp;&nbsp;&nbsp; mytwitter.app</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<h2>初始化 homestead 虚拟机</h2>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">cd Homestead</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">vagrant up </code></p>
+<p class="line number3 index2 alt2"><code class="php plain">注意：要删除homestead目录下的 Vagrantfile 文件重新生成使用命令：vagrant init生成。</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">然后在启动</code></p>
+<p class="line number5 index4 alt2"><code class="php plain">vagrant u</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>生成启动后看提示信息。</p>
+<p>最后测试是否能成功连接, 虚拟机里的&nbsp;<code>~/mytwitter</code>&nbsp;文件夹里的文件和本地的文件是一致的.</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">vagrant ssh cd ~/mytwitter</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">ll</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>浏览器访问 http://mytwitter.app:8000/ .</p>
+<p>至此, 成功安装.</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

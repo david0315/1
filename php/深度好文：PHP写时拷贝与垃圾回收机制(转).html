@@ -1,0 +1,122 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修深度好文：PHP写时拷贝与垃圾回收机制(转)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>深度好文：PHP写时拷贝与垃圾回收机制(转)</center></div><div class='banquan'>原文出处:本文由博客园博主自由TK提供。<br/>
+原文连接:https://www.cnblogs.com/wscsq789/p/11622255.html</div><br>
+    <p>原文地址：<a href="http://www.php100.com/9/20/87255.html">http://www.php100.com/9/20/87255.html</a></p>
+<p>写入拷贝（Copy-on-write，简称<strong>COW</strong>）是一种计算机程序设计领域的优化策略。其核心思想是，如果有多个调用者（callers）同时要求相同资源（如内存或磁盘上的数据存储），他们会共同获取相同的指针指向相同的资源，直到某个调用者试图修改资源的内容时，系统才会真正复制一份专用副本（private copy）给该调用者，而其他调用者所见到的最初的资源仍然保持不变。这过程对其他的调用者都是透明的（transparently）。此作法主要的优点是如果调用者没有修改该资源，就不会有副本（private copy）被创建，因此多个调用者只是读取操作时可以共享同一份资源。</p>
+<h1><strong>PHP中的COW</strong></h1>
+<p><strong>注意</strong>：以下代码基于PHP5.6，PHP7之后引用计数机制有变化。</p>
+<p>大家都知道，PHP是由C实现的，可是C是强类型语言，PHP怎么做到弱类型语言。一起来看下，PHP变量在C语言底层中的代码：</p>
+<src class="cnblogs_code">
+<pre><code>typedef <span style="color: #0000ff;">struct</span><span style="color: #000000;"> _zval_struct zval;
+typedef unsigned </span><span style="color: #0000ff;">int</span><span style="color: #000000;"> zend_uint;
+typedef unsigned </span><span style="color: #0000ff;">char</span><span style="color: #000000;"> zend_uchar;
+ 
+</span><span style="color: #0000ff;">struct</span><span style="color: #000000;"> _zval_struct {
+ zvalue_value value; </span><span style="color: #008000;">/*</span><span style="color: #008000;">注意这里，这个里面存的才是变量的值</span><span style="color: #008000;">*/</span><span style="color: #000000;">
+ zend_uint refcount__gc; </span><span style="color: #008000;">/*</span><span style="color: #008000;">引用计数</span><span style="color: #008000;">*/</span><span style="color: #000000;">
+ zend_uchar type; </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 变量当前的数据类型 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+ zend_uchar is_ref__gc; </span><span style="color: #008000;">/*</span><span style="color: #008000;">变量是否引用</span><span style="color: #008000;">*/</span><span style="color: #000000;">
+};
+typedef union _zvalue_value {
+ </span><span style="color: #0000ff;">long</span> lval; <span style="color: #008000;">/*</span><span style="color: #008000;">PHP中整型的值</span><span style="color: #008000;">*/</span>
+ <span style="color: #0000ff;">double</span> dval; <span style="color: #008000;">/*</span><span style="color: #008000;">PHP的浮点数值</span><span style="color: #008000;">*/</span>
+ <span style="color: #0000ff;">struct</span><span style="color: #000000;"> { 
+ </span><span style="color: #0000ff;">char</span> *<span style="color: #000000;">val;
+ </span><span style="color: #0000ff;">int</span><span style="color: #000000;"> len;
+ } str; </span><span style="color: #008000;">/*</span><span style="color: #008000;">PHP的字符串</span><span style="color: #008000;">*/</span><span style="color: #000000;">
+ HashTable </span>*ht; <span style="color: #008000;">/*</span><span style="color: #008000;">数组</span><span style="color: #008000;">*/</span><span style="color: #000000;">
+ zend_object_value obj; </span><span style="color: #008000;">/*</span><span style="color: #008000;">对象</span><span style="color: #008000;">*/</span><span style="color: #000000;">
+} zvalue_value;</span></code></pre>
+
+<p>PHP的变量，低层是一个结构体zval,里面的zvalue_value结构体实际上是个联合体，这个联合体才是实际存放着PHP的变量值。 Zend引擎为了区别同一个zval地址是否被多个变量共享，引入了<strong>ref_count</strong>和<strong>is_ref</strong>两个变量进行标识。</p>
+<p>运行以下代码，观察变量refcount的变化：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+ </span><span style="color: #800080;">$foo</span> = 1<span style="color: #000000;">; 
+ xdebug_debug_zval(</span>'foo'<span style="color: #000000;">); 
+ </span><span style="color: #800080;">$bar</span> = <span style="color: #800080;">$foo</span><span style="color: #000000;">; 
+ xdebug_debug_zval(</span>'foo'<span style="color: #000000;">); 
+ </span><span style="color: #800080;">$bar</span> = 2<span style="color: #000000;">; 
+ xdebug_debug_zval(</span>'foo'<span style="color: #000000;">); 
+</span>?&gt; 
+<span style="color: #008000;">//</span><span style="color: #008000;">-----执行结果----- </span>
+foo: (refcount=1, is_ref=0)=1<span style="color: #000000;"> 
+foo</span>: (refcount=2, is_ref=0)=1<span style="color: #000000;"> 
+foo</span>: (refcount=1, is_ref=0)=1</code></pre>
+
+<p>当$foo被赋值时，$foo变量的值的只由$foo变量指向。当​$foo的值被赋给​$bar时，PHP并没有将内存复制一份交给$bar，而是把$foo和$bar指向一个地址, 同时引用计数增加1，也就是新的2。随后，我们更改了$bar的值，这时如果直接需该$bar变量指向的内存，则​$foo的值也会跟着改变。这不是我们想要的结果。于是，PHP内核将内存复制出来一份，并将其值更新为赋值的：2（这个操作也称为变量分离操作），同时原​$foo变量指向的内存只有$foo指向，所以引用计数更新为：refcount=1。</p>
+<p>下面让我们看一个查看内存的例子，可以更容易看到COW在内存使用优化方面的明显作用：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+</span><span style="color: #800080;">$j</span> = 1<span style="color: #000000;">; 
+</span><span style="color: #008080;">var_dump</span><span style="color: #000000;">(memory_get_usage()); 
+</span><span style="color: #800080;">$tipi</span> = <span style="color: #008080;">array_fill</span>(0, 100000, 'php-internal'<span style="color: #000000;">); 
+</span><span style="color: #008080;">var_dump</span><span style="color: #000000;">(memory_get_usage()); 
+</span><span style="color: #800080;">$tipi_copy</span> = <span style="color: #800080;">$tipi</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">var_dump</span><span style="color: #000000;">(memory_get_usage()); 
+</span><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$tipi_copy</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$i</span><span style="color: #000000;">){ 
+ </span><span style="color: #800080;">$j</span> += <span style="color: #008080;">count</span>(<span style="color: #800080;">$i</span><span style="color: #000000;">); 
+} 
+</span><span style="color: #008080;">var_dump</span><span style="color: #000000;">(memory_get_usage()); 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">-----执行结果----- </span>
+$ php t.<span style="color: #000000;">php 
+int(</span>630904<span style="color: #000000;">) 
+int(</span>10479840<span style="color: #000000;">) 
+int(</span>10479944<span style="color: #000000;">) 
+int(</span>10480040)</code></pre>
+
+<p>上面的代码比较典型的突出了COW的作用，在数组变量$tipi被赋值给​$tipi_copy时，内存的使用并没有立刻增加一半，在循环遍历数​$tipi_copy时也没有发生显著变化，在这里$tipi_copy和​$tipi变量的数据共同指向同一块内存，而没有复制。</p>
+<p>也就是说，即使我们不使用引用，一个变量被赋值后，只要我们不改变变量的值 ，也不会新申请内存用来存放数据。据此我们很容易就可以想到一些COW可以非常有效的控制内存使用的场景：只是使用变量进行计算而很少对其进行修改操作，如函数参数的传递，大数组的复制等等等不需要改变变量值的情形。</p>
+<h1><strong>引用计数原理</strong></h1>
+<p>了解了php变量的内部存储结构之后，再了解下php变量赋值相关的原理和早期垃圾回收机制。</p>
+<p>PHP5.2中使用的内存回收算法是大名鼎鼎的Reference Counting，这个算法中文翻译叫做&ldquo;引用计数&rdquo;，其思想非常直观和简洁：为每个内存对象分配一个计数器，当一个内存对象建立时计数器初始化为1(因此此时总是有一个变量引用此对象)，以后每有一个新变量引用此内存对象，则计数器加1，而每当减少一个引用此内存对象的变量则计数器减1，当垃圾回收机制运作的时候，将所有计数器为0的内存对象销毁并回收其占用的内存。</p>
+<h1><strong>内存泄漏</strong></h1>
+<p>但是php5.3版本之前的垃圾回收机制存在一个漏洞，即当数组或对象内部子元素引用其父元素，而此时如果发生了删除其父元素的情况，此变量容器并不会被删除，因为其子元素还在指向该变量容器，但是由于所有作用域内都没有指向该变量容器的符号，所以无法被清除，因此会发生内存泄漏，直到该脚本执行结束</p>
+<p>如果你已经安装了Xdebug，你能通过调用函数&nbsp;<strong>xdebug_debug_zval()</strong>显示&rdquo;refcount&rdquo;和&rdquo;is_ref&rdquo;的值。</p>
+<p>举例：</p>
+<p>由于该示例不好输出结果，用图表示，如图：</p>
+<p><img src="./images/深度好文：PHP写时拷贝与垃圾回收机制(转)0.jpg" alt="深度好文：PHP写时拷贝与垃圾回收机制" data-tag="bdshare" /></p>
+<p>举例：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">);
+xdebug_debug_zval(</span>'a');</code></pre>
+
+<p>如图：</p>
+<p><img src="./images/深度好文：PHP写时拷贝与垃圾回收机制(转)1.jpg" alt="深度好文：PHP写时拷贝与垃圾回收机制" data-tag="bdshare" /></p>
+<h1><strong>根缓冲机制</strong></h1>
+<p>php5.3版本之后引入<strong>根缓冲机制</strong>，即php启动时默认设置指定zval数量的根缓冲区（默认是10000），当php发现有存在循环引用的zval时，就会把其投入到根缓冲区，当根缓冲区达到配置文件中的指定数量（默认是10000）后，就会进行垃圾回收，以此解决循环引用导致的内存泄漏问题</p>
+<h1><strong>为什么内存没有全部收回来</strong></h1>
+<p>因为php的核心结构Hashtable，在定义的时候不可能一次性分配足够多的内存块，所以初始化的时候只会分配一小块，等不够的时候在进行扩容，而Hashtable只扩容不减少，所以当存入100个变量的时候符号表不够用了就进行一次扩容，当unset()时只是放了为变量值分配的内存，但是为变量名分配的内存还是在符号表中的，符号表并没有缩小，所以没收回来的内存是被符号表占去了。</p>
+<p>php并不是只要内存不够就去向OS申请内存，而是先申请一大块内存，然后将其中一部分分给申请者，这样再有逻辑需要申请内存的时候，就不需要再向OS申请内存了，避免了重复申请，只有当一大块内存不够用的时候再去申请。而当释放内存时，php并非把内存还给了OS，而是把内存轨道自己维护的空闲内存列表，以便重复利用。</p>
+<h1><strong>垃圾回收相关的配置</strong></h1>
+<ul>
+<li>zend.enable_gc，默认值为on，如果想关闭垃圾回收机制，可以设置为off</li>
+</ul>
+<h1><strong>小知识点</strong></h1>
+<ul>
+<li><strong>unset()</strong>：unset()只是断开一个变量到一块内存区域的连接，同时将该内存区域的引用计数减1，内存是否回收主要还是看refcount是否到0了。</li>
+<li><strong>null</strong>：将null赋值给一个变量是直接将该变量指向的数据结构置空，同时将其引用计数归0。</li>
+<li>脚本执行结束：该脚本中所有内存都会被释放，无论是否有环引用。</li>
+</ul>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

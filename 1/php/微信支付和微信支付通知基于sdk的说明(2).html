@@ -1,0 +1,295 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修微信支付和微信支付通知基于sdk的说明(2)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>微信支付和微信支付通知基于sdk的说明(2)</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/11242647.html</div><br>
+    <src>
+<h5><strong><span style="font-size: 18px;">前期准备工作</span></strong></h5>
+<blockquote>
+<p>微信商户账户/密码(获取appid等信息)<br />
+微信公众号账户/密码(获取cert证书等信息，不做线上退款不需要证书)</p>
+
+
+
+</blockquote>
+<h5>下载php支付demo</h5>
+<p>从商户平台进入的话是以下界面或者直接搜索公众号支付文档</p>
+<h6>支付类型</h6>
+<p><a href="https://link.jianshu.com?t=https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_1" rel="nofollow" target="_blank">https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_1</a><br />
+</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="1056" data-height="916"><img src="//upload-images.jianshu.io/upload_images/2230140-58751063869241ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/2230140-58751063869241ee.png" data-original-width="1056" data-original-height="916" data-original-format="image/png" data-original-filesize="42321" />
+
+
+
+
+<src class="image-caption">payType.png 
+
+
+
+
+<p>&nbsp;</p>
+<h6>php-demo下载</h6>
+<p><a href="https://link.jianshu.com?t=https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=11_1" rel="nofollow" target="_blank">https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=11_1</a><br />
+</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="1184" data-height="446"><img src="//upload-images.jianshu.io/upload_images/2230140-21989d3d4f9b5555.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/2230140-21989d3d4f9b5555.png" data-original-width="1184" data-original-height="446" data-original-format="image/png" data-original-filesize="11584" />
+
+
+
+
+<src class="image-caption">php-demo.png
+
+
+
+
+<p>&nbsp;</p>
+<h5>修改部分文件并预览index.php</h5>
+<p>解压文件，打开index.php修改<br />
+可以改成绝对路径，即你放的位置（某个域名或者某个域名下某个文件夹下）或者相对路径</p>
+<pre><code><code class="bash">http://<span class="hljs-string">'.$_SERVER['HTTP_HOST<span class="hljs-string">'].'/WxpayAPI/example/jsapi.php
+</span></span></code></code></pre>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="1219" data-height="289"><img src="//upload-images.jianshu.io/upload_images/2230140-cec731feca6b04d3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/2230140-cec731feca6b04d3.png" data-original-width="1219" data-original-height="289" data-original-format="image/png" data-original-filesize="58311" />
+
+<src class="image-caption">path.png
+
+<h5><em>更改配置（整个demo最重要的修改的地方）</em></h5>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="851" data-height="183"><img src="//upload-images.jianshu.io/upload_images/2230140-3cbf96d9c0e3c02a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/851/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/2230140-3cbf96d9c0e3c02a.png" data-original-width="851" data-original-height="183" data-original-format="image/png" data-original-filesize="27219" />
+
+<src class="image-caption">config.png
+
+<p><em>说明</em><br />
+appId:是你的微信公众平台的appId<br />
+appsecret:是你商户平台的appsecret这两个参数可登录你的微信公众平台查看<br />
+mchId:是你的商户Id，这个是你的微信公众号开通微信支付，微信分配给你的一个商户支付ID，可登陆商户平台查看，即是你登录商户平台的账号<br />
+key:是你商户平台的支付秘钥，这个参数很关键，它是一个32位的字符串</p>
+<p>一定要保证你以上四个参数的正确，不然出现的各种错误皆可能是这四个参数不正确造成的，当然前提是你开通微信支付并且配置正确的授权域名和支付目录</p>
+<h5>修改异步通知地址</h5>
+<p>打开example文件夹下的jsapi.php</p>
+<pre class="hljs php"><code class="php">$input-&gt;SetNotify_url(<span class="hljs-string">"http://www.xxx.com/WxpayAPI/example/notify.php"); <span class="hljs-comment">//设置接收微信支付异步通知回调地址
+</span></span></code></code></pre>
+<p>改为你自己的地址，可以写死或者相对路径获取该地址</p>
+<h5>添加异步通知地址配置</h5>
+<p>Wxpay.api.php中的unifiedOrder下单方法中需要</p>
+<p>//异步通知url未设置，则使用配置文件中的url</p>
+<pre class="hljs php"><code class="php">    <span class="hljs-keyword">if(!$inputObj-&gt;IsNotify_urlSet()){
+        $inputObj-&gt;SetNotify_url(WxPayConfig::NOTIFY_URL);<span class="hljs-comment">//异步通知url
+    }
+</span></span></code></code></pre>
+<p>所以如果你没设置，则需要去WXPay.Config.php中添加一条：</p>
+<pre class="hljs java"><code class="java"><span class="hljs-keyword">const NOTIFY_URL=<span class="hljs-string">'https://www.xxx.com/WxpayAPI/example/notify.php';
+</span></span></code></code></pre>
+<h5>配置授权域名</h5>
+<p>因为微信支付要获取openId,它是微信支付用户的凭证</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="1165" data-height="211"><img src="//upload-images.jianshu.io/upload_images/2230140-2101c7e70567db2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/2230140-2101c7e70567db2d.png" data-original-width="1165" data-original-height="211" data-original-format="image/png" data-original-filesize="24969" />
+
+<src class="image-caption">auth.png
+
+<h5>配置支付目录</h5>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="1200" data-height="845"><img src="//upload-images.jianshu.io/upload_images/2230140-936ce52a11e490aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/2230140-936ce52a11e490aa.png" data-original-width="1200" data-original-height="845" data-original-format="image/png" data-original-filesize="45655" />
+
+<src class="image-caption">mchId.png
+
+<h5>上传整个文件夹到你写的支付目录下的域名下</h5>
+<p>比如你的是<a href="https://link.jianshu.com?t=http://www.xxx.com/WxpayAPI/example/" rel="nofollow" target="_blank">www.xxx.com/WxpayAPI/example/</a><br />
+那么你就把你整个WxpayAPI文件夹传到你的<a href="https://link.jianshu.com?t=http://www.xxx.com" rel="nofollow" target="_blank">www.xxx.com</a>域名目录下<br />
+预览index.php<br />
+</p>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="401" data-height="382"><img src="//upload-images.jianshu.io/upload_images/2230140-e2d0eb79827a0edb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/401/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/2230140-e2d0eb79827a0edb.png" data-original-width="401" data-original-height="382" data-original-format="image/png" data-original-filesize="20609" />
+
+
+
+
+<src class="image-caption">index.png
+
+
+
+
+<p>&nbsp;</p>
+<h5>确认你的商户信息</h5>
+<src class="image-package">
+<src class="image-container">
+<src class="image-container-fill">&nbsp;
+<src class="image-view" data-width="405" data-height="400"><img src="//upload-images.jianshu.io/upload_images/2230140-4b4cf6905a3d4953.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/405/format/webp" alt="" data-original-src="//upload-images.jianshu.io/upload_images/2230140-4b4cf6905a3d4953.png" data-original-width="405" data-original-height="400" data-original-format="image/png" data-original-filesize="14221" />
+
+
+
+
+<src class="image-caption">pay.png
+
+
+
+
+<h5>重点（坑点）</h5>
+<p>支付成功jsapi中的js就可以根据返回的信息跳转到支付成功的页面,这是接收微信同步返回的处理</p>
+<pre class="hljs php"><code class="php"><span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">jsApiCall<span class="hljs-params">()
+{
+    WeixinJSBridge.invoke(
+        <span class="hljs-string">'getBrandWCPayRequest',
+         <span class="hljs-meta">&lt;?php <span class="hljs-keyword">echo $jsApiParameters; <span class="hljs-meta">?&gt;, <span class="hljs-comment">//订单参数
+         <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-params">(res) {
+                alert(res.err_msg);
+                WeixinJSBridge.log(res.err_msg);
+                <span class="hljs-keyword">if (res.err_msg == <span class="hljs-string">'get_brand_wcpay_request:ok') {
+                      window.location.href = <span class="hljs-string">'http://h.yiwang.com/index.php?r=cart/finishedorder&amp;paymentId='+<span class="hljs-meta">&lt;?php <span class="hljs-keyword">echo $paymentId;<span class="hljs-meta">?&gt;+<span class="hljs-string">'&amp;orderId='+<span class="hljs-meta">&lt;?php <span class="hljs-keyword">echo $orderId;<span class="hljs-meta">?&gt;;
+                }<span class="hljs-keyword">else <span class="hljs-keyword">if (res.err_msg == <span class="hljs-string">'get_brand_wcpay_request:cancel') {
+                      alert(<span class="hljs-string">'cancel');
+                } <span class="hljs-keyword">else {
+                      alert(<span class="hljs-string">'fail');
+                      alert(res.err_msg);
+                }
+           }
+      );
+   }
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>但是最终是否支付成功不能以这个为准，而是notify.php接收到的异步通知为准，这是微信异步返回的结果处理</p>
+<pre class="hljs php"><code class="php"><span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">NotifyProcess<span class="hljs-params">($data, &amp;$msg)
+{
+    Log::DEBUG(<span class="hljs-string">"call back:" . json_encode($data));
+    $notfiyOutput = <span class="hljs-keyword">array();
+    <span class="hljs-keyword">if(!array_key_exists(<span class="hljs-string">"transaction_id", $data)){
+        $msg = <span class="hljs-string">"输入参数不正确";
+        <span class="hljs-keyword">return <span class="hljs-keyword">false;
+    }
+    <span class="hljs-comment">//查询订单，判断订单真实性
+    <span class="hljs-keyword">if(!<span class="hljs-keyword">$this-&gt;Queryorder($data[<span class="hljs-string">"transaction_id"])){
+        $msg = <span class="hljs-string">"订单查询失败";
+        <span class="hljs-keyword">return <span class="hljs-keyword">false;
+    }
+    <span class="hljs-keyword">$this-&gt;UpdateOrderStatus();<span class="hljs-comment">//自定义更改数据库支付成功状态
+    <span class="hljs-keyword">return <span class="hljs-keyword">true;
+}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>具体的更改数据库订单状态需要接收到微信异步通知的xml，然后判断是否支付成功，再进行更改</p>
+<pre class="hljs php"><code class="php"><span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">UpdateOrderStatus<span class="hljs-params">() {
+      $string = file_get_contents(<span class="hljs-string">"php://input");<span class="hljs-comment">//微信返回的xml支付结果
+      $arr = (<span class="hljs-keyword">array) simplexml_load_string($string, <span class="hljs-string">'SimpleXMLElement', LIBXML_NOCDATA);
+      <span class="hljs-keyword">if ($arr[<span class="hljs-string">'result_code'] == <span class="hljs-string">'SUCCESS' &amp;&amp; $arr[<span class="hljs-string">'return_code'] == <span class="hljs-string">'SUCCESS') {
+           <span class="hljs-comment">//操作数据库处理订单状态等
+      }
+}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p><em>以上是分析的demo大致流程，接下来我说一下我遇到的坑，望各位注意：</em></p>
+<h6>坑一：签名错误</h6>
+<p>这是我最开始调试SDK的demo时候第一个坑<br />
+我们公司把已经使用是APP的商户Id和key给我，让我用这个，这个后台可以登录，我看到了商户id没问题，但key看不到，只有重置才可以，因为线上用着，我也没法重置，还以为代码有问题，各种输出查看。<br />
+百度好多人都让重置key，说同一个key重新提交一次也行，有人提交两三次同一个key，说就不报签名无效了。但我们没有开发环境，我不能任性重置。只能找代码的问题</p>
+<p>最终发现还是第一步的四个配置参数有问题，appId没问题是公众号的id,我没用他们给我的appId,他们的appId应该是App开放平台的appId</p>
+<p>商户id和秘钥，给我的是app的商户id和key，其实不是。应该是我们微信公众号申请微信支付分配的商户id和秘钥。而不是说用APP申请的商户id和秘钥。<br />
+虽然文档说的很清楚，我也知道，但领导就说和app共用一个，我也很无奈。因为开始我也不是很清楚，就觉得那就是吧，或许是demo有问题（哈哈哈）</p>
+<h5>坑二：out_trade_no的最少位数问题</h5>
+<p>微信说是32位以内，但是，如果你传1位，肯定会报错，它的提示还很弱，不是说位数不足，具体什么提示我忘了。反正位数太少会出错，我在这里也是摔了个跟头</p>
+<h6>坑三：不知道notify.php这个文件怎么接收微信支付返回结果</h6>
+<p>搜了好多资料，大部分人都只讲解了demo，说支付成功以异步通知为准，微信是通知给你设置的地址了，但问题是我怎么获取他的通知呢？</p>
+<p>总是觉得没有返回变量，就不知道怎么输出变量，怎么处理。</p>
+<pre><code><code class="bash"><span class="hljs-variable">$string = file_get_contents(<span class="hljs-string">"php://input");
+</span></span></code></code></pre>
+<p>这就是接收到微信的通知，一个xml,详细代码上边有</p>
+<h5>坑四：jsapi.php接收不到上一个页面post或get传过来的参数</h5>
+<p>原因：在创建商户订单时，需要获取到用户的openid</p>
+<pre class="hljs php"><code class="php"><span class="hljs-comment">//①、获取用户openid
+$tools = <span class="hljs-keyword">new JsApiPay();
+$openId = $tools-&gt;GetOpenid();
+</span></span></code></code></pre>
+<p>Wxpay.JsApiPay.php<br />
+但是在获取用户openid的过程中需要请求CODE，CODE请求函数如下：</p>
+<pre class="hljs php"><code class="php"><span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">GetOpenid<span class="hljs-params">()
+{
+    <span class="hljs-comment">//通过code获得openid
+    <span class="hljs-keyword">if (!<span class="hljs-keyword">isset($_GET[<span class="hljs-string">'code'])){
+        <span class="hljs-comment">//触发微信返回code码
+        $baseUrl = urlencode(<span class="hljs-string">'http://'.$_SERVER[<span class="hljs-string">'HTTP_HOST'].$_SERVER[<span class="hljs-string">'REQUEST_URI'].$_SERVER[<span class="hljs-string">'QUERY_STRING']);
+        $url = <span class="hljs-keyword">$this-&gt;__CreateOauthUrlForCode($baseUrl);
+        Header(<span class="hljs-string">"Location: $url");
+        <span class="hljs-keyword">exit();
+    } <span class="hljs-keyword">else {
+        <span class="hljs-comment">//获取code码，以获取openid
+        $code = $_GET[<span class="hljs-string">'code'];
+        $openid = <span class="hljs-keyword">$this-&gt;getOpenidFromMp($code);
+        <span class="hljs-keyword">return $openid;
+    }
+}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>因此，在获取openid商户后台与微信系统进行多次交互，当再次回到生成商户订单页的时候，我们之前从h5页面通过$_GET或者$_POST方式获取的参数已经被清空，所以无法生成商户订单。<br />
+<strong>解决办法：</strong><br />
+1.先将用户h5页面提交过来的参数保存到session中，然后再重定向到要生成商户订单的页面,<br />
+在生成商户订单的页面中先获取openid，再获取session<br />
+中的值(这是我百度到别人采用的方法)<br />
+2.我的办法：<br />
+在获取openid之前把post或者get的参数取到，然后传给微信（采用和他获取code的机制一样）</p>
+<pre class="hljs php"><code class="php"><span class="hljs-comment">//①、获取用户openid
+$tools = <span class="hljs-keyword">new JsApiPay();
+$arr = $tools-&gt;GetOpenid($Out_trade_no,$paymentId,$Total_fee);
+</span></span></code></code></pre>
+<p>重写GetOpenid方法，如下：</p>
+<pre class="hljs php"><code class="php"><span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">GetOpenid<span class="hljs-params">($orderId,$paymentId,$totalFee)
+{
+    <span class="hljs-comment">//通过code获得openid
+    <span class="hljs-keyword">if (!<span class="hljs-keyword">isset($_GET[<span class="hljs-string">'code'])){
+        <span class="hljs-comment">//触发微信返回code码
+        $baseUrl = urlencode(<span class="hljs-string">'http://'.$_SERVER[<span class="hljs-string">'HTTP_HOST'].$_SERVER[<span class="hljs-string">'REQUEST_URI'].$_SERVER[<span class="hljs-string">'QUERY_STRING'].<span class="hljs-string">'?orderId='.$orderId.<span class="hljs-string">'&amp;paymentId='.$paymentId.<span class="hljs-string">'&amp;totalFee='.$totalFee);
+        $url = <span class="hljs-keyword">$this-&gt;__CreateOauthUrlForCode($baseUrl);
+        Header(<span class="hljs-string">"Location: $url");
+        <span class="hljs-keyword">exit();
+    } <span class="hljs-keyword">else {
+        <span class="hljs-comment">//获取code码，以获取openid
+        $code = $_GET[<span class="hljs-string">'code'];
+        $orderId = $_GET[<span class="hljs-string">'orderId'];
+        $paymentId= $_GET[<span class="hljs-string">'paymentId'];
+        $totalFee = $_GET[<span class="hljs-string">'totalFee'];
+        $openid = <span class="hljs-keyword">$this-&gt;getOpenidFromMp($code);
+        <span class="hljs-keyword">return $arr;
+    }
+}
+</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<h5>金额的问题</h5>
+<p>传递的金额，微信是以分为单位，而一般是以元为单位，所以记得金额转换一下，不要传给微信小数点<br />
+还有这个金额最好在jsapi这个页面，查询一下数据库该笔订单应支付多少，而不是从提交订单页面传输过来，这样不安全，也别以为请求接口会安全，都不安全，只要存在网络传输就会出现篡改，最好是自己在本页面查询出来，然后传给微信</p>
+<h5>out_trade_no的问题</h5>
+<h6>（说明这是针对我们的流程设计出次下策）</h6>
+<p>我们的提交订单会生成一个orderId和paymentId存在我们的两个表中(这两个表)，然后因为要给微信传我们自己的订单id，一般来说只需要传orderId就行，但是接收到微信异步通知的支付成功以后， 我们需要根据paymenId去改我们的支付状态。<br />
+问题是从微信返回时我们没有paymentId。<br />
+用orderId去查可能会不唯一（我们数据库设计如此，会有多订单支付），另一方面是多次请求会慢，所以我采取了把订单id和paymentId拼接在一起作为传给微信，然后支付成功以后微信返回out_trade_no就是我们的orderId和paymentId</p>
+
+
+
+<p style="text-align: right;"><span style="font-size: 12px;">转载：<a href="https://www.jianshu.com/p/e2f756146a0e">https://www.jianshu.com/p/e2f756146a0e</a></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

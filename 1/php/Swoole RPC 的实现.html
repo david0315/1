@@ -1,0 +1,250 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole RPC 的实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole RPC 的实现</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11812745.html</div><br>
+    <p>开始今天的文章吧，这篇文章实现了一个简单的 RPC 远程调用，在实现之前需要先了解什么是 RPC，不清楚的可以看下之前发的这篇文章 《我眼中的 RPC》。<br /><br />下面的演示代码主要使用了 Swoole 的 Task 任务池，通过 OnRequest/OnReceive 获得信息交给 Task 去处理。<br /><br />举个工作中的例子吧，在电商系统中的两个模块，个人中心模块和订单管理模块，这两个模块是独立部署的，可能不在一个机房，可能不是一个域名，现在个人中心需要通过 用户ID 和 订单类型 获取订单数据。<br />实现效果<br />客户端<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>HTTP 请求
+
+    //代码片段    
+    &lt;?php    
+    $demo = [    
+        'type'  =&gt; 'SW',    
+        'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+        'param' =&gt; [    
+            'class'  =&gt; 'Order',    
+            'method' =&gt; 'get_list',    
+            'param' =&gt; [    
+                'uid'  =&gt; 1,    
+                'type' =&gt; 2,    
+            ],    
+        ],    
+    ];    
+    $ch = curl_init();    
+    $options = [    
+        CURLOPT_URL  =&gt; 'http://10.211.55.4:9509/',    
+        CURLOPT_POST =&gt; 1,    
+        CURLOPT_POSTFIELDS =&gt; json_encode($demo),    
+    ];    
+    curl_setopt_array($ch, $options);    
+    curl_exec($ch);    
+    curl_close($ch);
+
+
+TCP 请求
+
+    //代码片段    
+    $demo = [    
+        'type'  =&gt; 'SW',    
+        'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+        'param' =&gt; [    
+            'class'  =&gt; 'Order',    
+            'method' =&gt; 'get_list',    
+            'param' =&gt; [    
+                'uid'  =&gt; 1,    
+                'type' =&gt; 2,    
+            ],    
+        ],    
+    ];    
+    $this-&gt;client-&gt;send(json_encode($demo));
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />请求方式<br /><br />&nbsp;&nbsp;&nbsp; SW 单个请求，等待结果<br /><br />发出请求后，分配给 Task ，并等待 Task 执行完成后，再返回。<br /><br />&nbsp;&nbsp;&nbsp; SN 单个请求，不等待结果<br /><br />发出请求后，分配给 Task 之后，就直接返回。<br />发送数据<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  $demo = [    
+        'type'  =&gt; 'SW',    
+        'token' =&gt; 'Bb1R3YLipbkTp5p0',    
+        'param' =&gt; [    
+            'class'  =&gt; 'Order',    
+            'method' =&gt; 'get_list',    
+            'param' =&gt; [    
+                'uid'  =&gt; 1,    
+                'type' =&gt; 2,    
+            ],    
+        ],    
+    ];
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />&nbsp;&nbsp;&nbsp; type 同步/异步设置<br /><br />&nbsp;&nbsp;&nbsp; token 可进行权限验证<br /><br />&nbsp;&nbsp;&nbsp; class 请求的类名<br /><br />&nbsp;&nbsp;&nbsp; method 请求的方法名<br /><br />&nbsp;&nbsp;&nbsp; uid 参数一<br /><br />&nbsp;&nbsp;&nbsp; type 参数二<br /><br />返回数据<br /><br /><img src="./images/Swoole RPC 的实现0.jpg" alt="" width="900" height="1220" /><br /><br />&nbsp;&nbsp;&nbsp; request_method 请求方式<br /><br />&nbsp;&nbsp;&nbsp; request_time 请求开始时间<br /><br />&nbsp;&nbsp;&nbsp; response_time 请求结束时间<br /><br />&nbsp;&nbsp;&nbsp; code 标识<br /><br />&nbsp;&nbsp;&nbsp; msg 标识值<br /><br />&nbsp;&nbsp;&nbsp; data 约定数据<br /><br />&nbsp;&nbsp;&nbsp; query 请求参数<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>代码
+OnRequest.php
+
+    &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    class OnRequest    
+    {    
+        private static $query;    
+        private static $code;    
+        private static $msg;    
+        private static $data;    
+        public static function run($serv, $request, $response)    
+        {    
+            try {    
+                $data = decrypt($request-&gt;rawContent());    
+                self::$query   = $data;    
+                if (empty($data)) {    
+                    self::$code = '-1';    
+                    self::$msg  = '非法请求';    
+                    self::end($request, $response);    
+                }    
+                //TODO 验证Token    
+                switch ($data['type']) {    
+                    case 'SW': //单个请求,等待结果    
+                        $task = [    
+                            'request' =&gt; $data,    
+                            'server'  =&gt; 'http'    
+                        ];    
+                        $rs = $serv-&gt;task(json_encode($task), -1, function ($serv, $task_id, $rs_data) use ($request, $response) {    
+                            self::$code = '1';    
+                            self::$msg  = '成功';    
+                            self::$data = $rs_data['response'];    
+                            self::end($request, $response);    
+                        });    
+                        if ($rs === false) {    
+                            self::$code = '-1';    
+                            self::$msg  = '失败';    
+                            self::end($request, $response);    
+                        }    
+                        break;    
+                    case 'SN': //单个请求,不等待结果    
+                        $task = [    
+                            'request' =&gt; $data,    
+                            'server'  =&gt; 'http'    
+                        ];    
+                        $rs = $serv-&gt;task(json_encode($task));    
+                        if ($rs === false) {    
+                            self::$code = '-1';    
+                            self::$msg  = '失败';    
+                        } else {    
+                            self::$code = '1';    
+                            self::$msg  = '成功';    
+                        }    
+                        self::end($request, $response);    
+                        break;    
+                    default:    
+                        self::$code = '-1';    
+                        self::$msg  = '非法请求';    
+                        self::end($request, $response);    
+                }    
+            } catch(Exception $e) {    
+            }    
+        }    
+        private static function end($request = null, $response = null)    
+        {    
+            $rs['request_method'] = $request-&gt;server['request_method'];    
+            $rs['request_time']   = $request-&gt;server['request_time'];    
+            $rs['response_time']  = time();    
+            $rs['code']           = self::$code;    
+            $rs['msg']            = self::$msg;    
+            $rs['data']           = self::$data;    
+            $rs['query']          = self::$query;    
+            $response-&gt;end(json_encode($rs));    
+            self::$data = [];    
+            return;    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+<p>这里我还准备了一分学习图和资料，如下：</p>
+<p><img src="./images/Swoole RPC 的实现1.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>OnReceive.php
+
+    &lt;?php    
+    if (!defined('SERVER_PATH')) exit("No Access");    
+    class OnReceive    
+    {    
+        private static $request_time;    
+        private static $query;    
+        private static $code;    
+        private static $msg;    
+        private static $data;    
+        public static function run($serv, $fd, $reactor_id, $data)    
+        {    
+            try {    
+                self::$request_time = time();    
+                $data = decrypt($data);    
+                self::$query = $data;    
+                //TODO 验证Token    
+                switch ($data['type']) {    
+                    case 'SW': //单个请求,等待结果    
+                        $task = [    
+                            'fd'           =&gt; $fd,    
+                            'request'      =&gt; $data,    
+                            'server'       =&gt; 'tcp',    
+                            'request_time' =&gt; self::$request_time,    
+                        ];    
+                        $rs = $serv-&gt;task(json_encode($task));    
+                        if ($rs === false) {    
+                            self::$code = '-1';    
+                            self::$msg  = '失败';    
+                            self::handlerTask($serv, $fd);    
+                        }    
+                        break;    
+                    case 'SN': //单个请求,不等待结果    
+                        $task = [    
+                            'fd'           =&gt; $fd,    
+                            'request'      =&gt; $data,    
+                            'server'       =&gt; 'tcp',    
+                            'request_time' =&gt; self::$request_time,    
+                        ];    
+                        $rs = $serv-&gt;task(json_encode($task));    
+                        if ($rs === false) {    
+                            self::$code = '-1';    
+                            self::$msg  = '失败';    
+                        } else {    
+                            self::$code = '1';    
+                            self::$msg  = '成功';    
+                        }    
+                        self::handlerTask($serv, $fd);    
+                        break;    
+                    default:    
+                        self::$code = '-1';    
+                        self::$msg  = '非法请求';    
+                        self::handlerTask($serv, $fd);    
+                }    
+            } catch(Exception $e) {    
+            }    
+        }    
+        private static function handlerTask($serv, $fd)    
+        {    
+            $rs['request_method'] = 'TCP';    
+            $rs['request_time']   = self::$request_time;    
+            $rs['response_time']  = time();    
+            $rs['code']           = self::$code;    
+            $rs['msg']            = self::$msg;    
+            $rs['data']           = self::$data;    
+            $rs['query']          = self::$query;    
+            $serv-&gt;send($fd, json_encode($rs));    
+        }    
+    }
+</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

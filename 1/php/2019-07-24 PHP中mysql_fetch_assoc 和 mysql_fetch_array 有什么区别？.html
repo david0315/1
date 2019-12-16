@@ -1,0 +1,67 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修2019-07-24 PHP中mysql_fetch_assoc 和 mysql_fetch_array 有什么区别？' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>2019-07-24 PHP中mysql_fetch_assoc 和 mysql_fetch_array 有什么区别？</center></div><div class='banquan'>原文出处:本文由博客园博主筏愫提供。<br/>
+原文连接:https://www.cnblogs.com/zhangxu-fasu/p/11238043.html</div><br>
+    <p><strong>mysql_fetch_assoc() 函数从结果集中取得一行作为关联数组</strong></p>
+<p>来看下面的例子：</p>
+<p><img src="./images/2019-07-24 PHP中mysql_fetch_assoc 和 mysql_fetch_array 有什么区别？0.jpg" alt="" /></p>
+<p>数据库中有上述几条数据，一般我们想取用就要按照如下代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$con</span> = <span style="color: #008080;">mysql_connect</span>('127.0.0.1','root','root'<span style="color: #000000;">);
+</span><span style="color: #008080;">mysql_query</span>('use news'<span style="color: #000000;">);
+</span><span style="color: #008080;">mysql_query</span>('set names utf8'<span style="color: #000000;">);
+
+
+</span><span style="color: #800080;">$sql</span> = "select * from assoc"<span style="color: #000000;">;
+</span><span style="color: #800080;">$res</span> = <span style="color: #008080;">mysql_query</span>(<span style="color: #800080;">$sql</span>);</code></pre>
+
+<p>写到这里，$res如果你打印的话，会发现他是一个资源型的结果集，我们并不能直接用，这时候我们就需要用到mysql_fetch_assoc() 函数从结果集中取得一行作为关联数组，然后用while进行循环，再把它存放在数组中，再进行操作。</p>
+<p>为了让mysql_fetch_assoc 和 mysql_fetch_array的区别更明显，在这里先不进行循环，来看下两种结果有何区别？</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">用array_fetch_assoc</span>
+<span style="color: #800080;">$row</span> = <span style="color: #008080;">mysql_fetch_assoc</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">);
+
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$row</span>);</code></pre>
+
+<p>打印结果是：Array ( [id] =&gt; 1 [content] =&gt; 一 )；可以看到我们得到的是一个关联数组，数据库字段为key值为value。</p>
+<p>&nbsp;</p>
+<p><strong>mysql_fetch_array() 函数从结果集中取得一行作为关联数组，或数字数组，或二者兼有</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">用mysql_fetch_array</span>
+<span style="color: #800080;">$row</span> = <span style="color: #008080;">mysql_fetch_array</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">);
+
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$row</span>);</code></pre>
+
+<p>打印结果是：Array ( [0] =&gt; 1 [id] =&gt; 1 [1] =&gt; 一 [content] =&gt; 一 )；可以看到我们返回的结果既有数据库字段为key值为value的关联数组，也有数字下标，数据库中的值为value的索引数组。在有些情况下可能只会返回其中的一种或两种均有。如果想要指定返回某一种数组我们可以在括号内再加一个参数。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$row</span> = <span style="color: #008080;">mysql_fetch_array</span>(<span style="color: #800080;">$res</span>,<span style="color: #000000;">MYSQL_ASSOC);
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$row</span>);</code></pre>
+
+<p>打印结果是：Array ( [id] =&gt; 1 [content] =&gt; 一 )；可以看到我们在后面加入一个参数返回到的就是一个关联数组。像这样的参数有三个：</p>
+<ul class="listintable">
+<li>MYSQL_ASSOC - 关联数组</li>
+<li>MYSQL_NUM - 数字数组</li>
+<li>MYSQL_BOTH - 默认。同时产生关联和数字数组</li>
+</ul>
+<p>我们可以根据实际需要进行选择。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

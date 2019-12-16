@@ -1,0 +1,305 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Docker入门 - 安装docker并使用docker搭建PHP环境，初步了解Dockerfile' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Docker入门 - 安装docker并使用docker搭建PHP环境，初步了解Dockerfile</center></div><div class='banquan'>原文出处:本文由博客园博主Taurus12C提供。<br/>
+原文连接:https://www.cnblogs.com/Taurus12C/p/taurus12c-docker-php-lnmp.html</div><br>
+    <p><span style="font-size: 18px;"><strong>首先我们需先安装docker环境，这个比较简单，以centos7为例</strong></span></p>
+<p>　　docker在centos7上安装需要系统内核版本3.10+，可以通过uname -r查看内核版本号，如果版本不符请自行查阅资料更换。</p>
+<p>　　准备好之后使用以下命令安装docker服务</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">yum</span> <span style="color: #0000ff;">install</span> -y docker</code></pre>
+
+<p>　　安装完成后启动docker服务，下面是docker启动、停止、重启等命令</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">systemctl restart docker #重启
+
+systemctl stop docker #停止
+
+systemctl start docker #启动
+
+systemctl enable docker #开机自启动
+
+systemctl status docker #服务状态</span></code></pre>
+
+<p>　　至此docker服务就准备好了，我们可以通过docker -v查看docker版本</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong>然后我们使用docker搭建php环境</strong></span></p>
+<p><span style="font-size: 18px;">　　</span>我们先简单介绍一下docker的一些常用命令，如下所示：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">#从docker镜像仓库搜索镜像,示例docker search mysql
+docker search [需要查找的镜像名] 
+
+#拉取远程镜像到本地，示例docker pull mysql:</span><span style="color: #800080;">5.7</span>.<span style="color: #800080;">23</span><span style="color: #000000;">
+docker pull [镜像名]:[版本号]
+
+#自定义创建一个镜像，注意需要当前目录下有一个Dockerfile文件
+#注意结尾处有个 &ldquo;.&rdquo;是必须的
+docker build </span>-<span style="color: #000000;">t [自定义镜像名] .
+
+#查看本地镜像,可以看到镜像名，镜像id，版本号，创建时间及镜像大小
+docker images
+
+#删除镜像,需注意删除的镜像要没有container占用，镜像id不用全部输入完整
+#示例docker image </span><span style="color: #0000ff;">rm</span><span style="color: #000000;"> 7bc
+docker image </span><span style="color: #0000ff;">rm</span><span style="color: #000000;"> [镜像id]
+
+#查看所有container及详情，可以看到容器名，容器id、容器状态等信息
+docker </span><span style="color: #0000ff;">ps</span> -<span style="color: #000000;">a
+
+#启动容器,容器id也不需要写全,示例docker start 88d
+docker start [容器id]
+
+#停止容器
+docker stop [容器id]
+
+#重启容器
+docker restart [容器id]
+
+#创建一个镜像,后续会对详细说明
+docker run [参数1] [参数2] ... 镜像名
+
+#进入容器内部交互
+docker exec </span>-it [容器名/容器id] /bin/bash</code></pre>
+
+<p>　　整个docker环境流程大致可以理解为三步，获取镜像-&gt;创建容器-&gt;运行容器。</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong>下载php镜像，php-fpm</strong></span></p>
+<p><strong>　　</strong>首先我们需要一个php的镜像，镜像获取有两种方式，一种是直接获取docker镜像库里面已有的镜像，另一种是自己编辑dockerfile文件自定义一个镜像，首先我们采用第一种方式，因为比较简单，后面再说第二种方式</p>
+<p>　　我们使用docker pull 拉去一个已有的php镜像，这里我推荐 leleos/php-fpm:7.1 镜像，基本能使用上的扩展都配置好了</p>
+<src class="cnblogs_code">
+<pre><code>docker pull leleos/php-fpm:<span style="color: #800080;">7.1</span></code></pre>
+
+<p>　　</p>
+<p><span style="font-size: 18px;"><strong>构建nginx镜像</strong></span></p>
+<p><strong>　　</strong>之前我们是直接下载别人的镜像拿来用，这次我们自己使用dockerfile文件创建一个自定义的镜像，首先在目录下创建一个 "Dockerfile" 文件（建议Dockerfile作为文件名），写入以下内容</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">#设置容器基础镜像，这里我们以centos系统为基础镜像
+FROM hub.c.</span><span style="color: #800080;">163</span>.com/public/<span style="color: #000000;">centos:latest
+
+#设置作者信息
+MAINTAINER Taurus12C</span>&lt;<span style="color: #800080;">1402410174</span>@qq.com&gt;<span style="color: #000000;">
+
+#安装依赖
+RUN rpm </span>--rebuilddb &amp;&amp; <span style="color: #0000ff;">yum</span> <span style="color: #0000ff;">install</span> -y autoconf automake <span style="color: #0000ff;">make</span> <span style="color: #0000ff;">wget</span> proc-devel net-tools zlib zlib-devel <span style="color: #0000ff;">make</span> <span style="color: #0000ff;">gcc</span>  g++ openssl-devel pcre pcre-devel <span style="color: #0000ff;">tar</span><span style="color: #000000;">
+
+#下载nginx软件压缩包
+RUN </span><span style="color: #0000ff;">wget</span> http:<span style="color: #008000;">//</span><span style="color: #008000;">nginx.org/download/nginx-1.17.1.tar.gz</span>
+<span style="color: #000000;"> 
+# 解压到当前目录
+RUN </span><span style="color: #0000ff;">tar</span> -zxvf nginx-<span style="color: #800080;">1.17</span>.<span style="color: #800080;">1</span>.<span style="color: #0000ff;">tar</span><span style="color: #000000;">.gz
+ 
+# 设置当前操作目录
+WORKDIR nginx</span>-<span style="color: #800080;">1.17</span>.<span style="color: #800080;">1</span><span style="color: #000000;">
+ 
+# 配置nginx
+RUN .</span>/configure --prefix=/usr/local/nginx &amp;&amp; <span style="color: #0000ff;">make</span> &amp;&amp; <span style="color: #0000ff;">make</span> <span style="color: #0000ff;">install</span><span style="color: #000000;">
+RUN </span><span style="color: #0000ff;">rm</span> -rf ../nginx* &amp;&amp; <span style="color: #0000ff;">yum</span><span style="color: #000000;"> clean all \
+        </span>&amp;&amp; <span style="color: #0000ff;">echo</span> <span style="color: #800000;">"</span><span style="color: #800000;">${TIME_ZOME}</span><span style="color: #800000;">"</span> &gt; /etc/<span style="color: #000000;">timezone \
+        </span>&amp;&amp; <span style="color: #0000ff;">ln</span> -sf /usr/share/zoneinfo/${TIME_ZOME} /etc/<span style="color: #000000;">localtime
+ 
+# 设置当前操作目录
+WORKDIR </span>/usr/local/<span style="color: #000000;">nginx
+ 
+#暴露容器端口
+EXPOSE </span><span style="color: #800080;">80</span><span style="color: #000000;">           
+
+#启动容器后执行语句
+CMD [</span><span style="color: #800000;">"</span><span style="color: #800000;">./sbin/nginx</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">-g</span><span style="color: #800000;">"</span>,<span style="color: #800000;">"</span><span style="color: #800000;">daemon off;</span><span style="color: #800000;">"</span>]</code></pre>
+
+<p>　　这里我们大致说一下上面文件的命令含义，注意命令必须全部大写</p>
+<p>　　FROM &mdash;&mdash; 设置基础镜像</p>
+<p>　　MAINTAINER &mdash;&mdash; 设置这个dockerfile的作者信息</p>
+<p>　　RUN &mdash;&mdash; 这个比较关键，就是你接下来对于容器的配置或者是依赖的一步步操作，因为这里我们是创建一个nginx的镜像，所以上面的RUN操作都是在容器里面安装nginx服务</p>
+<p>　　WORKDIR &mdash;&mdash; 设置当前操作容器内的路径，类似于cd操作</p>
+<p>　　EXPOSE &mdash;&mdash; 这个是给容器暴露端口让宿主机完成映射</p>
+<p>　　CMD &mdash;&mdash; 这是容器创建启动后自动执行的命令，这里的命令是启动nginx服务的意思</p>
+<p>　　其他的命令可以去查阅资料自行了解，这里我们只讲解这些，让大家有个概念</p>
+<p>　　编辑好了之后我们在当前目录下执行build来构建一个镜像，如果你的文件是Dockerfile直接执行就好了。注意后面的 "."不要忘了</p>
+<src class="cnblogs_code">
+<pre><code>docker build -t nginx .</code></pre>
+
+<p>　执行完毕之后我们使用 docker images 查看本地镜像已经有了nginx和leleos/php-fpm两个镜像了。然后我们就可以使用容器创建一个php的环境运行php项目了</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong>创建dcoker自定义网络</strong></span></p>
+<p><strong>　　</strong>有的时候我们需要容器之间能够连接，比如nginx就需要使用fpm，但是nginx和leleos/php-fpm不在一个容器内，这个时候我们就需要想办法让容器之间能互相访问，这里有几种办法</p>
+<p>　　1、在启动容器时使用 --link实现容器之间的连接，然后在nginx容器内修改nginx配置文件里面的fastcgi_pass对应地址</p>
+<p>　　2、获取到php-fpm容器的内网ip，然后在nginx容器内修改nginx配置文件里面的fastcgi_pass对应地址</p>
+<p>　　3、创建docker自定义网络，然后在nginx容器内修改nginx配置文件里面的fastcgi_pass对应地址</p>
+<p>　　这里作者推荐使用第三种方法，其他两种如果需要可以自行了解</p>
+<p>　　创建docker自定义网络命令，docker network create [网络组名称]</p>
+<src class="cnblogs_code">
+<pre><code>docker network create lnmp</code></pre>
+
+<p>　　执行之后我们可以用docker network ls 查看刚刚创建的网络组</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong>创建容器，使用docker搭建PHP环境</strong></span></p>
+<p><strong>　　</strong>上面说了那么多都是准备工作，现在我们正式把环境搭建起来</p>
+<p>　　创建nginx容器</p>
+<src class="cnblogs_code">
+<pre><code>docker run -itd --name nginx --network lnmp -p <span style="color: #800080;">80</span>:<span style="color: #800080;">80</span> -v /var/www/html:/var/www/html -v /usr/local/nginx/conf/vhost:/usr/local/nginx/conf/vhost nginx</code></pre>
+
+<p>　　解释一下上面指令的意思</p>
+<p>　　docker run：创建启动一个容器</p>
+<p>　　-itd：这里是缩写，对应 -i -t -d ，-i 交互式操作、-t 终端 、-d后台运行</p>
+<p>　　--name：给容器指定名称</p>
+<p>　　--network：给容器指定网络组</p>
+<p>　　-p：映射宿主机与容器内的端口</p>
+<p>　　-v：给容器挂载目录，通俗理解来说就是给容器加了个存储文件的空间，并且空间内的文件宿主机和容器是共用的。这里我挂载了两个目录，一个是项目目录html，一个是配置文件目录vhost，这样就不用进入容器内就能修改了</p>
+<p>　　nginx：指定容器使用的镜像为nginx镜像</p>
+<p>　　</p>
+<p>　　创建php服务容器</p>
+<src class="cnblogs_code">
+<pre><code>docker run -itd --name php-fpm --network lnmp -p <span style="color: #800080;">9000</span>:<span style="color: #800080;">9000</span> -v /var/www/html:/var/www/html leleos/php-fpm:<span style="color: #800080;">7.1</span></code></pre>
+
+<p>　　需要注意的是项目目录需要nginx和php容器配置在体哦那个一个目录下。至此我们容器也启动了，可以通过docker ps -a 查看我们刚刚创建并启动的容器状态。</p>
+<p>　　到了这里还没完还有最后一步操作，那就是进行正确的nginx配置。首先我们进到nginx容器里面docker exec -id [容器名/容器id] /bin/bash</p>
+<src class="cnblogs_code">
+<pre><code>docker exec -it nginx /bin/bash</code></pre>
+
+<p>　　输入上面这段命令我们就能进入到nginx容器里面,如果需要退出返回到宿主机里面，只需要在容器内输入exit就可以了</p>
+<p>　　进入/usr/local/nginx/conf目录编辑nginx.conf文件，文件内容如下</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">#user  nobody;
+worker_processes  </span><span style="color: #800080;">1</span><span style="color: #000000;">;
+
+#error_log  logs</span>/<span style="color: #000000;">error.log;
+#error_log  logs</span>/<span style="color: #000000;">error.log  notice;
+#error_log  logs</span>/error.log  <span style="color: #0000ff;">info</span><span style="color: #000000;">;
+
+#pid        logs</span>/<span style="color: #000000;">nginx.pid;
+
+
+events {
+    worker_connections  </span><span style="color: #800080;">1024</span><span style="color: #000000;">;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application</span>/octet-<span style="color: #000000;">stream;
+
+    #log_format  main  </span><span style="color: #800000;">'</span><span style="color: #800000;">$remote_addr - $remote_user [$time_local] "$request" </span><span style="color: #800000;">'</span><span style="color: #000000;">
+    #                  </span><span style="color: #800000;">'</span><span style="color: #800000;">$status $body_bytes_sent "$http_referer" </span><span style="color: #800000;">'</span><span style="color: #000000;">
+    #                  </span><span style="color: #800000;">'</span><span style="color: #800000;">"$http_user_agent" "$http_x_forwarded_for"</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+
+    #access_log  logs</span>/<span style="color: #000000;">access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  </span><span style="color: #800080;">0</span><span style="color: #000000;">;
+    keepalive_timeout  </span><span style="color: #800080;">65</span><span style="color: #000000;">;
+
+    #</span><span style="color: #0000ff;">gzip</span><span style="color: #000000;">  on;
+
+    server {
+        listen       </span><span style="color: #800080;">80</span><span style="color: #000000;">;
+        server_name  localhost;　　　　　　　　　　　　　　　　　　　<span style="color: #ff0000;">#域名</span>
+    　　index index.html index.htm index.php;
+        root  </span>/var/www/<span style="color: #000000;">html;　　　　　　　　　　　　　　　　　　　　　<span style="color: #ff0000;">#这里填写刚刚挂载的项目目录</span>
+        #charset koi8</span>-<span style="color: #000000;">r;
+
+        #access_log  logs</span>/<span style="color: #000000;">host.access.log  main;
+
+        #error_page  </span><span style="color: #800080;">404</span>              /<span style="color: #800080;">404</span><span style="color: #000000;">.html;
+
+        # redirect server error pages to the static page </span>/<span style="color: #000000;">50x.html
+        #
+        error_page   </span><span style="color: #800080;">500</span> <span style="color: #800080;">502</span> <span style="color: #800080;">503</span> <span style="color: #800080;">504</span>  /<span style="color: #000000;">50x.html;
+        location </span>= /<span style="color: #000000;">50x.html {
+            root   html;
+        }
+
+        # proxy the PHP scripts to Apache listening on </span><span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span>:<span style="color: #800080;">80</span><span style="color: #000000;">
+        #
+        #location </span>~<span style="color: #000000;"> \.php$ {
+        #    proxy_pass   http:</span><span style="color: #008000;">//</span><span style="color: #008000;">127.0.0.1;</span>
+<span style="color: #000000;">        #}
+
+        # pass the PHP scripts to FastCGI server listening on </span><span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span>:<span style="color: #800080;">9000</span><span style="color: #000000;">
+        #
+        </span><span style="color: #000000;">
+    　　location </span>~<span style="color: #000000;"> \.php$ {
+            root html;
+            fastcgi_pass lnmp_php:</span><span style="color: #800080;">9000</span><span style="color: #000000;">;　　　　　　　　　　　　　<span style="color: #ff0000;">#这里注意使用php容器的网络组内端口，我们创建php容器时使用的网络组和映射的端口</span>
+            fastcgi_param SCRIPT_FILENAME </span>/var/www/<span style="color: #000000;">html$fastcgi_script_name;
+            include fastcgi_params;
+        }
+        　　# deny access to .htaccess files, </span><span style="color: #0000ff;">if</span> Apache<span style="color: #800000;">'</span><span style="color: #800000;">s document root</span>
+        　　# concurs with nginx<span style="color: #800000;">'</span><span style="color: #800000;">s one</span>
+<span style="color: #000000;">        　　#
+        　　#location </span>~ /<span style="color: #000000;">\.ht {
+        　　#    deny  all;
+        　　#}
+    　　}
+    include </span>/usr/loca/nginx<span style="color: #008000;">/conf/vhost/*</span><span style="color: #008000;">.conf;　　　<span style="color: #ff0000;">#这里是我们挂载配置文件目录地址，这样我们添加新的项目就不需要到容器内来修改nginx.conf文件，只需要在宿主机上修改重启容器即可</span>
+
+
+    # another virtual host using mix of IP-, name-, and port-based configuration
+    #
+    #server {
+    #    listen       8000;
+    #    listen       somename:8080;
+    #    server_name  somename  alias  another.alias;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+
+
+    # HTTPS server
+    #
+    #server {
+    #    listen       443 ssl;
+    #    server_name  localhost;
+
+    #    ssl_certificate      cert.pem;
+    #    ssl_certificate_key  cert.key;
+
+    #    ssl_session_cache    shared:SSL:1m;
+    #    ssl_session_timeout  5m;
+
+    #    ssl_ciphers  HIGH:!aNULL:!MD5;
+    #    ssl_prefer_server_ciphers  on;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+
+}</span></code></pre>
+
+<p>　　编辑好了之后我们重载nginx配置文件，进入/usr/local/nginx/sbin目录下执行 ./nginx reload 。然后退出容器exit</p>
+<p>　　进入/var/www/html目录下创建index.php测试一下换进是否搭建成功,index.php文件内写入</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+    </span><span style="color: #0000ff;">echo</span> 'Hello World!';</code></pre>
+
+<p>　　打开浏览器访问服务器地址或域名，如果输出&rdquo;Hello World!&ldquo;就代表环境搭建成功</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong>其他</strong></span></p>
+<p><strong>　　</strong>至此我们已经掌握了docker的一些用法，可以尝试自己搭建redis、mysql等服务容器啦，如果遇到什么问题可以在下方给我评论进行询问</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

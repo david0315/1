@@ -1,0 +1,264 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP学习笔记 02 之文件上传' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP学习笔记 02 之文件上传</center></div><div class='banquan'>原文出处:本文由博客园博主冷魅蘇提供。<br/>
+原文连接:https://www.cnblogs.com/jcdjor/p/10779760.html</div><br>
+    <blockquote>
+<p>我们了解了表单传值后，这些我就可以完成PHP的文件上传了。我们了解PHP文件上传前，先了解PHP文件上传的原理。</p>
+</blockquote>
+<h2 id="一php上传文件原理">一、PHP上传文件原理</h2>
+<ol>
+<li>第一步：将本地的文件通过form表单上传到服务器的临时目录中，临时目录是默认的，但我们可以修改，修改方式最后讲；</li>
+<li>第二步：将上传的文件从临时目录中移动到指定目录中.。</li>
+</ol>
+<h2 id="二form表单注意事项">二、form表单注意事项</h2>
+<ul>
+<li>method属性必须是: method = ‘post’</li>
+<li>enctype属性必须是:enctype = multipart/form-data , 对上传文件进行编码，文件上传并不是上传的文件本身，而是上传文件的编码，由服务器端对编码进行分析。</li>
+</ul>
+<h2 id="三简单的文件上传功能实现">三、简单的文件上传功能实现</h2>
+<h3 id="思路分析">1、思路分析</h3>
+<p><img src="./images/PHP学习笔记 02 之文件上传0.jpg" /></p>
+<p><img src="./images/PHP学习笔记 02 之文件上传1.jpg" /></p>
+<p>对于上面error字段的错误信息说明，php官方手册上给出了解释：</p>
+<p>UPLOAD_ERR_OK<br />
+: 其值为 0，没有错误发生，文件上传成功。</p>
+<p>UPLOAD_ERR_INI_SIZE<br />
+: 其值为 1，上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值。</p>
+<p>UPLOAD_ERR_FORM_SIZE<br />
+: 其值为 2，上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值。</p>
+<p>UPLOAD_ERR_PARTIAL<br />
+: 其值为 3，文件只有部分被上传。</p>
+<p>UPLOAD_ERR_NO_FILE<br />
+: 其值为 4，没有文件被上传。</p>
+<p>UPLOAD_ERR_NO_TMP_DIR<br />
+: 其值为 6，找不到临时文件夹。PHP 4.3.10 和 PHP 5.0.3 引进。</p>
+<p>UPLOAD_ERR_CANT_WRITE<br />
+: 其值为 7，文件写入失败。PHP 5.1.0 引进。</p>
+<p>我们知道如何获取临时文件信息后，根据原理我们只需要做以下几件事就可以实现文件上传功能：</p>
+<ol>
+<li>得到临时文件，即得到文件的路径，就是数组里的tmp_name；</li>
+<li>自定义一个目录，然后加上文件名，然后拼接成文件路径，如‘E:/uploads/1.jpg’，我们上次的文件名就是数组里的name；</li>
+<li>然后将临时文件移动到自定义的目录，这里我们会用到 <strong>move_uploaded_file</strong> 函数，关于这个函数如下说明：<br />
+<img src="./images/PHP学习笔记 02 之文件上传2.jpg" /></li>
+</ol>
+<h3 id="代码实现">2、代码实现</h3>
+<h4 id="前台test.html">（1）前台test.html</h4>
+<pre><code><code>&lt;!--  
+Created by phpstrom
+USER: 冷魅蘇
+Date: 2019/4/27
+Time: 17:00
+--&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;zh-CN&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Examples&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;form action=&quot;upload.php&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;
+    &lt;label for=&quot;myfile&quot;&gt;上传文件：&lt;/label&gt;
+    &lt;input type=&quot;file&quot; id=&quot;myfile&quot; name=&quot;myfile&quot;&gt;
+    &lt;br&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;提交&quot;&gt;
+&lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></code></pre>
+<h4 id="后台upload.php">（2）后台upload.php</h4>
+<pre class="php"><code>&lt;?php
+/*
+* Created by phpstrom
+* USER: 冷魅蘇
+* Date: 2019/4/27
+* Time: 17:02
+*/
+echo &#39;&lt;pre size=&quot;16&quot;&gt;&#39;;
+//得到临时文件
+$tmpName = $_FILES[&#39;myfile&#39;][&#39;tmp_name&#39;];
+//对应保存的目录
+$fileName = &#39;E:/uploads/&#39;. $_FILES[&#39;myfile&#39;][&#39;name&#39;];
+//移动临时文件到目录
+move_uploaded_file($tmpName,$fileName);</code></code></pre>
+<p>开心，文件上传已经实习了，但问题很大。</p>
+<h2 id="四完善上传代码upload.php">四、完善上传代码upload.php</h2>
+<h3 id="简单的文件上传代码漏洞分析">1、简单的文件上传代码漏洞分析</h3>
+<p>上述的文件上传我们是已经实习了，但有几点问题：</p>
+<ol>
+<li>自定义的文件目录是否存在，如果根本没有这个文件夹，会出现错误。所以，我们要检查是否有该文件夹，如果没有就创建。</li>
+<li>文件上传到临时目录可能会出现错误，所以错误信息我们还是要显示出来的；</li>
+<li>文件上传的大小要限制，不限制是不合理的，我们限制文件上传大小可以通过前台js限制，也可以通过php.ini中配置相应的参数（后面会说明），但我们还是要通过PHP代码进行判断；</li>
+<li>我们常见的有头像上传、视频上传、文本上传等，所有我们对于不同的功能应该规定上传的文件类型；</li>
+<li>我们保存的文件名不应该是同样的，否则每次上传就把原文件给覆盖了，但如何你需要把原文件给覆盖也可以，但生成不同的文件名保存，这个功能也应该是需要具备的；</li>
+<li>临时文件的移动可能会出错，所以错误处理我们需要加上去；</li>
+<li>文件保存的目录、文件上传的大小、上传的文件类型还有name的名称，这些我们都是可能变的，我们不可以固定不变，所以我们要把上面的全部封装成函数，以变量传参的方式来实习文件上传。</li>
+</ol>
+<h3 id="完善后的upload.php">2、完善后的upload.php</h3>
+<p>下面直接给出修改后的代码，具体思路代码注释里面有说明：</p>
+<pre class="php"><code>&lt;?php
+/*
+* Created by phpstrom
+* USER: 冷魅蘇
+* Date: 2019/4/25
+* Time: 22:15
+*/
+/**
+ * @param $file     前台post提交的文件信息
+ * @param $mime     定义上传文件的类型
+ * @param $maxSize  定义上传文件的大小
+ * @param $path     定义保存的路径
+ * @return          返回上传成功的文件名或错误信息码
+ */
+function upload($file,$mime,$maxSize,$path){
+    //检查是否有该文件夹，如果没有就创建，并给予最高权限
+    if (!file_exists ($path)) {
+        if (!mkdir (&quot;$path&quot;, 0777, true)) {      //创建文件夹,没成功返回4010
+            return 4010;
+        }
+    }
+
+    //判断文件上传到临时目录的错误
+    switch ($file[&#39;error&#39;]){
+        case 1:
+            return 4001;     //&#39;上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值&#39;
+            break;
+        case 2:
+            return 4002;     //&#39;上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值&#39;
+            break;
+        case 3:
+            return 4003;     //&#39;文件上传不完整&#39;
+            break;
+        case 4:
+            return 4004;     //&#39;没有文件被上传&#39;
+            break;
+        case 6:
+            return 4005;     //&#39;服务器内部错误，文件写入失败&#39;
+            break;
+        case 7:
+            return 4006;     //&#39;服务器内部错误，文件写入失败&#39;
+            break;
+    }
+
+    if ($file[&#39;size&#39;]&gt;$maxSize){
+        return 4007;     //&#39;文件上传大小超过限制&#39;
+    }
+
+    //判断用户的上传文件的类型是合法，in_array() 数组查询
+    if (!in_array($file[&#39;type&#39;],$mime)){
+        return 4008;     //&quot;上传文件必须是图片&quot;
+    }
+
+    //得到临时文件名
+    $tmp = $file[&#39;tmp_name&#39;];
+
+    //调用函数生成随机的文件名
+    $fileName = getRandFileName();
+
+    //获取文件的扩展名
+    $ext = pathinfo($file[&#39;name&#39;],PATHINFO_EXTENSION);
+
+    //拼接成保存的文件名
+    $baseName = $fileName.&#39;.&#39;.$ext;
+
+    //拼接路径
+    $destination = $path.$baseName;
+
+    //如果文件合法，则将临时文件夹中的文件移动到指定的文件夹，并指定文件名
+    if (move_uploaded_file($tmp,$destination)){
+        return &#39;上传成功，保存的文件名为：&#39;.$baseName;
+    }else{
+        return 4009;
+    }
+}
+
+/**
+ * 随机文件名的格式，时间戳+随机6位的大小写字母和数字的组合
+ * mt_rand(x,y)  x,y的随机整数
+ * chr 字符转换
+ * ASCII码表：97-122 小写字母  65-90大写字母
+ */
+function getRandFileName(){
+    //将时间戳转成我们想要的格式
+    $str = date(&#39;YmdHis&#39;,time());
+    for($i=0; $i&lt;6; $i++){
+        switch (mt_rand(0,2)){      //随机从小写字母、大写字母、数字取一个
+            case 0:
+                $str .= chr(mt_rand(97,122));
+                break;
+            case 1:
+                $str .= chr(mt_rand(65,90));
+                break;
+            case 2:
+                $str .= mt_rand(0,9);
+                break;
+        }
+    }
+    return $str;
+}
+
+//文件上传信息手册
+$errorInfo = [
+    &#39;4001&#39; =&gt; &#39;上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值&#39;,
+    &#39;4002&#39; =&gt; &#39;上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值&#39;,
+    &#39;4003&#39; =&gt; &#39;文件上传不完整&#39;,
+    &#39;4004&#39; =&gt; &#39;没有文件被上传&#39;,
+    &#39;4005&#39; =&gt; &#39;服务器内部错误，文件写入失败&#39;,
+    &#39;4006&#39; =&gt; &#39;服务器内部错误，文件写入失败&#39;,
+    &#39;4007&#39; =&gt; &#39;文件上传大小超过限制&#39;,
+    &#39;4008&#39; =&gt; &#39;上传文件必须是图片&#39;,
+    &#39;4009&#39; =&gt; &#39;文件从临时文件夹移动到上传文件夹失败&#39;,
+    &#39;4010&#39; =&gt; &#39;保存文件的目录创建失败，请确定目录是否合法&#39;
+];
+//文件保存的文件夹
+$path = &#39;E:/uploads/&#39;;
+//定义文件上传的大小3MB
+$maxSize = 1024*1024*3;
+//定义允许用户上传的mime类型，现控制在图片上传
+$mime = [&#39;image/jpeg&#39;,&#39;image/jpg&#39;,&#39;image/pjpeg&#39;,&#39;image/png&#39;,&#39;image/gif&#39;];
+$file = $_FILES[&#39;myfile&#39;];
+
+$res = upload($file,$mime,$maxSize,$path);
+
+
+echo &#39;&lt;pre style=&quot;font-size: 14px;&quot;&gt;&#39;;
+echo &#39;&lt;h3&gt;临时文件上传信息&lt;/h3&gt;&#39;;
+var_dump($_FILES[&#39;myfile&#39;]);
+echo &#39;&lt;h3&gt;错误信息手册，显示文件名称上传成功&lt;/h3&gt;&#39;;
+var_dump($errorInfo);
+echo $res;</code></code></pre>
+<p>说明：文件类型(MIME)<br />
+<img src="./images/PHP学习笔记 02 之文件上传3.jpg" /></p>
+<p>常见的几种类型：<br />
+<img src="./images/PHP学习笔记 02 之文件上传4.jpg" /></p>
+<p>欢喜，我们的文件上传功能就此完成。下面我们说明一下对于文件上传，php.ini的相关配置，php.ini文件就在你安装的php目录下。</p>
+<h2 id="五php.ini相关参数">五、php.ini相关参数</h2>
+<p><strong>1. upload_tmp_dir //修改上传文件的临时目录<br />
+upload_max_filesize //上传允许的单文件的最大值<br />
+max_file_uploads //上传文件的允许最大数量</strong></p>
+<p><img src="./images/PHP学习笔记 02 之文件上传5.jpg" /></p>
+<p><strong>2. post_max_size //上传所有文件字节允许的最大值</strong><br />
+<img src="./images/PHP学习笔记 02 之文件上传6.jpg" /></p>
+<blockquote>
+<p>声明：本文欢迎大家评论和转载，使用本文章或代码还请声明，且在使用处的明显位置给出。如有其它问题或有什么建议，可在下方评论，或加QQ（1414782205），或发邮箱jcdjor@163.com。</p>
+</blockquote>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

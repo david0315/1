@@ -1,0 +1,31 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] CentOS下搭建下PHP的运行环境' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] CentOS下搭建下PHP的运行环境</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11794155.html</div><br>
+    <p>在公司里面有分配的测试机,所有的开发代码都运行在测试机里面.因为公司的测试机机房退租,所以要在新申请的几台测试机上搭建开发环境.开发环境尽量做到和线上的环境一致,包括代码的目录路径,运行程序的进程用户,日志的目录等等.我的测试机的linux版本还是centos6.5,搭建lnmp环境主要是下面这些命令.</p>
+<p>yum clean all<br />yum makecache<br />yum update<br />//安装nginx<br />yum install nginx<br />//安装php php-fpm以及必要的扩展,gd库,mysql扩展(php-mysql装完mysql,mysqli,pdo就全都装好了),pdo扩展,mbstring扩展,redis扩展<br />yum install php php-fpm php-devel php-pear php-gd php-pdo php-mbstring php-mysql  php-redis<br />//上面的那种形式不知为何没有memcache扩展,用下面这个命令进行安装,需要上面安装的php-devel,会生成.so文件,新建一个memcahce扩展的配置文件,把这个so加上<br />pecl install memcache</p>
+<p>修改session存储和处理机制的好处是,当有多台机器的时候可以解决session共享机制<br />修改默认的session处理机制,从file改成memcache,用下面的命令搜索下session的配置位置,除了php.ini中的,还有可能在php-fpm下的www.conf有覆盖,要给注释掉<br />grep "save_handler" /etc -R  <br />session.save_handler = memcache<br />session.save_path = "tcp://xxx.sina.com.cn:5xxxx8"</p>
+<p>php-fpm下的www.conf有对session机制的配置覆盖,要么也改掉,要么注释掉.<br />;php_value[session.save_handler] = memcache<br />;php_value[session.save_path] =  tcp://xxx.sina.com.cn:5xxxx8</p>
+<p><br />配置下php-fpm中php的错误日志,当发生500错误的时候,一般是我们php代码有问题,要把php的错误日志打开,如果目录路径在/var/log/php ,在创建新目录后,要把目录的属主和属组修改成fpm的运行用户,使用chown命令<br />例如:chown www-data:www-data /var/log/php-fpm<br />php_admin_value[error_log] = /var/log/php-fpm/www-error.log</p>
+<p>如果想使用更高版本的php,可以增加下面这个源,然后在安装php的软件的时候,写成这样例如:php71w  php71w-fpm等<br />rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm<br />rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

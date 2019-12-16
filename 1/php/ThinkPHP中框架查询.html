@@ -1,0 +1,140 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP中框架查询' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP中框架查询</center></div><div class='banquan'>原文出处:本文由博客园博主行走的阳光提供。<br/>
+原文连接:https://www.cnblogs.com/shineguang/p/11144781.html</div><br>
+    <p><span style="font-size: 18px;"><strong>1.查询多条数据</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;1.1静态调用all方法或者select方法</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> 获取所有数据 all 和 select</span>
+
+<span style="color: #800080;">$list</span> = User::<span style="color: #000000;">all();
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 根据主键获取多个数据all 和 select   where id in (1,2,3)</span>
+
+<span style="color: #800080;">$list</span> = User::all('1,2,3'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$list</span> = User::all([1,2,3<span style="color: #000000;">]);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">或者使用数组查询(只能用all不能用select)   where status = 1</span>
+
+<span style="color: #800080;">$list</span> = User::all(['status'=&gt;1]);</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;"><strong>1.2动态调用all方法或者select方法</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$user</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> User();
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">查询所有数据all 和 select</span>
+
+<span style="color: #800080;">$list</span> = <span style="color: #800080;">$user</span>-&gt;<span style="color: #000000;">select();
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">根据主键查询多条数据all 和 select</span>
+
+<span style="color: #800080;">$list</span> = <span style="color: #800080;">$user</span>-&gt;select('1,2,3'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$list</span> = <span style="color: #800080;">$user</span>-&gt;select([1,2,3<span style="color: #000000;">]);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">或者使用数组查询(只能用all不能用select)</span>
+
+<span style="color: #800080;">$list</span> = <span style="color: #800080;">$user</span>-&gt;all(['status'=&gt;1]);</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;"><strong>&nbsp;<span class="md-line md-end-block md-focus"><span class="md-expand">注：all方法或者select方法返回的是一个包含模型对象的二维数组或者空数组</span></span><span class="md-line md-end-block md-focus">select方法和All方法的应用：[obj, obj]</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">2.查询一条数据</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2.1静态调用get方法或者find方法</span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">取出主键为1的数据  where id = 1</span>
+
+<span style="color: #800080;">$user</span> = \app\admin\model\User::get(1<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$user</span> = \app\admin\model\User::find(1<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">使用数组查询(非主键字段),只能用get不能用find   where name = 'thinkphp'</span>
+
+<span style="color: #800080;">$user</span> = User::get(['name' =&gt; 'thinkphp'<span style="color: #000000;">]);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">取出第一条数据,只能用find不能用get</span>
+
+<span style="color: #800080;">$user</span> = User::find();</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<span style="font-size: 18px;"><strong>2.2动态调用get方法或者find方法</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$user</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> User();
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">取出主键为1的数据</span>
+
+<span style="color: #800080;">$info</span> = <span style="color: #800080;">$user</span>-&gt;find(1<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$info</span> = <span style="color: #800080;">$user</span>-&gt;get(1<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">使用数组查询(非主键字段),只能用get不能用find</span>
+
+<span style="color: #800080;">$info</span> = <span style="color: #800080;">$user</span>-&gt;get(['name' =&gt; 'thinkphp'<span style="color: #000000;">]);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">取出第一条数据,只能用find不能用get</span>
+
+<span style="color: #800080;">$info</span> = <span style="color: #800080;">$user</span>-&gt;find();</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 18px;"><strong>&nbsp; &nbsp; 注：<span class="md-line md-end-block"><span class="md-expand">get或者find方法返回的是当前模型的对象实例或者null</span></span><span class="md-line md-end-block">返回的模型对象，可以直接当做数组使用，也可以调用toArray() 直接转化为数组。</span><span class="md-line md-end-block md-focus">find方法和Get方法的应用：</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">3.其他查询方法</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;3.1where方法</span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$info</span> = User::where('id','=','1')-&gt;<span style="color: #000000;">find();
+
+</span><span style="color: #800080;">$info</span> = User::where('id','1')-&gt;<span style="color: #000000;">find();
+
+</span><span style="color: #800080;">$info</span> = User::where('name','like','%thinkphp%')-&gt;select();</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;"><strong>&nbsp; &nbsp;3.2链式操作</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$model</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Address();
+
+</span><span style="color: #800080;">$model</span>-&gt;field('<span style="color: #000000;">id
+name</span>')-&gt;select(); <span style="color: #008000;">//</span><span style="color: #008000;">指定要查询的字段，原生sql中select后面的字段</span>
+
+<span style="color: #800080;">$model</span>-&gt;order('id desc,time desc')-&gt;select(); <span style="color: #008000;">//</span><span style="color: #008000;">相当于原生sql中的order by</span>
+
+<span style="color: #800080;">$model</span>-&gt;limit(3)-&gt;select(); <span style="color: #008000;">//</span><span style="color: #008000;">相当于原生sql中的limit条件</span>
+
+<span style="color: #800080;">$model</span>-&gt;limit(0,3)-&gt;<span style="color: #000000;">select(); 
+
+</span><span style="color: #800080;">$model</span>-&gt;limit('0,3')-&gt;<span style="color: #000000;">select(); 
+
+</span><span style="color: #800080;">$model</span>-&gt;group('cate_id')-&gt;select();  <span style="color: #008000;">//</span><span style="color: #008000;">相当于原生sql中的group by</span>
+
+<span style="color: #800080;">$model</span>-&gt;having('id&gt;3')-&gt;select();  <span style="color: #008000;">//</span><span style="color: #008000;">相当于原生sql中的having条件</span>
+
+<span style="color: #800080;">$model</span>-&gt;alias('a')-&gt;<span style="color: #008080;">join</span>('think_user_type t','a.id=t.user_id', 'left')-&gt;select(); <span style="color: #008000;">//</span><span style="color: #008000;">alias方法设置别名，join方法连表查询</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;"><strong>&nbsp;3.3聚合查询</strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;在模型中也可以调用数据库的聚合方法进行查询</span></strong></span></p>
+<p><span style="font-size: 18px;"><strong><span class="md-line md-end-block md-focus">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 3.4数据字段查询</span></strong></span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">查询一条记录的一个字段的值
+Goods</span>::where(&lsquo;id&rsquo;, 2)-&gt;<span style="color: #000000;">value(&lsquo;goods_name&rsquo;);
+查询多条记录的一个字段的值，返回一个一维索引数组
+Goods</span>::where(&lsquo;id&rsquo;, &lsquo;GT&rsquo;, 2)-&gt;<span style="color: #000000;">column(&lsquo;goods_name&rsquo;);
+查询多条记录的一个字段的值，以id字段值作为数组索引
+Goods</span>::where(&lsquo;id&rsquo;, &lsquo;GT&rsquo;, 2)-&gt;column(&lsquo;goods_name&rsquo;, &lsquo;id&rsquo;);</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

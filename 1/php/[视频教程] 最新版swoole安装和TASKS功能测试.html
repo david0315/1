@@ -1,0 +1,122 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[视频教程] 最新版swoole安装和TASKS功能测试' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[视频教程] 最新版swoole安装和TASKS功能测试</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11628453.html</div><br>
+    <p>今天我们来安装和测试一下php的多并发高性能网络通信扩展，这个扩展是使用C语音开发的，加载到PHP以后，在PHP的层面上实现了多并发异步通信，模拟了go语音的很多特性，极大的拓宽了PHP的应用场景。</p>
+<p>直接使用官网上的那句命令就可以，安装swoole时可能会出现错误和卡住不动，多试几次就能成功。<br />pecl install swoole<br />要配置php的cli环境和fpm环境的ini文件，把扩展的so加载进去。</p>
+<p>视频地址：</p>
+<p><a href="https://www.bilibili.com/video/av70354024/" target="_blank">https://www.bilibili.com/video/av70354024/</a></p>
+<p>httpServer.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$http</span> = <span style="color: #0000ff;">new</span> swoole_http_server("127.0.0.1", 9501<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$http</span>-&gt;on("start", <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">echo</span> "Swoole http server is started at http://127.0.0.1:9501\n"<span style="color: #000000;">;
+});
+
+</span><span style="color: #800080;">$http</span>-&gt;on("request", <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$request</span>, <span style="color: #800080;">$response</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$response</span>-&gt;<span style="color: #008080;">header</span>("Content-Type", "text/plain"<span style="color: #000000;">);
+            </span><span style="color: #800080;">$response</span>-&gt;<span style="color: #008080;">end</span>("Hello World\n"<span style="color: #000000;">);
+});
+
+</span><span style="color: #800080;">$http</span>-&gt;start();</code></pre>
+
+<p>注意使用httpClient的时候会有一些错误，首先新版的swoole移除了Swoole\Http\Client,会报类找不到，其次要在协程中执行get方法</p>
+<p>httpClient.php</p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>$client = new swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_ASYNC);
+$client-&gt;on("connect", function($cli) {
+	    $cli-&gt;send("hello world\n");
+});
+$client-&gt;on("receive", function($cli, $data){
+	    echo "received: {$data}\n";
+});
+$client-&gt;on("error", function($cli){
+	    echo "connect failed\n";
+});
+$client-&gt;on("close", function($cli){
+	    echo "connection close\n";
+});
+$client-&gt;connect("127.0.0.1", 9502, 0.5);
+</code></pre>
+
+<p>taskServer.php</p>
+<src class="cnblogs_Highlighter">
+<pre><code><code>&lt;?php
+$serv = new Swoole\Server("127.0.0.1", 9502, SWOOLE_BASE);
+
+$serv-&gt;set(array(
+    'worker_num' =&gt; 2,
+    'task_worker_num' =&gt; 4,
+));
+
+$serv-&gt;on('Receive', function(Swoole\Server $serv, $fd, $from_id, $data) {
+    echo "接收数据" . $data . "\n";
+    $data = trim($data);
+    $task_id = $serv-&gt;task($data, 0); 
+    $serv-&gt;send($fd, "分发任务，任务id为$task_id\n");
+});
+
+$serv-&gt;on('Task', function (Swoole\Server $serv, $task_id, $from_id, $data) {
+    echo "Tasker进程接收到数据";
+    echo "#{$serv-&gt;worker_id}\tonTask: [PID={$serv-&gt;worker_pid}]: task_id=$task_id, data_len=".strlen($data).".".PHP_EOL;
+    $serv-&gt;finish($data);
+});
+
+$serv-&gt;on('Finish', function (Swoole\Server $serv, $task_id, $data) {
+    echo "Task#$task_id finished, data_len=".strlen($data).PHP_EOL;
+});
+
+$serv-&gt;on('workerStart', function($serv, $worker_id) {
+    global $argv;
+    if($worker_id &gt;= $serv-&gt;setting['worker_num']) {
+        swoole_set_process_name("php {$argv[0]}: task_worker");
+    } else {
+        swoole_set_process_name("php {$argv[0]}: worker");
+    }
+});
+
+$serv-&gt;start();
+</code></pre>
+
+<p>　　</p>
+<p>taskClient.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$client</span> = <span style="color: #0000ff;">new</span> swoole_client(SWOOLE_SOCK_TCP,<span style="color: #000000;"> SWOOLE_SOCK_ASYNC);
+</span><span style="color: #800080;">$client</span>-&gt;on("connect", <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$cli</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$cli</span>-&gt;send("hello world\n"<span style="color: #000000;">);
+});
+</span><span style="color: #800080;">$client</span>-&gt;on("receive", <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$cli</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "received: {<span style="color: #800080;">$data</span>}\n"<span style="color: #000000;">;
+});
+</span><span style="color: #800080;">$client</span>-&gt;on("error", <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$cli</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "connect failed\n"<span style="color: #000000;">;
+});
+</span><span style="color: #800080;">$client</span>-&gt;on("close", <span style="color: #0000ff;">function</span>(<span style="color: #800080;">$cli</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">echo</span> "connection close\n"<span style="color: #000000;">;
+});
+</span><span style="color: #800080;">$client</span>-&gt;connect("127.0.0.1", 9502, 0.5);</code></pre>
+
+<p>&nbsp;</p>
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

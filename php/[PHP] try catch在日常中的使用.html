@@ -1,0 +1,76 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] try catch在日常中的使用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] try catch在日常中的使用</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10650845.html</div><br>
+    <p>1.try catch可以捕获上一层throw的异常</p>
+<p>2.finally是不管try或者catch任何一块有return, 最终都会执行的块</p>
+<p>3.try也是可以捕获到call_user_func_array回调函数类内部的throw的异常</p>
+<p>4.call_user_func_array只能回调类的静态方法,可以在这个静态方法中进行new对象</p>
+<p>5.在不自定义任何错误处理函数的情况下,try是不能捕获php本身的错误的,包括notice warning error等级别</p>
+<p>下面的代码是项目中的一个部分,经过了多层调用和回调</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+
+class Oss {
+    public static function connect() {
+    	throw new Exception("oss connect error");
+    	return 'oss object';
+    }
+}
+//调用三层
+class S3{
+	public static function connect() {
+		//throw new Exception("s3 connect error");
+    	return 's3 object';
+    }
+}
+//调用二层
+function callReader($class,$url){
+	try{
+		$conn=call_user_func_array(array($class, "connect"),array());
+		return $conn;
+	}catch(Exception $e){
+		throw $e;	
+	}finally{
+		//无论如何都会执行,在这记录日志
+	}
+}
+//调用一层
+function getMessage(){
+	$conn=null;
+	try {
+	    $conn=callReader('Oss',"http://xxxx");
+	} catch (Exception $e1) {
+		$conn=callReader('S3',"http://xxxx");
+	}
+	return $conn;
+}
+
+//最先的入口
+try{
+	var_dump(getMessage());
+}catch(Exception $e){}
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,159 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修搭建apache2.4+php7+mysql+phpmyadmin' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>搭建apache2.4+php7+mysql+phpmyadmin</center></div><div class='banquan'>原文出处:本文由博客园博主连理枝提供。<br/>
+原文连接:https://www.cnblogs.com/tinging/p/11475222.html</div><br>
+    <blockquote>
+<p>apache2.2不支持php7，会报错 <code>cannot load php7apache2_4.dll into server</code></p>
+</blockquote>
+<blockquote>
+<p><strong>前排提示:保证安装文件夹和我的一致可以省事很多哦</strong></p>
+</blockquote>
+<h1 id="下载地址">下载地址</h1>
+<h2 id="下载apache-2.4">下载apache 2.4</h2>
+<ul>
+<li><p>apache 2.4 : <a href="https://www.apachelounge.com/download/VC14/" class="uri">https://www.apachelounge.com/download/VC14/</a></p>
+<p><img src="./images/搭建apache2.4+php7+mysql+phpmyadmin0.jpg" /></p></li>
+</ul>
+<h2 id="下载php7">下载php7</h2>
+<ul>
+<li><p>php7: <a href="https://windows.php.net/download/#php-5.5" class="uri">https://windows.php.net/download/#php-5.5</a></p>
+<p><img src="./images/搭建apache2.4+php7+mysql+phpmyadmin1.jpg" /></p></li>
+</ul>
+<h2 id="下载phpmyadmin">下载phpmyadmin</h2>
+<ul>
+<li><p>phpmyadmin: <a href="https://www.phpmyadmin.net/downloads/" class="uri">https://www.phpmyadmin.net/downloads/</a></p>
+<p><img src="./images/搭建apache2.4+php7+mysql+phpmyadmin2.jpg" /></p></li>
+</ul>
+<blockquote>
+<p>apache 和 php的vc版本需注意和自己电脑上安装的VC依赖一致</p>
+</blockquote>
+<h1 id="安装apache2.4">安装apache2.4</h1>
+<ul>
+<li><p>解压apache2.4 将目录 Apache24剪切到C盘根目录</p>
+<p><img src="./images/搭建apache2.4+php7+mysql+phpmyadmin3.jpg" /></p></li>
+<li>打开 conf/httpd.conf
+<ul>
+<li>找到 #ServerName 去掉 #（注释）</li>
+</ul>
+<pre><code><code># If your host doesn&#39;t have a registered DNS name, enter its IP address here.
+#
+ServerName www.example.com:80</code></code></pre>
+<ul>
+<li>找到 Listen 80 修改端口号（可选操作）</li>
+</ul>
+<pre><code><code>#Listen 12.34.56.78:80
+Listen 80</code></code></pre></li>
+<li>以<strong>管理员身份运行CMD</strong>，进入Apache24\bin 目录（httpd.exe所在目录）
+<ul>
+<li>运行以下命令：httpd.exe -k install -n &quot;Apache24&quot;</li>
+</ul>
+<pre><code><code>C:\Apache24\bin&gt;httpd.exe -k install -n &quot;Apache24&quot;
+            Installing the &#39;Apache24&#39; service
+            The &#39;Apache24&#39; service is successfully installed.</code></code></pre>
+<p>如上显示就安装成功了。</p>
+<blockquote>
+注意
+<ol>
+<li>如果不是管理员身份运行cmd，操作时会报错：<br />
+<code>httpd.exe -k install -n &quot;Apache24&quot; Installing the 'Apache24' service (OS 5)拒绝访问。</code></li>
+<li>安装成功后，下面可能显示：<code>Testing httpd.conf....                    Errors reported here must be corrected before the service can be started.</code>这是因为httpd.conf配置出错。后续配置好即可</li>
+</ol>
+</blockquote>
+<p>服务安装成功后即可在系统服务中看到Apache24,如下图所示：</p>
+<p><img src="./images/搭建apache2.4+php7+mysql+phpmyadmin4.jpg" /></p></li>
+<li><p>bin目录中找到 ApacheMonitor.exe ,双击运行,启动apache服务</p>
+<p><img src="./images/搭建apache2.4+php7+mysql+phpmyadmin5.jpg" /></p>
+<p>apache24安装成功</p></li>
+<li><p>验证:在浏览器输入<a href="http://localhost:80">http://localhost</a>，如果显示It Works!，表示Apache安装成功</p></li>
+</ul>
+<h1 id="安装php7">安装PHP7</h1>
+<ul>
+<li>将phpMyAdmin-4.9.0.1-all-languages.zip解压到D盘根目录，并重命名文件夹为php7 即可</li>
+</ul>
+<h1 id="整合apache24php7mysql">整合Apache24+php7+Mysql</h1>
+<ul>
+<li><p>修改Apache的配置文件，让Apache支持解析PHP文件</p>
+<ul>
+<li><p>在httpd.conf中找到 <code>#LoadModule xml2enc</code></p></li>
+<li><p>添加如下:<br />
+<code>LoadModule php7_module &quot;D:/php7/php7apache2_4.dll&quot;   PHPIniDir &quot;D:/php7&quot;</code></p></li>
+<li><p>找到 <code>&lt;IfModule mime_module&gt;</code>,添加<code>AddType application/x-httpd-php .php</code>.如下：<br />
+<code>&lt;IfModule mime_module&gt;       AddType application/x-httpd-php .php</code></p></li>
+<li><p>找到<code>&lt;IfModule dir_module&gt;</code> 在index.html前面添加 index.php。即：<br />
+<code>&lt;IfModule dir_module&gt;       DirectoryIndex index.php index.html   &lt;/IfModule&gt;</code></p></li>
+</ul></li>
+<li><p>修改PHP</p>
+<ul>
+<li>将 PHP 路径D:\php7添加到系统 Path 中。</li>
+</ul>
+<p><img src="./images/搭建apache2.4+php7+mysql+phpmyadmin6.jpg" /></p>
+<ul>
+<li><p>复制D:\php7\php.ini-development 并重命名为 php.ini，修改如下内容：</p>
+<ul>
+<li><p>找到<code>; extension_dir</code>,添加 <code>extension_dir = &quot;D:/php7/ext&quot;</code>.如下：<br />
+<code>; extension_dir = &quot;./&quot;   ; On windows:   extension_dir = &quot;D:/php7/ext&quot;</code></p></li>
+<li><p>找到<code>; extension</code> 把需要的扩展前面的注释(;)去掉，下面列出可能需要的扩展</p>
+<pre><code><code>extension=php_bz2.dll
+extension=php_curl.dll
+extension=php_fileinfo.dll
+extension=php_ftp.dll
+extension=php_gd2.dll
+extension=php_gettext.dll
+extension=php_gmp.dll
+extension=php_intl.dll
+extension=php_imap.dll
+extension=php_mbstring.dll
+extension=php_mysqli.dll
+extension=php_openssl.dll
+extension=php_xmlrpc.dll</code></code></pre></li>
+</ul></li>
+</ul></li>
+</ul>
+<h1 id="验证">验证</h1>
+<ul>
+<li><p>前往C:\Apache24\htdocs目录，建立 index.php,并输入一下内容：<br />
+<code>&lt;?php       phpinfo();   ?&gt;</code></p></li>
+<li><p>访问 <a href="http://localhost:80">http://localhost</a> ，出现如下画面，则成功：</p>
+<p><img src="./images/搭建apache2.4+php7+mysql+phpmyadmin7.jpg" /></p></li>
+<li>（验证mysql连接-可选操作）
+<ul>
+<li>修改前面的index.php 为如下内容：</li>
+</ul>
+<pre><code><code>&lt;?php
+    $con = new mysqli(&#39;localhost&#39;,&#39;root&#39;,&#39;123456&#39;,&#39;hongshi&#39;);
+    if(!$con)
+        die(&quot;connect error:&quot;.mysqli_connect_error());
+    else
+        echo &quot;success connect mysql\n&quot;;
+    $con-&gt;close();
+?&gt;</code></code></pre>
+<p>如果显示：<code>success connect mysql</code>，则访问mysql成功</p></li>
+</ul>
+<h1 id="安装phpmyadmin">安装phpmyadmin</h1>
+<ul>
+<li>把下载的安装包解压到C:\Apache24\htdocs 并重命名文件夹为 phpMyAdmin</li>
+<li>访问 <a href="http://localhost/phpMyAdmin/" class="uri">http://localhost/phpMyAdmin/</a></li>
+</ul>
+<p>完成~</p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

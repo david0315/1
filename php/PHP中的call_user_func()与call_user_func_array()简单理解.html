@@ -1,0 +1,147 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中的call_user_func()与call_user_func_array()简单理解' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中的call_user_func()与call_user_func_array()简单理解</center></div><div class='banquan'>原文出处:本文由博客园博主小时刻提供。<br/>
+原文连接:https://www.cnblogs.com/smallKilts/p/10535756.html</div><br>
+    <blockquote>
+<p>原文地址：<a href="http://small.aiweimeng.top/index.php/archives/52.html" target="_blank">http://small.aiweimeng.top/index.php/archives/52.html</a></p>
+</blockquote>
+<p>call_user_func:把一个参数作为回调函数调用</p>
+<p>用法说明：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>call_user_func ( callable $callback [, mixed $parameter [, mixed $... ]] ) : mixed
+</code></pre>
+
+<p>　　</p>
+<p>参数说明：</p>
+<p>第一个参数$callback作为回调函数，其它参数都是回调函数的参数。</p>
+<p>$parameter：传入回调$callback函数的参数，这里的参数注意不能引用传递。</p>
+<p>下面简单例子分别说明了在不同情况下使用call_user_func:</p>
+<src class="cnblogs_Highlighter">
+<pre><code>//先引用，后执行
+function _call($call){
+    echo $call++.'&lt;br/&gt;';
+    echo $call++.'&lt;br/&gt;';
+    return $call;
+}
+$rs = call_user_func('_call',1);
+var_dump($rs);
+
+//结果
+//1
+//2
+//int(3)
+</code></pre>
+
+<p>　　</p>
+<p>先执行，后引用</p>
+<src class="cnblogs_Highlighter">
+<pre><code>$arg = 1;
+call_user_func(function ($call){
+    echo ++$call.'&lt;br/&gt;';
+    echo ++$call.'&lt;br/&gt;';
+},$arg);
+
+//结果为2，3
+</code></pre>
+
+<p>　　</p>
+<p>回调函数不传值，通过func_get_arg和func_get_args获取参数</p>
+<src class="cnblogs_Highlighter">
+<pre><code>$argOne = 1;
+$argTwo = 2;
+call_user_func(function (){
+    //获取第几个参数
+    $arg = func_get_arg(0);
+    var_dump($arg);
+    echo '&lt;br/&gt;';
+    //获取所有的参数，并以数组的形式返回
+    $args = func_get_args();
+    var_dump($args);
+    //获取参数个数
+    $argNum = func_num_args();
+    echo "&lt;br/&gt;";
+    var_dump($argNum);
+},$argOne,$argTwo);
+
+//结果为
+int(1) 
+array(2) { [0]=&gt; int(1) [1]=&gt; int(2) } 
+int(2)
+</code></pre>
+
+<p>　　</p>
+<p>调用类方法：</p>
+<p>调用类中的静态方法有两种形式，而调用public方法第一个参数只能为数组</p>
+<src class="cnblogs_Highlighter">
+<pre><code>class Func{
+
+    static public function _One(){
+        $str = "THE CLASS NAME IS".__CLASS__." AND CLASS STATIC METHOD IS ".__METHOD__;
+        $argNum = func_num_args();
+        if($argNum){
+            $arg = func_get_arg(0);
+            return $str.' and argument is '.$arg;
+        }else{
+            return $str;
+        }
+    }
+
+
+    public function _Two($num){
+        return $num ? $num + 1 : $num;
+    }
+
+}
+
+echo "&lt;br/&gt;";
+//调用类的静态方法
+var_dump(call_user_func('Func::_One','one'));
+echo '&lt;br/&gt;';
+var_dump(call_user_func(['Func','_One']));
+
+$num = 4;
+$o = new Func;
+//调用类普通方法
+$return = call_user_func(array($o,'_Two'),$num);
+echo '&lt;br/&gt;';
+var_dump($return);
+
+结果：
+string(79) "THE CLASS NAME ISFunc AND CLASS STATIC METHOD IS Func::_One and argument is one" 
+string(59) "THE CLASS NAME ISFunc AND CLASS STATIC METHOD IS Func::_One" 
+int(5)
+</code></pre>
+
+<p>　　</p>
+<p>调用有命名空间的类时call_user_func的用法与上面的同理</p>
+<src class="cnblogs_Highlighter">
+<pre><code>//调用静态方法
+call_user_func(array(__NAMESPACE__.'\StaticDemo','_One'),100);
+call_user_func('App\StaticDemo::_One',200);
+//调用public方法
+call_user_func(array($obj,'_Two'),2,3,4);
+</code></pre>
+
+<p>　　</p>
+<p>最后：<br />和call_user_func函数类似的还有call_user_func_array,call_user_func_array的作用和call_user_func的作用一样，<br />不同的是call_user_func用回调函数处理字符，而call_user_func_array用回调处理数组，也就是说call_user_func_array的参数二只能为数组。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

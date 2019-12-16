@@ -1,0 +1,350 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修thinkphp5路由心得' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>thinkphp5路由心得</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/10716604.html</div><br>
+    <p><span style="font-size: 18px;">路由的作用：</span><br /><span style="font-size: 15px;"><strong>1. 简化URL地址，方便大家记忆</strong></span><br /><span style="font-size: 15px;"><strong>2. 有利于搜索引擎的优化，比如可以被百度的爬虫抓取到</strong></span></p>
+<p><span style="font-size: 18px;">优化URl</span><br /><strong><span style="font-size: 15px;">1. 前后端分离</span></strong><br />修改入口文件，在public下新建admin.php文件，将下面的代码添加进入</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 定义应用目录</span>
+<span style="color: #008080;">2</span>  
+<span style="color: #008080;">3</span> <span style="color: #008080;">define</span>('APP_PATH', __DIR__ . '/../application/'<span style="color: #000000;">);
+</span><span style="color: #008080;">4</span>  
+<span style="color: #008080;">5</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 加载框架引导文件</span>
+<span style="color: #008080;">6</span>  
+<span style="color: #008080;">7</span> <span style="color: #0000ff;">require</span> __DIR__ . '/../thinkphp/start.php';</code></pre>
+
+<p><strong><span style="font-size: 15px;">2.绑定模块</span></strong><br />1）前后端分离实现的功能<br />index.php 这个入口文件只能进入前台模块<br />admin.php 这个入口文件只能进入后台模块<br />2）绑定模块<br />在index.php添加 define(&lsquo;BIND_MODULE&rsquo;,&rsquo;index&rsquo;); 这样<span style="color: #ff0000;">http://www.demo.com/index.php/</span>只能访问前台模块。访问不了后台，<span style="color: #ff0000;">http://www.yd.com/index.php/index/index</span><br />在admin.php添加 define(&lsquo;BIND_MODULE&rsquo;,&rsquo;admin&rsquo;); 这样<span style="color: #ff0000;">http://www.demo.com/admin.php</span>只能访问后台模块，访问不了前台，<span style="color: #ff0000;">http://www.yd.com/admin.php/index/index</span><br />3) 隐藏入口文件(怎么操作就不写了，可以看下文档里面的<em>URL访问下&nbsp;</em>的<em>隐藏入口文件</em>&nbsp;的说明)，这样访问前台模块可以省去index.php，可以用<span style="color: #ff0000;">http://www.yd.com/index/index</span>直接访问到</p>
+<hr />
+<p>关闭后台的路由<br />在public下的admin.php中添加这句代码 \think\App::route(false);</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> 定义应用目录</span>
+ 
+<span style="color: #008080;">define</span>('APP_PATH', __DIR__ . '/../application/'<span style="color: #000000;">);
+ 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">绑定后台</span>
+ 
+<span style="color: #008080;">define</span>('BIND_MODULE','admin'<span style="color: #000000;">);
+ 
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 加载框架引导文件</span>
+ 
+<span style="color: #0000ff;">require</span> __DIR__ . '/../thinkphp/start.php'<span style="color: #000000;">;
+ 
+ 
+ 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">关闭admin模块的路由，必须写到加载框架引导文件之后</span>
+<span style="color: #000000;"> 
+\think\App</span>::route(<span style="color: #0000ff;">false</span>);</code></pre>
+
+<p>&nbsp;</p>
+<hr />
+<p>路由的三种模式：<br />1. 普通模式 :完全使用PASH_INFO来访问，比如<span style="color: #ff0000;">http://www.yd.com/index.php/index/index</span>，域名+模块+控制器<br />2. 混合模式 ：可以使用路由也可以不使用<br />3. 强制模式 ：必须使用路由</p>
+<hr />
+<p>设置路由</p>
+<p>一.动态单个设置</p>
+<p>在application下的route.php文件内更改</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">use</span> think\Route; <span style="color: #008000;">//</span><span style="color: #008000;">引入Route</span>
+<span style="color: #008080;">2</span>  
+<span style="color: #008080;">3</span> Route::rule('test','index/index/demo'); <span style="color: #008000;">//</span><span style="color: #008000;">当URL访问http://www.yd.com/test时，访问的是index模块下的index下的控制器下的demo方法</span></code></pre>
+
+<p>路由形式：<br />静态路由：Route::rule(&lsquo;test&rsquo;,&rsquo;index/index/demo&rsquo;);<br />带参数的路由： Route::rule(&lsquo;getid/:id&rsquo;,&rsquo;index/User/getId&rsquo;);<br />比如我访问<span style="color: #ff0000;">http://www.yd.com/getid/7</span>，或者<span style="color: #ff0000;"><span style="color: #ff0000;">http://www.yd.com/getid/8</span></span>，或者<span style="color: #ff0000;">http://www.yd.com/getid/9</span>，就是getid后面带个参数</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">首先在index模块下的User控制器中写一个getId方法</span>
+<span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getId(){
+</span><span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">echo</span> input('id'); <span style="color: #008000;">//</span><span style="color: #008000;">输出id</span>
+<span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> <span style="color: #008000;">//</span><span style="color: #008000;">然后在route.php加上这行代码</span>
+<span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> Route::rule('getid/:id','index/User/getId'<span style="color: #000000;">);
+</span><span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #008000;">//</span><span style="color: #008000;">最后当我们http://www.yd.com/getid后面加个数字，比如http://www.yd.com/getid/20,页面会显示20</span></code></pre>
+
+<p><em>带多个参数路由</em>，比如带两个参数</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">index模块下的User控制器中写一个myTime方法</span>
+<span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> myTime(){
+</span><span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">echo</span> input('year').' 年 '.input('month').'月'; <span style="color: #008000;">//</span><span style="color: #008000;">输出 n年n月</span>
+<span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> <span style="color: #008000;">//</span><span style="color: #008000;">然后在route.php加上这行代码</span>
+<span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> Route::rule('time/:year/:month','index/User/myTime'<span style="color: #000000;">);
+</span><span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #008000;">//</span><span style="color: #008000;">最后当我们访问http://www.yd.com/time/2018/9,页面会显示2018 年 9月</span></code></pre>
+
+<p><em>选择性带参数</em>，就是我们在访问url时，URL后面可以带参数，也可以不带，在写路由文件上的参数带上中括号就行<br />比如输出年或年月</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> myTime(){
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">echo</span> input('year').' 年 '.input('month').'月'; <span style="color: #008000;">//</span><span style="color: #008000;">输出 n年n月</span>
+<span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> <span style="color: #008000;">//</span><span style="color: #008000;">然后在route.php加上这行代码</span>
+<span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> Route::rule('time/:year/[:month]','index/User/myTime'); <span style="color: #008000;">//</span><span style="color: #008000;">重点:month外面加[]
+</span><span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> <span style="color: #008000;">//最后当我们访问http://www.yd.com/time/2018/9,页面会显示2018 年 9月
+</span><span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #008000;">//当我们访问http://www.yd.com/time/2018,页面会显示2018 年 月</span></code></pre>
+
+<p><em>纯带参数的路由</em>&nbsp;不建议使用</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">路由写法</span>
+<span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> Route::rule(':x/:y','index/User/XAndY'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> <span style="color: #008000;">//</span><span style="color: #008000;">方法</span>
+<span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> XAndY(){
+</span><span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> <span style="color: #0000ff;">echo</span> input('x').' '.input('y'<span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #008000;">//</span><span style="color: #008000;">访问http://www.yd.com/5/3，页面输出5 3</span></code></pre>
+
+<p><em>完全匹配路由</em>&nbsp;在路由的后面加个$符号</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> comp(){
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">echo</span> '我是完全匹配路由'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> <span style="color: #008000;">//</span><span style="color: #008000;">不加$符号，我们字comp后面加多少路径，比如http://www.yd.com/comp/asdfda/asdfasfd/aaa/bbb，页面都能输出 我是完全匹配路由</span>
+<span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> Route::rule('comp','index/User/comp'<span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span>  
+<span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #008000;">//</span><span style="color: #008000;">加上$符号，我们在comp后面加多少路径，比如http://www.yd.com/comp/asdfda/asdfasfd/aaa/bbb，页面不能输出方法的内容</span>
+<span style="color: #008080;">14</span>  
+<span style="color: #008080;">15</span> Route::rule('comp','index/User/comp');</code></pre>
+
+<p>二.批量设置路由<br />第一种写法，将上面所有单个动态注册的路由批量注册</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> Route::<span style="color: #000000;">rule([
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> "test"=&gt;"index/index/demo",
+<span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> 'getid/:id'=&gt;'index/User/getId',
+<span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> 'time/:year/[:month]'=&gt;'index/User/myTime',
+<span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> ':x/:y'=&gt;'index/User/XAndY',
+<span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> 'comp$'=&gt;'index/User/comp'
+<span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> ],'','get');</code></pre>
+
+<p>第二种方式，这里用get举例</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> Route::<span style="color: #000000;">get([
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> "test"=&gt;"index/index/demo",
+<span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> 'getid/:id'=&gt;'index/User/getId',
+<span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> 'time/:year/[:month]'=&gt;'index/User/myTime',
+<span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> ':x/:y'=&gt;'index/User/XAndY',
+<span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> 'comp$'=&gt;'index/User/comp'
+<span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> ]);</code></pre>
+
+<p>3.配置文件设置路由，使用配置文件批量注册，还是在route.php文件内写</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">return</span><span style="color: #000000;">[
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> "test"=&gt;"index/index/demo",
+<span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> 'getid/:id'=&gt;'index/User/getId',
+<span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> 'time/:year/[:month]'=&gt;'index/User/myTime',
+<span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> ':x/:y'=&gt;'index/User/XAndY',
+<span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> 'comp$'=&gt;'index/User/comp'
+<span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> ];</code></pre>
+
+<hr />
+<p>路由的请求方式<br /><strong><span style="font-size: 16px;">TP里面有四种请求方式，GET，POST，PUT，DELETE四种方式，如果我们不指定请求类型，默认是*，所有的请求类型</span></strong></p>
+<p>请求方式有两种写法，这里用get举例</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> Route::rule('qtype','index/User/questType','get'<span style="color: #000000;">);
+</span><span style="color: #008080;">2</span>  
+<span style="color: #008080;">3</span> Route::get('gtype','index/User/questType');</code></pre>
+
+<p>既支持get有支持post的写法</p>
+<src class="cnblogs_code">
+<pre><code>Route::rule('type','index/User/questType','get|post');</code></pre>
+
+<p>全部请求方式都支持的两种写法</p>
+<src class="cnblogs_code">
+<pre><code>Route::any('type','index/User/questType'<span style="color: #000000;">);
+ 
+Route</span>::rule('type','index/User/questType','*');</code></pre>
+
+<hr />
+<p><strong>变量规则，Route::rule()；的最后一个参数，是一个数组，可以指定多个参数，用正则表达式来写，用来规范传入的参数必须是什么数据类型，或者必须是那些数据等等，比如</strong></p>
+<src class="cnblogs_code">
+<pre><code>Route::rule('getid/:id','index/User/getId','get',[],['id'=&gt;'\d']);  <span style="color: #008000;">//</span><span style="color: #008000;">最后一个参数，表示id传参数必须是数字</span></code></pre>
+
+<p><strong>路由参数，Route::rule()；的倒数第二个参数，是一个数组，可以用来指定请求的数据类型，也可以用来规定请求的URL后缀，比如</strong></p>
+<src class="cnblogs_code">
+<pre><code>Route::rule('getid/:id','index/User/getId','get',['method'=&gt;'get','ext'=&gt;'html'],['id'=&gt;'\d'<span style="color: #000000;">]);
+ 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">请求方式必须是get,请求的后缀必须是html,访问的url为http://www.yd.com/getid/9.html，不带html后缀就请求失败</span></code></pre>
+
+<hr />
+<p>资源路由，你的后台模块可能会有增删改查等操作，但是一个一个写太费劲，资源路由自动帮你生这些路由，你只需要在控制器内写这些方法，</p>
+<p><img src="./images/thinkphp5路由心得0.jpg" alt="这里写图片描述" /></p>
+<p>比如</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">//</span><span style="color: #008000;">先创建block</span>
+<span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #000000;">namespace app\index\controller;
+</span><span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Block
+</span><span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> index(){
+</span><span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> <span style="color: #0000ff;">echo</span> '我是前台模块下的block'<span style="color: #000000;">;
+</span><span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">14</span>  
+<span style="color: #008080;">15</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> create(){
+</span><span style="color: #008080;">16</span>  
+<span style="color: #008080;">17</span> <span style="color: #0000ff;">echo</span> '我是前台模块下的block的create方法'<span style="color: #000000;">;
+</span><span style="color: #008080;">18</span>  
+<span style="color: #008080;">19</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">20</span>  
+<span style="color: #008080;">21</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> read(<span style="color: #800080;">$id</span><span style="color: #000000;">){
+</span><span style="color: #008080;">22</span>  
+<span style="color: #008080;">23</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$id</span><span style="color: #000000;">;
+</span><span style="color: #008080;">24</span>  
+<span style="color: #008080;">25</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">26</span>  
+<span style="color: #008080;">27</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">28</span>  
+<span style="color: #008080;">29</span> <span style="color: #008000;">//</span><span style="color: #008000;">然后在route.php下写上资源路由</span>
+<span style="color: #008080;">30</span>  
+<span style="color: #008080;">31</span> Route::<span style="color: #0000ff;">resource</span>('block','index/Block'<span style="color: #000000;">);
+</span><span style="color: #008080;">32</span>  
+<span style="color: #008080;">33</span>  
+<span style="color: #008080;">34</span>  
+<span style="color: #008080;">35</span> <span style="color: #008000;">//</span><span style="color: #008000;">效果：
+</span><span style="color: #008080;">36</span>  
+<span style="color: #008080;">37</span> <span style="color: #008000;">//当你访问http://www.yd.com/block URL访问的是index方法
+</span><span style="color: #008080;">38</span>  
+<span style="color: #008080;">39</span> <span style="color: #008000;">//当你访问http://www.yd.com/block/15 URL访问的是read方法
+</span><span style="color: #008080;">40</span>  
+<span style="color: #008080;">41</span> <span style="color: #008000;">//当你访问http://www.yd.com/block/create URL访问的是create方法</span></code></pre>
+
+<p>快捷路由<br />在index模块下创建一个Fastroute控制器，里面写下如下例子，除了index，其他方法都要加上get</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">namespace app\index\controller;
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Fastroute
+</span><span style="color: #008080;"> 4</span>  
+<span style="color: #008080;"> 5</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 6</span>  
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> index(){
+</span><span style="color: #008080;"> 8</span>  
+<span style="color: #008080;"> 9</span> <span style="color: #0000ff;">echo</span> '我是Fast路由的index'<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>  
+<span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span>  
+<span style="color: #008080;">13</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getAA(){
+</span><span style="color: #008080;">14</span>  
+<span style="color: #008080;">15</span> <span style="color: #0000ff;">echo</span> "我是getAA"<span style="color: #000000;">;
+</span><span style="color: #008080;">16</span>  
+<span style="color: #008080;">17</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">18</span>  
+<span style="color: #008080;">19</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getBB(){
+</span><span style="color: #008080;">20</span>  
+<span style="color: #008080;">21</span> <span style="color: #0000ff;">echo</span> "我是BB"<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span>  
+<span style="color: #008080;">23</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">24</span>  
+<span style="color: #008080;">25</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> postInfo()
+</span><span style="color: #008080;">26</span>  
+<span style="color: #008080;">27</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">28</span>  
+<span style="color: #008080;">29</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">30</span>  
+<span style="color: #008080;">31</span>  
+<span style="color: #008080;">32</span>  
+<span style="color: #008080;">33</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> putInfo()
+</span><span style="color: #008080;">34</span>  
+<span style="color: #008080;">35</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">36</span>  
+<span style="color: #008080;">37</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">38</span>  
+<span style="color: #008080;">39</span>  
+<span style="color: #008080;">40</span>  
+<span style="color: #008080;">41</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> deleteInfo()
+</span><span style="color: #008080;">42</span>  
+<span style="color: #008080;">43</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">44</span>  
+<span style="color: #008080;">45</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">46</span>  
+<span style="color: #008080;">47</span> }</code></pre>
+
+<p>在route.php里面写下快捷路由</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;">注意：路由名字要和控制器名字一样</span>
+<span style="color: #008080;">2</span>  
+<span style="color: #008080;">3</span> Route::controller('Fastroute','index/Fastroute'<span style="color: #000000;">);
+</span><span style="color: #008080;">4</span>  
+<span style="color: #008080;">5</span> <span style="color: #008000;">//</span><span style="color: #008000;">然后我们想访问getAA方法，我们可以通过访问URL http://www.yd.com/Fastroute/AA来访问
+</span><span style="color: #008080;">6</span>  
+<span style="color: #008080;">7</span> <span style="color: #008000;">//想访问getBB()，可以通过 http://www.yd.com/Fastroute/BB来访问</span>
+<span style="color: #008080;">8</span> 1</code></pre>
+
+<p>生成URL 两种方式，不太懂有什么用</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> Url::build(&lsquo;index/User/<span style="color: #000000;">index&rsquo;);
+</span><span style="color: #008080;">2</span> Url::<span style="color: #000000;">build();
+</span><span style="color: #008080;">3</span> 
+<span style="color: #008080;">4</span>  
+<span style="color: #008080;">5</span> Url::root('/index.php'); <span style="color: #008000;">//</span><span style="color: #008000;">带入口文件</span>
+<span style="color: #008080;">6</span>  
+<span style="color: #008080;">7</span> dump(Url('index/User/index'<span style="color: #000000;">));
+</span><span style="color: #008080;">8</span>  
+<span style="color: #008080;">9</span> dump(Url::build('index/User/index'));</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

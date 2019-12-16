@@ -1,0 +1,233 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修高效PHP Redis缓存技术，可参考下步骤' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>高效PHP Redis缓存技术，可参考下步骤</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11970061.html</div><br>
+    <p>是否想过PHP使用redis作为缓存时，如何能：</p>
+<ol>
+<li>前后台模块共用Model层；</li>
+<li>但是，不能每个Model类都进行缓存，这样太浪费Redis资源；</li>
+<li>前后台模块可以自由决定从数据库还是从缓存读数据；</li>
+<li>没有冗余代码；</li>
+<li>使用方便。<br />这里我们先展示实现的最终效果。</li>
+
+
+</ol>
+<p>最终的代码和使用说明请移步Github：<a class=" external" href="https://link.zhihu.com/?target=https%3A//github.com/yeszao/php-redis-cache" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043"><span class="invisible">https://<span class="visible">github.com/yeszao/php-r<span class="invisible">edis-cache</span></span></span></a>。</p>
+<p>马上安装使用命令：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$ composer install yeszao/cache</code></pre>
+
+<p>&nbsp;</p>
+
+<p>经过简单配置就可以使用，请参看Github的README说明。</p>
+<h3><strong>1 最终效果</strong></h3>
+<p>假设在MVC框架中，model层有一个Book类和一个getById方法，如下：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">class</span><span style="color: #000000;"> Book
+{
+    </span><span style="color: #0000ff;">public</span><span style="color: #000000;"> function getById($id)
+    {
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> $id;
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>加入缓存技术之后，原来方法的调用方式和返回的数据结构都不应该改变。</p>
+<p>所以，我们希望，最后的效果应该是这样的：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> (<span style="color: #0000ff;">new</span> Book)-&gt;getById(<span style="color: #800080;">100</span>);           <span style="color: #008000;">//</span><span style="color: #008000;"> 原始的、不用缓存的调用方式，还是原来的方式，一般是读取数据库的数据。</span>
+<span style="color: #008080;">2</span> (<span style="color: #0000ff;">new</span> Book)-&gt;getByIdCache(<span style="color: #800080;">100</span>);      <span style="color: #008000;">//</span><span style="color: #008000;"> 使用缓存的调用方式，缓存键名为：app_models_book:getbyid: + md5(参数列表)</span>
+<span style="color: #008080;">3</span> (<span style="color: #0000ff;">new</span> Book)-&gt;getByIdClear(<span style="color: #800080;">100</span>);      <span style="color: #008000;">//</span><span style="color: #008000;"> 删除这个缓存</span>
+<span style="color: #008080;">4</span> (<span style="color: #0000ff;">new</span> Book)-&gt;getByIdFlush();         <span style="color: #008000;">//</span><span style="color: #008000;"> 删除 getById() 方法对应的所有缓存，即删除 app_models_book:getbyid:*。这个方法不需要参数。</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>这样我们可以很清楚的明白自己在做什么，同时又知道数据的来源函数，并且被引用方式完全统一，可谓一箭三雕。</p>
+<p>其实实现起来也比较简单，就是使用PHP的魔术方法__call()方法。</p>
+<h3><strong>2 __call()方法</strong></h3>
+<p>这里简单说明一下__call方法的作用。</p>
+<p>在PHP中，当我们访问一个不存在的类方法时，就会调用这个类的__call()方法。</p>
+<p>（如果类方法不存在，又没有写__call()方法，PHP会直接报错）</p>
+<p>假设我们有一个Book类：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Book
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> function __call($name, $arguments)
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 5</span>         echo <span style="color: #800000;">'</span><span style="color: #800000;">类Book不存在方法</span><span style="color: #800000;">'</span><span style="color: #000000;">, $name, PHP_EOL;
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> function getById($id)
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">10</span>         echo <span style="color: #800000;">'</span><span style="color: #800000;">我的ID是</span><span style="color: #800000;">'</span><span style="color: #000000;">, $id, PHP_EOL;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">12</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>当调用存在的getById(50)方法时，程序打印：我的ID是50。</p>
+<p>而如果调用不存在的getAge()方法时，程序就会执行到A类的__call()方法里面，这里会打印：类Book不存在方法getAge。</p>
+<p>这就是__call的原理。</p>
+<h3><strong>3 实现细节</strong></h3>
+<p>接下来我们就利用__call()方法的这种特性，来实现缓存策略。</p>
+<p>从上面的例子，我们看到，__call()方法被调用时，会传入两个参数。</p>
+<p><em>name</em>：想要调用的方法名arguments：参数列表<br />我们就可以在参数上面做文章。</p>
+<p>还是以Book类为例，我们假设其原本结构如下：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Book
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> function __call($name, $arguments)
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 5</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 待填充内容</span>
+<span style="color: #008080;"> 6</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> function getById($id)
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">10</span>         <span style="color: #0000ff;">return</span> [<span style="color: #800000;">'</span><span style="color: #800000;">id</span><span style="color: #800000;">'</span> =&gt; $id, <span style="color: #800000;">'</span><span style="color: #800000;">title</span><span style="color: #800000;">'</span> =&gt; <span style="color: #800000;">'</span><span style="color: #800000;">PHP缓存技术</span><span style="color: #800000;">'</span><span style="color: #000000;"> . $id];
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">12</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>开始之前，我们还确认Redis的连接，这是缓存必须用到的，这里我们写个简单的单例类：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Common
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> $redis = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span><span style="color: #000000;"> function redis()
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 7</span>         <span style="color: #0000ff;">if</span> (self::$redis === <span style="color: #0000ff;">null</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 8</span>             self::$redis = <span style="color: #0000ff;">new</span> \Redis(<span style="color: #800000;">'</span><span style="color: #800000;">127.0.0.1</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>             self::$redis-&gt;connect(<span style="color: #800000;">'</span><span style="color: #800000;">redis</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">11</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;"> self::$redis;
+</span><span style="color: #008080;">12</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后，我们开始填充__call()方法代码，具体说明请看注释：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Book
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> function __call($name, $arguments)
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 5</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 因为我们主要是根据方法名的后缀决定具体操作，
+</span><span style="color: #008080;"> 6</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 所以如果传入的 $name 长度小于5，可以直接报错</span>
+<span style="color: #008080;"> 7</span>         <span style="color: #0000ff;">if</span> (strlen($name) &lt; <span style="color: #800080;">5</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 8</span>             exit(<span style="color: #800000;">'</span><span style="color: #800000;">Method does not exist.</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 接着，我们截取 $name，获取原方法和要执行的动作，
+</span><span style="color: #008080;">12</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 是cache、clear还是flush，这里我们取了个巧，动作
+</span><span style="color: #008080;">13</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 的名称都是5个字符，这样截取就非常高效。</span>
+<span style="color: #008080;">14</span>         $method = substr($name, <span style="color: #800080;">0</span>, -<span style="color: #800080;">5</span><span style="color: #000000;">);
+</span><span style="color: #008080;">15</span>         $action = substr($name, -<span style="color: #800080;">5</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 当前调用的类名称，包括命名空间的名称</span>
+<span style="color: #008080;">18</span>         $<span style="color: #0000ff;">class</span> =<span style="color: #000000;"> get_class();
+</span><span style="color: #008080;">19</span> 
+<span style="color: #008080;">20</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 生成缓存键名，$arguments稍后再加上</span>
+<span style="color: #008080;">21</span>         $key = sprintf(<span style="color: #800000;">'</span><span style="color: #800000;">%s:%s:</span><span style="color: #800000;">'</span>, str_replace(<span style="color: #800000;">'</span><span style="color: #800000;">\\</span><span style="color: #800000;">'</span>, <span style="color: #800000;">'</span><span style="color: #800000;">_</span><span style="color: #800000;">'</span>, $<span style="color: #0000ff;">class</span><span style="color: #000000;">), $method);
+</span><span style="color: #008080;">22</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 都用小写好看点</span>
+<span style="color: #008080;">23</span>         $key =<span style="color: #000000;"> strtolower($key);
+</span><span style="color: #008080;">24</span> 
+<span style="color: #008080;">25</span>         <span style="color: #0000ff;">switch</span><span style="color: #000000;"> ($action) {
+</span><span style="color: #008080;">26</span>             <span style="color: #0000ff;">case</span> <span style="color: #800000;">'</span><span style="color: #800000;">Cache</span><span style="color: #800000;">'</span><span style="color: #000000;">:
+</span><span style="color: #008080;">27</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 缓存键名加上$arguments</span>
+<span style="color: #008080;">28</span>                 $key =<span style="color: #000000;"> $key . md5(json_encode($arguments));
+</span><span style="color: #008080;">29</span> 
+<span style="color: #008080;">30</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 从Redis中读取数据</span>
+<span style="color: #008080;">31</span>                 $data = Common::redis()-&gt;<span style="color: #0000ff;">get</span><span style="color: #000000;">($key);
+</span><span style="color: #008080;">32</span> 
+<span style="color: #008080;">33</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 如果Redis中有数据</span>
+<span style="color: #008080;">34</span>                 <span style="color: #0000ff;">if</span> ($data !== <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">35</span>                     $decodeData =<span style="color: #000000;"> json_decode($data, JSON_UNESCAPED_UNICODE);
+</span><span style="color: #008080;">36</span>                     <span style="color: #008000;">//</span><span style="color: #008000;"> 如果不是JSON格式的数据，直接返回，否则返回json解析后的数据</span>
+<span style="color: #008080;">37</span>                     <span style="color: #0000ff;">return</span> $decodeData === <span style="color: #0000ff;">null</span> ?<span style="color: #000000;"> $data : $decodeData;
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;">39</span> 
+<span style="color: #008080;">40</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 如果Redis中没有数据则继续往下执行
+</span><span style="color: #008080;">41</span> 
+<span style="color: #008080;">42</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 如果原方法不存在</span>
+<span style="color: #008080;">43</span>                 <span style="color: #0000ff;">if</span> (method_exists($<span style="color: #0000ff;">this</span>, $method) === <span style="color: #0000ff;">false</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">44</span>                     exit(<span style="color: #800000;">'</span><span style="color: #800000;">Method does not exist.</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;">46</span> 
+<span style="color: #008080;">47</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 调用原方法获取数据</span>
+<span style="color: #008080;">48</span>                 $data = call_user_func_array([$<span style="color: #0000ff;">this</span><span style="color: #000000;">, $method], $arguments);
+</span><span style="color: #008080;">49</span> 
+<span style="color: #008080;">50</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 保存数据到Redis中以便下次使用</span>
+<span style="color: #008080;">51</span>                 Common::redis()-&gt;<span style="color: #0000ff;">set</span>($key, json_encode($data), <span style="color: #800080;">3600</span><span style="color: #000000;">);
+</span><span style="color: #008080;">52</span> 
+<span style="color: #008080;">53</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 结束执行并返回数据</span>
+<span style="color: #008080;">54</span>                 <span style="color: #0000ff;">return</span><span style="color: #000000;"> $data;
+</span><span style="color: #008080;">55</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">56</span> 
+<span style="color: #008080;">57</span>             <span style="color: #0000ff;">case</span> <span style="color: #800000;">'</span><span style="color: #800000;">Clear</span><span style="color: #800000;">'</span><span style="color: #000000;">:
+</span><span style="color: #008080;">58</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 缓存键名加上$arguments</span>
+<span style="color: #008080;">59</span>                 $key =<span style="color: #000000;"> $key . md5(json_encode($arguments));
+</span><span style="color: #008080;">60</span>                 <span style="color: #0000ff;">return</span> Common::redis()-&gt;<span style="color: #000000;">del($key);
+</span><span style="color: #008080;">61</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">62</span> 
+<span style="color: #008080;">63</span>             <span style="color: #0000ff;">case</span> <span style="color: #800000;">'</span><span style="color: #800000;">Flush</span><span style="color: #800000;">'</span><span style="color: #000000;">:
+</span><span style="color: #008080;">64</span>                 $key = $key . <span style="color: #800000;">'</span><span style="color: #800000;">*</span><span style="color: #800000;">'</span><span style="color: #000000;">;
+</span><span style="color: #008080;">65</span> 
+<span style="color: #008080;">66</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 获取所有符合 $class:$method:* 规则的缓存键名 </span>
+<span style="color: #008080;">67</span>                 $keys = Common::redis()-&gt;<span style="color: #000000;">keys($key);
+</span><span style="color: #008080;">68</span>                 <span style="color: #0000ff;">return</span> Common::redis()-&gt;<span style="color: #000000;">del($keys);
+</span><span style="color: #008080;">69</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">70</span> 
+<span style="color: #008080;">71</span>             <span style="color: #0000ff;">default</span><span style="color: #000000;">:
+</span><span style="color: #008080;">72</span>                 exit(<span style="color: #800000;">'</span><span style="color: #800000;">Method does not exist.</span><span style="color: #800000;">'</span><span style="color: #000000;">);
+</span><span style="color: #008080;">73</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">74</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">75</span> 
+<span style="color: #008080;">76</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 其他方法</span>
+<span style="color: #008080;">77</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>这样就实现了我们开始时的效果。</p>
+<h3><strong>4 实际使用时</strong></h3>
+<p>在实际使用中，我们需要做一些改变，把这一段代码归入一个类中，</p>
+<p>然后在model层的基类中引用这个类，再传入Redis句柄、类对象、方法名和参数，</p>
+<p>这样可以降低代码的耦合，使用起来也更灵活。</p>
+<p>完整的代码已经放在Github上，请参考文章开头的参考地址。</p>
+<p>&nbsp;</p>
+<p><strong>推荐阅读：</strong></p>
+<p><strong><a href="https://www.cnblogs.com/a609251438/p/11911950.html" target="_blank">PHP操作Redis数据库常用方法</a></strong></p>
+<p><strong><a href="https://www.cnblogs.com/a609251438/p/11938878.html" target="_blank">Redis的面试问题总结，面试跳槽必备</a></strong></p>
+<p><strong><a href="https://www.cnblogs.com/a609251438/p/11898872.html" target="_blank">用PHP+Redis实现延迟任务，实现自动取消订单</a></strong></p>
+<p><strong><a href="https://www.cnblogs.com/a609251438/p/11951006.html" target="_blank">PHP基于Redis实现轻量级延迟队列</a></strong></p>
+<p><strong><a href="https://www.cnblogs.com/a609251438/p/11908261.html" target="_blank">php+redis实现注册、删除、编辑、分页、登录、关注等功能</a></strong></p>
+<p><strong><a href="https://www.cnblogs.com/a609251438/p/11831938.html" target="_blank">PHP 面试官问：你说说Redis的几个过期策略？</a></strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

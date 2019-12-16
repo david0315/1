@@ -1,0 +1,227 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Swoole Task 的应用' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Swoole Task 的应用</center></div><div class='banquan'>原文出处:本文由博客园博主新亮笔记提供。<br/>
+原文连接:https://www.cnblogs.com/xinliangcoder/p/10792388.html</div><br>
+    <src class="toc">
+    <p class="toc-title">目录</p>
+    <src class="toc-list">
+        <ul>
+        <li><a href="#概述">概述</a></li>
+        <li><a href="#代码">代码</a></li>
+        <li><a href="#小结">小结</a></li>
+        <li><a href="#扩展">扩展</a></li>
+        <li><a href="#参考文档">参考文档</a></li>
+        </ul>
+    
+
+<h2 id="概述">概述</h2>
+<p>这是关于 Swoole 学习的第二篇文章：Swoole Task 的应用。</p>
+<ul>
+<li><a href="https://www.cnblogs.com/xinliangcoder/p/10792370.html">第一篇：Swoole Timer 的应用</a></li>
+</ul>
+<p>Swoole 异步Task，主要实现调用异步任务的执行。</p>
+<p>常用的场景：异步支付处理、异步订单处理、异步日志处理、异步发送邮件/短信等。</p>
+<p>Swoole 的实现方式是 worker 进程处理数据请求，分配给 task 进程执行。</p>
+<p>官方介绍：</p>
+<blockquote>
+<p>task 底层使用Unix Socket管道通信，是全内存的，没有IO消耗。单进程读写性能可达100万/s，不同的进程使用不同的管道通信，可以最大化利用多核。</p>
+</blockquote>
+<p>本地版本：PHP 7.2.6、Swoole 4.3.1。</p>
+<p>不多说，先看效果图：</p>
+<p><img src="./images/Swoole Task 的应用0.jpg" /></p>
+<h2 id="代码">代码</h2>
+<h4 id="server.php">server.php</h4>
+<pre><code><code>&lt;?php
+
+class Server
+{
+    private $serv;
+
+    public function __construct() {
+        $this-&gt;serv = new swoole_server(&#39;0.0.0.0&#39;, 9501);
+        $this-&gt;serv-&gt;set([
+            &#39;worker_num&#39;      =&gt; 2, //开启2个worker进程
+            &#39;max_request&#39;     =&gt; 4, //每个worker进程 max_request设置为4次
+            &#39;task_worker_num&#39; =&gt; 4, //开启4个task进程
+            &#39;dispatch_mode&#39;   =&gt; 2, //数据包分发策略 - 固定模式
+        ]);
+
+        $this-&gt;serv-&gt;on(&#39;Start&#39;, [$this, &#39;onStart&#39;]);
+        $this-&gt;serv-&gt;on(&#39;Connect&#39;, [$this, &#39;onConnect&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Receive&quot;, [$this, &#39;onReceive&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Close&quot;, [$this, &#39;onClose&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Task&quot;, [$this, &#39;onTask&#39;]);
+        $this-&gt;serv-&gt;on(&quot;Finish&quot;, [$this, &#39;onFinish&#39;]);
+
+        $this-&gt;serv-&gt;start();
+    }
+
+    public function onStart($serv) {
+        echo &quot;#### onStart ####&quot;.PHP_EOL;
+        echo &quot;SWOOLE &quot;.SWOOLE_VERSION . &quot; 服务已启动&quot;.PHP_EOL;
+        echo &quot;master_pid: {$serv-&gt;master_pid}&quot;.PHP_EOL;
+        echo &quot;manager_pid: {$serv-&gt;manager_pid}&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onConnect($serv, $fd) {
+        echo &quot;#### onConnect ####&quot;.PHP_EOL;
+        echo &quot;客户端:&quot;.$fd.&quot; 已连接&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onReceive($serv, $fd, $from_id, $data) {
+        echo &quot;#### onReceive ####&quot;.PHP_EOL;
+        echo &quot;worker_pid: {$serv-&gt;worker_pid}&quot;.PHP_EOL;
+        echo &quot;客户端:{$fd} 发来的Email:{$data}&quot;.PHP_EOL;
+        $param = [
+            &#39;fd&#39;    =&gt; $fd,
+            &#39;email&#39; =&gt; $data
+        ];
+        $rs = $serv-&gt;task(json_encode($param));
+        if ($rs === false) {
+            echo &quot;任务分配失败 Task &quot;.$rs.PHP_EOL;
+        } else {
+            echo &quot;任务分配成功 Task &quot;.$rs.PHP_EOL;
+        }
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onTask($serv, $task_id, $from_id, $data) {
+        echo &quot;#### onTask ####&quot;.PHP_EOL;
+        echo &quot;#{$serv-&gt;worker_id} onTask: [PID={$serv-&gt;worker_pid}]: task_id={$task_id}&quot;.PHP_EOL;
+
+        //业务代码
+        for($i = 1 ; $i &lt;= 5 ; $i ++ ) {
+            sleep(2);
+            echo &quot;Task {$task_id} 已完成了 {$i}/5 的任务&quot;.PHP_EOL;
+        }
+
+        $data_arr = json_decode($data, true);
+        $serv-&gt;send($data_arr[&#39;fd&#39;] , &#39;Email:&#39;.$data_arr[&#39;email&#39;].&#39;,发送成功&#39;);
+        $serv-&gt;finish($data);
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onFinish($serv,$task_id, $data) {
+        echo &quot;#### onFinish ####&quot;.PHP_EOL;
+        echo &quot;Task {$task_id} 已完成&quot;.PHP_EOL;
+        echo &quot;########&quot;.PHP_EOL.PHP_EOL;
+    }
+
+    public function onClose($serv, $fd) {
+        echo &quot;Client Close.&quot;.PHP_EOL;
+    }
+}
+
+$server = new Server();</code></code></pre>
+<h4 id="client.php">client.php</h4>
+<pre><code><code>&lt;?php
+
+class Client
+{
+    private $client;
+
+    public function __construct() {
+        $this-&gt;client = new swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_ASYNC);
+
+        $this-&gt;client-&gt;on(&#39;Connect&#39;, [$this, &#39;onConnect&#39;]);
+        $this-&gt;client-&gt;on(&#39;Receive&#39;, [$this, &#39;onReceive&#39;]);
+        $this-&gt;client-&gt;on(&#39;Close&#39;, [$this, &#39;onClose&#39;]);
+        $this-&gt;client-&gt;on(&#39;Error&#39;, [$this, &#39;onError&#39;]);
+    }
+
+    public function connect() {
+        if(!$fp = $this-&gt;client-&gt;connect(&quot;127.0.0.1&quot;, 9501 , 1)) {
+            echo &quot;Error: {$fp-&gt;errMsg}[{$fp-&gt;errCode}]&quot;.PHP_EOL;
+            return;
+        }
+    }
+
+    public function onConnect($cli) {
+        fwrite(STDOUT, &quot;输入Email:&quot;);
+        swoole_event_add(STDIN, function() {
+            fwrite(STDOUT, &quot;输入Email:&quot;);
+            $msg = trim(fgets(STDIN));
+            $this-&gt;send($msg);
+        });
+    }
+
+    public function onReceive($cli, $data) {
+        echo PHP_EOL.&quot;Received: &quot;.$data.PHP_EOL;
+    }
+
+    public function send($data) {
+        $this-&gt;client-&gt;send($data);
+    }
+
+    public function onClose($cli) {
+        echo &quot;Client close connection&quot;.PHP_EOL;
+    }
+
+    public function onError() {
+
+    }
+}
+
+$client = new Client();
+$client-&gt;connect();</code></code></pre>
+<h2 id="小结">小结</h2>
+<p><strong>一、上面的配置总共开启了几个进程？</strong></p>
+<p>总共8个进程（1个master进程、1个manager进程、4个task进程、2个worker进程）</p>
+<p>重新运行的可能与上图进程号不一致：</p>
+<p><img src="./images/Swoole Task 的应用1.jpg" /></p>
+<p>master进程：22481</p>
+<p>manager进程：22485</p>
+<p>task进程：22488、22489、22490、22491</p>
+<p>worker进程：22492、22493</p>
+<p>参考官方提供的进程图：</p>
+<p><img src="./images/Swoole Task 的应用2.jpg" /></p>
+<p><strong>二、为什么执行了5次后，worker进程号发生了改变？</strong></p>
+<p>因为我们设了置worker进程的max_request=4，一个worker进程在完成最大请求次数任务后将自动退出，进程退出会释放所有的内存和资源，这样的机制主要是解决PHP进程内存溢出的问题。</p>
+<p><strong>三、当task执行任务异常，我们kill一个task进程，会再新增一个吗？</strong></p>
+<p>会。</p>
+<p><strong>四、如何设置 task_worker_num ？</strong></p>
+<p>最大值不得超过 SWOOLE_CPU_NUM * 1000。</p>
+<p>查看本机 CPU 核数：</p>
+<pre><code><code>echo &quot;swoole_cpu_num:&quot;.swoole_cpu_num().PHP_EOL;</code></code></pre>
+<p>根据项目的任务量决定的，比如：1秒会产生200个任务，执行每个任务需要500ms。</p>
+<p>想在1s中执行完成200个任务，需要100个task进程。</p>
+<p>100 = 200/(1/0.5)</p>
+<p><strong>五、如何设置 worker_num ？</strong></p>
+<p>默认设置为本机的CPU核数，最大不得超过 SWOOLE_CPU_NUM * 1000。</p>
+<p>比如：1个请求耗时10ms，要提供1000QPS的处理能力，那就必须配置10个进程。</p>
+<p>10 = 0.01*1000</p>
+<p>假设每个进程占用40M内存，10个进程就需要占用400M的内存。</p>
+<h2 id="扩展">扩展</h2>
+<ul>
+<li>Server-&gt;taskwait</li>
+<li>Server-&gt;taskWaitMulti</li>
+<li>Server-&gt;taskCo</li>
+</ul>
+<h2 id="参考文档">参考文档</h2>
+<ul>
+<li><a href="https://wiki.swoole.com/wiki/page/134.html" class="uri">https://wiki.swoole.com/wiki/page/134.html</a></li>
+</ul>
+<p>本文欢迎转发，转发请注明作者和出处，谢谢！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

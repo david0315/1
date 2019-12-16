@@ -1,0 +1,36 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 抓取函数curl 实践' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 抓取函数curl 实践</center></div><div class='banquan'>原文出处:本文由博客园博主95327694提供。<br/>
+原文连接:https://www.cnblogs.com/95327gouw/p/10559208.html</div><br>
+    <p>最近在学习curl的抓取实践， 在里面也学到了一些东西。</p>
+<p>有一些网站需要cookie才可以抓取成功。这个时候我们就可以通过fiddle4 去抓包实现。然后通过构建头部信息 ，绕过网站端的验证。</p>
+<p>以下是实现代码：</p>
+<p>&nbsp;</p>
+<p>&lt;?php <br />$stime=microtime(true); </p>
+<p><br />   $ch = curl_init(); <br />	$ckw = urlencode("圆形折叠麻将机全自动餐桌两用带椅子机麻家用欧式实木电动麻将桌PHP"); <br />   curl_setopt($ch, CURLOPT_URL, " http://www.meegoe.com/sou_Y3sl/ ?keywords=".$ckw); <br />   curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);//https请求 不验证证书 <br />   curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);//https请求 不验证HOST<br />   curl_setopt($ch, CURLOPT_TIMEOUT, 10); // 3秒超时<br />   curl_setopt($ch, CURLOPT_HEADER, 0);  // 不需要页面的HTTP头<br />   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // 抓取结果直接返回（如果为0，则直接输出内容到页面）<br />   curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');//这个是解释gzip内容<br />      curl_setopt($ch, CURLOPT_HTTPHEADER, array(<br />   'Connection: keep-alive',<br />'Upgrade-Insecure-Requests: 1',<br />'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',<br />'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',<br />'Referer: http://www.meegoe.com/ ',<br />'Accept-Encoding: gzip, deflate, br',<br />'Accept-Language: zh-CN,zh;q=0.9',<br />   ));<br />      curl_setopt($ch,CURLOPT_COOKIE,'cna=3kDtFId2QkgCAbaBNczxpp/X; hng=CN%7Czh-CN%7CCNY%7C156; UM_distinctid=1694cacf99e377-0508f14d59d804-b781636-100200-1694cacf99f503; lid=haosweet; ali_ab=139.207.69.183.1552121532339.7; ali_apache_id=11.23.78.17.1552121946782.441191.7; h_keys="%u714e%u997c#%u4ebf%u5065%u8702%u80f6#arrl#%u8702%u871c"; ad_prefer="2019/03/10 16:12:09"; alicnweb=touch_tb_at%3D1552399125776%7Clastlogonid%3Dlweizwer1%7Cshow_inter_tips%3Dfalse%7ChomeIdttS%3D00964423784623518415084922041883626898%7ChomeIdttSAction%3Dtrue; l=bBEVjusVvczbe9OxBOCiVQhfhO_t7IRxMuSJcRVMi_5ZNsY1VUQOl_0dEUv6Vj5RsLYB4z6vzNp9-etlw; XSRF-TOKEN=2f40c7b9-d618-4a87-929c-6ec68e187b2c; CNZZDATA1261998348=973403025-1552118420-%7C1552486140; _m_h5_tk=4727e399320af3a5455fcd4219c72fab_1552498204613; _m_h5_tk_enc=12f885140e5402698a7e5018ae67b361; cookie2=58efdb753105b686ecef55419f454629; t=dbb53d6a3987478e0c4062af14864a21; _tb_token_=5376f111de15e; __wapcsf__=1; CNZZDATA1000231236=1647319684-1552120971-https%253A%252F%252Fm.1688.com%252F%7C1552488361; cookie1=AC0hYCJXlFdQ3RN7W3VKzBxzzaCSgNA0AcLxtMnL0LY%3D; cookie17=UUwZ%2FIsa2fE%3D; sg=t49; csg=1d0e7cb7; unb=24919014; cn_tmp=Z28mC+GqtZ3c/avrs/YMFPZ2bd/61p+3miHRxh1Ln3dRZyI6Ty99coP9r4fXQg5HeFCbmBGfCoM0uJ5S4hKyp8d/dCaXlrTBFg1H7FJYAmCE010I4N7w+Jg7Vhr/kazJ; cn_m_s=f45iaMZwweUupgX4WQ4KM4ETJYv3kX2cqWhNxyCgwpVdxe/jMOVBC3dCOcy+zuVVQ8hOf3FxKpA=; ali_apache_track="c_mid=b2b-24919014|c_lid=haosweet"; tbsnid=L/wTnzRvkMphMdhmdLmpLeGySwk1OIyE25mgNN62TSI6sOlEpJKl9g==; __cn_logon__=true; __cn_logon_id__=haosweet; ali-ss=bG9naW5JZD1oYW9zd2VldCZsb2dpbk1lc3NhZ2VFcnJvcj0mbG9naW5TdGF0dXNSZXRNc2c9JnVzZXJJZD0yNDkxOTAxNCZsb2dpbkVycm9yVXNlck5hbWU9JmNoZWNrY29kZT0mbWVtYmVySWQ9YjJiLTI0OTE5MDE0JnNpZD01OGVmZGI3NTMxMDViNjg2ZWNlZjU1NDE5ZjQ1NDYyOSZlY29kZT1pZVNtSw==; isg=BGxsuluhHLbc1gh-fAzC2pEuPUpejRHMGizBBMatWZe60Q3b7jeYXvJz9dlM2Ugn');  <br />   $output = curl_exec($ch); <br />   curl_close($ch);     </p>
+<p>  $contents = preg_replace("/([\r\n|\n|\t| ]+)/",'',$output);<br />     $contents = mb_convert_encoding($contents, 'gbk', 'UTF-8');<br />	   print_r($contents);<br />	preg_match_all("/(&lt;divclass=\"container-tag\"&gt;&lt;ahref=\"(.*)\"&gt;)(.*)(&lt;\/a&gt;&lt;\/div&gt;)/iUs",$contents,$matchrelated);  </p>
+<p>&nbsp;</p>
+<p>  print_r($matchrelated[3]);<br />  </p>
+<p>  <br />  <br />$etime=microtime(true);//获取程序执行结束的时间<br />$total=$etime-$stime;   //计算差值</p>
+<p>echo "&lt;br /&gt;当前页面执行时间为：{$total} 秒";<br />?&gt;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

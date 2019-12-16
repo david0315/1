@@ -1,0 +1,134 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修如何提高 PHP 代码的质量？第二部分 单元测试' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>如何提高 PHP 代码的质量？第二部分 单元测试</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11995603.html</div><br>
+    <p>在&ldquo;如何提高 PHP 代码的质量？&rdquo;的前一部分中：我们设置了一些自动化工具来自动检查我们的代码。这很有帮助，但关于我们的代码如何满足业务需求并没有给我们留下任何印象。我们现在需要创建特定代码域的测试。</p>
+<h2>1 单元测试</h2>
+<p>最常见的测试软件的方法可能是编写单元测试。它们的目的是测试代码的特定单元，基于这样的假设：一切都按预期运行。为了能够编写适当的单元测试，我们的代码应该遵循一些基本的设计规则。我们应该特别关注 SOLID 原则。</p>
+<ul>
+<li>通过实现单一责任原则（我们的代码应该只关注功能的单个部分），我们将确保在测试期间，我们只会同时关注项目的一小部分</li>
+<li>通过使用 Liskov 替换原则和依赖倒置原则，我们的代码不会关心我们是否注入模拟依赖关系，只要它们实现了适当的接口</li>
+</ul>
+<p>在单元测试中，我们确实希望用模拟对象替换所有依赖的服务，因此我们一次只测试一个类。但模拟是什么？它们是实现与其他对象相同的接口的对象，但它们的行为是受控的。例如，假设我们在创建一个价格比较服务，我们利用另一个服务来获取当前的汇率。在测试我们的比较器时，我们可以使用一个模拟对象来为特定的货币返回特定的汇率，因此我们的测试既不依赖也不调用真正的服务。</p>
+<h2>2 应该使用哪个框架？</h2>
+<p>有几个好的框架可以达到这个目的。最常见的可能是 PHPUnit。在我的工作中，我发现使用行为方法来编写测试会带来更好的结果，并使我更急切地编写测试。对于我们的项目，我们选择 phpspec。</p>
+<p>安装过程相当简单 - 只需使用：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$ php composer.phar require --dev phpspec/phpspec</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后，如果你在本文的第一部分中配置了 PHing，那么你可以在 build.xml 中添加构建目标：</p>
+<src class="highlight">
+<pre><code><code class="language-php"><span class="p">&lt;<span class="nt">target <span class="na">name<span class="o">=<span class="s">"phpspec"<span class="p">&gt;    <span class="p">&lt;<span class="nt">exec <span class="na">executable<span class="o">=<span class="s">"bin/phpspec" <span class="na">passthru<span class="o">=<span class="s">"true" <span class="na">checkreturn<span class="o">=<span class="s">"true"<span class="p">&gt;        <span class="p">&lt;<span class="nt">arg <span class="na">line<span class="o">=<span class="s">"run --format=pretty"<span class="p">/&gt;    <span class="p">&lt;/<span class="nt">exec<span class="p">&gt;&lt;/<span class="nt">target<span class="p">&gt;...<span class="p">&lt;<span class="nt">target <span class="na">name<span class="o">=<span class="s">"run" <span class="na">depends<span class="o">=<span class="s">"phpcs,phpcpd,phan,phpspec"<span class="p">/&gt;</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+
+<p>然后，你必须为你想要测试的每个服务类创建一个测试类。让 PHPSpec 非常容易使用的是模型创建。你只需使用严格的输入，就可以将模拟对象声明为测试函数的参数。PHPSpec 会自动为你创建模拟。让我们看一下代码示例：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;"> spec/Domain/PriceComparatorSpec.php&lt;?phpnamespace spec\Domain;use Domain\Price;use Domain\PriceConverter;use PhpSpec\ObjectBehavior;class PriceComparatorSpec extends ObjectBehavior{    public function let(PriceConverter $converter)    {        $this-&gt;beConstructedWith($converter);    }     public function it_should_return_equal()    {        $price1 = new Price(100, 'EUR');        $price2 = new Price(100, 'EUR');        $this-&gt;compare($price1, $price2)-&gt;shouldReturn(0);    }     public function it_should_convert_first(PriceConverter $converter)    {        $price1 = new Price(100, 'EUR');        $price2 = new Price(100, 'PLN');        $priceConverted = new Price(25, 'EUR');        $converter-&gt;convert($price2, 'EUR')-&gt;willReturn($priceConverted);        $this-&gt;compare($price1, $price2)-&gt;shouldReturn(1);    }}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>这里有三个函数：</p>
+<ul>
+<li>let( ) - 它允许使用依赖来初始化服务</li>
+<li>两个 it_* 函数实现测试。其中一种方法是使用模拟 $priceConverter 的方法实现 priceConverter 接口，该接口被注入到测试对象的创建中。</li>
+</ul>
+<p>你可以看到创建模拟非常容易。你所需要做的就是将它定义为测试函数的参数，并通过指定在执行代码时应该运行哪些函数来配置 mock。如果需要，你还可以设置返回值。</p>
+<p>所有测试的方法都是从 $this 上下文中运行的，你可以使用与模拟相同的语法来轻松地检查它们的结果。</p>
+<h2>3 如何设置测试？</h2>
+<p>Phpspec 有一个很好的文档，但是我将尝试向你展示一些在日常实践中有用的基本用例。</p>
+<h3>构建测试对象</h3>
+<p>一般来说，设置测试对象的最简单方法是调用 $this-&gt;beConstructedWith(&hellip;) 方法，该方法将所有应该传递给对象构造函数的 params 作为参数。</p>
+<p>如果你的对象应该使用工厂方法来创建，那么你可以使用 this&minus;&gt;beConstructedThrough(this&minus;&gt;beConstructedThrough(methodName，$argumentsArray）方法。</p>
+<h3>在模拟中匹配运行时参数</h3>
+<p>你会发现 phpspec 使用一种非常类似于人类的语法来配置模拟。例如，如果你想要检查在运行时是否有一个模拟方法 someMethod 与参数&ldquo;desired value&rdquo;被调用，你可以在测试中定义它，如下面的例子：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$mockObject-&gt;someMethod(<span style="color: #800000;">"</span><span style="color: #800000;">desired value</span><span style="color: #800000;">"</span>)-&gt;shouldBeCalled();</code></pre>
+
+<p>&nbsp;</p>
+
+<p>如果你想要测试代码的行为，当一些 mock 的函数返回&ldquo;some value&rdquo;时，你可以通过调用来轻松地设置它：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$mockObject-&gt;someFunction(<span style="color: #800000;">"</span><span style="color: #800000;">some input</span><span style="color: #800000;">"</span>)-&gt;willReturn(<span style="color: #800000;">"</span><span style="color: #800000;">some value</span><span style="color: #800000;">"</span>);</code></pre>
+
+<p>&nbsp;</p>
+
+<p>有时我们并不真正关心传递给 mock 的确切参数。然后可以写这段代码：</p>
+<src class="highlight">
+<pre><code><code class="language-php">use Prophecy\Argument\Token\AnyValueToken;...$mockObject-&gt;someFunction(new AnyValueToken())-&gt;willReturn(true);</code></code></pre>
+
+<p>有时你会关心一些参数，最好是写一个检查函数，它会告诉你是否正确地调用了一些方法，例如：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>use Prophecy\Argument\Token\CallbackToken;...$checker = function (Message $message) use ($to, $text) {   <span style="color: #0000ff;">return</span> $message-&gt;to === $to &amp;&amp; $message-&gt;text === $text;};$msgSender-&gt;send(<span style="color: #0000ff;">new</span> CallbackToken($messageChecker))-&gt;shouldBeCalled()</code></pre>
+
+<p>&nbsp;</p>
+
+<h3>匹配运行时异常</h3>
+<p>。在某些情况下，异常是代码接口的一部分。你希望它们在特定的场景被抛出。你可以通过编写以下代码来完成这项工作：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$<span style="color: #0000ff;">this</span>-&gt;shouldThrow(\DomainException::<span style="color: #0000ff;">class</span>)-&gt;during(<span style="color: #800000;">'</span><span style="color: #800000;">execute</span><span style="color: #800000;">'</span>, [$command, $responder]);</code></pre>
+
+<p>&nbsp;</p>
+
+<p>传给 during() 的第一个参数是将要调用的方法的名称，第二个参数是将传递给我们的方法的参数数组。</p>
+<h2>5 在哪里可以找到更多的例子？</h2>
+<p>在本文中，我们只介绍了一些基本的用例。请参考 phpspec 的文档，以找到更多的示例，这些示例将使你的测试代码变得漂亮！</p>
+<p>代码覆盖率<br />PHPSpec 附带了扩展子系统，它允许例如创建代码覆盖率报告。如果您想要检查在测试中执行了多少代码，它们是很有帮助的。</p>
+<p>你可以通过以下来安装这个扩展：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>$ php composer.phar require --dev leanphp/phpspec-code-coverage</code></pre>
+
+<p>&nbsp;</p>
+
+<p>然后通过创建 phpspec 来启用它。yml 文件内容：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> extensions:  LeanPHP\PhpSpec\CodeCoverage\CodeCoverageExtension: ~</code></pre>
+
+<p>&nbsp;</p>
+
+<p>默认情况下，这个扩展会使用 PHP 的 Xdebug 扩展生成代码覆盖率信息，但是 PHP 的本机调试器 - phpdbg 会更快速一些：</p>
+<src class="highlight">
+<pre><code><code class="language-text">$ phpdbg -qrr phpspec run</code></code></pre>
+
+<p>现在，你可以在 build 中更改 phpspec 的构建目标。xml：</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code>&lt;target name=<span style="color: #800000;">"</span><span style="color: #800000;">phpspec</span><span style="color: #800000;">"</span>&gt;    &lt;exec executable=<span style="color: #800000;">"</span><span style="color: #800000;">phpdbg</span><span style="color: #800000;">"</span> passthru=<span style="color: #800000;">"</span><span style="color: #800000;">true</span><span style="color: #800000;">"</span> checkreturn=<span style="color: #800000;">"</span><span style="color: #800000;">true</span><span style="color: #800000;">"</span>&gt;        &lt;arg line=<span style="color: #800000;">"</span><span style="color: #800000;">-qrr bin/phpspec run --format=pretty</span><span style="color: #800000;">"</span>/&gt;    &lt;/exec&gt;&lt;/target&gt;...&lt;target name=<span style="color: #800000;">"</span><span style="color: #800000;">run</span><span style="color: #800000;">"</span> depends=<span style="color: #800000;">"</span><span style="color: #800000;">phpcs,phpcpd,phan,phpspec</span><span style="color: #800000;">"</span>/&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+<p>报告在覆盖率 / 目录中生成，作为漂亮的 HTML 页面，可以浏览以检查测试覆盖率。</p>
+<p>&nbsp;</p>
+<p><strong><span style="font-size: 18pt;">推荐阅读：</span></strong></p>
+<p><strong><span style="font-size: 18pt;"><a class="postTitle2" href="https://www.cnblogs.com/a609251438/p/11995542.html">教你如何提高 PHP 代码的质量</a></span></strong></p>
+<p><strong><span style="font-size: 18pt;"><a class="postTitle2" href="https://www.cnblogs.com/a609251438/p/11995703.html">如何提高 PHP 代码的质量？第三：端到端 / 集成测试</a></span></strong></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

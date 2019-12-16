@@ -1,0 +1,347 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP mysqli操作数据库' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP mysqli操作数据库</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11812135.html</div><br>
+    <p><strong>起步</strong></p>
+<p>&nbsp;</p>
+<p>由于mysql连接方式被废除，在php7中要使用mysql_connect()还需要额外下载组件。</p>
+<p>使用mysqli有面向过程和面向对象两种方式。</p>
+<p><strong>mysqli提供了三个类：</strong></p>
+<p>● mysqli 连接相关的</p>
+<p>● mysqli_result 处理结果集</p>
+<p>● mysqli_stmt 预处理类</p>
+<p><strong>数据库连接</strong></p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+<p class="line number17 index16 alt2">17</p>
+<p class="line number18 index17 alt1">18</p>
+<p class="line number19 index18 alt2">19</p>
+<p class="line number20 index19 alt1">20</p>
+<p class="line number21 index20 alt2">21</p>
+<p class="line number22 index21 alt1">22</p>
+<p class="line number23 index22 alt2">23</p>
+<p class="line number24 index23 alt1">24</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php variable">$db_host</code> <code class="php plain">= </code><code class="php string">'localhost'</code><code class="php plain">;</code></p>
+<p class="line number3 index2 alt2"><code class="php variable">$db_name</code> <code class="php plain">= </code><code class="php string">'test'</code><code class="php plain">;</code></p>
+<p class="line number4 index3 alt1"><code class="php variable">$db_user</code> <code class="php plain">= </code><code class="php string">'root'</code><code class="php plain">;</code></p>
+<p class="line number5 index4 alt2"><code class="php variable">$db_pwd</code> <code class="php plain">= </code><code class="php string">''</code><code class="php plain">;</code></p>
+<p class="line number6 index5 alt1"><code class="php comments">//面向对象方式</code></p>
+<p class="line number7 index6 alt2"><code class="php variable">$mysqli</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php plain">mysqli(</code><code class="php variable">$db_host</code><code class="php plain">, </code><code class="php variable">$db_user</code><code class="php plain">, </code><code class="php variable">$db_pwd</code><code class="php plain">, </code><code class="php variable">$db_name</code><code class="php plain">);</code></p>
+<p class="line number8 index7 alt1"><code class="php comments">//面向对象的昂视屏蔽了连接产生的错误，需要通过函数来判断</code></p>
+<p class="line number9 index8 alt2"><code class="php keyword">if</code><code class="php plain">(mysqli_connect_error()){</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php plain">mysqli_connect_error();</code></p>
+<p class="line number11 index10 alt2"><code class="php plain">}</code></p>
+<p class="line number12 index11 alt1"><code class="php comments">//设置编码</code></p>
+<p class="line number13 index12 alt2"><code class="php variable">$mysqli</code><code class="php plain">-&gt;set_charset(</code><code class="php string">"utf8"</code><code class="php plain">);</code><code class="php comments">//或者 $mysqli-&gt;query("set names 'utf8'")</code></p>
+<p class="line number14 index13 alt1"><code class="php comments">//关闭连接</code></p>
+<p class="line number15 index14 alt2"><code class="php variable">$mysqli</code><code class="php plain">-&gt;close();</code></p>
+<p class="line number16 index15 alt1"><code class="php comments">//面向过程方式的连接方式</code></p>
+<p class="line number17 index16 alt2"><code class="php variable">$mysqli</code> <code class="php plain">= mysqli_connect(</code><code class="php variable">$db_host</code><code class="php plain">, </code><code class="php variable">$db_user</code><code class="php plain">, </code><code class="php variable">$db_pwd</code><code class="php plain">, </code><code class="php variable">$db_name</code><code class="php plain">);</code></p>
+<p class="line number18 index17 alt1"><code class="php comments">//判断是否连接成功</code></p>
+<p class="line number19 index18 alt2"><code class="php keyword">if</code><code class="php plain">(!</code><code class="php variable">$mysqli</code> <code class="php plain">){</code></p>
+<p class="line number20 index19 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php plain">mysqli_connect_error();</code></p>
+<p class="line number21 index20 alt2"><code class="php plain">}</code></p>
+<p class="line number22 index21 alt1"><code class="php comments">//关闭连接</code></p>
+<p class="line number23 index22 alt2"><code class="php plain">mysqli_close(</code><code class="php variable">$mysqli</code><code class="php plain">);</code></p>
+<p class="line number24 index23 alt1"><code class="php plain">?&gt;</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>数据库查询</strong></p>
+<p>通用：执行sql语句都可用query(sql)，执行失败会返回false，select成功则返回结果集对象，其他返回true，只要不是false就说明sql语句执行成功了。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php comments">//无结果集示例</code></p>
+<p class="line number3 index2 alt2"><code class="php variable">$sql</code> <code class="php plain">= </code><code class="php string">"insert into table_name (`name`, `address`) values ('xiaoming', 'adddddrrreess')"</code><code class="php plain">;</code></p>
+<p class="line number4 index3 alt1"><code class="php variable">$result</code> <code class="php plain">= </code><code class="php variable">$mysqli</code><code class="php plain">-&gt;query(</code><code class="php variable">$sql</code><code class="php plain">);</code></p>
+<p class="line number5 index4 alt2"><code class="php comments">//或者</code></p>
+<p class="line number6 index5 alt1"><code class="php variable">$sql</code> <code class="php plain">= </code><code class="php string">"delete from table_name where name='xiaoming'"</code><code class="php plain">;</code></p>
+<p class="line number7 index6 alt2"><code class="php variable">$result</code> <code class="php plain">= </code><code class="php variable">$mysqli</code><code class="php plain">-&gt;query(</code><code class="php variable">$sql</code><code class="php plain">);</code></p>
+<p class="line number8 index7 alt1"><code class="php keyword">if</code><code class="php plain">(</code><code class="php variable">$result</code> <code class="php plain">=== false){</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php variable">$mysqli</code><code class="php plain">-&gt;error;</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php variable">$mysqli</code><code class="php plain">-&gt;errno;</code></p>
+<p class="line number11 index10 alt2"><code class="php plain">}</code></p>
+<p class="line number12 index11 alt1"><code class="php comments">//影响条数</code></p>
+<p class="line number13 index12 alt2"><code class="php functions">echo</code> <code class="php variable">$mysqli</code><code class="php plain">-&gt;num_rows;</code></p>
+<p class="line number14 index13 alt1"><code class="php comments">//插入的id</code></p>
+<p class="line number15 index14 alt2"><code class="php functions">echo</code> <code class="php variable">$mysqli</code><code class="php plain">-&gt;insert_id;</code></p>
+<p class="line number16 index15 alt1"><code class="php variable">$mysqli</code><code class="php plain">-&gt;close();</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>有结果集</strong></p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+<p class="line number17 index16 alt2">17</p>
+<p class="line number18 index17 alt1">18</p>
+<p class="line number19 index18 alt2">19</p>
+<p class="line number20 index19 alt1">20</p>
+<p class="line number21 index20 alt2">21</p>
+<p class="line number22 index21 alt1">22</p>
+<p class="line number23 index22 alt2">23</p>
+<p class="line number24 index23 alt1">24</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php variable">$sql</code> <code class="php plain">= </code><code class="php string">"select * from table_name"</code><code class="php plain">;</code></p>
+<p class="line number3 index2 alt2"><code class="php variable">$result</code> <code class="php plain">= </code><code class="php variable">$mysqli</code><code class="php plain">-&gt;query(</code><code class="php variable">$sql</code><code class="php plain">);</code></p>
+<p class="line number4 index3 alt1"><code class="php keyword">if</code><code class="php plain">(</code><code class="php variable">$result</code> <code class="php plain">=== false){</code><code class="php comments">//执行失败</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php variable">$mysqli</code><code class="php plain">-&gt;error;</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php variable">$mysqli</code><code class="php plain">-&gt;errno;</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">}</code></p>
+<p class="line number8 index7 alt1"><code class="php comments">//行数</code></p>
+<p class="line number9 index8 alt2"><code class="php functions">echo</code> <code class="php variable">$result</code><code class="php plain">-&gt;num_rows;</code></p>
+<p class="line number10 index9 alt1"><code class="php comments">//列数 字段数</code></p>
+<p class="line number11 index10 alt2"><code class="php functions">echo</code> <code class="php variable">$result</code><code class="php plain">-&gt;field_count;</code></p>
+<p class="line number12 index11 alt1"><code class="php comments">//获取字段信息</code></p>
+<p class="line number13 index12 alt2"><code class="php variable">$field_info_arr</code> <code class="php plain">= </code><code class="php variable">$result</code><code class="php plain">-&gt;fetch_fields();</code></p>
+<p class="line number14 index13 alt1"><code class="php comments">//移动记录指针</code></p>
+<p class="line number15 index14 alt2"><code class="php comments">//$result-&gt;data_seek(1);//0 为重置指针到起始</code></p>
+<p class="line number16 index15 alt1"><code class="php comments">//获取数据</code></p>
+<p class="line number17 index16 alt2"><code class="php keyword">while</code><code class="php plain">(</code><code class="php variable">$row</code> <code class="php plain">= </code><code class="php variable">$result</code><code class="php plain">-&gt;fetch_assoc()){</code></p>
+<p class="line number18 index17 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php variable">$row</code><code class="php plain">[</code><code class="php string">'name'</code><code class="php plain">];</code></p>
+<p class="line number19 index18 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php variable">$row</code><code class="php plain">[</code><code class="php string">'address'</code><code class="php plain">];</code></p>
+<p class="line number20 index19 alt1"><code class="php plain">}</code></p>
+<p class="line number21 index20 alt2"><code class="php comments">//也可一次性获取所有数据</code></p>
+<p class="line number22 index21 alt1"><code class="php comments">//$result-&gt;data_seek(0);//如果前面有移动指针则需重置</code></p>
+<p class="line number23 index22 alt2"><code class="php variable">$data</code> <code class="php plain">= </code><code class="php variable">$result</code><code class="php plain">-&gt;fetch_all(MYSQLI_ASSOC);</code></p>
+<p class="line number24 index23 alt1"><code class="php variable">$mysqli</code><code class="php plain">-&gt;close();</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>预处理示例</strong></p>
+<p>预处理能有效的防止sql注入的产生，mysqli_stmt是预处理类</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+<p class="line number17 index16 alt2">17</p>
+<p class="line number18 index17 alt1">18</p>
+<p class="line number19 index18 alt2">19</p>
+<p class="line number20 index19 alt1">20</p>
+<p class="line number21 index20 alt2">21</p>
+<p class="line number22 index21 alt1">22</p>
+<p class="line number23 index22 alt2">23</p>
+<p class="line number24 index23 alt1">24</p>
+<p class="line number25 index24 alt2">25</p>
+<p class="line number26 index25 alt1">26</p>
+<p class="line number27 index26 alt2">27</p>
+<p class="line number28 index27 alt1">28</p>
+<p class="line number29 index28 alt2">29</p>
+<p class="line number30 index29 alt1">30</p>
+<p class="line number31 index30 alt2">31</p>
+<p class="line number32 index31 alt1">32</p>
+<p class="line number33 index32 alt2">33</p>
+<p class="line number34 index33 alt1">34</p>
+<p class="line number35 index34 alt2">35</p>
+<p class="line number36 index35 alt1">36</p>
+<p class="line number37 index36 alt2">37</p>
+<p class="line number38 index37 alt1">38</p>
+<p class="line number39 index38 alt2">39</p>
+<p class="line number40 index39 alt1">40</p>
+<p class="line number41 index40 alt2">41</p>
+<p class="line number42 index41 alt1">42</p>
+<p class="line number43 index42 alt2">43</p>
+<p class="line number44 index43 alt1">44</p>
+<p class="line number45 index44 alt2">45</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php variable">$sql</code> <code class="php plain">= </code><code class="php string">"insert inro table_name ('name','address') values (?,?)"</code><code class="php plain">;</code></p>
+<p class="line number3 index2 alt2"><code class="php comments">//获得预处理对象</code></p>
+<p class="line number4 index3 alt1"><code class="php variable">$stmt</code> <code class="php plain">= </code><code class="php variable">$mysqli</code><code class="php plain">-&gt;prepare(</code><code class="php variable">$sql</code><code class="php plain">);</code></p>
+<p class="line number5 index4 alt2"><code class="php comments">//绑定参数 第一个参数为绑定的数据类型</code></p>
+<p class="line number6 index5 alt1"><code class="php comments">/*</code></p>
+<p class="line number7 index6 alt2"><code class="php comments">i:integer 整型</code></p>
+<p class="line number8 index7 alt1"><code class="php comments">d:double 浮点型</code></p>
+<p class="line number9 index8 alt2"><code class="php comments">s:string 字符串</code></p>
+<p class="line number10 index9 alt1"><code class="php comments">b:a blob packets blob数据包</code></p>
+<p class="line number11 index10 alt2"><code class="php comments">*/</code></p>
+<p class="line number12 index11 alt1"><code class="php variable">$name</code> <code class="php plain">= </code><code class="php string">"xiaoming"</code><code class="php plain">;</code></p>
+<p class="line number13 index12 alt2"><code class="php variable">$address</code> <code class="php plain">= </code><code class="php string">"adddressss"</code><code class="php plain">;</code></p>
+<p class="line number14 index13 alt1"><code class="php variable">$stmt</code><code class="php plain">-&gt;bind_param(</code><code class="php string">"ss"</code><code class="php plain">, </code><code class="php variable">$name</code><code class="php plain">, </code><code class="php variable">$address</code><code class="php plain">);</code><code class="php comments">//绑定时使用变量绑定</code></p>
+<p class="line number15 index14 alt2"><code class="php comments">//执行预处理</code></p>
+<p class="line number16 index15 alt1"><code class="php variable">$stmt</code><code class="php plain">-&gt;execute();</code></p>
+<p class="line number17 index16 alt2"><code class="php comments">/*</code></p>
+<p class="line number18 index17 alt1"><code class="php comments">//可重新绑定 多次执行</code></p>
+<p class="line number19 index18 alt2"><code class="php comments">$stmt-&gt;bind_param("ss", $name, $address);</code></p>
+<p class="line number20 index19 alt1"><code class="php comments">$stmt-&gt;execute();</code></p>
+<p class="line number21 index20 alt2"><code class="php comments">*/</code></p>
+<p class="line number22 index21 alt1"><code class="php comments">//插入的id 多次插入为最后id</code></p>
+<p class="line number23 index22 alt2"><code class="php functions">echo</code> <code class="php variable">$stmt</code><code class="php plain">-&gt;insert_id;</code></p>
+<p class="line number24 index23 alt1"><code class="php comments">//影响行数 也是最后一次执行的</code></p>
+<p class="line number25 index24 alt2"><code class="php functions">echo</code> <code class="php variable">$stmt</code><code class="php plain">-&gt;affected_rows;</code></p>
+<p class="line number26 index25 alt1"><code class="php comments">//错误号</code></p>
+<p class="line number27 index26 alt2"><code class="php functions">echo</code> <code class="php variable">$stmt</code><code class="php plain">-&gt;errno;</code></p>
+<p class="line number28 index27 alt1"><code class="php comments">//错误信息</code></p>
+<p class="line number29 index28 alt2"><code class="php functions">echo</code> <code class="php variable">$stmt</code><code class="php plain">-&gt;error;</code></p>
+<p class="line number30 index29 alt1"><code class="php comments">//关闭</code></p>
+<p class="line number31 index30 alt2"><code class="php variable">$stmt</code><code class="php plain">-&gt;close();</code></p>
+<p class="line number32 index31 alt1"><code class="php variable">$mysqli</code><code class="php plain">-&gt;close();</code></p>
+<p class="line number33 index32 alt2"><code class="php plain">下面示例select的预处理</code></p>
+<p class="line number34 index33 alt1"><code class="php comments">//注释部分省略</code></p>
+<p class="line number35 index34 alt2"><code class="php variable">$sql</code> <code class="php plain">= </code><code class="php string">"select * from table_name where id&lt;?"</code><code class="php plain">;</code></p>
+<p class="line number36 index35 alt1"><code class="php variable">$stmt</code> <code class="php plain">= </code><code class="php variable">$mysqli</code><code class="php plain">-&gt;prepare(</code><code class="php variable">$sql</code><code class="php plain">);</code></p>
+<p class="line number37 index36 alt2"><code class="php variable">$id</code> <code class="php plain">= 30;</code></p>
+<p class="line number38 index37 alt1"><code class="php variable">$stmt</code><code class="php plain">-&gt;bind_param(</code><code class="php string">"i"</code><code class="php plain">, </code><code class="php variable">$id</code><code class="php plain">);</code></p>
+<p class="line number39 index38 alt2"><code class="php variable">$stmt</code><code class="php plain">-&gt;execute();</code></p>
+<p class="line number40 index39 alt1"><code class="php comments">//获取结果集</code></p>
+<p class="line number41 index40 alt2"><code class="php variable">$result</code> <code class="php plain">= </code><code class="php variable">$stmt</code><code class="php plain">-&gt;get_result();</code><code class="php comments">//结果集取后的操作就和之前一样了</code></p>
+<p class="line number42 index41 alt1"><code class="php comments">//获取所有数据</code></p>
+<p class="line number43 index42 alt2"><code class="php variable">$data</code> <code class="php plain">= </code><code class="php variable">$result</code><code class="php plain">-&gt;fetch_all(MYSQLI_ASSOC);</code></p>
+<p class="line number44 index43 alt1"><code class="php variable">$result</code><code class="php plain">-&gt;close();</code></p>
+<p class="line number45 index44 alt2"><code class="php variable">$mysqli</code><code class="php plain">-&gt;close();</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>一次执行多条sql语句multiquery(不推荐)，执行结果不是结果集，affectd_rows是最后影响的条数</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code></p>
+<p class="line number2 index1 alt1"><code class="php variable">$sql_arr</code> <code class="php plain">= </code><code class="php keyword">array</code><code class="php plain">(</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">"insert into table_name (`name`,`address`) values ('xiaoming','a')"</code><code class="php plain">,</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">"insert into table_name (`name`,`address`) values ('xiaohong','a')"</code><code class="php plain">,</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'delete from table_name where id=23'</code><code class="php plain">,</code></p>
+<p class="line number6 index5 alt1"><code class="php plain">);</code></p>
+<p class="line number7 index6 alt2"><code class="php variable">$sql</code> <code class="php plain">= implode(</code><code class="php string">';'</code><code class="php plain">, </code><code class="php variable">$sql_arr</code><code class="php plain">);</code></p>
+<p class="line number8 index7 alt1"><code class="php variable">$result</code> <code class="php plain">= </code><code class="php variable">$mysqli</code><code class="php plain">-&gt;multi_query(</code><code class="php variable">$sql</code><code class="php plain">);</code></p>
+<p class="line number9 index8 alt2"><code class="php keyword">if</code><code class="php plain">(</code><code class="php variable">$result</code> <code class="php plain">=== false){</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php functions">echo</code> <code class="php variable">$mysqli</code><code class="php plain">-&gt;error;</code></p>
+<p class="line number11 index10 alt2"><code class="php plain">}</code></p>
+<p class="line number12 index11 alt1"><code class="php variable">$mysqli</code><code class="php plain">-&gt;close();</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./images/PHP mysqli操作数据库0.jpg" alt="" /></p>
+<p><strong>明确的学习思路能更高效的学习</strong></p>
+<p><strong><img src="./images/PHP mysqli操作数据库1.jpg" alt="" /></strong></p>
+<p>&nbsp;</p>
+<p><a href="https://jq.qq.com/?_wv=1027&amp;k=5Spo1ah" target="_blank"><strong>点此加入该群学习</strong></a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

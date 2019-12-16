@@ -1,0 +1,196 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel是怎样防止你的定时任务重复执行的' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel是怎样防止你的定时任务重复执行的</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11747971.html</div><br>
+    <h2>基本介绍</h2>
+<p>有时候一个定时任务执行需要的时间可能会比我们想象的要长，这就会引起一个问题&mdash;&mdash;<strong>当前任务还没有执行完毕的时候另一个相同的任务也会执行，从而导致任务重复。</strong>例如想象一下我们执行每分钟生成一次报告的任务，在经过一段时间后，数据量变得很大导致执行时间多于1分钟，这样就会导致在上一个任务还没结束的时候另一个相同的任务开始执行。</p>
+<h2>解决方法</h2>
+<p>大部分情况下是没有什么问题的，但是有时我们需要避免这种情况来保证获得正确的数据。在Laravel中我们可以通过<code>withoutOverlapping</code>方法来进行处理</p>
+<src class="cnblogs_Highlighter">
+<pre><code>$schedule-&gt;command('mail:send')-&gt;withoutOverlapping();
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>Laravel会检查<code>Console\Scheduling\Event::withoutOverlapping</code>属性，如果该值为true那么将会针对这个任务创建一个互斥锁(mutex)，并且只有在可以创建互斥锁的情况下才会执行此任务。</p>
+<h2>什么是互斥锁？</h2>
+<p>这是我在网上找到的最有趣的解释：</p>
+<blockquote>
+<p>当我们在开会进行激烈的讨论时，我会从我桌子里拿出来一个尖叫鸡。只有手里拿着尖叫鸡的人才能说话，如果你没有拿着尖叫鸡你是不能说话的。你只能向会议主持人请示，只有在你拿到尖叫鸡的时候你才能说话否则只能等待。当你讲话完毕的时候，将尖叫鸡还给会议主持人，主持人会将尖叫鸡给到下一个人来让其说话。这样会确保人们不会互相交谈，同时他们也会有自己的时间来进行讲话。</p>
+</blockquote>
+<p>将尖叫鸡换成互斥锁，人换成线程。你基本上就有了一个互斥锁的基本概念。</p>
+<p>&nbsp;</p>
+<p><img src="./images/Laravel是怎样防止你的定时任务重复执行的0.jpg" alt="" /><img src="./images/Laravel是怎样防止你的定时任务重复执行的1.jpg" alt="" /><img src="./images/Laravel是怎样防止你的定时任务重复执行的2.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<h2>原理分析</h2>
+<p>Laravel在第一次执行任务的时候会创建一个互斥锁，然后在每次执行任务时会检查互斥锁是否存在，只有互斥锁不存在的时候任务才会执行。下面是<code>withoutOverlapping</code>方法：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>public function withoutOverlapping()
+
+{
+
+    $this-&gt;withoutOverlapping = true;
+
+ 
+
+    return $this-&gt;then(function () {
+
+        $this-&gt;mutex-&gt;forget($this);
+
+    })-&gt;skip(function () {
+
+        return $this-&gt;mutex-&gt;exists($this);
+
+    });
+
+}
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>Laravel创建了一个过滤回调方法来告诉计划管理器忽略互斥锁仍然存在的任务，同时也创建了一个在完成任务实例后清除互斥锁的回调。同时，在执行任务之前，Lravel会在<code>Console\Scheduling\Event::run()</code>方法中依次执行下面一系列的检查：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>if ($this-&gt;withoutOverlapping &amp;&amp; ! $this-&gt;mutex-&gt;create($this)) {
+
+    return;
+
+}
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>那么互斥锁的属性是从哪里来的呢？</p>
+<p>当<code>Console\Scheduling\Schedule</code>被实例化的时候，Laravel会检查<code>Console\Scheduling\Mutex</code>是否绑定到了容器，如果是那么就会实例化它，否则会使用<code>Console\Scheduling\CacheMutex</code></p>
+<src class="cnblogs_Highlighter">
+<pre><code>$this-&gt;mutex = $container-&gt;bound(Mutex::class)
+
+                        ? $container-&gt;make(Mutex::class)
+
+                        : $container-&gt;make(CacheMutex::class);
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>现在当任务管理器在注册事件的时候会将互斥锁的实例一并传进去：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>$this-&gt;events[] = new Event($this-&gt;mutex, $command);
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>Laravel默认使用了缓存实现的互斥锁，但是你可以自己实现并替换它。</p>
+<h3>缓存版的互斥锁</h3>
+<p>CacheMutex类只有3个简单的方法，它使用了事件互斥锁的名字作为缓存的键值：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>public function create(Event $event)
+
+{
+
+    return $this-&gt;cache-&gt;add($event-&gt;mutexName(), true, 1440);
+
+}
+
+ 
+
+public function exists(Event $event)
+
+{
+
+    return $this-&gt;cache-&gt;has($event-&gt;mutexName());
+
+}
+
+ 
+
+public function forget(Event $event)
+
+{
+
+    $this-&gt;cache-&gt;forget($event-&gt;mutexName());
+
+}
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>就像我们之前看过的，管理器注册了一个执行后回调来保证任务执行完毕的时候移除互斥锁，对于一个系统里的命令来说也许已经可以确保移除了。但是对于一个回调方法的任务来说脚本可能在执行回调的时候结束，因此为了避免这种情况在<code>Console\Scheduling\CallbackEvent::run()</code>方法中加入了下面的代码确保互斥锁在任务意外关闭的时候能够正常移除：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>register_shutdown_function(function () {
+
+    $this-&gt;removeMutex();
+
+});
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

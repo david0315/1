@@ -1,0 +1,104 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php-微信分享签名' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php-微信分享签名</center></div><div class='banquan'>原文出处:本文由博客园博主Enzo灬提供。<br/>
+原文连接:https://www.cnblogs.com/jackbon/p/12012434.html</div><br>
+    <src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">测试</span>
+<span style="color: #800080;">$APPID</span>='*************************'<span style="color: #000000;">;
+</span><span style="color: #800080;">$SECRET</span>='***********************'<span style="color: #000000;">;
+</span>
+<span style="color: #800080;">$url</span> = <span style="color: #008080;">trim</span>(<span style="color: #800080;">$_REQUEST</span>['url'<span style="color: #000000;">]);
+
+</span><span style="color: #800080;">$root</span>['url'] = <span style="color: #800080;">$url</span><span style="color: #000000;">;
+
+</span><span style="color: #800080;">$memcache</span> =<span style="color: #000000;"> getRedis();
+</span><span style="color: #800080;">$mem_valid_time</span> = 7100<span style="color: #000000;">;
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">获取access_token，并缓存</span>
+<span style="color: #800080;">$memcache_key</span> = 'wx_share_sign_access_token'<span style="color: #000000;">;
+</span><span style="color: #800080;">$mem_list</span> = <span style="color: #800080;">$memcache</span>-&gt;get(<span style="color: #800080;">$memcache_key</span><span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">缓存中没有数据</span>
+<span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$mem_list</span><span style="color: #000000;">)) {
+
+    </span><span style="color: #800080;">$token</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$token</span> || <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$token</span>) &lt; 6<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$res</span> = <span style="color: #008080;">file_get_contents</span>("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&amp;appid=".<span style="color: #800080;">$APPID</span>."&amp;secret=".<span style="color: #800080;">$SECRET</span>.""<span style="color: #000000;">);
+        </span><span style="color: #800080;">$res</span> = json_decode(<span style="color: #800080;">$res</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$token</span> = <span style="color: #800080;">$res</span>['access_token'<span style="color: #000000;">];
+    }
+
+    </span><span style="color: #800080;">$new_list</span> = <span style="color: #800080;">$token</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">更新缓存</span>
+    <span style="color: #800080;">$memcache</span>-&gt;set(<span style="color: #800080;">$memcache_key</span>,<span style="color: #800080;">$new_list</span>,<span style="color: #800080;">$mem_valid_time</span><span style="color: #000000;">);
+
+} </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+
+    </span><span style="color: #800080;">$token</span> = <span style="color: #800080;">$mem_list</span>;<span style="color: #008000;">//</span><span style="color: #008000;">缓存中的数据</span>
+<span style="color: #000000;">}
+</span><span style="color: #800080;">$root</span>['access_token'] = <span style="color: #800080;">$token</span><span style="color: #000000;">;
+</span><span style="color: #008000;">//</span><span style="color: #008000;">获取jsapi_ticket，并缓存</span>
+<span style="color: #800080;">$memcache_key</span> = 'sign_jsapi_ticket'<span style="color: #000000;">;
+</span><span style="color: #800080;">$mem_list</span> = <span style="color: #800080;">$memcache</span>-&gt;get(<span style="color: #800080;">$memcache_key</span><span style="color: #000000;">);
+</span><span style="color: #008000;">//</span><span style="color: #008000;">缓存中没有取数据库</span>
+<span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$mem_list</span><span style="color: #000000;">)) {
+
+    </span><span style="color: #800080;">$jsapi_ticket</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$jsapi_ticket</span> || <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$jsapi_ticket</span>) &lt; 6<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$ur</span> = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token={<span style="color: #800080;">$token</span>}&amp;type=jsapi"<span style="color: #000000;">;
+        </span><span style="color: #800080;">$res</span> = <span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$ur</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$res</span> = json_decode(<span style="color: #800080;">$res</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$jsapi_ticket</span> = <span style="color: #800080;">$res</span>['ticket'<span style="color: #000000;">];
+    }
+
+    </span><span style="color: #800080;">$new_list</span> = <span style="color: #800080;">$jsapi_ticket</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">更新缓存</span>
+    <span style="color: #800080;">$memcache</span>-&gt;set(<span style="color: #800080;">$memcache_key</span>,<span style="color: #800080;">$new_list</span>,<span style="color: #800080;">$mem_valid_time</span><span style="color: #000000;">);
+
+} </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+    </span><span style="color: #800080;">$jsapi_ticket</span> = <span style="color: #800080;">$mem_list</span>;<span style="color: #008000;">//</span><span style="color: #008000;">缓存中的数据</span>
+<span style="color: #000000;">}
+
+</span><span style="color: #800080;">$root</span>['jsapi_ticket'] = <span style="color: #800080;">$jsapi_ticket</span><span style="color: #000000;">;
+
+</span><span style="color: #800080;">$timestamp</span> = <span style="color: #008080;">time</span>();<span style="color: #008000;">//</span><span style="color: #008000;">生成签名的时间戳</span>
+<span style="color: #800080;">$metas</span> = <span style="color: #008080;">range</span>(0, 9<span style="color: #000000;">);
+</span><span style="color: #800080;">$metas</span> = <span style="color: #008080;">array_merge</span>(<span style="color: #800080;">$metas</span>, <span style="color: #008080;">range</span>('A', 'Z'<span style="color: #000000;">));
+</span><span style="color: #800080;">$metas</span> = <span style="color: #008080;">array_merge</span>(<span style="color: #800080;">$metas</span>, <span style="color: #008080;">range</span>('a', 'z'<span style="color: #000000;">));
+</span><span style="color: #800080;">$nonceStr</span> = ''<span style="color: #000000;">;
+</span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0; <span style="color: #800080;">$i</span> &lt; 16; <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+    </span><span style="color: #800080;">$nonceStr</span> .= <span style="color: #800080;">$metas</span>[<span style="color: #008080;">rand</span>(0, <span style="color: #008080;">count</span>(<span style="color: #800080;">$metas</span>)-1)];<span style="color: #008000;">//</span><span style="color: #008000;">生成签名的随机串</span>
+<span style="color: #000000;">}
+
+</span><span style="color: #800080;">$string1</span>="jsapi_ticket=".<span style="color: #800080;">$jsapi_ticket</span>."&amp;noncestr=".<span style="color: #800080;">$nonceStr</span>."&amp;timestamp=".<span style="color: #800080;">$timestamp</span>."&amp;url=".<span style="color: #800080;">$url</span>.""<span style="color: #000000;">;
+</span><span style="color: #800080;">$signature</span>=<span style="color: #008080;">sha1</span>(<span style="color: #800080;">$string1</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$root</span>['appid'] = <span style="color: #800080;">$APPID</span><span style="color: #000000;">;
+</span><span style="color: #800080;">$root</span>['nonceStr'] = <span style="color: #800080;">$nonceStr</span><span style="color: #000000;">;
+</span><span style="color: #800080;">$root</span>['timestamp'] = <span style="color: #800080;">$timestamp</span><span style="color: #000000;">;
+</span><span style="color: #800080;">$root</span>['signature'] = <span style="color: #800080;">$signature</span><span style="color: #000000;">;</span><span style="color: #000000;">
+<br />return $tag</span><span style="color: #000000;">;</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

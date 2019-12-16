@@ -1,0 +1,60 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修听说PHP的生成器yield处理大量数据杠杠的' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>听说PHP的生成器yield处理大量数据杠杠的</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11917577.html</div><br>
+    <p><strong>官方解释yield</strong></p>
+<p>yield生成器是php5.5之后出现的，官方文档这样解释：yield提供了一种更容易的方法来实现简单的迭代对象，相比较定义类实现 Iterator 接口的方式，性能开销和复杂性大大降低。</p>
+<p>生成器的核心是一个yield关键字，一个生成器函数看起来像一个普通的函数，不同的是：普通函数返回一个值，而一个生成器可以yield生成许多它所需要的值。生成器函数被调用时，返回的是一个可以被遍历的对象。</p>
+<p>yield和return有点类似，不过不同的是，return会返回值并且终止代码的执行，而yield会返回一个值给循环调用此生成器的代码并且只是暂停执行生成器函数。<br />&nbsp;</p>
+<p><strong>这里顺便给大家介绍一下php版本的非缓冲查询</strong></p>
+<p>意思即是 把数据一行行 读取到php运行内存，并非一次性读取到php运行内存，众所周知，php有很多内置函数，可以帮助我们对数据进行加工操作，因为数据都在内存里面，所以能操作，但是php的运行内存是有极限，默认128M。</p>
+<p>注意：因为非缓冲查询是 会长时间连接数据库的，有可能会造成慢查询、锁表之类的情况，比较耗mysql资源</p>
+<p>相对非缓冲查询就是 缓冲查询：<br />如果用缓存查询，php内存就会直接爆了，出现内存不足的情况。好了，这里主要是为了突出yield<br />&nbsp;</p>
+<p><strong>yield性能</strong></p>
+<p>生成器会对PHP应用的性能有非常大的影响</p>
+<p>PHP代码运行时节省大量的内存</p>
+<p>比较适合计算大量的数据</p>
+<p><strong>yield运用</strong></p>
+<p>生成器允许你在 foreach 代码块中写代码来迭代一组数据而不需要在内存中创建一个数组,那会使你的内存达到上限，或者会占据可观的处理时间。相反，你可以写一个生成器函数，就像一个普通的自定义函数一样, 和普通函数只返回一次不同的是, 生成器可以根据需要 yield 多次，以便生成需要迭代的值。</p>
+<p>例子讲解</p>
+<pre><code><code><span>public&nbsp;<span><span>function&nbsp;<span>read_temp_api_order_info<span>($number){<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<span>for($i=<span>1;&nbsp;$i&nbsp;&lt;=&nbsp;$number;&nbsp;$i++){<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$temp_api_order_info&nbsp;=&nbsp;[<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'address'&nbsp;=&gt;&nbsp;<span>"这里是磊丰的测试地址：13号50".$i.<span>"室",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'card_no'&nbsp;=&gt;&nbsp;<span>"8888888711172157",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'city'&nbsp;=&gt;&nbsp;<span>"440300",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'create_id'&nbsp;=&gt;&nbsp;<span>1,<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'create_name'&nbsp;=&gt;&nbsp;<span>"zhuomaquan333",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'created_at'&nbsp;=&gt;&nbsp;<span>"2019-11-11&nbsp;10:05:36",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'customer_name'&nbsp;=&gt;&nbsp;<span>"磊丰",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'customer_phone'&nbsp;=&gt;&nbsp;<span>"1008611",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'dealer_id'&nbsp;=&gt;&nbsp;<span>"111",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'delivery_id'&nbsp;=&gt;&nbsp;<span>115,<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'dispatch_info'&nbsp;=&gt;&nbsp;<span>"",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'district'&nbsp;=&gt;&nbsp;<span>"440306",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'examine_id'&nbsp;=&gt;&nbsp;<span>1,<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'examine_name'&nbsp;=&gt;&nbsp;<span>"zhuomaquan333",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'goods'&nbsp;=&gt;&nbsp;[<span>203&nbsp;=&gt;&nbsp;<span>3],<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'order_id'&nbsp;=&gt;&nbsp;<span>"D201911119000".$i,<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'order_status'&nbsp;=&gt;&nbsp;<span>"14",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'order_type'&nbsp;=&gt;&nbsp;<span>2,<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'province'&nbsp;=&gt;&nbsp;<span>"440000",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'remark'&nbsp;=&gt;&nbsp;<span>null,<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'updated_at'&nbsp;=&gt;&nbsp;<span>"",<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>'ware_id'&nbsp;=&gt;&nbsp;<span>"151",<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;];<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>yield&nbsp;$temp_api_order_info;<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;}<br />}<br /></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>&nbsp;</p>
+<p>我这里只是构建了一个数组来给大家演示，平常你在操作数据库输出数据也是一样的。转为array</p>
+<pre><code><code>//仓库库存扣除测试<br /><span>public&nbsp;<span><span>function&nbsp;<span>cangku_stock<span>()<br />{<br />&nbsp;&nbsp;&nbsp;&nbsp;<span>//set_time_limit(0);&nbsp;&nbsp;//表示永久运行，这里我是测试array的时候用到的<br />&nbsp;&nbsp;&nbsp;&nbsp;$order_info&nbsp;=&nbsp;<span>$this-&gt;read_temp_api_order_info(<span>10);&nbsp;&nbsp;<span>//这里我就测试了10条数据，效果是看不出来的<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<span>foreach($order_info&nbsp;as&nbsp;$temp_api_order_info){<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd($temp_api_order_info);&nbsp;&nbsp;<span>//打印出来看看数据<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>//处理数据<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$api_ware_id&nbsp;=&nbsp;<span>$this-&gt;o-&gt;getCangkuApiUrl()&nbsp;.<span>'ware/program/addOutWare';<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$out_wares&nbsp;=&nbsp;api_request($api_ware_id,&nbsp;$temp_api_order_info);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$temp_out_wares&nbsp;=&nbsp;json_decode($out_wares,&nbsp;<span>true);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>if&nbsp;($temp_out_wares[<span>'code']&nbsp;!=&nbsp;<span>1)&nbsp;{<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$msg&nbsp;=&nbsp;&nbsp;(<span>isset($temp_out_wares[<span>'msg'])&nbsp;&amp;&amp;&nbsp;$temp_out_wares[<span>'msg'])&nbsp;?&nbsp;$temp_out_wares[<span>'msg']&nbsp;:&nbsp;var_export($out_wares,&nbsp;<span>true);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>throw&nbsp;<span>new&nbsp;<span>Exception($msg);<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />&nbsp;&nbsp;&nbsp;&nbsp;}<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<span>//dd("批量更新成功".date('Y-m-d&nbsp;H:i:s'));<br /><br />}<br /></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>&nbsp;</p>
+<p>可以看到我们调用 $order_info = $this-&gt;read_temp_api_order_info(10);返回了一个 Generator 对象，这个对象可以使用 foreach 迭代，每次迭代，PHP 会要求 Generator 实例计算并提供下一个要迭代的值。生成器的优雅体现在每次产出一个值之后，生成器的内部状态都会停顿；向生成器请求下一个值时，内部状态又会恢复。生成器内部的状态会一直在停顿和恢复之间切换，直到抵达函数定义体的末尾或遇到空的 return 语句为止。<strong>效果如下：</strong></p>
+<p><img src="./images/听说PHP的生成器yield处理大量数据杠杠的0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>这里测试大量数据，直接更改$this-&gt;read_temp_api_order_info(10);就好，如果是计算数据表数量，那你就要改改这个方法了。自己试着更改一下吧。</p>
+<p>&nbsp;</p>
+<p><img src="./images/听说PHP的生成器yield处理大量数据杠杠的1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>这里我主要给大家讲解yield的用法，如果要看插入数据表用了多长时间，自己可以在数据表增加插入时间的字段，再看看第一条数据插入与最后一条数据插入的时候的对比的。</p>
+<p><strong>以上是文章全部内容，有需要学习与经验交流的友人请加入Swoole交流群学习与交流的</strong><strong>咱们一起学习，有问题一起交流，一起进步！</strong><strong>前提是你是学技术的。感谢阅读！</strong></p>
+<p><a href="https://jq.qq.com/?_wv=1027&amp;k=5mcCu53" target="_blank"><strong>点此加入该群</strong></a></p>
+<p><img src="./images/听说PHP的生成器yield处理大量数据杠杠的2.jpg" alt="" /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

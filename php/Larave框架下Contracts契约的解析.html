@@ -1,0 +1,266 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Larave框架下Contracts契约的解析' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Larave框架下Contracts契约的解析</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11794515.html</div><br>
+    <p>本篇文章给大家带来的内容是关于Larave框架下Contracts契约的解析，有一定的参考价值，有需要的朋友可以参考一下，希望对你有所帮助。</p>
+<p><strong>Contracts</strong></p>
+<p>Laravel 的契约是一组定义框架提供的核心服务的接口， 例如我们在介绍用户认证的章节中到的用户看守器契约IllumninateContractsAuthGuard 和用户提供器契约IlluminateContractsAuthUserProvider</p>
+<p>以及框架自带的<code>App\User</code>模型所实现的IlluminateContractsAuthAuthenticatable契约。</p>
+<p><strong>为什么使用契约</strong></p>
+<p>通过上面几个契约的源码文件我们可以看到，Laravel提供的契约是为核心模块定义的一组interface。Laravel为每个契约都提供了相应的实现类，下表列出了Laravel为上面提到的三个契约提供的实现类。</p>
+<table>
+<thead>
+<tr class="firstRow"><th>契约</th><th>Laravel内核提供的实现类</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>IllumninateContractsAuthGuard</td>
+<td>IlluminateAuthSessionGuard</td>
+</tr>
+<tr>
+<td>IlluminateContractsAuthUserProvider</td>
+<td>IlluminateAuthEloquentUserProvider</td>
+</tr>
+<tr>
+<td>IlluminateContractsAuthAuthenticatable</td>
+<td>IlluminateFoundationAuthAuthenticatable(User Model的父类)</td>
+</tr>
+</tbody>
+</table>
+<p>所以在自己开发的项目中，如果Laravel提供的用户认证系统无法满足需求，你可以根据需求定义看守器和用户提供器的实现类，比如我之前做的项目就是用户认证依赖于公司的员工管理系统的API，所以我就自己写了看守器和用户提供器契约的实现类，让Laravel通过自定义的Guard和UserProvider来完成用户认证。自定义用户认证的方法在介绍用户认证的章节中我们介绍过，读者可以去翻阅那块的文章。</p>
+<p>所以Laravel为所有的核心功能都定义契约接口的目的就是为了让开发者能够根据自己项目的需要自己定义实现类，而对于这些接口的消费者(比如：Controller、或者内核提供的 AuthManager这些)他们不需要关心接口提供的方法具体是怎么实现的， 只关心接口的方法能提供什么功能然后去使用这些功能就可以了，我们可以根据需求在必要的时候为接口更换实现类，而消费端不用进行任何改动。</p>
+<p><strong>定义和使用契约</strong></p>
+<p>上面我们提到的都是Laravel内核提供的契约， 在开发大型项目的时候我们也可以自己在项目中定义契约和实现类，你有可能会觉得自带的Controller、Model两层就已经足够你编写代码了，凭空多出来契约和实现类会让开发变得繁琐。我们先从一个简单的例子出发，考虑下面的代码有什么问题：</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">class</code> <code class="php plain">OrderController </code><code class="php keyword">extends</code> <code class="php plain">Controller</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">getUserOrders()</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$orders</code><code class="php plain">= Order::where(</code><code class="php string">'user_id'</code><code class="php plain">, </code><code class="php string">'='</code><code class="php plain">, \Auth::user()-&gt;id)-&gt;get();</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">View::make(</code><code class="php string">'order.index'</code><code class="php plain">, compact(</code><code class="php string">'orders'</code><code class="php plain">));</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>这段代码很简单，但我们要想测试这段代码的话就一定会和实际的数据库发生联系。也就是说， ORM和这个控制器有着紧耦合。如果不使用Eloquent ORM，不连接到实际数据库，我们就没办法运行或者测试这段代码。这段代码同时也违背了&ldquo;关注分离&rdquo;这个软件设计原则。简单讲：这个控制器知道的太多了。 控制器不需要去了解数据是从哪儿来的，只要知道如何访问就行。控制器也不需要知道这数据是从MySQL或哪儿来的，只需要知道这数据目前是可用的。</p>
+<p><strong>Separation Of Concerns 关注分离</strong></p>
+<p>Every class should have a single responsibility, and that responsibility should be entirely encapsulated by the class.</p>
+<p>每个类都应该只有单一的职责，并且职责里所有的东西都应该由这个类封装</p>
+<p>接下来我们定义一个接口，然后实现该接口</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">interface</code> <code class="php plain">OrderRepositoryInterface </code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">userOrders(User </code><code class="php variable">$user</code><code class="php plain">);</code></p>
+<p class="line number4 index3 alt1"><code class="php plain">}</code></p>
+<p class="line number5 index4 alt2">&nbsp;</p>
+<p class="line number6 index5 alt1"><code class="php keyword">class</code> <code class="php plain">OrderRepository </code><code class="php keyword">implements</code> <code class="php plain">OrderRepositoryInterface</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">{</code></p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">userOrders(User </code><code class="php variable">$user</code><code class="php plain">)</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">Order::where(</code><code class="php string">'user_id'</code><code class="php plain">, </code><code class="php string">'='</code><code class="php plain">, </code><code class="php variable">$user</code><code class="php plain">-&gt;id)-&gt;get();</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number12 index11 alt1"><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>将接口的实现绑定到Laravel的服务容器中</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">App::singleton(</code><code class="php string">'OrderRepositoryInterface'</code><code class="php plain">, </code><code class="php string">'OrderRespository'</code><code class="php plain">);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>然后我们将该接口的实现注入我们的控制器</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">class</code> <code class="php plain">UserController </code><code class="php keyword">extends</code> <code class="php plain">Controller</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">__construct(OrderRepositoryInterface </code><code class="php variable">$orderRepository</code><code class="php plain">)</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$this</code><code class="php plain">-&gt;orders = </code><code class="php variable">$orderRespository</code><code class="php plain">;</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;</code>&nbsp;</p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">getUserOrders()</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$orders</code> <code class="php plain">= </code><code class="php variable">$this</code><code class="php plain">-&gt;orders-&gt;userOrders();</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">View::make(</code><code class="php string">'order.index'</code><code class="php plain">, compact(</code><code class="php string">'orders'</code><code class="php plain">));</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number13 index12 alt2"><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>现在我们的控制器就完全和数据层面无关了。在这里我们的数据可能来自MySQL，MongoDB或者Redis。我们的控制器不知道也不需要知道他们的区别。这样我们就可以独立于数据层来测试Web层了，将来切换存储实现也会很容易。</p>
+<p><img src="./images/Larave框架下Contracts契约的解析0.jpg" alt="" /><img src="./images/Larave框架下Contracts契约的解析1.jpg" alt="" /><img src="./images/Larave框架下Contracts契约的解析2.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><strong>接口与团队开发</strong></p>
+<p>当你的团队在开发大型应用时，不同的部分有着不同的开发速度。比如一个开发人员在开发数据层，另一个开发人员在做控制器层。写控制器的开发者想测试他的控制器，不过数据层开发较慢没法同步测试。那如果两个开发者能先以interface的方式达成协议，后台开发的各种类都遵循这种协议。一旦建立了约定，就算约定还没实现，开发者也可以为这接口写个&ldquo;假&rdquo;实现</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">class</code> <code class="php plain">DummyOrderRepository </code><code class="php keyword">implements</code> <code class="php plain">OrderRepositoryInterface </code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">userOrders(User </code><code class="php variable">$user</code><code class="php plain">)</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">return</code> <code class="php plain">collect([</code><code class="php string">'Order 1'</code><code class="php plain">, </code><code class="php string">'Order 2'</code><code class="php plain">, </code><code class="php string">'Order 3'</code><code class="php plain">]);</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number7 index6 alt2"><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>一旦假实现写好了，就可以被绑定到IoC容器里</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">App::singleton(</code><code class="php string">'OrderRepositoryInterface'</code><code class="php plain">, </code><code class="php string">'DummyOrderRepository'</code><code class="php plain">);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>然后这个应用的视图就可以用假数据填充了。接下来一旦后台开发者写完了真正的实现代码，比如叫RedisOrderRepository。那么使用IoC容器切换接口实现，应用就可以轻易地切换到真正的实现上，整个应用就会使用从Redis读出来的数据了。</p>
+<p><strong>接口与测试</strong></p>
+<p>建立好接口约定后也更有利于我们在测试时进行Mock</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">testIndexActionBindsUsersFromRepository()</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">{&nbsp;&nbsp;&nbsp; </code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">// Arrange...</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$repository</code> <code class="php plain">= Mockery::mock(</code><code class="php string">'OrderRepositoryInterface'</code><code class="php plain">);</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$repository</code><code class="php plain">-&gt;shouldReceive(</code><code class="php string">'userOrders'</code><code class="php plain">)-&gt;once()-&gt;andReturn([</code><code class="php string">'order1'</code><code class="php plain">, 'order2]);</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">App::instance(</code><code class="php string">'OrderRepositoryInterface'</code><code class="php plain">, </code><code class="php variable">$repository</code><code class="php plain">);</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">// Act...</code></p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$response</code>&nbsp; <code class="php plain">= </code><code class="php variable">$this</code><code class="php plain">-&gt;action(</code><code class="php string">'GET'</code><code class="php plain">, </code><code class="php string">'OrderController@getUserOrders'</code><code class="php plain">);</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code>&nbsp;</p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">// Assert...</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$this</code><code class="php plain">-&gt;assertResponseOk();</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$this</code><code class="php plain">-&gt;assertViewHas(</code><code class="php string">'order'</code><code class="php plain">, [</code><code class="php string">'order1'</code><code class="php plain">, </code><code class="php string">'order2'</code><code class="php plain">]);</code></p>
+<p class="line number13 index12 alt2"><code class="php spaces">&nbsp;</code><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总结</strong></p>
+<p>接口在程序设计阶段非常有用，在设计阶段与团队讨论完成功能需要制定哪些接口，然后设计出每个接口具体要实现的方法，方法的入参和返回值这些，每个人就可以按照接口的约定来开发自己的模块，遇到还没实现的接口完全可以先定义接口的假实现等到真正的实现开发完成后再进行切换，这样既降低了软件程序结构中上层对下层的耦合也能保证各部分的开发进度不会过度依赖其他部分的完成情况。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

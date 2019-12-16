@@ -1,0 +1,113 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php代码如何加域名授权？开源php项目如何保护版权 商业授权？' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php代码如何加域名授权？开源php项目如何保护版权 商业授权？</center></div><div class='banquan'>原文出处:本文由博客园博主石头大叔提供。<br/>
+原文连接:https://www.cnblogs.com/3rocks/p/11199837.html</div><br>
+    <p>php在web开发领域是最热门的语言，也是开发项目的不二选择，许多PHP开发者说它是当今世界上最好的开发语言，php开发项目效率高，是因为开源项目太多了，不管是国内，还是国外，开源的框架，开源的CMS系统，开源的商城系统太多了，所以php的生态圈很好。如果你想对项目进行开源，那就需要对源码进行一个简单的版权保护，代码可以开源，但是项目的版权，所有权是你的。</p>
+<src class="pgc-img"><img src="./images/php代码如何加域名授权？开源php项目如何保护版权 商业授权？0.jpg" alt="php代码如何加域名授权？开源php项目如何保护版权 商业授权？" />
+<p class="pgc-img-caption">&nbsp;</p>
+
+<p>域名授权代码可封装进函数，或者进行加密，对于常用的PHP加密形式，都有其破解的方法，比如ZendGuard、ionCube等，如果授权的域名较多，可以在项目中增加域名字段，将域名写入数据库再进行读取和校验，此方法你可以封装成类或插件，下面给大家分享两种代码，大家可以学习一下。</p>
+<src class="pgc-img"><img src="./images/php代码如何加域名授权？开源php项目如何保护版权 商业授权？1.jpg" alt="php代码如何加域名授权？开源php项目如何保护版权 商业授权？" />
+<p class="pgc-img-caption">&nbsp;</p>
+
+<p>一.独立校验域名授权的方法：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>function allow_domain(){
+
+    $is_allow=false;
+    //获取不带端口号的域名前缀
+    $servername=trim($_SERVER['SERVER_NAME']);
+    //授权域名列表
+    $Array=array("www.yunmasucai.com","www.zzphp.cn");
+    //遍历数组
+    foreach($Array as $value){
+        $value=trim($value);
+        $domain=explode($value,$servername);
+        if(count($domain)&gt;1){
+            $is_allow=true;
+            break;
+        }
+    }
+    if(!$is_allow){
+        die("域名未授权！"); //授权失败
+    }else{
+        echo "域名已授权！"; //授权成功
+    }
+}
+allow_domain();
+</code></pre>
+
+<p>　　</p>
+<p>二.在线校验域名授权的方法：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>/*
+ * 服务端代码
+ */
+//获取域名
+$domain = $_GET['domain'];
+//授权域名列表
+$Array = array('www.yunmasucai.com','www.zzphp.cn');
+//校验结果
+echo in_array($domain, $Array) ? 'yes' : '';
+
+/*
+ * 客户端代码
+ */
+//获取不带端口号的域名前缀
+$servername = trim($_SERVER['SERVER_NAME']);
+//获取服务端授权文件校验
+$verifyurl = file_get_contents('http://www.yunmasucai.com/data/upload/copyright.php?domain='.$servername);
+if(!empty($verifyurl)){
+    echo "已授权！"; //授权成功
+}else{
+    die("未授权！"); //授权失败
+}
+</code></pre>
+
+<p>　　</p>
+<p>这个只要对获取的域名 进行赋值就直接过了判断。所以对于程序员来说这个太容易猜出来了，即使是加密过的PHP。那么怎么处理？有的人有更复杂的授权方式，就是带上各种服务器的信息 还要加个KEY来作为授权码。再经过代码加密，似乎看起来很牛B了，可是如果源码一旦破解沦陷，所有的判断函数不就是 鱼肉么？有的人说 我代码加密了你怎么破解？</p>
+<src class="pgc-img"><img src="./images/php代码如何加域名授权？开源php项目如何保护版权 商业授权？2.jpg" alt="php代码如何加域名授权？开源php项目如何保护版权 商业授权？" />
+<p class="pgc-img-caption">&nbsp;</p>
+
+<p>还真别说，日前看到淘宝上有这样一个商品叫作:没有不能解密的代码，标价好像是10个大洋起。我去，一个起码万记的代码就这样被10元了，尽管店主文字申明了不能用于商业用途只供学习。于是shopnc采用了核心代码加密，利用ＵＲＬ的路由格式在搜索引擎来搜索出搭建这个站点的未授权域名，然后就给你发律师函了。这也不失为一种方案，所以理由也要有自己在的风格。那么ＰＨＰ到底有没有这样一款或者一个很哇塞的授权方案呢？目前也没有什么好的解决方案？给大家提供个代码思路。</p>
+<src class="pgc-img"><img src="./images/php代码如何加域名授权？开源php项目如何保护版权 商业授权？3.jpg" alt="php代码如何加域名授权？开源php项目如何保护版权 商业授权？" />
+<p class="pgc-img-caption">&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>function authorization($seed = '') {
+    $encode = $_SERVER['SERVER_SOFTWARE'] . $_SERVER['SERVER_NAME'] . $_SERVER['DOCUMENT_ROOT'] .
+        $_SERVER['SERVER_ADMIN'] . $_SERVER['SERVER_ADDR'] . PHP_VERSION . PHP_OS . __FILE__;
+    return md5 ($encode);
+}
+$authorization_key = 'www.yunmasucai.com';
+echo authorization($authorization_key);//这里是生成字符串验证
+$authorization_check = array('dd670852938815f3892d3c511cc8fceb','ddc976cc02bce5c3c22c4d7d201c0cae' );//授权字串，把生成的字符验证复制到这里来
+if (!in_array(authorization ($authorization_key), $authorization_check)) {
+    die('对不起，你的程序未经过小一授权!!');
+}
+</code></pre>
+
+<p>　　</p>
+
+<p>其实还有很多的思路，大家可以分享讨论一下，我只是总结了一部分，比如C 扩展加密，zendloader 加密等，不过那种方法，只要是能解决用户的需求就是好代码。</p>
+<p>欢迎关注公众号：云码素材，交流分享! 云码素材原创作品，更多精品资源下载，技术分享请关注，私信云码素材！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

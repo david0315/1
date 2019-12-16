@@ -1,0 +1,108 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【Linux系列】Centos 7安装 PHP（四）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【Linux系列】Centos 7安装 PHP（四）</center></div><div class='banquan'>原文出处:本文由博客园博主SexyPhoenix提供。<br/>
+原文连接:https://www.cnblogs.com/SexyPhoenix/p/11909913.html</div><br>
+    <h4 id="目的">目的</h4>
+<hr />
+<p>为了下面的Laravel部署，本篇开始安装PHP。</p>
+<h6 id="设置php源">设置PHP源</h6>
+<hr />
+<p>查看Centos源是否有PHP。</p>
+<pre><code><code>yum list php*</code></code></pre>
+<p><img src="./images/【Linux系列】Centos 7安装 PHP（四）0.jpg" alt="1" /></p>
+<p>进一步查看PHP的版本。</p>
+<pre><code><code>yum info php.x86_64</code></code></pre>
+<p><img src="./images/【Linux系列】Centos 7安装 PHP（四）1.jpg" alt="2" /></p>
+<p>上图看出自带的PHP源版本太低，需要更高版本的。</p>
+<p>设置高版本的PHP源。</p>
+<pre><code><code>rpm -ivh https://mirror.webtatic.com/yum/el7/epel-release.rpm
+rpm -ivh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+yum list php* #更新源并查看现在的PHP源</code></code></pre>
+<p><img src="./images/【Linux系列】Centos 7安装 PHP（四）2.jpg" alt="3" /></p>
+<p>现在已有php72版本，安装。</p>
+<pre><code><code>yum install -y php72w-fpm  php72w-fpm php72w-cli.x86_64 php72w-common.x86_64 php72w.x86_64 php72w-dba.x86_64 php72w-devel.x86_64 php72w-embedded.x86_64 php72w-enchant.x86_64 php72w-gd.x86_64 php72w-imap.x86_64 php72w-interbase.x86_64 php72w-intl.x86_64 php72w-ldap.x86_64 php72w-mbstring.x86_64 php72w-mysqlnd.x86_64  php72w-odbc.x86_64 php72w-opcache.x86_64 php72w-pdo.x86_64 php72w-pdo_dblib.x86_64 php72w-soap.x86_64 php72w-xml.x86_64 php72w-xmlrpc.x86_64 php72w-mbstring.x86_64 php72w-mcrypt.x86_64 php-posix</code></code></pre>
+<p>安装成功后，查看php</p>
+<pre><code><code>php -v</code></code></pre>
+<p><img src="./images/【Linux系列】Centos 7安装 PHP（四）3.jpg" alt="4" /></p>
+<p>下面来新建一个网站站点。</p>
+<pre><code><code>service php-fpm start # 启动php
+systemctl enable php-fpm # 设置开机启动项
+ps -ef | grep php # 查看是否正常启动</code></code></pre>
+<p><img src="./images/【Linux系列】Centos 7安装 PHP（四）4.jpg" alt="5" /></p>
+<p>设置SELinux</p>
+<pre><code><code>vi /etc/selinux/config
+SELINUX=permissive</code></code></pre>
+<p><strong>重启虚拟机</strong>，不设置SELinux，nginx访问php-fpm会有权限问题。</p>
+<pre><code><code>mkdir -p /var/www/Test
+cd /var/www/Test   
+vi index.php</code></code></pre>
+<p>index.php</p>
+<pre><code><code>&lt;?php
+    phpinfo();
+?&gt;</code></code></pre>
+<p>nginx站点config配置</p>
+<pre><code><code>cd /etc/nginx/conf.d
+vi devtest.plat.goods</code></code></pre>
+<pre><code><code>server {
+   listen       80;
+   server_name  devtest.plat.goods;
+   root &quot;/var/www/Test&quot;;
+
+   index index.html index.htm index.php;
+
+   location ~ (.+\.php)(.*)$ {
+
+        fastcgi_split_path_info ^(.+\.php)(.+)$;
+        fastcgi_pass unix:/var/run/php-fpm/php7-fpm.sock;   #用unix套接字通讯
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+
+        fastcgi_intercept_errors off;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 4 16k;
+        fastcgi_connect_timeout 300;
+        fastcgi_send_timeout 300;
+        fastcgi_read_timeout 300;
+   }
+}</code></code></pre>
+<p>配置php-fpm</p>
+<pre><code><code>vi /etc/php-fpm.d/www.conf
+
+listen = /var/run/php-fpm/php7-fpm.sock 
+listen.owner = nginx
+listen.group = nginx
+listen.mode = 0660</code></code></pre>
+<p><img src="./images/【Linux系列】Centos 7安装 PHP（四）5.jpg" alt="6" /></p>
+<pre><code><code>service php-fpm restart 
+service nginx reload
+service nginx status</code></code></pre>
+<p><img src="./images/【Linux系列】Centos 7安装 PHP（四）6.jpg" alt="7" /></p>
+<p>物理主机访问虚拟机站点，需要配置物理机的hosts<br />
+C:\Windows\System32\drivers\etc\hosts<br />
+192.168.10.18 devtest.plat.goods</p>
+<p>访问 <a href="http://devtest.plat.goods/index.php" class="uri">http://devtest.plat.goods/index.php</a><br />
+<img src="./images/【Linux系列】Centos 7安装 PHP（四）7.jpg" alt="8" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

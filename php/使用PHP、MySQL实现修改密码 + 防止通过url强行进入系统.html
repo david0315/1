@@ -1,0 +1,102 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修使用PHP、MySQL实现修改密码 + 防止通过url强行进入系统' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>使用PHP、MySQL实现修改密码 + 防止通过url强行进入系统</center></div><div class='banquan'>原文出处:本文由博客园博主远征i提供。<br/>
+原文连接:https://www.cnblogs.com/expedition/p/10638678.html</div><br>
+    <p><span style="font-size: 18px;"><strong><span style="color: #ff0000;">●使用PHP+MySQL实现修改密码</span></strong></span></p>
+<p><span style="color: #000000; font-size: 18px;"><strong>页面：</strong></span></p>
+<ul>
+<li>index.php&nbsp; 登陆页面，输入默认密码登陆系统</li>
+<li>check.php 核查页面，通过查询数据库检测密码是否正确 &nbsp; &mdash;&mdash;&gt; 正确，则进入系统 &nbsp; &nbsp; 或 错误，提示&ldquo;密码错误&rdquo;，返回登录页面</li>
+<li>system.php 系统页面，内含&ldquo;修改密码&rdquo;链接</li>
+<li>change.php 输入新密码修改页面</li>
+<li>changePwd.php 修改密码页面</li>
+</ul>
+<p><span style="color: #000000; font-size: 18px;"><strong>关键代码：</strong></span></p>
+<p><strong><span style="color: #0000ff;">index.php</span></strong></p>
+<src>&nbsp;&nbsp;&nbsp; &lt;form action="check.php" method="post"&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&lt;p &gt;请输入密码：&lt;/p&gt;&lt;input type="password" <span style="text-decoration: underline;">name="psd"</span>&nbsp; /&gt;
+<src>&nbsp; &nbsp; &lt;button type="submit" name="submit"<span style="text-decoration: underline;"> value="登录"</span> /&gt;登录&lt;/button&gt;
+<src>&nbsp;&nbsp;&nbsp;&lt;/form&gt;
+<src><span style="color: #0000ff;"><strong>check.php</strong></span>
+<src>
+<src>&lt;?php
+<src>$servername = "localhost";<br />$username = "用户";<br />$password = "密码";<br />$dbname = "数据库名";
+<src><br />// 创建连接<br />$conn = new mysqli($servername, $username, $password, $dbname);
+<src>if ($conn-&gt;connect_error) {<br />&nbsp;&nbsp;&nbsp; die("连接失败: " . $conn-&gt;connect_error);<br />}
+<src>$sql = "SELECT password FROM admin"; &nbsp; <span style="color: #0000ff;">&nbsp;&nbsp; //此处涉及名称是admin的数据表，内部有name 和password两个字段，值分别是admin 和 1</span><br />$result = $conn-&gt;query($sql);<br />&nbsp;<br />if ($result-&gt;num_rows &gt; 0) {<br />&nbsp;&nbsp;&nbsp;&nbsp; while($row = $result-&gt;fetch_assoc()) {<br />&nbsp; &nbsp; $adminkey = $row["password"]; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="color: #0000ff;"> //设$adminkey是管理员密码，将从数据表中读取的数据赋值进去</span><br />&nbsp;&nbsp;&nbsp; }<br />}
+<src>$conn-&gt;close();
+<src>&nbsp;
+<src>/************************请在上方修改管理员密码，默认是'1' *************************/
+<src><br />&nbsp;if( isset($_POST["submit"]) &amp;&amp; $_POST["submit"] = "登录"){<br />&nbsp;&nbsp;&nbsp; if(<em><strong>$_POST['psd'] == $adminkey</strong></em>){ &nbsp; &nbsp; &nbsp;<span style="color: #0000ff;"> //如果输入的密码和数据库中的默认密码相同，则进入系统</span><br />&nbsp;&nbsp;header("Location:system.php");&nbsp; <br />&nbsp;&nbsp;exit;<br />&nbsp;}else{<br />&nbsp;?&gt;<br />&nbsp;&lt;script language="javascript"&gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <span style="color: #0000ff;">//如果密码错误，给出提示，返回登录页面</span><br />&nbsp;&nbsp;alert("password error");<br />&nbsp;&nbsp;window.location.href="index.php";<br />&nbsp;&lt;/script&gt;<br />&nbsp;&lt;?php<br />&nbsp;&nbsp; }<br />}
+<src>?&gt;
+<src><strong><span style="color: #0000ff;">system.php</span></strong>
+<src><span style="color: #000000;">&lt;a href="change.php" class="chang"&gt;修改密码&lt;/a&gt;</span>
+<src><span style="color: #0000ff;"><strong>change.php</strong></span>
+<src><span style="color: #000000;">&lt;form action="changPwd.php" method="post" &gt;<br />&nbsp;&nbsp;请输入新密码：&lt;input type="password" <em><strong>name="new_psd"</strong></em>&gt;<br />&nbsp;&nbsp;&lt;button type="submit" name="submit" <em><strong>value="修改"</strong></em> class="btn "/&gt;修改&lt;/button&gt;<br />&nbsp;&lt;/form&gt;</span>
+<src><span style="color: #0000ff;"><strong>changePwd.php</strong></span>
+<src>
+<src>&lt;?php
+<src>&nbsp;if( isset($_POST["submit"]) &amp;&amp; <em><strong>$_POST["submit"] = "修改"</strong></em>){<br />&nbsp;<span style="color: #ff0000;">&nbsp;<em><strong>$nempas</strong></em></span> =<em><strong> $_POST["new_psd"]</strong></em>;<br />&nbsp;&nbsp;$servername = "localhost";<br />&nbsp;&nbsp;$username = "用户名";<br />&nbsp;&nbsp;$password = "密码";<br />&nbsp;&nbsp;$dbname = "数据库名";
+<src><br />&nbsp;&nbsp;// 创建连接<br />&nbsp;&nbsp;$conn = new mysqli($servername, $username, $password, $dbname);<br />&nbsp;&nbsp;// Check connection<br />&nbsp;&nbsp;<br />&nbsp;&nbsp;mysqli_query($conn,"UPDATE admin SET <em><strong>password='<span style="color: #ff0000;">{$nempas}</span>'</strong></em> WHERE name='admin' ");
+<src>&nbsp;<span style="color: #0000ff;"> //使用UPDATE语句修改数据库中的password字段，并且新的值来自 change.php页面输入的新密码</span>
+<src><span style="color: #0000ff;">&nbsp;&nbsp; WHERE语句必须写，否则会更新所有的字段</span>
+<src>&nbsp;&nbsp;mysqli_close($conn);<br />&nbsp;&nbsp;?&gt;<br />&nbsp;&nbsp;&lt;script language="javascript"&gt;<br />&nbsp;&nbsp;&nbsp;alert("change success");<br />&nbsp;&nbsp;&nbsp;window.location.href="system.php";<br />&nbsp;&nbsp;&lt;/script&gt;<br />&nbsp;&nbsp;&lt;?php<br />&nbsp;}else{<br />&nbsp;&nbsp;echo 'alert("change error");<br />&nbsp;}<br />&nbsp;&nbsp;?&gt;
+
+
+
+
+<src>&nbsp;
+
+
+
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong><span style="color: #ff0000;">●防止通过url强行进入系统</span></strong></span></p>
+<p><span style="color: #000000;">比如，网站名是www.xxx.com,浏览者注意到这是某系统的登录页面后，可能一试 http://www.xxx.com/system.php 就绕过输入密码进入了系统。。。。【小白级】</span></p>
+<p>&nbsp;</p>
+<p><strong>可以加一个检查页面<span style="color: #0000ff;"> checkInfo.php</span></strong></p>
+<src>先在密码核查页面 <strong><span style="color: #0000ff;">check.php</span></strong> 更改：
+<src>&nbsp;
+<src>if( isset($_POST["submit"]) &amp;&amp; $_POST["submit"] = "登录"){
+<src> &nbsp;&nbsp; if($_POST['psd'] == $adminkey){
+<src><em id="__mceDel">&nbsp;&nbsp;<em><strong>session_start();</strong></em><br /><em><strong>&nbsp;&nbsp;$_SESSION["loginKey"] = 101; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </strong>&nbsp; </em><span style="color: #0000ff;">//101随缘弄的，别的也行</span><br /><span style="color: #0000ff;">&nbsp;// session 变量用于存储关于用户会话（session）的信息，或者更改用户会话（session）的设置。Session 变量存储单一用户的信息，并且对于应用程序中的所有页面都是可用的</span></em>
+<src><span style="color: #0000ff;">所以，可利用此，只有通过密码验证，才会生成$_SESSION["loginKey"]，从而在之后的页面如system.php 的开头加入检查页面 checkInfo.php ，检查有没有生成的$_SESSION["loginKey"]</span>
+<src><span style="color: #0000ff;">就可以辨别有没有绕过密码强行进入</span>
+<src>header("Location:system.php");&nbsp; <br />&nbsp;&nbsp;exit;<br />&nbsp;}else{<br />&nbsp;?&gt;<br />&nbsp;&lt;script language="javascript"&gt;<br />&nbsp;&nbsp;alert("password error");<br />&nbsp;&nbsp;window.location.href="index.php";<br />&nbsp;&lt;/script&gt;<br />&nbsp;&lt;?php<br />&nbsp;&nbsp; }<br />}
+<src>?&gt;
+<src>&nbsp;
+<src>再写<strong><span style="color: #0000ff;">checkInfo.php</span></strong>
+<src>&lt;?php<br />&nbsp;session_start();<br />&nbsp;if(!isset($_SESSION["loginKey"])){ &nbsp; &nbsp;<br />&nbsp;&nbsp;?&gt;<br />&nbsp;&nbsp;&lt;script language="javascript"&gt;<br />&nbsp;&nbsp;alert("please land first");<br />&nbsp;&nbsp;window.location.href="index.php";<br />&nbsp;&nbsp;&lt;/script&gt;<br />&nbsp;&nbsp;&lt;?php<br />&nbsp;}
+<src>?&gt;
+<src>&nbsp;
+<src>&nbsp;
+<src><span style="color: #0000ff;">举例</span>
+<src>在system.php开头加入：
+<src><strong><em>&lt;?php</em></strong><br /><strong><em>include 'checkInfo.php';</em></strong><br /><strong><em>?&gt;</em></strong><br />&lt;!doctype html&gt;<br />&lt;html&gt;
+<src> ...... .. .. ..
+<src> &lt;/html&gt;
+<src>&nbsp;
+<src>注：&nbsp;session_start(); 启动会话时，之前代码不能有任何输出！（如echo '...'; &nbsp;&nbsp; alert("....");）
+<src>建议直接扔到开头
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

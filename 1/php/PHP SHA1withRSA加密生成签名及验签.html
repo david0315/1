@@ -1,0 +1,160 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP SHA1withRSA加密生成签名及验签' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP SHA1withRSA加密生成签名及验签</center></div><div class='banquan'>原文出处:本文由博客园博主TuiHo提供。<br/>
+原文连接:https://www.cnblogs.com/TuiHo/p/10536895.html</div><br>
+    <p>最近公司对接XX第三方支付平台的代付业务，由于对方公司只有JAVA的demo，所以只能根据文档自己整合PHP的签名加密，网上找过几个方法，踩到各种各样的坑，还好最后算是搞定了，话不多说，代码分享出来。</p>
+<p>&nbsp;</p>
+<p>业务要求：每个签名组装的内容是按字段名的字典顺序升序排序连接的</p>
+<p>先组装需要签名的内容：</p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">     * 拼接需要签名的内容
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">     * Author: Tao.
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * @param array $data 需签名的字段内容
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">     * 
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">     * @return string
+</span><span style="color: #008080;"> 8</span>      <span style="color: #008000;">*/</span>     
+<span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> getSign(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">11</span>         <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">12</span>             <span style="color: #800080;">$Parameters</span>[<span style="color: #800080;">$k</span>] = <span style="color: #800080;">$v</span><span style="color: #000000;">;
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">14</span>         <span style="color: #008000;">//</span><span style="color: #008000;">按字典序排序参数</span>
+<span style="color: #008080;">15</span>         <span style="color: #008080;">ksort</span>(<span style="color: #800080;">$Parameters</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span>         <span style="color: #800080;">$sign</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span>         <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$Parameters</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">18</span>             <span style="color: #800080;">$sign</span> .= <span style="color: #800080;">$k</span> . "=" . <span style="color: #800080;">$v</span> . "&amp;"<span style="color: #000000;">;
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">20</span>         <span style="color: #800080;">$sign</span> = '&amp;' . <span style="color: #008080;">rtrim</span>(<span style="color: #800080;">$sign</span>, '&amp;'<span style="color: #000000;">);
+</span><span style="color: #008080;">21</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$sign</span><span style="color: #000000;">;
+</span><span style="color: #008080;">22</span>     }</code></pre>
+
+<p>签名字符串如下示例:<br />&amp;amount=amount 值&amp;ccy=ccy 值 &amp;merchantId=merchantId 值&amp;notifyUrl=notifyUrl 值&amp;orderId=orderId 值 &amp;payeeAcctNo=payeeAcctNo 值(明文)。</p>
+<p>要注意的是，根据业务需要选择，是否在签名内容前拼接 &amp;符。</p>
+<p>&nbsp;</p>
+<p>然后生成秘钥签名：<br /><br /></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">     * 秘钥加密
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">     * Author: Tao.
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * @param string $data 之前生成好的需加密内容
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">     * @param $key 私钥证书位置(.pfx文件)
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">     * @param string $pwd 证书密码
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">     * @return string
+</span><span style="color: #008080;">10</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">11</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> SHA1withRSA(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$key</span>,<span style="color: #800080;">$pwd</span><span style="color: #000000;">)
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">13</span>         openssl_pkcs12_read(<span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$key</span>), <span style="color: #800080;">$certs</span>, <span style="color: #800080;">$pwd</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">14</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$certs</span>) <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;">15</span>         <span style="color: #800080;">$signature</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;">16</span>         openssl_sign(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$signature</span>, <span style="color: #800080;">$certs</span>['pkey'<span style="color: #000000;">]);
+</span><span style="color: #008080;">17</span>         <span style="color: #0000ff;">return</span> <span style="color: #008080;">bin2hex</span>(<span style="color: #800080;">$signature</span><span style="color: #000000;">);  
+</span><span style="color: #008080;">18</span>     }</code></pre>
+
+<p>由于第三方公司要求转换使用16进制，可根据需求选择bin2hex()或base64_encode()。</p>
+<p>这里要注意的是，根据业务需要，签名后的内容是否要求大小写敏感。</p>
+<p>签名后的内容应该是小写的，可以使用strtoupper()转换成大写。</p>
+<p>以上就是给大家整理好的私钥加密方法。</p>
+<p>&nbsp;</p>
+<p>但此业务中另要求将银行卡号需要进行RSA公钥加密<br />以下是获取公钥的方法：<em><br /></em>此处是获取对方平台证书的公钥（.cer文件）</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">     * 获取公钥
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">     * Author: Tao.
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * @param $path //公钥证书位置 (.cer文件)
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">     * @return mixed
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">     * @throws \Exception
+</span><span style="color: #008080;"> 9</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> loadCert(<span style="color: #800080;">$path</span><span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #800080;">$file</span> = <span style="color: #008080;">file_get_contents</span>(<span style="color: #800080;">$path</span><span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$file</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">14</span>             <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> \<span style="color: #0000ff;">Exception</span>('loadx509Cert::file_get_contents ERROR'<span style="color: #000000;">);
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">16</span> 
+<span style="color: #008080;">17</span>         <span style="color: #800080;">$cert</span> = <span style="color: #008080;">chunk_split</span>(<span style="color: #008080;">base64_encode</span>(<span style="color: #800080;">$file</span>), 64, "\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">18</span>         <span style="color: #800080;">$cert</span> = "-----BEGIN CERTIFICATE-----\n" . <span style="color: #800080;">$cert</span> . "-----END CERTIFICATE-----\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">19</span> 
+<span style="color: #008080;">20</span>         <span style="color: #800080;">$res</span> = openssl_pkey_get_public(<span style="color: #800080;">$cert</span><span style="color: #000000;">);
+</span><span style="color: #008080;">21</span>         <span style="color: #800080;">$detail</span> = openssl_pkey_get_details(<span style="color: #800080;">$res</span><span style="color: #000000;">);
+</span><span style="color: #008080;">22</span>         openssl_free_key(<span style="color: #800080;">$res</span><span style="color: #000000;">);
+</span><span style="color: #008080;">23</span> 
+<span style="color: #008080;">24</span>         <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$detail</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">25</span>             <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> \<span style="color: #0000ff;">Exception</span>('loadX509Cert::openssl_pkey_get_details ERROR'<span style="color: #000000;">);
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">27</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$detail</span>['key'<span style="color: #000000;">];
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">29</span> 
+<span style="color: #008080;">30</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">31</span> <span style="color: #008000;">     * 公钥加密
+</span><span style="color: #008080;">32</span> <span style="color: #008000;">     * Author: Tao.
+</span><span style="color: #008080;">33</span> <span style="color: #008000;">     * 
+</span><span style="color: #008080;">34</span> <span style="color: #008000;">     * @param $pubPath  //公钥证书位置 (.cer文件)
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">     * @param string $bankCode //银行卡号
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">     * 
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">     * @return string
+</span><span style="color: #008080;">38</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">39</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> rsa_encode(<span style="color: #800080;">$bankCode</span>,<span style="color: #800080;">$pubPath</span><span style="color: #000000;">)
+</span><span style="color: #008080;">40</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">41</span>         <span style="color: #800080;">$pubkey</span> = self::loadCert(<span style="color: #800080;">$pubPath</span><span style="color: #000000;">);
+</span><span style="color: #008080;">42</span>         <span style="color: #800080;">$encrypt_data</span> = ''<span style="color: #000000;">;
+</span><span style="color: #008080;">43</span>         openssl_public_encrypt(<span style="color: #800080;">$bankCode</span>, <span style="color: #800080;">$encrypt_data</span>, <span style="color: #800080;">$pubkey</span><span style="color: #000000;">);
+</span><span style="color: #008080;">44</span>         <span style="color: #800080;">$encrypt_data</span> = <span style="color: #008080;">base64_encode</span>(<span style="color: #800080;">$encrypt_data</span><span style="color: #000000;">);
+</span><span style="color: #008080;">45</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$encrypt_data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">46</span>     }</code></pre>
+
+<p>你要问我为什么私钥是bin2hex()，公钥换了base64_encode()。我也不知道为什么，问过说是16位，但是请求签名一直失败，换了64成功了。对方说文档太老了，忘记了。。根据需要选择吧</p>
+<p>&nbsp;</p>
+<p>最后回调结果验签</p>
+<p>首先先将回调数据中组装签名字段的内容取出来，按上面的getSign()方法排序。<br />然后进行验证：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">     * 验证返回的签名是否正确
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">     * @param string $data 要验证的签名原文
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * @param string $signature 签名内容
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">      *@param $pubPath  公钥证书位置 (.cer文件)
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">     * @return bool
+</span><span style="color: #008080;"> 9</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> verifyRespondSign(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$signature</span>,<span style="color: #800080;">$pubPath</span><span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #800080;">$keys</span> = self::loadCert(<span style="color: #800080;">$pubPath</span><span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>         <span style="color: #800080;">$signature</span> = hex2bin(<span style="color: #800080;">$signature</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>         <span style="color: #800080;">$ok</span> = openssl_verify(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$signature</span>, <span style="color: #800080;">$keys</span><span style="color: #000000;">);
+</span><span style="color: #008080;">15</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$ok</span> == 1<span style="color: #000000;">) {
+</span><span style="color: #008080;">16</span>             <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">18</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">19</span>     }</code></pre>
+
+<p>&nbsp;</p>
+<p>以上就是PHP SHA1withRSA加密、签名及验签的全部内容了。</p>
+<p>希望对各位有帮助。<br />有不对的地方请指出，及时修改，互相学习。🤝🤝🤝</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

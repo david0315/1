@@ -1,0 +1,210 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel集合的简单理解' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel集合的简单理解</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11792031.html</div><br>
+    <p><span class="img-wrap"><span class="img-wrap">本篇文章给大家带来的内容是关于Laravel集合的简单理解，有一定的参考价值，有需要的朋友可以参考一下，希望对你有所帮助。</span></span></p>
+<p><strong>前言</strong></p>
+<p>集合通过 Illuminate\Database\Eloquent\Collection 进行实例，Laravel的内核大部分的参数传递都用到了集合，但这并不代表集合就是好的。Laravel作为快捷并优雅的开发框架，是有他一定的道理所在的，并非因他的路由、DB、监听器等等。当你需要处理一组数组时，你可能就需要它帮助你快捷的解决实际问题。</p>
+<p><strong>创建集合</strong></p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php variable">$collection</code> <code class="php plain">= collect([1, 2, 3]);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>显而易见，这是一部非常简单的操作，请打住你想说&ldquo;这种操作很复杂&rdquo;的话，它更类似与早起PHP5.x的版本的声明方式。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php variable">$collection</code> <code class="php plain">= </code><code class="php keyword">array</code><code class="php plain">(1,2,3);</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>laravel对于collection也没有做任何复杂的事情。</p>
+<p><strong>打回原型</strong></p>
+<p>如果你想将集合转换为数据，其使用方法也非常的简单</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">collect([1, 2, 3])-&gt;all();</code></p>
+<p class="line number2 index1 alt1"><code class="php plain">------&gt;</code></p>
+<p class="line number3 index2 alt2"><code class="php plain">[1, 2, 3]</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>在不过与考虑性能的情况下，可以使用Laravel集合，毕竟它将帮你完成数组操作的百分之九十的工作。<br />例如我们需要通过一个水平线切分数组，将其分为2个及以上的数组个数。使用集合可以酱紫做～</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php variable">$collection</code> <code class="php plain">= collect([1, 2, 3, 4, 5, 6, 7]);</code></p>
+<p class="line number2 index1 alt1"><code class="php variable">$chunks</code> <code class="php plain">= </code><code class="php variable">$collection</code><code class="php plain">-&gt;chunk(4);</code></p>
+<p class="line number3 index2 alt2"><code class="php variable">$chunks</code><code class="php plain">-&gt;toArray();</code></p>
+<p class="line number4 index3 alt1"><code class="php comments">// [[1, 2, 3, 4], [5, 6, 7]]</code></p>
+
+
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+<p>并且有些还根据sql语句的查询方式来设计的方法，下面就让来看下具体都有哪些吧。</p>
+<p><strong>方法列表</strong></p>
+<p>这里列出一些常用的集合操作方法，具体及全部请操作官方。</p>
+<table>
+<thead>
+<tr class="firstRow"><th>方法</th><th>注释</th></tr>
+
+</thead>
+<tbody>
+<tr>
+<td>all</td>
+<td>将集合打回原型</td>
+
+</tr>
+<tr>
+<td>average &amp; avg</td>
+<td>计算平均值</td>
+
+</tr>
+<tr>
+<td>chunk</td>
+<td>将集合拆成多个指定大小的小集合</td>
+
+</tr>
+<tr>
+<td>collapse</td>
+<td>将多个数组的集合合并成一个数组的集合</td>
+
+</tr>
+<tr>
+<td>combine</td>
+<td>可以将一个集合的值作为「键」，再将另一个数组或者集合的值作为「值」合并成一个集合</td>
+
+</tr>
+<tr>
+<td>concat</td>
+<td>将给定的数组或集合值附加到集合的末尾</td>
+
+</tr>
+<tr>
+<td>contains</td>
+<td>判断集合是否包含给定的项目</td>
+
+</tr>
+<tr>
+<td>count</td>
+<td>返回该集合内的项目总数</td>
+
+</tr>
+<tr>
+<td>dd</td>
+<td>打印集合的项目并结束脚本执行</td>
+
+</tr>
+<tr>
+<td>diff</td>
+<td>将集合与其它集合或纯 PHP 数组进行值的比较，然后返回原集合中存在而给定集合中不存在的值</td>
+
+</tr>
+<tr>
+<td>each</td>
+<td>迭代集合中的内容并将其传递到回调函数中</td>
+
+</tr>
+<tr>
+<td>filter</td>
+<td>使用给定的回调函数过滤集合的内容，只留下那些通过给定真实测试的内容</td>
+
+</tr>
+<tr>
+<td>first</td>
+<td>返回集合中通过给定真实测试的第一个元素</td>
+
+</tr>
+<tr>
+<td>groupBy</td>
+<td>根据给定的键对集合内的项目进行分组</td>
+
+</tr>
+<tr>
+<td>push</td>
+<td>把给定值添加到集合的末尾</td>
+
+</tr>
+<tr>
+<td>put</td>
+<td>在集合内设置给定的键值对</td>
+
+</tr>
+<tr>
+<td>sortBy</td>
+<td>通过给定的键对集合进行排序。排序后的集合保留了原数组键</td>
+
+</tr>
+<tr>
+<td>where</td>
+<td>通过给定的键值过滤集合</td>
+
+</tr>
+
+</tbody>
+
+</table>
+<p>以上就是Laravel集合的简单理解的详细内容，</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

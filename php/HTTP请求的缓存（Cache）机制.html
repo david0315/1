@@ -1,0 +1,66 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修HTTP请求的缓存（Cache）机制' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>HTTP请求的缓存（Cache）机制</center></div><div class='banquan'>原文出处:本文由博客园博主小时刻提供。<br/>
+原文连接:https://www.cnblogs.com/smallKilts/p/10916931.html</div><br>
+    <blockquote>
+<p><a href="http://small.aiweimeng.top/index.php/archives/58.html" target="_blank">原文地址:http://small.aiweimeng.top/index.php/archives/58.html</a></p>
+</blockquote>
+<p>先来一张图:</p>
+<p><img src="./images/HTTP请求的缓存（Cache）机制0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>####<strong>下面简单的来描述一下HTTP Cache机制</strong>：</p>
+<p>当资源资源第一次被访问的时候，http status返回200，在头部携带当前资源的描述信息，eg:</p>
+<p>最后修改的时间:```Last-Modified```<br />资源状态唯一标识:```Etag```<br />资源在客户端缓存的过期时间:```Expires```</p>
+<p><br />同时浏览器会将资源缓存到cache目录，并保存文件描述信息。</p>
+<p>当客户端第二次请求资源时，会先检查cache目录中是否含有该资源，如果有，并且还没到Expires设置的时间，<br />即文件还没有过期，那么此时客户端将直接从Cache目录中读取文件，而不再发送请求</p>
+<p>如果资源已经过期，客户端会发送一次http请求到服务器，同时在header携带上次修改的时间：<br />```text<br />If-Modified-Since   Thu, 26 Nov 2009 13:50:19 GMT<br />If-None-Match       "8fb8b-14-4794674acdcc0"<br />```</p>
+<p>####<strong>为什么会返回上一次的信息呢？</strong></p>
+<p>web服务器在接收到请求时，会先解析header里面的信息，然后校验头部信息。<br />如果该资源文件从上次时间到现在都没有修改或者Etag信息没有变化，，则web服务器将会直接返回304状态，<br />从而不会在资源文件，状态头部信息如下：<br />```text<br />(Status-Line)       HTTP/1.1 304 Not Modified<br />Date                Thu, 26 Nov 200914:09:07 GMT<br />Server              Apache/2.2.11 (Unix)PHP/5.2.9<br />Connection          Keep-Alive<br />Keep-Alive          timeout=5, max=100<br />Etag                "8fb8b-14-4794674acdcc0"<br />```</p>
+<p>这样，就能够很大程度上减少网络带宽以及提升用户的浏览器体验。<br />当然，如果服务器经过匹配发现文件修改过了，就会将文件资源返回，并带上新文件状态信息。</p>
+<p><br />####<strong>基本字段</strong></p>
+<p>```Expires:```<br />文件在本地缓存的过期时间，如果客户端发现缓存中的文件没有过期，则不发送请求</p>
+<p><br />```Cache-Control:```<br />Cache-Control指定请求和响应遵循的缓存机制。<br />在请求消息或响应消息中设置Cache-Control并不会修改另一个消息处理过程中的缓存处理过程。</p>
+<p>请求时的缓存指令包括<br />```text<br />no-cache<br />no-store<br />max-age<br />max-stale<br />min-fresh<br />only-if-cached<br />```<br />响应消息中的指令包括<br />```text<br />public<br />private<br />no-cache<br />no- store<br />no-transform<br />must-revalidate<br />proxy-revalidate<br />max-age<br />```</p>
+<p>####<strong>指令含义：</strong></p>
+<p>```public:```</p>
+<p>响应可被任何缓存区缓存。</p>
+<p>```Private:```</p>
+<p>对于单个用户的整个或部分响应消息，不能被共享缓存处理。<br />这允许服务器仅仅描述当用户的部分响应消息，此响应消息对于其他用户的请求无效。 　　</p>
+<p>```no-cache:```</p>
+<p>请求或响应消息不能缓存。 </p>
+<p>```no-store:```</p>
+<p>用于防止重要的信息被无意的发布。<br />在请求消息中发送将使得请求和响应消息都不使用缓存。</p>
+<p>```max-age:```</p>
+<p>客户端可以接收生存期不大于指定时间（以秒为单位）的响应。 　</p>
+<p>```min-fresh:```</p>
+<p>客户机可以接收响应时间小于当前时间加上指定时间的响应。 　　</p>
+<p>```max-stale:```</p>
+<p>客户端可以接收超出超时期间的响应消息。<br />如果指定max-stale消息的值，那么客户端可以接收超出超时期指定值之内的响应消息。</p>
+<p>&nbsp;</p>
+<p><br />####<strong>```Etag/If-None-Match```　</strong></p>
+<p>一对验证文件实体的标记 "Entity Tag:的响应/请求头. <br />Apache中，ETag的值，默认是对文件的索引节（INode），大小（Size）和最后修改时间（MTime）进行Hash后得到的</p>
+<p>```Last-Modified/If-Modified-Since:```</p>
+<p>一对验证文件的修改时间的响应/请求头</p>
+<p>Expires、 Cache-Control、Last-Modified、ETag是RFC2616（HTTP/1.1）协议中和网页缓存相关的几个字段。 前两个用来控制缓存的失效日期，浏览器可通过它来判定，需不需要发出HTTP请求； 后两个用来验证网页的有效性，服务器端利用它来验证这个文件是否需要重新返回Last-Modified VS Etag</p>
+<p>既然有了Last-Modified，为什么还要用ETag字段呢？因为如果在一秒钟之内对一个文件进行两次更改，Last-Modified就会不正确。因此，HTTP/1.1利用Entity Tag头提供了更加严格的验证。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

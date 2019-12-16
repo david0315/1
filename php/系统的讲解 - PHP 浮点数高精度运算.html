@@ -1,0 +1,174 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修系统的讲解 - PHP 浮点数高精度运算' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>系统的讲解 - PHP 浮点数高精度运算</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11820838.html</div><br>
+    <p>记录下，工作中遇到的坑 ...<br /><br />关于 PHP 浮点数运算，特别是金融行业、电子商务订单管理、数据报表等相关业务，利用浮点数进行加减乘除时，稍不留神运算结果就会出现偏差，轻则损失几十万，重则会有信誉损失，甚至吃上官司，我们一定要引起高度重视！<br />浮点数运算的&ldquo;锅&rdquo;<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> //加    
+    $a = 0.1;    
+    $b = 0.7;    
+    $c = intval(($a + $b) * 10);    
+    echo $c."&lt;br&gt;";    
+    //输出：7    
+    //减    
+    $a = 100;    
+    $b = 99.98;    
+    $c = $a - $b;    
+    echo $c."&lt;br&gt;";    
+    //输出：0.019999999999996    
+    //乘    
+    $a = 0.58;    
+    $b = 100;    
+    $c = intval($a * $b);    
+    echo $c."&lt;br&gt;";    
+    //输出：57    
+    //除    
+    $a = 0.7;    
+    $b = 0.1;    
+    $c = intval($a / $b);    
+    echo $c."&lt;br&gt;";    
+    //输出：6
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />上面的结果，显然不是我们想要的！<br /><br />PHP 官方手册解释如下：<br /><br />&nbsp;&nbsp;&nbsp; 浮点数的精度有限。尽管取决于系统，PHP 通常使用 IEEE 754 双精度格式，则由于取整而导致的最大相对误差为 1.11e-16。非基本数学运算可能会给出更大误差，并且要考虑到进行复合运算时的误差传递。永远不要相信浮点数结果精确到了最后一位，也永远不要比较两个浮点数是否相等。如果确实需要更高的精度，应该使用 任意精度数学函数 或者 gmp 函数。<br /><br />这里的关键在于，浮点数的小数用二进制的表示，转换过程如下：<br /><br />&nbsp;&nbsp;&nbsp; 将小数乘以2，取整数部分表示第一位；<br /><br />&nbsp;&nbsp;&nbsp; 将小数部分乘以2，取整数部分表示第二位；<br /><br />&nbsp;&nbsp;&nbsp; 再将小数部分乘以2，取整数部分表示第三位；<br /><br />&nbsp;&nbsp;&nbsp; ... 依次类推，直到小数部分为0；<br /><br />例：0.58<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  0.58 * 2 = 1.16 ---&gt; 1
+
+    0.16 * 2 = 0.32 ---&gt; 0
+
+    0.32 * 2 = 0.64 ---&gt; 0
+
+    0.64 * 2 = 1.28 ---&gt; 1
+
+    0.28 * 2 = 0.56 ---&gt; 0
+
+    0.56 * 2 = 1.12 ---&gt; 1
+
+    0.12 * 2 = 0.24 ---&gt; 0
+
+    0.24 * 2 = 0.48 ---&gt; 0
+
+    0.48 * 2 = 0.96 ---&gt; 0
+
+    0.96 * 2 = 1.92 ---&gt; 1
+
+    ...
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />我们会得到一个无限循环的二进制小数：<br /><br />0.1001010001...<br /><br />小数部分出现循环，有限的二进制位无法准确的表示一个小数，这也就是小数运算出现误差的原因。<br /><br />接下来给大家介绍 任意精度数学函数。<br />任意精度数学函数<br /><br />对于任意精度的数学，PHP 提供了支持用字符串表示的任意大小和精度的数字的二进制计算。<br /><br />BCMath：BC 是 Binary Calculator 的缩写。<br /><br />官方手册：http://php.net/manual/zh/book.bc.php<br /><br />大家在使用前，请先确认是否已安装 bcmath。<br /><br />&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>  //加    
+    $a = 0.1;    
+    $b = 0.7;    
+    $c = intval(bcadd($a, $b, 1) * 10);    
+    echo $c."&lt;br&gt;";    
+    //输出：8    
+    //减    
+    $a = 100;    
+    $b = 99.98;    
+    $c = bcsub($a, $b, 2);    
+    echo $c."&lt;br&gt;";    
+    //输出：0.02    
+    //乘    
+    $a = 0.58;    
+    $b = 100;    
+    $c = intval(bcmul($a, $b));    
+    echo $c."&lt;br&gt;";    
+    //输出：58    
+    //除    
+    $a = 0.7;    
+    $b = 0.1;    
+    $c = intval(bcdiv($a, $b));    
+    echo $c."&lt;br&gt;";    
+    //输出：7
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />除了加减乘除，bcmath 还提供了以下方法：<br /><br />&nbsp;&nbsp;&nbsp; bccomp 比较两个任意精度的数字<br /><br />&nbsp;&nbsp;&nbsp; bcmod 对一个任意精度数字取模<br /><br />&nbsp;&nbsp;&nbsp; bcpow 任意精度数字的乘方<br /><br />&nbsp;&nbsp;&nbsp; bcpowmod 高精度数字乘方求模<br /><br />&nbsp;&nbsp;&nbsp; bcscale 设置所有bc数学函数的默认小数点保留位数<br /><br />&nbsp;&nbsp;&nbsp; bcsqrt 任意精度数字的二次方根<br /><br />常用数值处理方案<br />舍去法取整(向下取整)<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    echo floor(5.1);    
+    //输出：5    
+    echo floor(8.8);    
+    //输出：8
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br />进一法取整(向上取整)<br /><br /></p>
+<src class="cnblogs_Highlighter">
+<pre><code>    echo ceil(5.1);    
+    //输出：6    
+    echo ceil(8.8);    
+    //输出：9
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />普通四舍五入法<br /><br />&nbsp;&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code> echo round(5.1);    
+    //输出：5    
+    echo round(8.8);    
+    //输出：9    
+    //保留两位小数并且进行四舍五入    
+    echo round(5.123, 2);    
+    //输出：5.12    
+    echo round(8.888, 2);    
+    //输出：8.89    
+    //保留两位小数并且不进行四舍五入    
+    echo substr(round(5.12345, 3), 0, -1);    
+    //输出：5.12    
+    echo substr(round(8.88888, 3), 0, -1);    
+    //输出：8.88
+</code></pre>
+
+<p>&nbsp;</p>
+<p>这里我还准备了一分学习图和资料，如下：</p>
+<p><img src="./images/系统的讲解 - PHP 浮点数高精度运算0.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p><br />银行家舍入法<br /><br />四舍六入五考虑，五后非空就进一，五后为空看奇偶，五前为偶应舍去，五前为奇要进一。<br /><br />保留两位小数，例：<br /><br />&nbsp;&nbsp;&nbsp; 1.2849 = 1.28 -&gt; 四舍<br /><br />&nbsp;&nbsp;&nbsp; 1.2866 = 1.29 -&gt; 六入<br /><br />&nbsp;&nbsp;&nbsp; 1.2851 = 1.29 -&gt; 五后非空就进一<br /><br />&nbsp;&nbsp;&nbsp; 1.2850 = 1.28 -&gt; 五后为空看奇偶，五前为偶应舍去<br /><br />&nbsp;&nbsp;&nbsp; 1.2750 = 1.28 -&gt; 五后为空看奇偶，五前为奇要进一<br /><br />实现代码如下：</p>
+<src class="cnblogs_Highlighter">
+<pre><code>    echo round(1.2849, 2, PHP_ROUND_HALF_EVEN);    
+    //输出：1.28    
+    echo round(1.2866, 2, PHP_ROUND_HALF_EVEN);    
+    //输出：1.29    
+    echo round(1.2851, 2, PHP_ROUND_HALF_EVEN);    
+    //输出：1.29    
+    echo round(1.2850, 2, PHP_ROUND_HALF_EVEN);    
+    //输出：1.28    
+    echo round(1.2750, 2, PHP_ROUND_HALF_EVEN);    
+    //输出：1.28
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />更多 round 使用说明，请查阅官方手册：<br /><br />http://php.net/manual/zh/function.round.php<br />数值格式化(千位分组)<br /><br />应用于金额的展示，比如我们经常会看的银行卡余额。</p>
+<src class="cnblogs_Highlighter">
+<pre><code>    echo number_format('10000.98', 2, '.', ',');    
+    //输出：10,000.98    
+    echo number_format('340888999', 2, '.', ',');    
+    //输出：340,888,999.00
+</code></pre>
+
+<p>&nbsp;</p>
+<p><br /><br />扩展<br />MySQL 浮点型字段<br /><br />在 MySQL 中，创建表字段时也有浮点数类型。<br /><br />浮点数类型包括单精度浮点数（float）和双精度浮点数（double）。<br /><br />同理，不建议使用浮点数类型！！！<br /><br />浮点数存在误差，当我们使用精度敏感的数据时，应该使用定点数（decimal）进行存储。<br />小结<br /><br />通过浮点数精度的问题，了解到浮点数的小数用二进制的表示。<br /><br />分享了用 PHP 任意精度数学函数，来进行高精度运算。<br /><br />同时分享了常用数值处理方案，比如舍去法、进一法、四舍五入法、银行家舍入法、数值格式化 等。<br /><br />最后，通过 PHP 的 float 联想到 MySQL 的 float。<br /><br />以后，在使用浮点数运算的时候，一定要慎之又慎，细节决定成败。<br /><br /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

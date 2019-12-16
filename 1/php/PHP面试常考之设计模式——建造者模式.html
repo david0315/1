@@ -1,0 +1,135 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP面试常考之设计模式——建造者模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP面试常考之设计模式——建造者模式</center></div><div class='banquan'>原文出处:本文由博客园博主.Ronin提供。<br/>
+原文连接:https://www.cnblogs.com/heyue0117/p/11949482.html</div><br>
+    <h2>建造者模式</h2>
+<h2>介绍</h2>
+<p>建造者模式又名生成器模式，是一种对象构建模式。它可以将复杂对象的建造过程抽象出来（抽象类别），使这个抽象过程的不同实现方法可以构造出不同表现（属性）的对象。</p>
+<p>建造者模式是一步一步创建一个复杂的对象，它允许用户只通过指定复杂对象的类型和内容就可以构建它们，用户不需要知道内部的具体构建细节。例如，一辆汽车由轮子，发动机以及其他零件组成，对于普通人而言，我们使用的只是一辆完整的车，这时，我们需要加入一个构造者，让他帮我们把这些组件按序组装成为一辆完整的车。</p>
+<h2>UML图</h2>
+<p><img src="./images/PHP面试常考之设计模式——建造者模式0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>UML图说明</h2>
+<ul>
+<li>Builder：抽象构造者类，为创建一个Product对象的各个部件指定抽象接口。</li>
+<li>ConcreteBuilder：具体构造者类，实现Builder的接口以构造和装配该产品的各个部件。定义并明确它所创建的表示。提供一个检索产品的接口</li>
+<li>Director：指挥者，构造一个使用Builder接口的对象。</li>
+<li>Product：表示被构造的复杂对象。ConcreateBuilder创建该产品的内部表示并定义它的装配过程。</li>
+</ul>
+<p>包含定义组成部件的类，包括将这些部件装配成最终产品的接口。</p>
+<src class="highlight">
+<h2 id="item-1-4">实现示例</h2>
+<pre><code><code><span class="php"><span class="hljs-meta">&lt;?php 
+<span class="hljs-comment">/**
+* chouxiang builer
+*/
+<span class="hljs-keyword">abstract <span class="hljs-class"><span class="hljs-keyword">class <span class="hljs-title">Builder
+{
+  <span class="hljs-keyword">protected $car;
+  <span class="hljs-keyword">abstract <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">buildPartA<span class="hljs-params">();
+  <span class="hljs-keyword">abstract <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">buildPartB<span class="hljs-params">();
+  <span class="hljs-keyword">abstract <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">buildPartC<span class="hljs-params">();
+  <span class="hljs-keyword">abstract <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">getResult<span class="hljs-params">();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class <span class="hljs-title">CarBuilder <span class="hljs-keyword">extends <span class="hljs-title">Builder
+{
+  <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">__construct<span class="hljs-params">()
+  {
+      <span class="hljs-keyword">$this-&gt;car = <span class="hljs-keyword">new Car();
+  }
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">buildPartA<span class="hljs-params">(){
+      <span class="hljs-keyword">$this-&gt;car-&gt;setPartA(<span class="hljs-string">'发动机');
+  }
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">buildPartB<span class="hljs-params">(){
+      <span class="hljs-keyword">$this-&gt;car-&gt;setPartB(<span class="hljs-string">'轮子');
+  }
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">buildPartC<span class="hljs-params">(){
+      <span class="hljs-keyword">$this-&gt;car-&gt;setPartC(<span class="hljs-string">'其他零件');
+  }
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">getResult<span class="hljs-params">(){
+      <span class="hljs-keyword">return <span class="hljs-keyword">$this-&gt;car;
+  }
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class <span class="hljs-title">Car
+{
+  <span class="hljs-keyword">protected $partA;
+  <span class="hljs-keyword">protected $partB;
+  <span class="hljs-keyword">protected $partC;
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">setPartA<span class="hljs-params">($str){
+      <span class="hljs-keyword">$this-&gt;partA = $str;
+  }
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">setPartB<span class="hljs-params">($str){
+      <span class="hljs-keyword">$this-&gt;partB = $str;
+  }
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">setPartC<span class="hljs-params">($str){
+      <span class="hljs-keyword">$this-&gt;partC = $str;
+  }
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">show<span class="hljs-params">()
+  {
+      <span class="hljs-keyword">echo <span class="hljs-string">"这辆车由：".<span class="hljs-keyword">$this-&gt;partA.<span class="hljs-string">','.<span class="hljs-keyword">$this-&gt;partB.<span class="hljs-string">',和'.<span class="hljs-keyword">$this-&gt;partC.<span class="hljs-string">'组成';
+  }
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class <span class="hljs-title">Director
+{
+  <span class="hljs-keyword">public $myBuilder;
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">startBuild<span class="hljs-params">()
+  {
+      <span class="hljs-keyword">$this-&gt;myBuilder-&gt;buildPartA();
+      <span class="hljs-keyword">$this-&gt;myBuilder-&gt;buildPartB();
+      <span class="hljs-keyword">$this-&gt;myBuilder-&gt;buildPartC();
+      <span class="hljs-keyword">return <span class="hljs-keyword">$this-&gt;myBuilder-&gt;getResult();
+  }
+
+  <span class="hljs-keyword">public <span class="hljs-function"><span class="hljs-keyword">function <span class="hljs-title">setBuilder<span class="hljs-params">(Builder $builder)
+  {
+      <span class="hljs-keyword">$this-&gt;myBuilder = $builder;
+  }
+}
+
+$carBuilder = <span class="hljs-keyword">new CarBuilder();
+$director = <span class="hljs-keyword">new Director();
+$director-&gt;setBuilder($carBuilder);
+$newCar = $director-&gt;startBuild();
+$newCar-&gt;show();
+<span class="hljs-meta">?&gt;</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<p>以上是文章全部内容，有需要学习交流的友人请加入交流群的咱们一起，有问题一起交流，一起进步！前提是你是学技术的。感谢阅读！</p>
+<p><a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//jq.qq.com/%3F_wv%3D1027%26k%3D5mcCu53" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">点此加入该群</a></p>
+<pre><code><code><span class="php"><span class="hljs-meta"><span class="hljs-comment"><span class="hljs-keyword"><span class="hljs-class"><span class="hljs-keyword"><span class="hljs-title">
+<span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-class"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-string"><span class="hljs-keyword"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-string"><span class="hljs-keyword"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-string"><span class="hljs-keyword"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-class"><span class="hljs-keyword"><span class="hljs-title"><span class="hljs-keyword">
+<br /></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<pre><code><br /><br /></code></pre>
+<p>&nbsp;</p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,281 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修thinkphp 6.0 swoole扩展websocket使用教程' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>thinkphp 6.0 swoole扩展websocket使用教程</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11767750.html</div><br>
+    <p><strong>前言</strong></p>
+<p>ThinkPHP即将迎来最新版本6.0，针对目前越来越流行Swoole，thinkphp也推出了最新的扩展think-swoole 3.0。</p>
+<p><strong>介绍</strong></p>
+<p>即将推出的tp6.0，已经适配swoole.并推出think-swoole 3.0，并且默认适配了socketio。和2.0版本在使用方法上面有些许不同。</p>
+<p>Websocket 继承与Http，进行websocket连接之前需要一次HTTP请求，如果当期地址支持websocket则返回101，然后进行连接。也就是说并不是我的服务支持websocket后，请求每个连接地址都可以进行websocket连接，而是需要预先适配才可以连接。</p>
+<p>参数配置</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php string">'server'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'host'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; </code><code class="php string">'0.0.0.0'</code><code class="php plain">, </code><code class="php comments">// 监听地址</code></p>
+<p class="line number2 index1 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'port'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; 808, </code><code class="php comments">// 监听端口</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'mode'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; SWOOLE_PROCESS, </code><code class="php comments">// 运行模式 默认为SWOOLE_PROCESS</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'sock_type'</code> <code class="php plain">=&gt; SWOOLE_SOCK_TCP, </code><code class="php comments">// sock type 默认为SWOOLE_SOCK_TCP</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'options'</code>&nbsp;&nbsp; <code class="php plain">=&gt; [&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'pid_file'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; runtime_path() . </code><code class="php string">'swoole.pid'</code><code class="php plain">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'log_file'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; runtime_path() . </code><code class="php string">'swoole.log'</code><code class="php plain">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'daemonize'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; false,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php comments">// Normally this value should be 1~4 times larger according to your cpu cores.</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'reactor_num'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; swoole_cpu_num(),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'worker_num'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; swoole_cpu_num(),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'task_worker_num'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; 4,</code><code class="php comments">//swoole_cpu_num(),</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'enable_static_handler'</code> <code class="php plain">=&gt; true,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'document_root'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; root_path(</code><code class="php string">'public'</code><code class="php plain">),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'package_max_length'</code>&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; 20 * 1024 * 1024,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'buffer_output_size'</code>&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; 10 * 1024 * 1024,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'socket_buffer_size'</code>&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; 128 * 1024 * 1024,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'max_request'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; 3000,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'send_yield'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; true,</code></p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">],</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">],&nbsp;&nbsp;&nbsp; </code><code class="php string">'websocket'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'enabled'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; true,</code><code class="php comments">// 开启websocket</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'handler'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; Handler::</code><code class="php keyword">class</code><code class="php plain">,&nbsp; </code><code class="php comments">//自定义wbesocket绑定类</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'parser'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; Parser::</code><code class="php keyword">class</code><code class="php plain">, </code><code class="php comments">//自定义解析类</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php string">'route_file'</code>&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; base_path() . </code><code class="php string">'websocket.php'</code><code class="php plain">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'ping_interval'</code> <code class="php plain">=&gt; 25000,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'ping_timeout'</code>&nbsp; <code class="php plain">=&gt; 60000,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'room'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'type'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; TableRoom::</code><code class="php keyword">class</code><code class="php plain">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'room_rows'</code>&nbsp;&nbsp; <code class="php plain">=&gt; 4096,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'room_size'</code>&nbsp;&nbsp; <code class="php plain">=&gt; 2048,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'client_rows'</code> <code class="php plain">=&gt; 8192,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'client_size'</code> <code class="php plain">=&gt; 2048,</code></p>
+<p class="line number13 index12 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">],</code></p>
+<p class="line number14 index13 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">],&nbsp;&nbsp;&nbsp; </code><code class="php string">'auto_reload'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; true,&nbsp;&nbsp;&nbsp; </code><code class="php string">'enable_coroutine'</code> <code class="php plain">=&gt; true,&nbsp;&nbsp;&nbsp; </code><code class="php string">'resetters'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [],&nbsp;&nbsp;&nbsp; </code><code class="php string">'tables'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [],</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./images/thinkphp 6.0 swoole扩展websocket使用教程0.jpg" alt="" /></p>
+<p><img src="./images/thinkphp 6.0 swoole扩展websocket使用教程1.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<p>handler和parser大大方便了自定义websocket服务，默认系统集成socketio。</p>
+<p>本文主要介绍如何使用socketio，这里假设大家有socketio有一定了解和使用基础。</p>
+<p>socketIo默认会在请求地址后加相应的参数</p>
+<p><img src="./images/thinkphp 6.0 swoole扩展websocket使用教程2.jpg" alt="" /></p>
+<p>同时，socketio默认情况下，会认为 http://url/socket.io/ 是支持websocket服务的地址。</p>
+<p><img src="./images/thinkphp 6.0 swoole扩展websocket使用教程3.jpg" alt="" /></p>
+<p>而在tp-swoole3.0内部已经对该地址请求进行了处理</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+<p class="line number17 index16 alt2">17</p>
+<p class="line number18 index17 alt1">18</p>
+<p class="line number19 index18 alt2">19</p>
+<p class="line number20 index19 alt1">20</p>
+<p class="line number21 index20 alt2">21</p>
+<p class="line number22 index21 alt1">22</p>
+<p class="line number23 index22 alt2">23</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?phpnamespace think\swoole\websocket\socketio;</code><code class="php keyword">use</code> <code class="php plain">think\Config;</code><code class="php keyword">use</code> <code class="php plain">think\Cookie;</code><code class="php keyword">use</code> <code class="php plain">think\Request;</code><code class="php keyword">class</code> <code class="php plain">Controller{&nbsp;&nbsp;&nbsp; </code><code class="php keyword">protected</code> <code class="php variable">$transports</code> <code class="php plain">= [</code><code class="php string">'polling'</code><code class="php plain">, </code><code class="php string">'websocket'</code><code class="php plain">];&nbsp;&nbsp;&nbsp; </code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">upgrade(Request </code><code class="php variable">$request</code><code class="php plain">, Config </code><code class="php variable">$config</code><code class="php plain">, Cookie </code><code class="php variable">$cookie</code><code class="php plain">)</code></p>
+<p class="line number2 index1 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">if</code> <code class="php plain">(!in_array(</code><code class="php variable">$request</code><code class="php plain">-&gt;param(</code><code class="php string">'transport'</code><code class="php plain">), </code><code class="php variable">$this</code><code class="php plain">-&gt;transports)) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">return</code> <code class="php plain">json(</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'code'</code>&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; 0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'message'</code> <code class="php plain">=&gt; </code><code class="php string">'Transport unknown'</code><code class="php plain">,</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 400</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">);</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">if</code> <code class="php plain">(</code><code class="php variable">$request</code><code class="php plain">-&gt;has(</code><code class="php string">'sid'</code><code class="php plain">)) {</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$response</code> <code class="php plain">= response(</code><code class="php string">'1:6'</code><code class="php plain">);</code></p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">} </code><code class="php keyword">else</code> <code class="php plain">{</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$sid</code>&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">= </code><code class="php functions">base64_encode</code><code class="php plain">(uniqid());</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$payload</code> <code class="php plain">= json_encode(</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'sid'</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; </code><code class="php variable">$sid</code><code class="php plain">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'upgrades'</code>&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; [</code><code class="php string">'websocket'</code><code class="php plain">],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'pingInterval'</code> <code class="php plain">=&gt; </code><code class="php variable">$config</code><code class="php plain">-&gt;get(</code><code class="php string">'swoole.websocket.ping_interval'</code><code class="php plain">),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'pingTimeout'</code>&nbsp; <code class="php plain">=&gt; </code><code class="php variable">$config</code><code class="php plain">-&gt;get(</code><code class="php string">'swoole.websocket.ping_timeout'</code><code class="php plain">),</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">]</code></p>
+<p class="line number13 index12 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">);</code></p>
+<p class="line number14 index13 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$cookie</code><code class="php plain">-&gt;set(</code><code class="php string">'io'</code><code class="php plain">, </code><code class="php variable">$sid</code><code class="php plain">);</code></p>
+<p class="line number15 index14 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$response</code> <code class="php plain">= response(</code><code class="php string">'97:0'</code> <code class="php plain">. </code><code class="php variable">$payload</code> <code class="php plain">. </code><code class="php string">'2:40'</code><code class="php plain">);</code></p>
+<p class="line number16 index15 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">return</code> <code class="php variable">$response</code><code class="php plain">-&gt;contentType(</code><code class="php string">'text/plain'</code><code class="php plain">);</code></p>
+<p class="line number17 index16 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}&nbsp;&nbsp;&nbsp; </code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">reject(Request </code><code class="php variable">$request</code><code class="php plain">)</code></p>
+<p class="line number18 index17 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">return</code> <code class="php plain">json(</code></p>
+<p class="line number19 index18 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'code'</code>&nbsp;&nbsp;&nbsp; <code class="php plain">=&gt; 3,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php string">'message'</code> <code class="php plain">=&gt; </code><code class="php string">'Bad request'</code><code class="php plain">,</code></p>
+<p class="line number20 index19 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">],&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 400</code></p>
+<p class="line number21 index20 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">);</code></p>
+<p class="line number22 index21 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number23 index22 alt2"><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>TP6.0,插件注册采用了service方式进行了注册，可在tp-swoole 服务注册文件中查看路由注册信息,如果想自定义链接规则，则可以覆盖该路由。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+<p class="line number15 index14 alt2">15</p>
+<p class="line number16 index15 alt1">16</p>
+<p class="line number17 index16 alt2">17</p>
+<p class="line number18 index17 alt1">18</p>
+<p class="line number19 index18 alt2">19</p>
+<p class="line number20 index19 alt1">20</p>
+<p class="line number21 index20 alt2">21</p>
+<p class="line number22 index21 alt1">22</p>
+<p class="line number23 index22 alt2">23</p>
+<p class="line number24 index23 alt1">24</p>
+<p class="line number25 index24 alt2">25</p>
+<p class="line number26 index25 alt1">26</p>
+<p class="line number27 index26 alt2">27</p>
+<p class="line number28 index27 alt1">28</p>
+<p class="line number29 index28 alt2">29</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code><code class="php comments">// +----------------------------------------------------------------------// | ThinkPHP [ WE CAN DO IT JUST THINK IT ]// +----------------------------------------------------------------------// | Copyright (c) 2006-2018 http://thinkphp.cn All rights reserved.// +----------------------------------------------------------------------// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )// +----------------------------------------------------------------------// | Author: yunwuxin &lt;448901948@qq.com&gt;// +----------------------------------------------------------------------namespace think\swoole;use Swoole\Http\Server as HttpServer;use Swoole\Websocket\Server as WebsocketServer;use think\App;use think\Route;use think\swoole\command\Server as ServerCommand;use think\swoole\facade\Server;use think\swoole\websocket\socketio\Controller;use think\swoole\websocket\socketio\Middleware;class Service extends \think\Service{&nbsp;&nbsp;&nbsp; protected $isWebsocket = false;&nbsp;&nbsp;&nbsp; /**</code></p>
+<p class="line number2 index1 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">* @</code><code class="php keyword">var</code> <code class="php plain">HttpServer | WebsocketServer</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">*/</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">protected</code> <code class="php keyword">static</code> <code class="php variable">$server</code><code class="php plain">;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">register()</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php variable">$this</code><code class="php plain">-&gt;isWebsocket = </code><code class="php variable">$this</code><code class="php plain">-&gt;app-&gt;config-&gt;get(</code><code class="php string">'swoole.websocket.enabled'</code><code class="php plain">, false);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php variable">$this</code><code class="php plain">-&gt;app-&gt;bind(Server::</code><code class="php keyword">class</code><code class="php plain">, </code><code class="php keyword">function</code> <code class="php plain">() {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">if</code> <code class="php plain">(</code><code class="php functions">is_null</code><code class="php plain">(</code><code class="php keyword">static</code><code class="php plain">::</code><code class="php variable">$server</code><code class="php plain">)) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php variable">$this</code><code class="php plain">-&gt;createSwooleServer();</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">return</code> <code class="php keyword">static</code><code class="php plain">::</code><code class="php variable">$server</code><code class="php plain">;</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">});&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php variable">$this</code><code class="php plain">-&gt;app-&gt;bind(</code><code class="php string">'swoole.server'</code><code class="php plain">, Server::</code><code class="php keyword">class</code><code class="php plain">);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php variable">$this</code><code class="php plain">-&gt;app-&gt;bind(Swoole::</code><code class="php keyword">class</code><code class="php plain">, </code><code class="php keyword">function</code> <code class="php plain">(App </code><code class="php variable">$app</code><code class="php plain">) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">return</code> <code class="php keyword">new</code> <code class="php plain">Swoole(</code><code class="php variable">$app</code><code class="php plain">);</code></p>
+<p class="line number8 index7 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">});&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php variable">$this</code><code class="php plain">-&gt;app-&gt;bind(</code><code class="php string">'swoole'</code><code class="php plain">, Swoole::</code><code class="php keyword">class</code><code class="php plain">);</code></p>
+<p class="line number9 index8 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}&nbsp;&nbsp;&nbsp; </code><code class="php keyword">public</code> <code class="php keyword">function</code> <code class="php plain">boot(Route </code><code class="php variable">$route</code><code class="php plain">)</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php variable">$this</code><code class="php plain">-&gt;commands(ServerCommand::</code><code class="php keyword">class</code><code class="php plain">);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">if</code> <code class="php plain">(</code><code class="php variable">$this</code><code class="php plain">-&gt;isWebsocket) {</code></p>
+<p class="line number11 index10 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$route</code><code class="php plain">-&gt;group(</code><code class="php keyword">function</code> <code class="php plain">() </code><code class="php keyword">use</code> <code class="php plain">(</code><code class="php variable">$route</code><code class="php plain">) {</code></p>
+<p class="line number12 index11 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$route</code><code class="php plain">-&gt;get(</code><code class="php string">'socket.io/'</code><code class="php plain">, </code><code class="php string">'@upgrade'</code><code class="php plain">);</code></p>
+<p class="line number13 index12 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$route</code><code class="php plain">-&gt;post(</code><code class="php string">'socket.io/'</code><code class="php plain">, </code><code class="php string">'@reject'</code><code class="php plain">);</code></p>
+<p class="line number14 index13 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">})-&gt;prefix(Controller::</code><code class="php keyword">class</code><code class="php plain">)-&gt;middleware(Middleware::</code><code class="php keyword">class</code><code class="php plain">);</code></p>
+<p class="line number15 index14 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number16 index15 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}&nbsp;&nbsp;&nbsp; </code><code class="php comments">/**</code></p>
+<p class="line number17 index16 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">* Create swoole server.</code></p>
+<p class="line number18 index17 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php comments">*/</code></p>
+<p class="line number19 index18 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">protected</code> <code class="php keyword">function</code> <code class="php plain">createSwooleServer()</code></p>
+<p class="line number20 index19 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">{</code></p>
+<p class="line number21 index20 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$server</code>&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">= </code><code class="php variable">$this</code><code class="php plain">-&gt;isWebsocket ? WebsocketServer::</code><code class="php keyword">class</code> <code class="php plain">: HttpServer::</code><code class="php keyword">class</code><code class="php plain">;</code></p>
+<p class="line number22 index21 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$config</code>&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">= </code><code class="php variable">$this</code><code class="php plain">-&gt;app-&gt;config;</code></p>
+<p class="line number23 index22 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$host</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">= </code><code class="php variable">$config</code><code class="php plain">-&gt;get(</code><code class="php string">'swoole.server.host'</code><code class="php plain">);</code></p>
+<p class="line number24 index23 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$port</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">= </code><code class="php variable">$config</code><code class="php plain">-&gt;get(</code><code class="php string">'swoole.server.port'</code><code class="php plain">);</code></p>
+<p class="line number25 index24 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$socketType</code> <code class="php plain">= </code><code class="php variable">$config</code><code class="php plain">-&gt;get(</code><code class="php string">'swoole.server.socket_type'</code><code class="php plain">, SWOOLE_SOCK_TCP);</code></p>
+<p class="line number26 index25 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$mode</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code class="php plain">= </code><code class="php variable">$config</code><code class="php plain">-&gt;get(</code><code class="php string">'swoole.server.mode'</code><code class="php plain">, SWOOLE_PROCESS);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">static</code><code class="php plain">::</code><code class="php variable">$server</code> <code class="php plain">= </code><code class="php keyword">new</code> <code class="php variable">$server</code><code class="php plain">(</code><code class="php variable">$host</code><code class="php plain">, </code><code class="php variable">$port</code><code class="php plain">, </code><code class="php variable">$mode</code><code class="php plain">, </code><code class="php variable">$socketType</code><code class="php plain">);</code></p>
+<p class="line number27 index26 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$options</code> <code class="php plain">= </code><code class="php variable">$config</code><code class="php plain">-&gt;get(</code><code class="php string">'swoole.server.options'</code><code class="php plain">);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code><code class="php keyword">static</code><code class="php plain">::</code><code class="php variable">$server</code><code class="php plain">-&gt;set(</code><code class="php variable">$options</code><code class="php plain">);</code></p>
+<p class="line number28 index27 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">}</code></p>
+<p class="line number29 index28 alt2"><code class="php plain">}</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>Socketio默认使用demo</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;!DOCTYPE html&gt;&lt;html lang=</code><code class="php string">"en"</code><code class="php plain">&gt;&lt;head&gt;</code></p>
+<p class="line number2 index1 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">&lt;meta charset=</code><code class="php string">"UTF-8"</code><code class="php plain">&gt;</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">&lt;title&gt;Title&lt;/title&gt;</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">&lt;script src=</code><code class="php string">"./static/js/socket.io.js"</code><code class="php plain">&gt;&lt;/script&gt;&lt;/head&gt;&lt;body&gt;&lt;script&gt;</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php keyword">const</code> <code class="php plain">socket = io(</code><code class="php string">'http://localhost:808'</code><code class="php plain">);</code></p>
+<p class="line number6 index5 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">socket.emit(</code><code class="php string">"test"</code><code class="php plain">, </code><code class="php string">"your message"</code><code class="php plain">);</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php plain">socket.on(</code><code class="php string">"test"</code><code class="php plain">,</code><code class="php keyword">function</code><code class="php plain">(res){console.log(res)});&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p>Websocket路由配置方法</p>
+<p>在app目录下新建websocket.php文件,其中需要注意，由于使用了反射，闭包参数名称不能随意定义，不然无法注入。第一个参数是websocket，是当前websocket的Server对象，第二个参数data是客户端发送的数据。其中socketio emit的第一个参数和Websocket::on的第一个参数一致，作为事件名称。</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">
+<p class="line number1 index0 alt2">1</p>
+<p class="line number2 index1 alt1">2</p>
+<p class="line number3 index2 alt2">3</p>
+<p class="line number4 index3 alt1">4</p>
+<p class="line number5 index4 alt2">5</p>
+<p class="line number6 index5 alt1">6</p>
+<p class="line number7 index6 alt2">7</p>
+<p class="line number8 index7 alt1">8</p>
+<p class="line number9 index8 alt2">9</p>
+<p class="line number10 index9 alt1">10</p>
+<p class="line number11 index10 alt2">11</p>
+<p class="line number12 index11 alt1">12</p>
+<p class="line number13 index12 alt2">13</p>
+<p class="line number14 index13 alt1">14</p>
+</td>
+<td class="code">
+<src class="container">
+<p class="line number1 index0 alt2"><code class="php plain">&lt;?php</code><code class="php comments">/**</code></p>
+<p class="line number2 index1 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* Author:Xavier Yang</code></p>
+<p class="line number3 index2 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">* Date:2019/6/5</code></p>
+<p class="line number4 index3 alt1"><code class="php spaces">&nbsp;</code><code class="php comments">* Email:499873958@qq.com</code></p>
+<p class="line number5 index4 alt2"><code class="php spaces">&nbsp;</code><code class="php comments">*/</code><code class="php keyword">use</code> <code class="php plain">\think\swoole\facade\Websocket;</code></p>
+<p class="line number6 index5 alt1"><code class="php plain">Websocket::on(</code><code class="php string">"test"</code><code class="php plain">, </code><code class="php keyword">function</code> <code class="php plain">(\think\swoole\Websocket </code><code class="php variable">$websocket</code><code class="php plain">, </code><code class="php variable">$data</code><code class="php plain">) {&nbsp;&nbsp;&nbsp; </code><code class="php comments">//var_dump($class);</code></p>
+<p class="line number7 index6 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$websocket</code><code class="php plain">-&gt;emit(</code><code class="php string">"test"</code><code class="php plain">, </code><code class="php string">"asd"</code><code class="php plain">);</code></p>
+<p class="line number8 index7 alt1"><code class="php plain">});</code></p>
+<p class="line number9 index8 alt2"><code class="php plain">Websocket::on(</code><code class="php string">"test1"</code><code class="php plain">, </code><code class="php keyword">function</code> <code class="php plain">(</code><code class="php variable">$websocket</code><code class="php plain">, </code><code class="php variable">$data</code><code class="php plain">) {</code></p>
+<p class="line number10 index9 alt1"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$websocket</code><code class="php plain">-&gt;emit(</code><code class="php string">"test"</code><code class="php plain">, </code><code class="php string">"asd"</code><code class="php plain">);</code></p>
+<p class="line number11 index10 alt2"><code class="php plain">});</code></p>
+<p class="line number12 index11 alt1"><code class="php plain">Websocket::on(</code><code class="php string">"join"</code><code class="php plain">, </code><code class="php keyword">function</code> <code class="php plain">(\think\swoole\Websocket </code><code class="php variable">$websocket</code><code class="php plain">, </code><code class="php variable">$data</code><code class="php plain">) {</code></p>
+<p class="line number13 index12 alt2"><code class="php spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="php variable">$websocket</code><code class="php plain">-&gt;join(</code><code class="php string">"1"</code><code class="php plain">);</code></p>
+<p class="line number14 index13 alt1"><code class="php plain">});</code></p>
+
+</td>
+</tr>
+</tbody>
+</table>
+<p><img title="1561801410696151.gif" src="./images/thinkphp 6.0 swoole扩展websocket使用教程4.jpg" alt="2128369977-5d172fd1aa6af_articlex.gif" /></p>
+<p>参考如上方法即可使用全新的websocket服务。当然tp-swoole3.0同样还有许多其他的新功能，这些功能需要大家去摸索尝试。<br />我也会在接下来的文章中，一起与大家分享我的使用过程。　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

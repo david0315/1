@@ -1,0 +1,74 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修BZOJ1008' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>BZOJ1008</center></div><div class='banquan'>原文出处:本文由博客园博主KhazixW2提供。<br/>
+原文连接:https://www.cnblogs.com/HuoTian/p/11305993.html</div><br>
+    <p>摘要：有n个犯人，被关在n个不同的房间，有m种宗教，如果，相邻房间的犯人信仰相同，则判定为越狱。那么我们可以用组合数学来计算这个数据，用方案的总数，减去不可能的情况，就是答案。</p>
+<p>方案的总数：m^n&nbsp; &nbsp;，在每个房间，每个宗教的可能有m种，有n个房间所以&nbsp; m^n</p>
+<p>不可能的情况： m * (m-1 ) ^(n-1)&nbsp; ，我们要达成不可能的情况，必须要选中一种宗教m[ i ] ，而其他的房间宗教与被选中的宗教不同, ，这样才可能发生越狱的情况，所以，我们假设某个房间有m种选择，其他的房间为 （m-1)^(n-1)&nbsp; 剩余宗教数&nbsp; ^ 剩余房间数。</p>
+<p>答案： <span style="color: #ff0000;"><strong>方案的总数&nbsp; <span style="font-size: 15px;">-&nbsp;</span> 不可能的方案 =&nbsp; 可能越狱的方案</strong></span></p>
+<p>由于方案最终的数量可能过于庞大，因此，在这个计算的过程中用到快速幂的技巧来实现。</p>
+<p>ll pow( ll x, ll y)</p>
+<p>{</p>
+<p>&nbsp; &nbsp; ll ans=1 ,a=x;</p>
+<p>&nbsp; &nbsp; while(y)&nbsp;</p>
+<p>　　{&nbsp;&nbsp;</p>
+<p>&nbsp;　　　　if(y&amp;1) ans*=a, ans%=p;</p>
+<p>　　　　 a*=a ,a%=p;</p>
+<p>&nbsp; &nbsp;　　　&nbsp; y&gt;&gt;=1;</p>
+<p>　　}</p>
+<p>&nbsp; &nbsp;return ans;</p>
+<p>}</p>
+<src class="cnblogs_code" onclick="cnblogs_code_show('d924f432-4880-48e9-85e1-a201ff0ed882')"><img id="code_img_closed_d924f432-4880-48e9-85e1-a201ff0ed882" class="code_img_closed" src="./images/BZOJ10080.jpg" alt="" /><img id="code_img_opened_d924f432-4880-48e9-85e1-a201ff0ed882" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('d924f432-4880-48e9-85e1-a201ff0ed882',event)" src="./images/BZOJ10081.jpg" alt="" />
+<src id="cnblogs_code_open_d924f432-4880-48e9-85e1-a201ff0ed882" class="cnblogs_code_hide">
+<pre><code><span style="color: #008080;"> 1</span> #include&lt;iostream&gt;
+<span style="color: #008080;"> 2</span> <span style="color: #0000ff;">using</span> <span style="color: #0000ff;">namespace</span><span style="color: #000000;"> std;
+</span><span style="color: #008080;"> 3</span> typedef <span style="color: #0000ff;">long</span> <span style="color: #0000ff;">long</span><span style="color: #000000;"> ll;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">const</span> <span style="color: #0000ff;">int</span> p=<span style="color: #800080;">100003</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">ll pow(ll x, ll y)
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 7</span>     ll a=x,ans=<span style="color: #800080;">1</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">while</span><span style="color: #000000;">(y)
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">10</span>         <span style="color: #0000ff;">if</span>(y&amp;<span style="color: #800080;">1</span>)ans*=a,ans%=<span style="color: #000000;">p;
+</span><span style="color: #008080;">11</span>         a*=a,a%=<span style="color: #000000;">p;
+</span><span style="color: #008080;">12</span>         y&gt;&gt;=<span style="color: #800080;">1</span><span style="color: #000000;">;
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">14</span>     <span style="color: #0000ff;">return</span><span style="color: #000000;"> ans;
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">16</span> <span style="color: #0000ff;">int</span><span style="color: #000000;"> main()
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">    ll n,m;
+</span><span style="color: #008080;">19</span>     <span style="color: #0000ff;">while</span>(cin&gt;&gt;m&gt;&gt;<span style="color: #000000;">n)
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">21</span>         m%=<span style="color: #000000;">p;
+</span><span style="color: #008080;">22</span>         ll ans=<span style="color: #000000;">pow(m,n);
+</span><span style="color: #008080;">23</span>         ans-=pow(m-<span style="color: #800080;">1</span>,n-<span style="color: #800080;">1</span>)*<span style="color: #000000;">m;
+</span><span style="color: #008080;">24</span>         ans = ((ans%p)+p)%<span style="color: #000000;">p;
+</span><span style="color: #008080;">25</span>         cout&lt;&lt;ans&lt;&lt;<span style="color: #000000;">endl;
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">27</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+</span><span style="color: #008080;">28</span> }</code></pre>
+
+<span class="cnblogs_code_collapse">View Code</span>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

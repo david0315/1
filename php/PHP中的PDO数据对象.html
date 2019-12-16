@@ -1,0 +1,87 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中的PDO数据对象' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中的PDO数据对象</center></div><div class='banquan'>原文出处:本文由博客园博主乱丶心提供。<br/>
+原文连接:https://www.cnblogs.com/luanxin/p/11658483.html</div><br>
+    <p><span style="font-size: 1.5em;">PDO：</span></p>
+<p>PHP Data Object：php的数据对象。<br />pdo是数据库操作工具类！<br />1，它能操作很多种数据库，比如mysql，oracle，sybase。。。。<br />2，它具有操作数据库的更多的功能，比如事务。<br />3，它能操作各种数据，却有一致语法：即使用pdo，无需考虑不同数据库的sql语句的不同细节写法。<br />4，带错误处理！<br />pdo其实一个&ldquo;类&rdquo;，我们用的时候，就是new一个pdo对象出来。<br />在php代码中，操作mysql数据库的基本需求和结果：<br />1，连接数据库，得到&ldquo;连接资源&rdquo;；<br />2，执行各种sql语句，得到布尔值，或&ldquo;结果集&rdquo;；<br />3，对结果集数据，进行&ldquo;取用&rdquo;（通常就是遍历，fetch....）<br />pdo系统的逻辑结构：</p>
+<pre><code><code>php脚本-&gt;PDO数据对象-&gt;PDO MySQL引擎 -&gt;MySQL数据库
+                   -&gt;PDO Oracle引擎-&gt;Oracle数据库
+                   -&gt;PDO 其他引擎  -&gt;其他数据库</code></code></pre>
+<p>要想使用（操作）不同的数据库，就需要去php.ini中，打开相应的pdo模块（组件），比如：<br /><img title="QQ图片20191012085852.png" src="./images/PHP中的PDO数据对象0.jpg" alt="QQ图片20191012085852.png" /></p>
+<p>并重启apache。</p>
+<h2>使用PDO</h2>
+<p>1，连接数据库：<br />$DSN = "mysql：host=服务器地址/名称；port=端口号；dbname=数据库名";<br />$Options = array(PDO::MYSQL_ATTR_INIT_COMMAND=&gt;&rsquo;set names utf8&rsquo;);<br />$pdo = new pdo($DSN, "用户名", "密码", $Options);<br />DSN: Data Source Name ，数据源名称，<br />2，执行sql语句：<br />$result1 = $pdo-&gt;exec( &ldquo;增删改语句&rdquo; ); //<br />//返回：<br />数字：表示该语句影响的行数。<br />false：表示执行失败。<br />$result2 = $pdo-&gt;query( &ldquo;各种sql语句&rdquo; );//习惯上query()方法用于执行select这种有数据返回的语句<br />$result2 结果有：<br />执行失败： false：<br />执行成功： 返回结果集&mdash;&mdash;pdo结果集，通常称为pdostatement。<br />此结果集还需要进一步处理，就像mysql_query()返回结果一样！<br />3，断开连接&mdash;&mdash;如果需要。<br />$pdo = null; //就是销毁对象而已。</p>
+<h2>PDO对象的其他常见操作（方法）：</h2>
+<p>$pdo-&gt;lastInsertId(); 获得最后一次自增长的id值<br />$pdo-&gt;beginTransaction(); 开始一个事务<br />$pdo-&gt;commit() 提交一个事务<br />$pdo-&gt;rollBack(); 回滚一个事务<br />$pdo-&gt;setAttribute(属性名，属性值）;<br />在php代码中，要想使用事务，可以这样：</p>
+<pre><code><code>$pdo-&gt;beginTransaction();
+$pdo-&gt;exec( sql语句1);
+$pdo-&gt;exec( sql语句2);
+。。。。
+if(如果没有错误){
+    $pdo-&gt;commit();
+}
+else{
+    $pdo-&gt;rollback();
+}
+</code></code></pre>
+<h2>PDO的错误处理</h2>
+<p>pdo发生的错误，有两种处理模式：</p>
+<p>静默模式：<br />就是发生错误后，并不产生错误提示或输出，而是需要去&ldquo;人为&rdquo;通过代码去获取，并判断。<br />比如：</p>
+<pre><code><code>$pdo -&gt; exec( $sql );        //这条语句，可能出错，也可能不出错！可以做后续判断：
+$Code = $pdo-&gt;errorCode();        //获取前一次执行sql语句的&ldquo;错误代号&rdquo;，如果没有错误，就是0
+if($Code == 0){
+    echo &ldquo;执行成功&rdquo;;
+} else {
+    $info  =  $pdo-&gt;errorInfo();    //获取错误信息，但这里结果是一个数组,其中下标为2的就是错误提示内容
+    echo &ldquo;失败，请参考错误提示：&rdquo;  .  $info[2];
+}
+</code></code></pre>
+<p>异常模式：<br />是一种特别的语法形式，类似如下：</p>
+<pre><code><code>try{
+//这里可以用pdo执行sql语句
+//这个范围的语句，一旦出错，就会立即进入catach范围！
+$pdo -&gt; exec (&ldquo;update  user_list  set  user_pass=&rsquo;456&rsquo;  where  id=16&rdquo;);
+}
+catch(Exception  $e){    
+//如果try范围的语句发生错误，就会执行这个catch范围的语句，否则就不会执行
+//其中，$e是一个记录的错误信息的&ldquo;对象&rdquo;，跟$pdo-&gt;errorinfo()类似！处理如下：
+echo &ldquo;失败，请参考错误提示：&rdquo; .  $e-&gt;GetMessage();
+}
+后续代码。。。。
+</code></code></pre>
+<h2>PDO的结果集对象</h2>
+<p>当使用pdo对象的query()方法，执行一条有返回数据的语句（比如select语句，desc语句，show语句），如果执行成功，返回的就是&ldquo;pdo结果集对象&rdquo;。<br />基本上，可以理解为：该对象中，&ldquo;存放&rdquo;了很多数据，我们需要去&ldquo;取出来&rdquo;。<br />对比：<br />php的原始mysql函数：$result = mysql_qury( &ldquo;select .....&rdquo;);<br />pdo的处理方法： $result = $pdo-&gt;query( &ldquo;select ......&rdquo;);<br />他们本质上一样！</p>
+<p>pdo的结果集对象的常用方法：</p>
+<pre><code><code>$stmt = $pdo-&gt;query(&ldquo;select ...... &rdquo;);//这是获得结果集对象
+$stmt-&gt;rowCount() ;        //行数
+$stmt-&gt;columnCount() ;    //列数
+$stmt-&gt;fetch( [返回类型] ); //取出一行数据！结果是一个一维数组
+</code></code></pre>
+<p>返回类型常用的有：<br />PDO::FETCH_ASSOC：返回关联数组<br />PDO::FETCH_NUM：返回索引数组<br />PDO::FETCH_BOTH：返回前二者皆有的数组，这是默认值<br />PDO::FETCH_OBJ：返回对象</p>
+<pre><code><code>$stmt-&gt;fetchAll([返回类型]);//取出所有数据，结果是一个二维数组
+$stmt-&gt;fetchColumn( [$i] );//可以取出指定的第i个列的数据（默认是0）
+$stmt-&gt;errorCode();    //静默模式下，获得出错代号
+$stmt-&gt;errorInfo();//静默模式下，获得出错信息，是一个数组
+$stmt-&gt;closeCursor();关闭结果集，清理资源。<br /></code></code></pre>
+<p>我的博客网站：<a href="http://www.luanxin.top/index.php/archives/40/">http://www.luanxin.top/index.php/archives/40/</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

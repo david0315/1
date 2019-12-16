@@ -1,0 +1,92 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Thinkphp带表情的评论回复实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Thinkphp带表情的评论回复实例</center></div><div class='banquan'>原文出处:本文由博客园博主mrlime提供。<br/>
+原文连接:https://www.cnblogs.com/mrlime/p/11484878.html</div><br>
+    <p>基于Thinkphp开发的一个简单的带表情的评论回复实例，可以无限回复，适合新手学习或作为毕业设计作品等。</p>
+<p><img src="./images/Thinkphp带表情的评论回复实例0.jpg" alt="" width="731" height="695" /></p>
+<p>&nbsp;</p>
+<p>评论提交验证</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> $(".submit-btn").click(<span style="color: #0000ff;">function</span><span style="color: #000000;">() { 
+</span><span style="color: #008080;">2</span>     <span style="color: #0000ff;">var</span> $<span style="color: #0000ff;">this</span> = $(<span style="color: #0000ff;">this</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">3</span>     <span style="color: #0000ff;">var</span> name = $<span style="color: #0000ff;">this</span>.parent().siblings().children('.name1'<span style="color: #000000;">).val(); 
+</span><span style="color: #008080;">4</span>     <span style="color: #0000ff;">var</span> content = $<span style="color: #0000ff;">this</span>.parent().siblings().children('.comment'<span style="color: #000000;">).val(); 
+</span><span style="color: #008080;">5</span>     <span style="color: #0000ff;">if</span> (name == "" || content == ""<span style="color: #000000;">) { 
+</span><span style="color: #008080;">6</span>         alert("昵称或者评论不能为空哦"<span style="color: #000000;">); 
+</span><span style="color: #008080;">7</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">8</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">9</span> });</code></pre>
+
+<p>&nbsp;</p>
+<p>添加评论</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$rules</span> = <span style="color: #0000ff;">array</span>(<span style="color: #008000;">//</span><span style="color: #008000;">定义动态验证规则 </span>
+<span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">array</span>('comment', 'require', '评论不能为空'), 
+<span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">array</span>('username', 'require', '昵称不能为空'), 
+<span style="color: #008080;"> 4</span> <span style="color: #008000;">//</span><span style="color: #008000;">            array('username', '3,15', '用户名长度必须在3-15位之间！', 0, 'length', 3), </span>
+<span style="color: #008080;"> 5</span> <span style="color: #000000;">); 
+</span><span style="color: #008080;"> 6</span> <span style="color: #800080;">$data</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">( 
+</span><span style="color: #008080;"> 7</span>     'content' =&gt; I("post.comment"), 
+<span style="color: #008080;"> 8</span>     'ip' =&gt; get_client_ip(), 
+<span style="color: #008080;"> 9</span>     'add_time' =&gt; <span style="color: #008080;">time</span>(), 
+<span style="color: #008080;">10</span>     'pid' =&gt; I('post.pid'), 
+<span style="color: #008080;">11</span>     'author' =&gt; I('post.username'), 
+<span style="color: #008080;">12</span> <span style="color: #000000;">); 
+</span><span style="color: #008080;">13</span>  
+<span style="color: #008080;">14</span> <span style="color: #800080;">$comment</span> = M("comment"); <span style="color: #008000;">//</span><span style="color: #008000;"> 实例化User对象 </span>
+<span style="color: #008080;">15</span> <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$comment</span>-&gt;validate(<span style="color: #800080;">$rules</span>)-&gt;create()) {<span style="color: #008000;">//</span><span style="color: #008000;">验证昵称和评论 </span>
+<span style="color: #008080;">16</span>     <span style="color: #0000ff;">exit</span>(<span style="color: #800080;">$comment</span>-&gt;<span style="color: #000000;">getError()); 
+</span><span style="color: #008080;">17</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">18</span>     <span style="color: #800080;">$add</span> = <span style="color: #800080;">$comment</span>-&gt;add(<span style="color: #800080;">$data</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">19</span>     <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$add</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;">20</span>         <span style="color: #800080;">$this</span>-&gt;success('评论成功'<span style="color: #000000;">); 
+</span><span style="color: #008080;">21</span>     } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">22</span>         <span style="color: #800080;">$this</span>-&gt;error('评论失败'<span style="color: #000000;">); 
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">24</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>评论递归函数</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span> CommentList(<span style="color: #800080;">$pid</span> = 0, &amp;<span style="color: #800080;">$commentList</span> = <span style="color: #0000ff;">array</span>(), <span style="color: #800080;">$spac</span> = 0<span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">static</span> <span style="color: #800080;">$i</span> = 0<span style="color: #000000;">; 
+</span><span style="color: #008080;"> 3</span>     <span style="color: #800080;">$spac</span> = <span style="color: #800080;">$spac</span> + 1; <span style="color: #008000;">//</span><span style="color: #008000;">初始为1级评论 </span>
+<span style="color: #008080;"> 4</span>     <span style="color: #800080;">$List</span> = M('comment')-&gt; 
+<span style="color: #008080;"> 5</span>                     field('id,add_time,author,content,pid')-&gt; 
+<span style="color: #008080;"> 6</span>                     where(<span style="color: #0000ff;">array</span>('pid' =&gt; <span style="color: #800080;">$pid</span>))-&gt;order("id DESC")-&gt;<span style="color: #000000;">select(); 
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$List</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 8</span>         <span style="color: #800080;">$commentList</span>[<span style="color: #800080;">$i</span>]['level'] = <span style="color: #800080;">$spac</span>; <span style="color: #008000;">//</span><span style="color: #008000;">评论层级 </span>
+<span style="color: #008080;"> 9</span>         <span style="color: #800080;">$commentList</span>[<span style="color: #800080;">$i</span>]['author'] = <span style="color: #800080;">$v</span>['author'<span style="color: #000000;">]; 
+</span><span style="color: #008080;">10</span>         <span style="color: #800080;">$commentList</span>[<span style="color: #800080;">$i</span>]['id'] = <span style="color: #800080;">$v</span>['id'<span style="color: #000000;">]; 
+</span><span style="color: #008080;">11</span>         <span style="color: #800080;">$commentList</span>[<span style="color: #800080;">$i</span>]['pid'] = <span style="color: #800080;">$v</span>['pid']; <span style="color: #008000;">//</span><span style="color: #008000;">此条评论的父id </span>
+<span style="color: #008080;">12</span>         <span style="color: #800080;">$commentList</span>[<span style="color: #800080;">$i</span>]['content'] = <span style="color: #800080;">$v</span>['content'<span style="color: #000000;">]; 
+</span><span style="color: #008080;">13</span>         <span style="color: #800080;">$commentList</span>[<span style="color: #800080;">$i</span>]['time'] = <span style="color: #800080;">$v</span>['add_time'<span style="color: #000000;">]; 
+</span><span style="color: #008080;">14</span>         <span style="color: #008000;">//</span><span style="color: #008000;"> $commentList[$i]['pauthor']=$pautor; </span>
+<span style="color: #008080;">15</span>         <span style="color: #800080;">$i</span>++<span style="color: #000000;">; 
+</span><span style="color: #008080;">16</span>         <span style="color: #800080;">$this</span>-&gt;CommentList(<span style="color: #800080;">$v</span>['id'], <span style="color: #800080;">$commentList</span>, <span style="color: #800080;">$spac</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    } 
+</span><span style="color: #008080;">18</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$commentList</span><span style="color: #000000;">; 
+</span><span style="color: #008080;">19</span> }</code></pre>
+
+<p>本文转自：<a href="https://www.sucaihuo.com/php/557.html" target="_blank">https://www.sucaihuo.com/php/557.html</a> 转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,29 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP操作xml学习笔记之增删改查（1）—增加' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP操作xml学习笔记之增删改查（1）—增加</center></div><div class='banquan'>原文出处:本文由博客园博主张大球哈哈提供。<br/>
+原文连接:https://www.cnblogs.com/daqiu/p/10588533.html</div><br>
+    <p><strong>xml文件</strong></p>
+<p>&lt;?xml version="1.0" encoding="utf-8"?&gt;<br />&lt;班级&gt;<br />&nbsp;&nbsp; &nbsp;&lt;学生&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;名字&gt;大哈&lt;/名字&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;年龄&gt;30&lt;/年龄&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;介绍&gt;学生刻苦&lt;/介绍&gt;<br />&nbsp;&nbsp; &nbsp;&lt;/学生&gt;<br />&nbsp;&nbsp; &nbsp;&lt;学生&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;名字&gt;二哈&lt;/名字&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;年龄&gt;35&lt;/年龄&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;介绍&gt;学生好&lt;/介绍&gt;<br />&nbsp;&nbsp; &nbsp;&lt;/学生&gt;<br />&nbsp;&nbsp; &nbsp;&lt;学生 性别="男"&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;名字&gt;哈哈&lt;/名字&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;年龄&gt;100&lt;/年龄&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;介绍&gt;这是小哈&lt;/介绍&gt;<br />&nbsp;&nbsp; &nbsp;&lt;/学生&gt;<br />&lt;/班级&gt;</p>
+<p><strong>增加</strong></p>
+<p>&lt;?php<br />&nbsp;&nbsp; &nbsp;<br />&nbsp;&nbsp; &nbsp;<strong>//增加</strong><br />&nbsp;&nbsp; &nbsp;//1.创建DOMDocument<br />&nbsp;&nbsp; &nbsp;$xmldoc=new DOMDocument();<br />&nbsp;&nbsp; &nbsp;//2.加载xml文件<br />&nbsp;&nbsp; &nbsp;$xmldoc-&gt;load("classes.xml");<br />&nbsp;&nbsp; &nbsp;//3.添加学生信息<br />&nbsp;&nbsp; &nbsp;//(1)取出根节点<br />&nbsp;&nbsp; &nbsp;$root=$xmldoc-&gt;getElementsByTagName("班级")-&gt;item(0);<br />&nbsp;&nbsp; &nbsp;//(2)创建学生节点<br />&nbsp;&nbsp; &nbsp;$stu_node=$xmldoc-&gt;createElement("学生");<br />&nbsp;&nbsp; &nbsp;//添加属性节点<br />&nbsp;&nbsp; &nbsp;$stu_node-&gt;setAttribute("性别","男");<br />&nbsp;&nbsp; &nbsp;//(3)创建名字节点<br />&nbsp;&nbsp; &nbsp;$stu_node_name=$xmldoc-&gt;createElement("名字");<br />&nbsp;&nbsp; &nbsp;$stu_node_name-&gt;nodeValue="哈哈";<br />&nbsp;&nbsp; &nbsp;//把名字节点挂载到学生节点下<br />&nbsp;&nbsp; &nbsp;$stu_node-&gt;appendChild($stu_node_name);<br /><br />&nbsp;&nbsp; &nbsp;//创建年龄<br />&nbsp;&nbsp; &nbsp;$stu_node_age=$xmldoc-&gt;createElement("年龄");<br />&nbsp;&nbsp; &nbsp;$stu_node_age-&gt;nodeValue="100";<br />&nbsp;&nbsp; &nbsp;$stu_node-&gt;appendChild($stu_node_age);<br /><br />&nbsp;&nbsp; &nbsp;//创建介绍<br />&nbsp;&nbsp; &nbsp;$stu_node_intro=$xmldoc-&gt;createElement("介绍");<br />&nbsp;&nbsp; &nbsp;$stu_node_intro-&gt;nodeValue="这是小哈";<br />&nbsp;&nbsp; &nbsp;$stu_node-&gt;appendChild($stu_node_intro);<br /><br />&nbsp;&nbsp; &nbsp;//把学生节点挂载到根节点下<br />&nbsp;&nbsp; &nbsp;$root-&gt;appendChild($stu_node);<br /><br />&nbsp;&nbsp; &nbsp;//重新保存回xml<br />&nbsp;&nbsp; &nbsp;//如果save到源文件,则相当于是对文件更新<br />&nbsp;&nbsp; &nbsp;//如果save是新的文件名,则连同原来文件的内容和新添加的内容都保存到新文件里<br />&nbsp;&nbsp; &nbsp;$xmldoc-&gt;save("classes.xml");<br />?&gt;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

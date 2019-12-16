@@ -1,0 +1,73 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Redis专题——Redis管理工具' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Redis专题——Redis管理工具</center></div><div class='banquan'>原文出处:本文由博客园博主子钦加油提供。<br/>
+原文连接:https://www.cnblogs.com/zmdComeOn/p/11704882.html</div><br>
+    <p>一、安全性</p>
+<p>1、运行环境</p>
+<p>Redis以简洁为美，其安全性没有太多操作，要求在生产系统中外界不能直接连接Redis进行操作，而必须经过程序中转后，由程序进行操作。</p>
+<p>即，redis要求运行在可信的环境中。</p>
+<p>redis服务器启动后，默认允许外界连接，可以修改其配置文件的bind，配置只能有一个路径进行连接，如bind 127.0.0.1，只允许本机连接。bind只能配置一个ip，因此设置应在防火墙中进行。</p>
+<p>2、密码</p>
+<p>配置文件中有requirepass，可以设置密码。则每次连接上之后，需要先用AUTH 密码，验证后再进行操作。但是由于redis性能极高，因此有可能会被攻击者用穷举法破解，因此密码要设置的尽量复杂。</p>
+<p>如果主从结构的主库设置了密码，从库要在配置文件中的masterauth中，输入密码，以便从库正常连上主库。</p>
+<p>3、命令修改</p>
+<p>redis支持在配置文件对命令进行重命名，如flushall会清空redis，可以在配置文件中输入rename-command FLUSHALL xxxxx，这个xxxxx应该设置的足够复杂，则要使用flushall，必须用xxxxx来代替。如果要禁用命令，直接rename成空字符串即可。</p>
+<p>二、通信协议</p>
+<p>redis支持两种通信协议：一是二进制安全的统一请求协议；二是比较直观的便于在程序中直接输入的telnet协议。这两种命令的接收到的返回值一样。</p>
+<p>1、telnet</p>
+<p>当使用telnet连接上redis服务器后，可以像redis-cli那样对redis输入命令，不过接收到的redis返回是原生的返回，而不是redis-cli上看到的返回。</p>
+<p>1）状态回复</p>
+<p>以加号+开头，后面跟上状态信息，\r\n结尾，如+OK\r\n。</p>
+<p>2）错误回复</p>
+<p>以减号-开头，后面跟上错误信息，以\r\n结尾。</p>
+<p>3）整数回复</p>
+<p>以冒号:开头，后面跟上数字，\r\n结尾。</p>
+<p>4）字符串回复</p>
+<p>以美元$开头，后面跟上字符串的长度，然后是\r\n，字符串内容，\r\n。</p>
+<p>如$5\r\nHello\r\n。如果键没有设定，在redis-cli返回nil，在此则会返回$-1，以和空字符串区别。</p>
+<p>5）多行字符串回复</p>
+<p>以*开头，跟上字符串的个数，加上\r\n，后面就是和字符串回复一样。</p>
+<p>如*2\r\n$5\r\nHello\r\n$5\r\nWorld\r\n。</p>
+<p>2、统一请求协议</p>
+<p>统一请求协议的请求方式，和telnet里面收到的redis的多行字符串回复一样，先是字符串的个数，接下来是每个字符串的长度和具体内容，并且每个都用\r\n分隔开。</p>
+<p>例如redis-cli里面输入get key，则发送的是*3\r\n$3\r\nget\r\n$3\r\nkey\r\n。</p>
+<p>统一请求协议收到的返回值和telnet一致。</p>
+<p>redis的AOF文件和主从复制中的主数据库向从数据库发送内容，都采用统一请求协议。</p>
+<p>三、管理工具</p>
+<p>1、基本工具&mdash;&mdash;redis-cli</p>
+<p>1）耗时命令查询</p>
+<p>通过配置文件，可以配置执行redis的命令超过多长时间时，记录执行的命令等信息共开发人员分析，配置参数slowlog-log-slower-than 微秒。1秒是106微秒，参数默认值是104，即超过0.01秒的执行命令都会计入log。</p>
+<p>用slowlog get获取当前的耗时命令的日志，每个日志由4部分组成：日志唯一id、命令开始执行的unix时间、命令执行耗时（微秒）、完整命令及参数。</p>
+<p>当设置为0则记录所有命令，设置为负数则关闭。</p>
+<p>2）命令监控</p>
+<p>MONITOR。输入此命令后，会收到redis返回的OK。此后，任意客户端对此redis服务器进行的操作，都会在此输出。这样非常耗性能（消耗将近一半的负载），因此只用于调试和纠错。</p>
+<p>有基于monitor开发的开源脚本redis-faina.py，可以分析在服务器上最常用的命令、最频繁使用的键等信息。</p>
+<p>2、phpRedisAdmin</p>
+<p>该工具类似phpmyadmin，是用php开发的redis监控管理工具。其依赖于PRedis，因此需要先安装PRedis，再安装phpRedisAdmin。</p>
+<p>默认连到127.0.0.1:6379，可以在项目include文件夹的config.inc.php进行修改。</p>
+<p>配置好nginx和php后，把phpredisadmin放到网站根目录即可访问。phpredisadmmin将redis的键以树型展开，点击某个键可以查看键的值、键的类型、键的过期时间、键的大小、键的编码方式等，还可以编辑。</p>
+<p>由于该工具采用keys*命令获取键，再对每个键采用TYPE获取类型，而redis又是单线程的，因此这样效率不高，不适合在生产环境使用。</p>
+<p>3、Rdbtools</p>
+<p>这个工具是redis的文件快照（rdb文件）的解析器，根据快照的rdb文件，将其导出成json文件，分析每个键占用空间情况。另外，可以导出到csv，并且可以从csv导入到excel，对结果进行分析。</p>
+<p style="text-align: right;"><span style="font-size: 12px;">转载：<a href="https://cloud.tencent.com/developer/article/1053767">https://cloud.tencent.com/developer/article/1053767</a></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

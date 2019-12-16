@@ -1,0 +1,160 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php如何在mysql里批量插入数据' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php如何在mysql里批量插入数据</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11801452.html</div><br>
+    <p>假如说我有这样一个表，我想往这个表里面插入大量数据</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> CREATE TABLE <span style="color: #0000ff;">IF</span><span style="color: #000000;"> NOT EXISTS `user_info` (
+</span><span style="color: #008080;">2</span> `id` int(11) NOT <span style="color: #0000ff;">NULL</span> AUTO_INCREMENT COMMENT '自增主键',
+<span style="color: #008080;">3</span> `name` varchar(255) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">default</span> '' COMMENT '姓名',
+<span style="color: #008080;">4</span> `age` int(11) NOT <span style="color: #0000ff;">NULL</span> <span style="color: #0000ff;">default</span> '0' COMMENT '年龄',
+<span style="color: #008080;">5</span> PRIMARY <span style="color: #008080;">KEY</span><span style="color: #000000;"> (`id`)
+</span><span style="color: #008080;">6</span> ) ENGINE=InnoDB <span style="color: #0000ff;">DEFAULT</span> CHARSET=utf8 COMMENT='用户信息表';</code></pre>
+
+<p>&nbsp;</p>
+<p>批量插入<br />方法一、使用for循环插入<br />在往mysql插入少量数据的时候，我们一般用for循环</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [ 
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">[
+</span><span style="color: #008080;"> 3</span> 'name' =&gt; 'testname1',
+<span style="color: #008080;"> 4</span> 'age' =&gt; 18,
+<span style="color: #008080;"> 5</span> ],
+<span style="color: #008080;"> 6</span> <span style="color: #000000;">[
+</span><span style="color: #008080;"> 7</span> 'name' =&gt; 'testname2',
+<span style="color: #008080;"> 8</span> 'age' =&gt; 19,
+<span style="color: #008080;"> 9</span> ],
+<span style="color: #008080;">10</span> <span style="color: #000000;">[
+</span><span style="color: #008080;">11</span> 'name' =&gt; 'testname3',
+<span style="color: #008080;">12</span> 'age' =&gt; 18,
+<span style="color: #008080;">13</span> ],
+<span style="color: #008080;">14</span> <span style="color: #000000;">];
+</span><span style="color: #008080;">15</span> 
+<span style="color: #008080;">16</span> <span style="color: #800080;">$servername</span> = "localhost"<span style="color: #000000;">;
+</span><span style="color: #008080;">17</span> <span style="color: #800080;">$port</span> = 3306<span style="color: #000000;">;
+</span><span style="color: #008080;">18</span> <span style="color: #800080;">$username</span> = "username"<span style="color: #000000;">;
+</span><span style="color: #008080;">19</span> <span style="color: #800080;">$password</span> = "password"<span style="color: #000000;">;
+</span><span style="color: #008080;">20</span> <span style="color: #800080;">$dbname</span> = "mytestdb"<span style="color: #000000;">;
+</span><span style="color: #008080;">21</span> 
+<span style="color: #008080;">22</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 创建连接</span>
+<span style="color: #008080;">23</span> <span style="color: #800080;">$conn</span> = <span style="color: #0000ff;">new</span> mysqli(<span style="color: #800080;">$servername</span>, <span style="color: #800080;">$username</span>, <span style="color: #800080;">$password</span>, <span style="color: #800080;">$dbname</span>, <span style="color: #800080;">$port</span><span style="color: #000000;">);
+</span><span style="color: #008080;">24</span> 
+<span style="color: #008080;">25</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 检测连接</span>
+<span style="color: #008080;">26</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$conn</span>-&gt;<span style="color: #000000;">connect_error) {
+</span><span style="color: #008080;">27</span> <span style="color: #0000ff;">die</span>("connect failed: " . <span style="color: #800080;">$conn</span>-&gt;<span style="color: #000000;">connect_error);
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">} 
+</span><span style="color: #008080;">29</span> 
+<span style="color: #008080;">30</span> <span style="color: #800080;">$costBegin</span> = <span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">31</span> 
+<span style="color: #008080;">32</span> <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$item</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">33</span> <span style="color: #800080;">$sql</span> = <span style="color: #008080;">sprintf</span>("INSERT INTO user_info (name, age) VALUES ( '%s', %d);", <span style="color: #800080;">$item</span>['name'], (int)<span style="color: #800080;">$item</span>['age'<span style="color: #000000;">]); 
+</span><span style="color: #008080;">34</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$conn</span>-&gt;query(<span style="color: #800080;">$sql</span>) === <span style="color: #0000ff;">TRUE</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">35</span> <span style="color: #0000ff;">echo</span> "insert success"<span style="color: #000000;">;
+</span><span style="color: #008080;">36</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">37</span> <span style="color: #0000ff;">echo</span> "Error: " . <span style="color: #800080;">$sql</span> . "&lt;br&gt;" . <span style="color: #800080;">$conn</span>-&gt;<span style="color: #000000;">error;
+</span><span style="color: #008080;">38</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">39</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">40</span> 
+<span style="color: #008080;">41</span> <span style="color: #800080;">$costEnd</span> = <span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">42</span> <span style="color: #800080;">$cost</span> = <span style="color: #008080;">round</span>(<span style="color: #800080;">$costEnd</span> - <span style="color: #800080;">$costBegin</span>, 3<span style="color: #000000;">);
+</span><span style="color: #008080;">43</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$cost</span><span style="color: #000000;">);
+</span><span style="color: #008080;">44</span> 
+<span style="color: #008080;">45</span> <span style="color: #800080;">$conn</span>-&gt;close();</code></pre>
+
+<p>&nbsp;</p>
+<p><br />假如说要批量插入大量数据，如果还用for循环的办法插入是没有问题的，只是时间会比较长。对比一下插入少量数据与插入大量数据，使用上面的for循环插入耗费的时间：条数时间（单位：秒）</p>
+<p><img src="./images/php如何在mysql里批量插入数据0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>方法二、使用insert语句合并插入<br />mysql里面是可以使用insert语句进行合并插入的，比如</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> INSERT INTO user_info (name, age) VALUES ('name1', 18), ('name2', 19<span style="color: #000000;">);表示一次插入两条数据
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #800080;">$arr</span> =<span style="color: #000000;"> [ 
+</span><span style="color: #008080;"> 4</span> <span style="color: #000000;">[
+</span><span style="color: #008080;"> 5</span> 'name' =&gt; 'testname1',
+<span style="color: #008080;"> 6</span> 'age' =&gt; 18,
+<span style="color: #008080;"> 7</span> ],
+<span style="color: #008080;"> 8</span> <span style="color: #000000;">[
+</span><span style="color: #008080;"> 9</span> 'name' =&gt; 'testname2',
+<span style="color: #008080;">10</span> 'age' =&gt; 19,
+<span style="color: #008080;">11</span> ],
+<span style="color: #008080;">12</span> <span style="color: #000000;">[
+</span><span style="color: #008080;">13</span> 'name' =&gt; 'testname3',
+<span style="color: #008080;">14</span> 'age' =&gt; 18,
+<span style="color: #008080;">15</span> ],
+<span style="color: #008080;">16</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 此处省略</span>
+<span style="color: #008080;">17</span> <span style="color: #000000;">&hellip;&hellip;
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">&hellip;&hellip;
+</span><span style="color: #008080;">19</span> <span style="color: #000000;">];
+</span><span style="color: #008080;">20</span> 
+<span style="color: #008080;">21</span> <span style="color: #800080;">$servername</span> = "localhost"<span style="color: #000000;">;
+</span><span style="color: #008080;">22</span> <span style="color: #800080;">$port</span> = 3306<span style="color: #000000;">;
+</span><span style="color: #008080;">23</span> <span style="color: #800080;">$username</span> = "username"<span style="color: #000000;">;
+</span><span style="color: #008080;">24</span> <span style="color: #800080;">$password</span> = "password"<span style="color: #000000;">;
+</span><span style="color: #008080;">25</span> <span style="color: #800080;">$dbname</span> = "mytestdb"<span style="color: #000000;">;
+</span><span style="color: #008080;">26</span> 
+<span style="color: #008080;">27</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 创建连接</span>
+<span style="color: #008080;">28</span> <span style="color: #800080;">$conn</span> = <span style="color: #0000ff;">new</span> mysqli(<span style="color: #800080;">$servername</span>, <span style="color: #800080;">$username</span>, <span style="color: #800080;">$password</span>, <span style="color: #800080;">$dbname</span>, <span style="color: #800080;">$port</span><span style="color: #000000;">);
+</span><span style="color: #008080;">29</span> 
+<span style="color: #008080;">30</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 检测连接</span>
+<span style="color: #008080;">31</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$conn</span>-&gt;<span style="color: #000000;">connect_error) {
+</span><span style="color: #008080;">32</span> <span style="color: #0000ff;">die</span>("connect failed: " . <span style="color: #800080;">$conn</span>-&gt;<span style="color: #000000;">connect_error);
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">} 
+</span><span style="color: #008080;">34</span> 
+<span style="color: #008080;">35</span> <span style="color: #800080;">$costBegin</span> = <span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span> <span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$arr</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">38</span> <span style="color: #800080;">$sql</span> = <span style="color: #008080;">sprintf</span>("INSERT INTO user_info (name, age) VALUES "<span style="color: #000000;">);
+</span><span style="color: #008080;">39</span> 
+<span style="color: #008080;">40</span> <span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$item</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">41</span> <span style="color: #800080;">$itemStr</span> = '( '<span style="color: #000000;">;
+</span><span style="color: #008080;">42</span> <span style="color: #800080;">$itemStr</span> .= <span style="color: #008080;">sprintf</span>("'%s', %d", <span style="color: #800080;">$item</span>['name'], (int)<span style="color: #800080;">$item</span>['age'<span style="color: #000000;">]);
+</span><span style="color: #008080;">43</span> <span style="color: #800080;">$itemStr</span> .= '),'<span style="color: #000000;">;
+</span><span style="color: #008080;">44</span> <span style="color: #800080;">$sql</span> .= <span style="color: #800080;">$itemStr</span><span style="color: #000000;">;
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">46</span> 
+<span style="color: #008080;">47</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 去除最后一个逗号，并且加上结束分号</span>
+<span style="color: #008080;">48</span> <span style="color: #800080;">$sql</span> = <span style="color: #008080;">rtrim</span>(<span style="color: #800080;">$sql</span>, ','<span style="color: #000000;">);
+</span><span style="color: #008080;">49</span> <span style="color: #800080;">$sql</span> .= ';'<span style="color: #000000;">;
+</span><span style="color: #008080;">50</span> 
+<span style="color: #008080;">51</span> <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$conn</span>-&gt;query(<span style="color: #800080;">$sql</span>) === <span style="color: #0000ff;">TRUE</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">52</span> } <span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">53</span> <span style="color: #0000ff;">echo</span> "Error: " . <span style="color: #800080;">$sql</span> . "&lt;br&gt;" . <span style="color: #800080;">$conn</span>-&gt;<span style="color: #000000;">error;
+</span><span style="color: #008080;">54</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">55</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">56</span> 
+<span style="color: #008080;">57</span> <span style="color: #800080;">$costEnd</span> = <span style="color: #008080;">microtime</span>(<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;">58</span> <span style="color: #800080;">$cost</span> = <span style="color: #008080;">round</span>(<span style="color: #800080;">$costEnd</span> - <span style="color: #800080;">$costBegin</span>, 3<span style="color: #000000;">);
+</span><span style="color: #008080;">59</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$cost</span><span style="color: #000000;">);
+</span><span style="color: #008080;">60</span> 
+<span style="color: #008080;">61</span> <span style="color: #800080;">$conn</span>-&gt;close();</code></pre>
+
+<p>&nbsp;</p>
+<p>下面看一下少量数据与大量数据的时间对比。从总体时间上，可以看出insert合并插入比刚才for循环插入节约了很多时间,效果很明显条数时间（单位：秒）</p>
+<p>&nbsp;<img src="./images/php如何在mysql里批量插入数据1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>如果你觉得数组太大，想要减少sql错误的风险，也可以使用array_chunk将数组切成指定大小的块，然后对每个块进行insert合并插入.<br /><br /></p>
+<p><strong>phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的</strong>（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群677079770</a></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

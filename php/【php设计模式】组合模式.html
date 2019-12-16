@@ -1,0 +1,117 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【php设计模式】组合模式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【php设计模式】组合模式</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/10969327.html</div><br>
+    <p><span style="font-size: 16px;"><span style="background-color: #ff9900;">&nbsp;</span> 定义：</span></p>
+<p>　　是用于把一组相似的对象当作一个单一的对象。组合模式依据树形结构来组合对象，用来表示部分以及整体层次。这种类型的设计模式属于结构型模式，它创建了对象组的树形结构。</p>
+<p><span style="font-size: 16px;"><span style="background-color: #ff9900;">&nbsp;</span> 应用场景：</span></p>
+<p>　　部分、整体场景，如树形菜单，文件、文件夹的管理</p>
+<p><span style="font-size: 18px;"><span style="background-color: #ff9900;">&nbsp;</span> 通俗解释：</span></p>
+<p>　　组合模式，就是在一个对象中包含其他对象，这些被包含的对象可能是终点对象（不再包含别的对象），也有可能是非终点对象（其内部还包含其他对象，或叫组对象），我们将对象称为节点，即一个根节点包含许多子节点，这些子节点有的不再包含子节点，而有的仍然包含子节点，以此类推。很明显，这是树形结构，终结点叫叶子节点，非终节点（组节点）叫树枝节点，第一个节点叫根节点。同时也类似于文件目录的结构形式：文件可称之为终节点，目录可称之为非终节点（组节点）。</p>
+<p>实现如图所示的树形结构</p>
+<p><img src="https://img2018.cnblogs.com/blog/941968/201906/941968-20190603182845789-1726893556.png" alt="" /></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">interface</span><span style="color: #000000;"> Node{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> add(Node <span style="color: #800080;">$node</span><span style="color: #000000;">);
+}
+
+</span><span style="color: #0000ff;">class</span> Branch <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Node{
+    </span><span style="color: #0000ff;">static</span> <span style="color: #800080;">$i</span> = 0<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$node_list</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$name</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;name = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    } 
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> add(Node <span style="color: #800080;">$node</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;node_list[] = <span style="color: #800080;">$node</span><span style="color: #000000;">;
+    }
+
+}
+
+</span><span style="color: #0000ff;">class</span> Leaf <span style="color: #0000ff;">implements</span><span style="color: #000000;"> Node{
+    </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$name</span><span style="color: #000000;">){
+        </span><span style="color: #800080;">$this</span>-&gt;name = <span style="color: #800080;">$name</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> add(Node <span style="color: #800080;">$node</span><span style="color: #000000;">){
+        </span><span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span> <span style="color: #0000ff;">Exception</span>("Leaf don't add sub nodes"<span style="color: #000000;">);
+    }
+}
+
+</span><span style="color: #800080;">$branch</span> = <span style="color: #0000ff;">new</span> Branch("主干"<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$branch_left</span> = <span style="color: #0000ff;">new</span> Branch("左树枝"<span style="color: #000000;">);
+</span><span style="color: #800080;">$branch_right</span> = <span style="color: #0000ff;">new</span> Branch("右树枝"<span style="color: #000000;">);
+
+
+</span><span style="color: #800080;">$leaf1</span> = <span style="color: #0000ff;">new</span> Leaf("左第一片树叶"<span style="color: #000000;">);
+</span><span style="color: #800080;">$leaf2</span> = <span style="color: #0000ff;">new</span> Leaf("左第二片树叶"<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$branch</span>-&gt;add(<span style="color: #800080;">$branch_left</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$branch</span>-&gt;add(<span style="color: #800080;">$branch_right</span><span style="color: #000000;">);
+
+</span><span style="color: #800080;">$branch_left</span>-&gt;add(<span style="color: #800080;">$leaf1</span><span style="color: #000000;">);
+</span><span style="color: #800080;">$branch_left</span>-&gt;add(<span style="color: #800080;">$leaf2</span><span style="color: #000000;">);
+
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$branch</span>);</code></pre>
+
+<p>输出：</p>
+<src class="cnblogs_code">
+<pre><code>Branch <span style="color: #0000ff;">Object</span><span style="color: #000000;">
+(
+    [name] </span>=&gt;<span style="color: #000000;"> 主干
+    [node_list] </span>=&gt; <span style="color: #0000ff;">Array</span><span style="color: #000000;">
+        (
+            [</span>0] =&gt; Branch <span style="color: #0000ff;">Object</span><span style="color: #000000;">
+                (
+                    [name] </span>=&gt;<span style="color: #000000;"> 左树枝
+                    [node_list] </span>=&gt; <span style="color: #0000ff;">Array</span><span style="color: #000000;">
+                        (
+                            [</span>0] =&gt; Leaf <span style="color: #0000ff;">Object</span><span style="color: #000000;">
+                                (
+                                    [name] </span>=&gt;<span style="color: #000000;"> 左第一片树叶
+                                )
+
+                            [</span>1] =&gt; Leaf <span style="color: #0000ff;">Object</span><span style="color: #000000;">
+                                (
+                                    [name] </span>=&gt;<span style="color: #000000;"> 左第二片树叶
+                                )
+
+                        )
+
+                )
+
+            [</span>1] =&gt; Branch <span style="color: #0000ff;">Object</span><span style="color: #000000;">
+                (
+                    [name] </span>=&gt;<span style="color: #000000;"> 右树枝
+                    [node_list] </span>=&gt;<span style="color: #000000;">
+                )
+
+        )
+
+)</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

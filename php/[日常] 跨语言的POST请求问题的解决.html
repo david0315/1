@@ -1,0 +1,31 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[日常] 跨语言的POST请求问题的解决' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[日常] 跨语言的POST请求问题的解决</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11712534.html</div><br>
+    <p>部门对外提供了一个HTTP的POST接口,但是对方公司的程序员使用C语言进行的调用,PHP这边一直无法获取到参数.遇到这种情况是因为对方没有完全按照HTTP协议中的POST发送数据.在HTTP头部分没有增加Content-Type: application/x-www-form-urlencoded头,数据部分直接传递的json字符串,这样就导致PHP这边解析不到$_POST的数据,传递内容的字符串应该是以name=xxx&amp;age=xxx这种形式传递</p>
+<p>Content-Type是属于HTTP的内容头部,当增加这个头部,并且数据格式正确时,PHP的$_POST才能够获取得到数据<br />Content-Type:application/x-www-form-urlencoded,这个类型是ajax默认的content-type类型，这时前端可以以对象方式直接给后端，或者以json方式传给后端， 当action为get时候，浏览器用x-www-form-urlencoded的编码方式把form数据转换成一个字串（name1=value1&amp;name2=value2...），然后把这个字串append到url后面，用?分割，加载这个新的url。 当action为post时候，浏览器把form数据封装到http body中，然后发送到server。在浏览器控制台可以看到它们的内容都是以'From Data'形式展现</p>
+<p>Content-Type:application/json<br />如果ajax的头部是application/json，那么post时，数据必须以json格式传给后端，这时后端在$_POST中不能直接接受到数据，必须用$GLOBALS['HTTP_RAW_POST_DATA']取出来，然后再json_decode就行了。<br />if($GLOBALS['CONTENT_TYPE']=='application/json'){<br />        $_POST=json_decode($GLOBALS['HTTP_RAW_POST_DATA']);<br />}</p>
+<p>Content-Type:multipart/form-data是上传文件时指定的编码格式</p>
+<p>还有就是当请求HTTPS的数据时,需要指定CA证书的位置,或者忽略掉CA验证,PHP请求HTTPS资源的时候使用curl扩展有参数可以忽略验证,如果是使用curl命令,那该命令使用的证书的位置是在/etc/pki/tls/certs/ca-bundle.crt</p>
+<p>当使用cur无法访问HTTPS资源的时候,就需要下面的操作<br />1.需要下载CA证书 文件地址是 http://curl.haxx.se/ca/cacert.pem<br />2.把下载的文件放到这个位置 /etc/pki/tls/certs/ca-bundle.crt</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

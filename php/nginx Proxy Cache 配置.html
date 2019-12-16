@@ -1,0 +1,133 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修nginx Proxy Cache 配置' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>nginx Proxy Cache 配置</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/11373671.html</div><br>
+    <p>总结一下 proxy cache 设置的常用指令及使用方法：</p>
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache</span></li>
+</ul>
+<src class="cnblogs_code _mce_tagged_br">
+<pre><code>proxy_cache zone | off</code></pre>
+
+<p>配置一块公用的内存区域的名称，该区域可以存放缓存的索引数据。注意：zone 代表用于存放缓存索引的内存区域的名称（需要使用 proxy_cache_path指令设置）；off 代表关闭Proxy Cache功能</p>
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache_path</span></li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_path path [levels=levels] keys_zone=name:size [inactive=time1] [max_size=size2] [loader_files=number] [loader_sleep=time2] [loader_threshold=time3];</code></pre>
+
+<p>设置nginx服务器存储缓存数据的路径以及和缓存索引相关的内容</p>
+<p>path，设置缓存数据存放的根路径</p>
+<p>levels，设置在相对path路径的第几级hash目录中缓存数据。levels=1，表示一级hash目录；levels=1:2，表示两级，依次类推</p>
+<p>name:size，设置存放缓存索引的内存区域名称的大小 例如 zone:100m</p>
+<p>time1，设置强制更新缓存的时间，如果在time1时间内缓存没有被访问，那么就强制删除磁盘上的缓存</p>
+<p>size2，设置硬盘中缓存数据的大小限制，超过该限制的时候根据最少访问原则删除缓存</p>
+<p>number，缓存索引重建进程每次加载的数据元素的数量上限</p>
+<p>time2，设置缓存索引重建进程在一次遍历结束，下次遍历开始之间的暂停时长</p>
+<p>time3，设置遍历一次磁盘索引源数据的时间上限</p>
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache_bypass</span></li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_bypass <span style="color: #0000ff;">string</span></code></pre>
+
+<p>配置nginx服务器向客户端发送相应数据时，不从缓存中获取的条件。这些条件支持nginx配置的常用变量。</p>
+<p>例如</p>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_bypass $cookie_nocache $arg_nocache $arg_comment $http_pragma $http_authorization</code></pre>
+
+<p>当至少有一个字符串指令不为空或者不等于0时,相应数据不从缓存获取</p>
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache_key</span></li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_key <span style="color: #0000ff;">string</span>;</code></pre>
+
+<p>用于设置nginx在内存中建立索引时使用的关键字</p>
+<p>例如</p>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_key $scheme$proxy_host$uri$is_args$args;</code></pre>
+
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache_lock</span></li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_lock  on|off;</code></pre>
+
+<p>是否开启缓存的锁功能</p>
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache_lock_timeout</span></li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_lock_timeout time;</code></pre>
+
+<p>设置缓存的锁功能开启后锁的超时时间</p>
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache_min_uses</span></li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_min_uses number;</code></pre>
+
+<p>当客户端向被代理服务器发送相同的请求达到指定的次数时，nginx服务器才会对该请求的响应数据做缓存，默认为1</p>
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache_use_stale</span></li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_use_stale error|timeout|invalid_header|updating|http_500|http_502|http_503|http_504|http_404|off ...</code></pre>
+
+<p>当nginx服务器访问被代理服务器时出现服务器无法访问或者访问错误等现象时。nginx服务器可以使用历史缓存响应客户端的请求</p>
+<ul>
+<li><span style="background-color: #ff9900; color: #ffffff;">proxy_cache_valid</span></li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_valid [code ...] time;</code></pre>
+
+<p>针对不同的HTTP响应状态设置不同的缓存时间</p>
+<p>例如</p>
+<src class="cnblogs_code">
+<pre><code>proxy_cache_valid <span style="color: #800080;">200</span> <span style="color: #800080;">302</span><span style="color: #000000;"> 10m;
+proxy_cache_valid  </span><span style="color: #800080;">301</span> 1h;</code></pre>
+
+<p>&nbsp;</p>
+<p>以上就是设置 Proxy Cache时常使用的几种指令，但是有时候我们自己进行测试时会发现我们制定的缓存目录并没有生成缓存，只是我们需要确认一下这几个指令是否进行了设置：</p>
+<p>proxy_cache_path、proxy_pass、proxy_cache、proxy_cache_valid、proxy_cache_key</p>
+<p>例如</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">http{
+  proxy_cache_path  </span>/home/soft/nginx/data/cache keys_zone=<span style="color: #000000;">mayuan:100m;
+
+  server{
+         ..  省略其他配置  ..
+    
+         location </span>/<span style="color: #000000;"> {
+            proxy_pass http:</span><span style="color: #008000;">//</span><span style="color: #008000;">127.0.0.1:8080;</span>
+<span style="color: #000000;">            proxy_cache mayuan;
+            proxy_cache_key $scheme$proxy_host$uri$is_args$args;
+            proxy_cache_valid  </span><span style="color: #800080;">200</span> <span style="color: #800080;">304</span> <span style="color: #800080;">302</span><span style="color: #000000;"> 24h;    
+        }
+
+    }  
+} </span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

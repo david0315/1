@@ -1,0 +1,52 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 深度解析Nginx下的PHP框架路由实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 深度解析Nginx下的PHP框架路由实现</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11441214.html</div><br>
+    <p><br />所有的框架处理业务请求时，都会处理URL的路径部分，分配到指定的代码中去处理。<br />实现这一功能的关键就是获取$_SERVER全局变量中对于URL部分的数据</p>
+<p>当请求的路径为<br />http://test.com/article?id=1<br />http://test.com/article/update?id=1</p>
+<p><br />支持以上url模式,不需要配置传递PATH_INFO变量，也不需要配置伪静态去除index.php<br /><strong>最简单的nginx配置如下：</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">server {
+        listen </span><span style="color: #800080;">80</span><span style="color: #000000;">; 
+        server_name  test.com;
+        access_log  </span>/var/log/nginx/<span style="color: #000000;">test.com.access.log  main;
+        root   </span>/home/<span style="color: #000000;">test;
+        index  index.html index.htm index.php;
+        location </span>/<span style="color: #000000;"> { 
+                try_files $uri $uri</span>/ /index.php?q=$uri&amp;<span style="color: #000000;">$args;
+        }   
+        location </span>~<span style="color: #000000;"> \.php {
+                fastcgi_pass   </span><span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span>:<span style="color: #800080;">9000</span><span style="color: #000000;">;
+                fastcgi_index  index.php;
+                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+                include        fastcgi_params;
+        }   
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p><strong>此配置有几个重点要关注：</strong><br />1.try_files必须配置在location块中，这个可以用于除去index.php，如果不配置，则必须在路径中加上/index.php/<br />2.location ~ \.php  <br />a. 这里是否以$结尾，有时会被困扰，重点看清是否存在try_files，如果不存在try_files指令，那么就一定不要以$结尾，这样在路径中使用带/index.php/的模式还是可以访问的<br />b. 如果存在try_files指令，并且location ~ \.php$ 这里是以$结尾，那么/index.php/在php的location中就匹配不到，但是try_files又把参数重写到index.php?q=中了，因此这样也是可以访问到</p>
+<p>此时$_SERVER变量中，经常被各大框架或者自写程序用作路由处理使用的变量值如下：<br />$_SERVER["PHP_SELF"]=&gt;"/index.php"，没有URL中的参数<br />$_SERVER["PATH_INFO"]=&gt;，根本不存在，因为Nginx没有传递这个变量</p>
+<p>$_SERVER["REQUEST_URI"]=&gt;"/article/update?id=1"，这个是实现路由的关键，参数都存在</p>
+<p><br /><strong>PHP中比较兼容的处理是：</strong><br />$uri=$_SERVER['REQUEST_URI'];<br />$uri=str_replace("/index.php","",$uri);<br />if(strpos($uri,"?")!==false){<br />    $uri=substr($uri,0,strpos($uri,'?'));<br />}<br />$uri=trim($uri,'/');</p>
+<p>var_dump($uri);//获取到 article/update</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

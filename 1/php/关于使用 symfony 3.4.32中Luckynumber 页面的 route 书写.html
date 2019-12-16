@@ -1,0 +1,115 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修关于使用 symfony 3.4.32中Luckynumber 页面的 route 书写' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>关于使用 symfony 3.4.32中Luckynumber 页面的 route 书写</center></div><div class='banquan'>原文出处:本文由博客园博主未名大鱼提供。<br/>
+原文连接:https://www.cnblogs.com/luckynumber1123/p/11688441.html</div><br>
+    <h2><span style="font-family: 'Microsoft YaHei';"><strong>关于symfony 3.4.32的安装与配置及第一个页面Luckynumber 的route书写</strong></span></h2>
+<h2><span style="font-family: 'Microsoft YaHei';"><strong>1.symfony 的安装与配置</strong></span></h2>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">symfony官网文档：<strong>https://symfony.com/doc/current/setup.html</strong></span></p>
+<h2><span style="font-family: 'Microsoft YaHei';"><strong>2.通过 composer 创建 symfony 应用</strong></span></h2>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">我是通过<strong> composer</strong> 来创建一个 symfony 应用的（关于 composer 可自行网上搜索）</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">安装好 composer 后，通过 composer 创建一个 symfony 应用</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">$ composer create-project symfony/framework-standard-edition my_project_name</span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">如果你想安装指定版本的 symfony ，可以在命令最后补充版本号</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">$ composer create-project symfony/framework-standard-edition my_project_name <span style="color: #800000;">"</span><span style="color: #800000;">3.0.*</span><span style="color: #800000;">"</span></span></code></pre>
+
+<h2><span style="font-family: 'Microsoft YaHei';">3.运行 symfony 应用</span></h2>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">安装好后就要运行一下运行环境要求<strong> PHP</strong> 版本在 <strong>5.4</strong> 及以上，才可以执行下面命令来启动 <strong>Symfony</strong> 应用我是安装了集成软件 <strong>Wamposerver</strong> 其中包括了 PHP、Apache、MySQL，我选择的<strong> PHP</strong> 版本是<strong> 7.2.18</strong> 。</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">$ cd my_project_name/<span style="color: #000000;">
+$ php bin</span>/console server:run</span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">然后打开浏览器，输入 <strong>http://localhost:8000/</strong> 即可看见 <strong>Welcome</strong> 页面。</span><br /><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">  你也许会看到 Welcome 页面是个空白页面或者报错页面。</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">可以参考：<strong>https://symfony.com/doc/current/setup.html#book-installation-permissions</strong></span></p>
+<h2><span style="font-family: 'Microsoft YaHei';">3.创建一个页面：路由和控制器</span></h2>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">跟着官网文档第一个页面是做&nbsp;<strong>Luckynumber</strong>&nbsp;</span><br /><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">就是创建一个页面 /lucky/number 用来生成一个幸(sui)运(ji)数并打印出来。</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">首先创建一个类和一个成员方法。</span><br /><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">在 <strong>PhpStorm</strong> 中打开前面创建的 <strong>my_project_name</strong></span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">具体的文件位置和命名空间根据实际情况而定</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">下面的代码是我自己修改过的</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code></code></pre>
+<pre><code><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">&lt;?php</span><br /><br /><span style="font-family: 'Microsoft YaHei'; font-size: 16px;"><span style="color: #008000;">//</span><span style="color: #008000;"> 文件位置 src/AppBundle/Controller/LuckyController.php</span></span></code></pre>
+<pre><code><span style="font-family: 'Microsoft YaHei'; font-size: 16px;"><span style="color: #0000ff;">namespace</span><span style="color: #000000;"> AppBundle\Controller;
+
+use Symfony\Component\HttpFoundation\Response;
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> LuckyController
+{<br /></span><span style="color: #0000ff;">    public</span><span style="color: #000000;"> function number()
+   {
+        $number </span>= rand(<span style="color: #800080;">0</span>, <span style="color: #800080;">100</span><span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">       return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> Response(
+</span><span style="color: #800000;">       '</span><span style="color: #800000;">&lt;html&gt;&lt;body&gt;Lucky number: </span><span style="color: #800000;">'</span>.$number.<span style="color: #800000;">'</span><span style="color: #800000;">&lt;/body&gt;&lt;/html&gt;</span><span style="color: #800000;">'</span><span style="color: #000000;">
+       );
+    }<br />}</span></span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">文档上是在 <strong>config/routes.yaml file</strong> 创建&nbsp;<strong>route&nbsp;</strong>，但我自己做的时候，自己尝试创建&nbsp;<strong>routes.yaml file&nbsp;</strong>并将下列代码附上去的时候是没有成功的，</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">当我慢慢看文档后面的内容时就将文件位置改为了&nbsp;<strong>routing.yml file </strong>加上下列代码就成功了。</span></p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">这是一种 <strong>route</strong> 书写方法：</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="font-family: 'Microsoft YaHei'; font-size: 16px;"><span style="color: #000000;">app_lucky_number:
+    path: </span>/lucky/<span style="color: #000000;">number
+    controller: AppBundle\Controller\LuckyController::number</span></span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">另一种如下所示：</span></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">  src/AppBundle/Controller/LuckyController.php</span>
+<span style="color: #0000ff;">namespace</span><span style="color: #000000;"> AppBundle\Controller;
+
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\Response;
+
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> LuckyController
+{
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * @Route("/lucky/number")
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span><span style="color: #000000;"> function number()
+    {
+        $number </span>= rand(<span style="color: #800080;">0</span>, <span style="color: #800080;">100</span><span style="color: #000000;">);
+
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> Response(
+            </span><span style="color: #800000;">'</span><span style="color: #800000;">&lt;html&gt;&lt;body&gt;Lucky number: </span><span style="color: #800000;">'</span>.$number.<span style="color: #800000;">'</span><span style="color: #800000;">&lt;/body&gt;&lt;/html&gt;</span><span style="color: #800000;">'</span><span style="color: #000000;">
+        );
+    }
+}</span></span></code></pre>
+
+<p>&nbsp;</p>
+<p><span style="font-family: 'Microsoft YaHei'; font-size: 16px;">目前我就理解到这些，以后有学到新的再更新，如果有大佬教教我的话自然是再好不过了。</span></p>
+<p><span style="font-family: 'Microsoft YaHei';">&nbsp;</span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

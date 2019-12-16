@@ -1,0 +1,670 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP全栈学习笔记13' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP全栈学习笔记13</center></div><div class='banquan'>原文出处:本文由博客园博主达达前端小酒馆提供。<br/>
+原文连接:https://www.cnblogs.com/dashucoding/p/10784586.html</div><br>
+    <p><img src="./images/PHP全栈学习笔记130.jpg" alt="PHP全栈学习笔记13" /></p>
+<blockquote>
+<p>php与ajax技术</p>
+</blockquote>
+<p>web2.0的到来，ajax逐渐成为主流，什么是ajax，ajax的开发模式，优点，使用技术。（ajax概述，ajax使用的技术，需要注意的 问题，在PHP应用ajax技术的应用）</p>
+<p>什么是ajax，ajax的开发模式，优点。</p>
+<p>ajax是由jesse james garrett创建的，是asynchronous javascript and xml，异步javascript和xml技术，ajax并不是一门新的语言或技术，它是javascript，xml，css，dom等多种技术的组合，可以实现客户端的异步请求操作，可以在不刷新页面下与服务器进行通信，从而减少了用户的等待时间。</p>
+<p>ajax开发模式：<br />
+浏览器（客户端） http传输，http请求， web服务器 数据存储，后端处理，继承系统，服务器端。</p>
+<p>客户端（浏览器）JavaScript调用，ajax引擎 http请求，http传输， web和xml服务器，数据存储，后端处理，继承系统（服务端）。</p>
+<p>优点：减轻服务器的负担，可以把部分由服务器负担的工作转移到客户端上，无刷新更新页面，可以调用xml等外部数据，基于标准化的并被广泛支持的技术。</p>
+<p>JavaScript是一种在web页面中添加动态脚本代码的解释性程序语言。</p>
+<p>xmlhttprequest</p>
+<p>ie浏览器把xmlhttp</p>
+<pre><code><code>var http_request = new ActiveXObject(&quot;Msxml2.XMLHTTP&quot;);</code></code></pre>
+<pre><code><code>var http_request = new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);</code></code></pre>
+<p>mozailla,safari等其他浏览器</p>
+<pre><code><code>var http_request = new XMLHttpRequest();</code></code></pre>
+<pre><code><code>if(window.XMLHttpRequest){
+http_request = new XMLHttpRequest();
+}else if(window.ActiveXObject){
+ try{
+ http_request = new ActiveXObject(&quot;Msxml2.XMLHTTP&quot;);
+ }catch(e){
+ try{
+ http_request = new ActiveXObject(&quot;Msxml2.XMLHTTP&quot;);
+}catch(e){
+ try{
+ http_request = new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+}catch(e){}
+}
+}</code></code></pre>
+<p>XMLHttpRequest对象的常用方法：</p>
+<p>open()方法用于设置进行异步请求目标的url</p>
+<pre><code><code>open(&quot;method&quot;, &quot;url&quot; [,asyncFlag [,&quot;userName&quot; [, &quot;password&quot;]]])</code></code></pre>
+<p>send()方法用于向服务器发送请求</p>
+<pre><code><code>send(content)</code></code></pre>
+<p>setRequestHeader()方法</p>
+<p>setRequestHeader()方法为请求的http头设置值</p>
+<pre><code><code>setRequestHeader(&quot;label&quot;,&quot;value&quot;)</code></code></pre>
+<p>label用于指定http头，value用于指定http头设置值</p>
+<pre><code><code>open()方法过后才能使用setRequestHeader()方法</code></code></pre>
+<p>abort()方法<br />
+abort()方法用于停止当前异步请求</p>
+<p>getAllResponseHeaders()方法<br />
+getAllResponseHeaders()方法用于以字符串形式完整的http头信息。</p>
+<p>xmlhttpRequest对象常用的属性<br />
+onreadystatechange 每个状态改变时都会触发这个事件处理器，通常会调用一个JavaScript函数。</p>
+<p>readyState 请求的状态：</p>
+<pre><code><code>0 为未初始化
+1 为正在下载
+2 为已加载
+3 在交互中
+4 为完成</code></code></pre>
+<p>responseText 服务器的响应，表示字符串</p>
+<p>responseXML 服务器的响应，表示xml</p>
+<p>status 返回服务器的http状态码<br />
+statusText 返回http状态码对应的文本</p>
+<p>xml语言为可扩展的标记语言，提供了用于描述结构化数据的格式。xmlHttpRequest对象与服务器交换的数据，通常采用xml格式。</p>
+<p>dom为文档对象模型，为xml文档的解析定义了一组接口。</p>
+<p>在PHP中应用AJAX技术检测用户名</p>
+<pre><code><code>&lt;script language=&quot;javascript&quot;&gt;
+var http_request = false;
+function createRequest(url) {
+    //初始化对象并发出XMLHttpRequest请求
+    http_request = false;
+    if (window.XMLHttpRequest) {                                        //Mozilla等其他浏览器
+        http_request = new XMLHttpRequest();
+        if (http_request.overrideMimeType) {
+            http_request.overrideMimeType(&quot;text/xml&quot;);
+        }
+    } else if (window.ActiveXObject) {                              //IE浏览器
+        try {
+            http_request = new ActiveXObject(&quot;Msxml2.XMLHTTP&quot;);
+        } catch (e) {
+            try {
+                http_request = new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+           } catch (e) {}
+        }
+    }
+    if (!http_request) {
+        alert(&quot;不能创建XMLHTTP实例!&quot;);
+        return false;
+    }
+    http_request.onreadystatechange = alertContents;                     //指定响应方法
+    
+    http_request.open(&quot;GET&quot;, url, true);                                 //发出HTTP请求
+    http_request.send(null);
+}
+function alertContents() {                                               //处理服务器返回的信息
+    if (http_request.readyState == 4) {
+        if (http_request.status == 200) {
+            alert(http_request.responseText);
+        } else {
+            alert(&#39;您请求的页面发现错误&#39;);
+        }
+    }
+}
+&lt;/script&gt;
+&lt;script language=&quot;javascript&quot;&gt;
+function checkName() {
+    var username = form1.username.value;
+    if(username==&quot;&quot;) {
+        window.alert(&quot;请填写用户名!&quot;);
+        form1.username.focus();
+        return false;
+    }
+    else {
+        createRequest(&#39;checkname.php?username=&#39;+username+&#39;&amp;nocache=&#39;+new Date().getTime());
+    }
+}
+&lt;/script&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+    header(&#39;Content-type: text/html;charset=GB2312&#39;);       //指定发送数据的编码格式为GB2312
+    $link=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;);
+    mysql_select_db(&quot;db_database&quot;,$link);
+    $GB2312string=iconv( &#39;UTF-8&#39;, &#39;gb2312//IGNORE&#39; , $RequestAjaxString);           //Ajax中先用encodeURIComponent对要提交的中文进行编码
+    mysql_query(&quot;set names gb2312&quot;);
+    $username=$_GET[username];
+    $sql=mysql_query(&quot;select * from tb_user where name=&#39;&quot;.$username.&quot;&#39;&quot;);
+    $info=mysql_fetch_array($sql);
+    if ($info){
+        echo &quot;很报歉!用户名[&quot;.$username.&quot;]已经被注册!&quot;;
+    }else{
+        echo &quot;祝贺您!用户名[&quot;.$username.&quot;]没有被注册!&quot;;
+    }
+?&gt;</code></code></pre>
+<p>类别添加</p>
+<pre><code><code>&lt;script language=&quot;javascript&quot;&gt;
+var http_request = false;
+function createRequest(url) {
+    //初始化对象并发出XMLHttpRequest请求
+    http_request = false;
+    if (window.XMLHttpRequest) {                                        //Mozilla等其他浏览器
+        http_request = new XMLHttpRequest();
+        if (http_request.overrideMimeType) {
+            http_request.overrideMimeType(&quot;text/xml&quot;);
+        }
+    } else if (window.ActiveXObject) {                              //IE浏览器
+        try {
+            http_request = new ActiveXObject(&quot;Msxml2.XMLHTTP&quot;);
+        } catch (e) {
+            try {
+                http_request = new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+           } catch (e) {}
+        }
+    }
+    if (!http_request) {
+        alert(&quot;不能创建XMLHTTP实例!&quot;);
+        return false;
+    }
+    http_request.onreadystatechange = alertContents;                     //指定响应方法
+    
+    http_request.open(&quot;GET&quot;, url, true);                                 //发出HTTP请求
+    http_request.send(null);
+}
+function alertContents() {                                               //处理服务器返回的信息
+    if (http_request.readyState == 4) {
+        if (http_request.status == 200) {
+            sort_id.innerHTML=http_request.responseText;                //设置sort_id HTML文本替换的元素内容
+        } else {
+            alert(&#39;您请求的页面发现错误&#39;);
+        }
+    }
+}
+&lt;/script&gt;
+&lt;script language=&quot;javascript&quot;&gt;
+function checksort() {
+    var txt_sort = form1.txt_sort.value;
+    if(txt_sort==&quot;&quot;) {
+        window.alert(&quot;请填写文章类别!&quot;);
+        form1.txt_sort.focus();
+        return false;
+    }
+    else {
+        createRequest(&#39;checksort.php?txt_sort=&#39;+txt_sort);
+    }
+}
+&lt;/script&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+    $link=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;);
+    mysql_select_db(&quot;db_database&quot;,$link);
+    $GB2312string=iconv( &#39;UTF-8&#39;, &#39;gb2312//IGNORE&#39;,$RequestAjaxString);         //Ajax中先用encodeURIComponent对要提交的中文进行编码
+    mysql_query(&quot;set names gb2312&quot;);
+    $sort=$_GET[txt_sort];
+    mysql_query(&quot;insert into tb_sort(sort) values(&#39;$sort&#39;)&quot;);
+    header(&#39;Content-type: text/html;charset=GB2312&#39;);       //指定发送数据的编码格式为GB2312
+?&gt;
+&lt;table border=&quot;0&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;
+  &lt;tr&gt;
+    &lt;td&gt;
+    &lt;select name=&quot;select&quot; &gt;
+    &lt;?php
+        $link=mysql_connect(&quot;localhost&quot;,&quot;root&quot;,&quot;root&quot;);
+        mysql_select_db(&quot;db_database23&quot;,$link);
+        $GB2312string=iconv( &#39;UTF-8&#39;, &#39;gb2312//IGNORE&#39; , $RequestAjaxString);           //Ajax中先用encodeURIComponent对要提交的中文进行编码
+        mysql_query(&quot;set names gb2312&quot;);
+        $sql=mysql_query(&quot;select distinct * from tb_sort group by sort&quot;);
+        $result=mysql_fetch_object($sql);
+        do{
+            header(&#39;Content-type: text/html;charset=GB2312&#39;);       //指定发送数据的编码格式为GB2312
+    ?&gt;
+    &lt;option value=&quot;&lt;?php echo $result-&gt;sort;?&gt;&quot; selected&gt;&lt;?php echo $result-&gt;sort;?&gt;&lt;/option&gt;
+    &lt;?php
+        }while($result=mysql_fetch_object($sql));
+    ?&gt;
+    &lt;/select&gt;</code></code></pre>
+<h2 id="xml基础技术">xml基础技术</h2>
+<p>了解xml，使用simpleXML解析文档的方法<br />
+遍历xml文档，修改，保存xml，创建xml文档的方法</p>
+<p>xml语法<br />
+xml文档结构，xml声明，处理指令，注解，xml元素，xml属性，使用cdata标记，xml命令空间。</p>
+<p>XML文档结构</p>
+<pre><code><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;gb2312&quot; standalone=&quot;yes&quot;?&gt;</code></code></pre>
+<pre><code><code>&lt;?xml-stylesheet type=&quot;text/css&quot; href=&quot;111.css&quot;?&gt;</code></code></pre>
+<p>XML声明</p>
+<pre><code><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;gb2312&quot; standalone=&quot;yes&quot;?&gt;</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记131.jpg" alt="image.png" /></p>
+<p>处理指令</p>
+<pre><code><code>&lt;?xml-stylesheet type = &quot;text/css&quot; href=&quot;111.css&quot;?&gt;</code></code></pre>
+<pre><code><code>&lt;?处理指令名 处理执行信息?&gt;</code></code></pre>
+<p>xml-stylesheet：样式表单处理指令<br />
+type=&quot;text/css&quot;：设定了文档所使用的样式是css<br />
+href=&quot;111.css&quot;：设定了样式文件的地址</p>
+<p><img src="./images/PHP全栈学习笔记132.jpg" alt="image.png" /></p>
+<p>XML属性</p>
+<pre><code><code>&lt;标签 属性名=&quot;属性值&quot; 属性名=&quot;&quot;…&gt;内容&lt;/标签＞</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记133.jpg" alt="image.png" /></p>
+<p>SimpleXML<br />
+创建SimpleXML对象<br />
+Simplexml_load_file()函数，将指定的文件解析到内存中<br />
+Simplexml_load_string()函数，将创建的字符串解析到内存当中<br />
+Simplexml_load_date()函数，将一个使用dom函数创建的domDocument对象导入到内存当中</p>
+<p>遍历所有子元素<br />
+children()方法和foreach循环语句可以遍历所有子节点元素</p>
+<p>遍历所有属性<br />
+SimpleXML对象中的attributes()方法</p>
+<pre><code><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;GB2312&quot;?&gt;
+&lt;exam&gt;
+
+&lt;/exam&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+header(&#39;Content-Type:text/html;charset=utf-8&#39;);
+?&gt;
+
+&lt;?php
+/*  第一种方法  */
+$xml_1 = simplexml_load_file(&quot;5.xml&quot;);
+print_r($xml_1);
+/*  第二种方法  */
+$str = &lt;&lt;&lt;XML
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;gb2312&#39;?&gt;
+&lt;Object&gt;
+    &lt;ComputerBook&gt;
+        &lt;title&gt;PHP&lt;/title&gt;
+    &lt;/ComputerBook&gt;
+&lt;/Object&gt;
+XML;
+$xml_2 = simplexml_load_string($str);
+echo &#39;&lt;br&gt;&#39;;
+print_r($xml_2);
+/*  第三种方法  */
+$dom = new domDocument();
+$dom -&gt; loadXML($str);
+$xml_3 = simplexml_import_dom($dom);
+echo &#39;&lt;br&gt;&#39;;
+print_r($xml_3);
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+header(&#39;Content-Type:text/html;charset=utf-8&#39;);
+?&gt;
+&lt;style type=&quot;text/css&quot;&gt;
+
+&lt;?php
+$str = &lt;&lt;&lt;XML
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;gb2312&#39;?&gt;
+&lt;object&gt;
+    &lt;book&gt;
+        &lt;computerbook&gt;PHP&lt;/computerbook&gt;
+    &lt;/book&gt;
+    &lt;book&gt;
+        &lt;computerbook&gt;PHP&lt;/computerbook&gt;
+    &lt;/book&gt;
+&lt;/object&gt;
+XML;
+$xml = simplexml_load_string($str);
+foreach($xml-&gt;children() as $layer_one){
+    print_r($layer_one);
+    echo &#39;&lt;br&gt;&#39;;
+    foreach($layer_one-&gt;children() as $layer_two){
+        print_r($layer_two);
+        echo &#39;&lt;br&gt;&#39;;
+    }
+}
+?&gt;</code></code></pre>
+<pre><code><code>
+&lt;?php
+$str = &lt;&lt;&lt;XML
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;gb2312&#39;?&gt;
+&lt;object name=&#39;commodity&#39;&gt;
+    &lt;book type=&#39;computerbook&#39;&gt;
+        &lt;bookname name=&#39;22&#39;/&gt;
+    &lt;/book&gt;
+    &lt;book type=&#39;historybook&#39;&gt;
+        &lt;booknanme name=&#39;111&#39;/&gt;
+    &lt;/book&gt;
+&lt;/object&gt;
+XML;
+$xml = simplexml_load_string($str);
+foreach($xml-&gt;children() as $layer_one){
+    foreach($layer_one-&gt;attributes() as $name =&gt; $vl){
+        echo $name.&#39;::&#39;.$vl;
+    }
+    echo &#39;&lt;br&gt;&#39;;
+    foreach($layer_one-&gt;children() as $layer_two){
+        foreach($layer_two-&gt;attributes() as $nm =&gt; $vl){
+            echo $nm.&quot;::&quot;.$vl;
+        }
+        echo &#39;&lt;br&gt;&#39;;
+    }
+}
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+    header(&#39;Content-Type:text/html;charset=utf-8&#39;);
+?&gt;
+
+&lt;?php
+$str = &lt;&lt;&lt;XML
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;gb2312&#39;?&gt;
+&lt;object name=&#39;商品&#39;&gt;
+    &lt;book&gt;
+        &lt;computerbook&gt;P123&lt;/computerbook&gt;
+    &lt;/book&gt;
+    &lt;book&gt;
+        &lt;computerbook name=&#39;456&#39;/&gt;
+    &lt;/book&gt;
+&lt;/object&gt;
+XML;
+$xml = simplexml_load_string($str);
+echo $xml[name].&#39;&lt;br&gt;&#39;;
+echo $xml-&gt;book[0]-&gt;computerbook.&#39;&lt;br&gt;&#39;;
+echo $xml-&gt;book[1]-&gt;computerbook[&#39;name&#39;].&#39;&lt;br&gt;&#39;;
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+header(&#39;Content-Type:text/html;charset=utf-8&#39;);
+$str=&lt;&lt;&lt;XML
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;gb2312&#39;?&gt;
+&lt;object name=&#39;商品&#39;&gt;
+    &lt;book&gt;
+        &lt;computerbook type=&#39;12356&#39;&gt;123&lt;/computerbook&gt;
+    &lt;/book&gt;
+&lt;/object&gt;
+XML;
+
+$xml = simplexml_load_string($str);
+echo $xml[name].&#39;&lt;br /&gt;&#39;;
+$xml-&gt;book-&gt;computerbook[&#39;type&#39;] = iconv(&#39;gb2312&#39;,&#39;utf-8&#39;,&#39;PHP123&#39;);
+$xml-&gt;book-&gt;computerbook = iconv(&#39;gb2312&#39;,&#39;utf-8&#39;,&#39;PHP456&#39;);
+echo $xml-&gt;book-&gt;computerbook[&#39;type&#39;].&#39; =&gt; &#39;;
+echo $xml-&gt;book-&gt;computerbook;
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+$xml = simplexml_load_file(&#39;10.xml&#39;);
+$xml-&gt;book-&gt;computerbook[&#39;type&#39;] = iconv(&#39;gb2312&#39;,&#39;utf-8&#39;,&#39;PHP1&#39;);
+$xml-&gt;book-&gt;computerbook = iconv(&#39;gb2312&#39;,&#39;utf-8&#39;,&#39;PHP2&#39;);
+$modi = $xml-&gt;asXML();
+file_put_contents(&#39;10.xml&#39;,$modi);
+$str = file_get_contents(&#39;10.xml&#39;);
+echo $str;
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+    //Message_XML类，继承PHP5的DomDocument类
+    class Message_XML extends DomDocument{
+    //属性
+    private $Root;
+    //方法
+    //构造函数
+    public function __construct() {
+        parent:: __construct();
+    //创建或读取存储留言信息的XML文档message.xml
+    if (!file_exists(&quot;message.xml&quot;)){
+        $xmlstr = &quot;&lt;?xml version=&#39;1.0&#39; encoding=&#39;GB2312&#39;?&gt;&lt;message&gt;&lt;/message&gt;&quot;;
+        $this-&gt;loadXML($xmlstr);
+        $this-&gt;save(&quot;message.xml&quot;);
+    }
+    else
+        $this-&gt;load(&quot;message.xml&quot;);
+}
+public function add_message($user,$address){  //添加数据
+    $Root = $this-&gt;documentElement;
+    //获取留言消息
+    $admin_id =date(&quot;Ynjhis&quot;);
+    $Node_admin_id= $this-&gt;createElement(&quot;admin_id&quot;);
+    $text= $this-&gt;createTextNode(iconv(&quot;GB2312&quot;,&quot;UTF-8&quot;,$admin_id));
+    $Node_admin_id-&gt;appendChild($text);
+    
+    $Node_user = $this-&gt;createElement(&quot;user&quot;);
+    $text  = $this-&gt;createTextNode(iconv(&quot;GB2312&quot;,&quot;UTF-8&quot;,$user));
+    $Node_user-&gt;appendChild($text);
+    
+    $Node_address = $this-&gt;createElement(&quot;address&quot;);
+    $text= $this-&gt;createTextNode(iconv(&quot;GB2312&quot;,&quot;UTF-8&quot;,$address));
+    $Node_address-&gt;appendChild($text);
+
+    $Node_Record = $this-&gt;createElement(&quot;record&quot;);
+    $Node_Record-&gt;appendChild($Node_admin_id);
+    $Node_Record-&gt;appendChild($Node_user);
+    $Node_Record-&gt;appendChild($Node_address);
+    //加入到根结点下
+    $Root-&gt;appendChild($Node_Record);
+    $this-&gt;save(&quot;message.xml&quot;);  
+    echo &quot;&lt;script&gt;alert(&#39;添加成功&#39;);location.href=&#39;&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;&#39;&lt;/script&gt;&quot;;
+}
+public function delete_message($admin_id){  //删除数据
+    $Root = $this-&gt;documentElement;
+    $xpath = new DOMXPath($this);
+    $Node_Record= $xpath-&gt;query(&quot;//record[admin_id=&#39;$admin_id&#39;]&quot;);
+    $Root-&gt;removeChild($Node_Record-&gt;item(0));
+    $this-&gt;save(&quot;message.xml&quot;);
+    echo &quot;&lt;script&gt;alert(&#39;删除成功&#39;);location.href=&#39;&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;&#39;&lt;/script&gt;&quot;;
+}
+
+public function show_message(){  //读取数据
+    $root=$this-documentElement;
+    $xpath=new DOMXPath($this);
+    
+    $Node_Record=$this-&gt;getElementsByTagName(&quot;record&quot;);
+    $Node_Record_length=$Node_Record-&gt;length;
+    print&quot;&lt;table width=&#39;506&#39; bgcolor=&#39;#FFFFCC&#39;&gt;&lt;tr&gt;&quot;;
+    print&quot;&lt;td width=&#39;106&#39; height=&#39;22&#39; align=&#39;center&#39;&gt;&quot;;
+    print&quot;&lt;b&gt;用户名&lt;/b&gt;&quot;;
+    print&quot;&lt;/td&gt;&lt;td width=&#39;400&#39; align=&#39;center&#39;&gt;&quot;;
+    print&quot;&lt;b&gt;留言信息&lt;/b&gt;&lt;/td&gt;&lt;/tr&gt;&quot;;
+
+    for($i=0;$i&lt;$Node_Record-&gt;length;$i++){
+        $k=0;
+        foreach($Node_Record-&gt;item($i)-&gt;childNodes as $articles){
+           $field[$k]=iconv(&quot;UTF-8&quot;,&quot;GB2312&quot;,$articles-&gt;textContent);
+            $k++;
+    }
+    print&quot;&lt;table width=&#39;506&#39; bgcolor=&#39;#FFFFCC&#39;&gt;&lt;tr&gt;&quot;;
+    print&quot;&lt;td width=&#39;100&#39; height=&#39;22&#39; align=&#39;center&#39;&gt;&quot;;
+    print&quot;$field[1]&quot;;
+    print&quot;&lt;/td&gt;&lt;td width=&#39;300&#39; align=&#39;left&#39;&gt;&quot;;
+    print&quot;$field[2]&quot;;
+    print&quot;&lt;/td&gt;&lt;td width=&#39;100&#39; align=&#39;center&#39;&gt;&quot;;
+    print&quot;&lt;a href=&#39;?Action=delete_message&amp;admin_id=$field[0]&#39;&gt;删除&lt;/a&gt;&lt;/td&gt;&quot;;
+    print&quot;&lt;/tr&gt;&lt;/table&gt;&quot;; 
+    }}
+    public function post_message(){
+        print &quot;&lt;table width=&#39;506&#39; bgcolor=&#39;#FFFFCC&#39;&gt;&lt;form method=&#39;post&#39; action=&#39;?Action=add_message&#39;&gt;&quot;;
+        print &quot;&lt;tr&gt;&lt;td  width=&#39;106&#39;height=&#39;22&#39;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;用户名：&lt;/td&gt;&lt;td&gt;&lt;input type=text name=&#39;user&#39; size=50&gt;&lt;/td&gt;&lt;/tr&gt;&quot;;
+        print &quot;&lt;tr&gt;&lt;td width=&#39;106&#39; height=&#39;22&#39;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;留言信息：&lt;/td&gt;&lt;td width=&#39;400&#39;&gt;&lt;textarea name=&#39;address&#39; cols=&#39;48&#39; rows=&#39;5&#39; id=&#39;address&#39;&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;&quot;;
+        print &quot;&lt;tr&gt;&lt;td width=&#39;106&#39; height=&#39;30&#39;&gt;&amp;nbsp;&amp;nbsp;&lt;input type=&#39;submit&#39; value=&#39;添加数据&#39;&gt;&lt;/td&gt;&lt;td align=&#39;right&#39;&gt;&lt;a href=?Action=show_message&gt;查看数据&lt;/a&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;&lt;/form&gt;&lt;/table&gt;&quot;;
+    }
+
+}
+?&gt;
+
+&lt;html&gt;                                                                                                                           
+    &lt;head&gt;                                                                                                                  
+    &lt;title&gt;定义一个PHP读取XML类&lt;/title&gt;                                                                                        
+        &lt;style&gt;
+        td,body{font-size:12px}
+        a:link {
+    text-decoration: none;
+}
+a:visited {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: none;
+}
+a:active {
+    text-decoration: none;
+}
+&lt;/style&gt;                                                                                      
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;&lt;/head&gt;                                                                                                                        
+&lt;body&gt;                                                                                                                         
+&lt;table width=506 height=50 border=0 cellpadding=0 cellspacing=0 bgcolor=&quot;#33BE6B&quot;&gt;                                
+                                                                                                                          
+        &lt;tr&gt;                                                                                                                         
+          &lt;td width=&quot;506&quot; height=50 valign=&quot;bottom&quot; background=&quot;title.gif&quot;&gt;&lt;table width=&quot;506&quot;&gt;
+            &lt;tr&gt;
+              &lt;td height=&quot;24&quot; align=&quot;right&quot; scope=&quot;col&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;a href=?Action=post_message&gt;添加数据&lt;/a&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/table&gt;&lt;/td&gt;
+        &lt;/tr&gt;  
+        &lt;?php                                                                                       
+        $HawkXML = new Message_XML;     
+        $Action =&quot;&quot;;      
+        if(isset($_GET[&#39;Action&#39;]))     
+              $Action = $_GET[&#39;Action&#39;];                                                                                       
+        switch($Action){                                                                                            
+            case &quot;show_message&quot;:        //查看                                                                               
+                $HawkXML-&gt;show_message();                                                                         
+                break;                                                                                                     
+            case &quot;post_message&quot;:        //提交                                                                               
+                $HawkXML-&gt;post_message();                                                                       
+                break;                                                                                                      
+            case &quot;add_message&quot;:          //添加                                                                            
+                $HawkXML-&gt;add_message($_POST[&#39;user&#39;],$_POST[&#39;address&#39;]);                                             
+                break;    
+            case &quot;delete_message&quot;:      //删除
+                $HawkXML-&gt;delete_message($_GET[&#39;admin_id&#39;]);
+                break;
+        }                                                                                                
+       ?&gt;   
+&lt;/table&gt;                                                                                                                   
+&lt;/body&gt;                                                                                                                      
+&lt;/html&gt;                                                                                                                        </code></code></pre>
+<pre><code><code>&lt;?php
+    //Message_XML类，继承PHP5的DomDocument类
+    class Message_XML extends DomDocument{
+    //属性
+    private $Root;
+    //方法
+    //构造函数
+    public function __construct() {
+        parent:: __construct();
+    //创建或读取存储留言信息的XML文档message.xml
+    if (!file_exists(&quot;message.xml&quot;)){
+        $xmlstr = &quot;&lt;?xml version=&#39;1.0&#39; encoding=&#39;GB2312&#39;?&gt;&lt;message&gt;&lt;/message&gt;&quot;;
+        $this-&gt;loadXML($xmlstr);
+        $this-&gt;save(&quot;message.xml&quot;);
+    }
+    else
+        $this-&gt;load(&quot;message.xml&quot;);
+}
+public function add_message($user,$address){  //添加数据
+    $Root = $this-&gt;documentElement;
+    //获取留言消息
+    $admin_id =date(&quot;Ynjhis&quot;);
+    $Node_admin_id= $this-&gt;createElement(&quot;admin_id&quot;);
+    $text= $this-&gt;createTextNode(iconv(&quot;GB2312&quot;,&quot;UTF-8&quot;,$admin_id));
+    $Node_admin_id-&gt;appendChild($text);
+    
+    $Node_user = $this-&gt;createElement(&quot;user&quot;);
+    $text  = $this-&gt;createTextNode(iconv(&quot;GB2312&quot;,&quot;UTF-8&quot;,$user));
+    $Node_user-&gt;appendChild($text);
+    
+    $Node_address = $this-&gt;createElement(&quot;address&quot;);
+    $text= $this-&gt;createTextNode(iconv(&quot;GB2312&quot;,&quot;UTF-8&quot;,$address));
+    $Node_address-&gt;appendChild($text);
+
+    $Node_Record = $this-&gt;createElement(&quot;record&quot;);
+    $Node_Record-&gt;appendChild($Node_admin_id);
+    $Node_Record-&gt;appendChild($Node_user);
+    $Node_Record-&gt;appendChild($Node_address);
+    //加入到根结点下
+    $Root-&gt;appendChild($Node_Record);
+    $this-&gt;save(&quot;message.xml&quot;);  
+    echo &quot;&lt;script&gt;alert(&#39;添加成功&#39;);location.href=&#39;&quot;.$_SERVER[&#39;PHP_SELF&#39;].&quot;&#39;&lt;/script&gt;&quot;;
+}
+
+public function show_message(){  //读取数据
+    $root=$this-documentElement;
+    $xpath=new DOMXPath($this);
+    
+    $Node_Record=$this-&gt;getElementsByTagName(&quot;record&quot;);
+    $Node_Record_length=$Node_Record-&gt;length;
+    print&quot;&lt;table width=&#39;506&#39; bgcolor=&#39;#FFFFCC&#39;&gt;&lt;tr&gt;&quot;;
+    print&quot;&lt;td width=&#39;106&#39; height=&#39;22&#39; align=&#39;center&#39;&gt;&quot;;
+    print&quot;&lt;b&gt;用户名&lt;/b&gt;&quot;;
+    print&quot;&lt;/td&gt;&lt;td width=&#39;400&#39; align=&#39;center&#39;&gt;&quot;;
+    print&quot;&lt;b&gt;留言信息&lt;/b&gt;&lt;/td&gt;&lt;/tr&gt;&quot;;
+
+    for($i=0;$i&lt;$Node_Record-&gt;length;$i++){
+        $k=0;
+        foreach($Node_Record-&gt;item($i)-&gt;childNodes as $articles){
+           $field[$k]=iconv(&quot;UTF-8&quot;,&quot;GB2312&quot;,$articles-&gt;textContent);
+            $k++;
+    }
+    print&quot;&lt;table width=&#39;506&#39; bgcolor=&#39;#FFFFCC&#39;&gt;&lt;tr&gt;&quot;;
+    print&quot;&lt;td width=&#39;100&#39; height=&#39;22&#39; align=&#39;center&#39;&gt;&quot;;
+    print&quot;$field[1]&quot;;
+    print&quot;&lt;/td&gt;&lt;td width=&#39;400&#39; align=&#39;left&#39;&gt;&quot;;
+    print&quot;$field[2]&quot;;
+    print&quot;&lt;/td&gt;&quot;;
+    print&quot;&lt;/tr&gt;&lt;/table&gt;&quot;; 
+    }}
+    public function post_message(){
+        print &quot;&lt;table width=&#39;506&#39; bgcolor=&#39;#FFFFCC&#39;&gt;&lt;form method=&#39;post&#39; action=&#39;?Action=add_message&#39;&gt;&quot;;
+        print &quot;&lt;tr&gt;&lt;td  width=&#39;106&#39;height=&#39;22&#39;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;用户名：&lt;/td&gt;&lt;td&gt;&lt;input type=text name=&#39;user&#39; size=50&gt;&lt;/td&gt;&lt;/tr&gt;&quot;;
+        print &quot;&lt;tr&gt;&lt;td width=&#39;106&#39; height=&#39;22&#39;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;留言信息：&lt;/td&gt;&lt;td width=&#39;400&#39;&gt;&lt;textarea name=&#39;address&#39; cols=&#39;48&#39; rows=&#39;5&#39; id=&#39;address&#39;&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;&quot;;
+        print &quot;&lt;tr&gt;&lt;td width=&#39;106&#39; height=&#39;30&#39;&gt;&amp;nbsp;&amp;nbsp;&lt;input type=&#39;submit&#39; value=&#39;添加数据&#39;&gt;&lt;/td&gt;&lt;td align=&#39;right&#39;&gt;&lt;a href=?Action=show_message&gt;查看数据&lt;/a&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;&lt;/form&gt;&lt;/table&gt;&quot;;
+    }
+
+}
+?&gt;
+&lt;html&gt;                                                                                                                           
+    &lt;head&gt;
+    &lt;title&gt;使用XML来存储少量的数据&lt;/title&gt;                                                                                 
+    &lt;style&gt;
+    td,body{font-size:12px}
+    a:link {
+    text-decoration: none;
+}
+a:visited {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: none;
+}
+a:active {
+    text-decoration: none;
+}
+&lt;/style&gt;                                                                                      
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot;&gt;&lt;/head&gt;                                                                                                                        
+&lt;body&gt;                                                                                                                         
+&lt;table width=506 height=50 border=0 cellpadding=0 cellspacing=0 bgcolor=&quot;#33BE6B&quot;&gt;                                
+                                                                                                                          
+        &lt;tr&gt;                                                                                                                         
+          &lt;td width=&quot;506&quot; height=50 valign=&quot;bottom&quot; background=&quot;title.gif&quot;&gt;&lt;table width=&quot;506&quot;&gt;
+            &lt;tr&gt;
+              &lt;td height=&quot;24&quot; align=&quot;right&quot; scope=&quot;col&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;a href=?Action=post_message&gt;添加数据&lt;/a&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/table&gt;&lt;/td&gt;
+        &lt;/tr&gt;  
+        &lt;?php                                                                                       
+        $HawkXML = new Message_XML;     
+        $Action =&quot;&quot;;      
+        if(isset($_GET[&#39;Action&#39;]))     
+              $Action = $_GET[&#39;Action&#39;];                                                                                       
+        switch($Action){                                                                                            
+            case &quot;show_message&quot;:        //查看                                                                               
+                $HawkXML-&gt;show_message();                                                                         
+                break;                                                                                                     
+            case &quot;post_message&quot;:        //提交                                                                               
+                $HawkXML-&gt;post_message();                                                                       
+                break;                                                                                                      
+            case &quot;add_message&quot;:          //添加                                                                            
+                $HawkXML-&gt;add_message($_POST[&#39;user&#39;],$_POST[&#39;address&#39;]);                                             
+                break;    }                                                                                                
+         ?&gt;
+&lt;/table&gt;                                                                                                                   
+&lt;/body&gt;                                                                                                                      
+&lt;/html&gt;                                                                                                                        </code></code></pre>
+<h2 id="结言">结言</h2>
+<p>好了，欢迎在留言区留言，与大家分享你的经验和心得。</p>
+<p>感谢你学习今天的内容，如果你觉得这篇文章对你有帮助的话，也欢迎把它分享给更多的朋友，感谢。</p>
+<p>感谢！承蒙关照！您真诚的赞赏是我前进的最大动力！</p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-da750878d19e7fa1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-826395d4148483a1?imageMogr2/auto-orient/strip" alt="image" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

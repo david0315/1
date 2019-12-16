@@ -1,0 +1,220 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修单点登录 -  API 认证系统 Passport（二）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>单点登录 -  API 认证系统 Passport（二）</center></div><div class='banquan'>原文出处:本文由博客园博主SexyPhoenix提供。<br/>
+原文连接:https://www.cnblogs.com/SexyPhoenix/p/11769933.html</div><br>
+    <h4 id="安装">安装</h4>
+<pre><code><code>composer require laravel/passport=~4.0</code></code></pre>
+<p>notes:<br />
+1）确保系统安装unzip、zip等命令。<br />
+2）composer 安装出现 Authentication required (packagist.phpcomposer.com) 问题，修改composer.json 中的源，repositories.packagist.url = https://packagist.laravel-china.org 。</p>
+<h4 id="注册服务提供者">注册服务提供者</h4>
+<p>在config/app.php的providers 数组中加入 Laravel\Passport\PassportServiceProvider::class</p>
+<h4 id="迁移数据库">迁移数据库</h4>
+<pre><code><code>php artisan migrate  //生成用于存储客户端和令牌的数据表</code></code></pre>
+<h4 id="生成加密健">生成加密健</h4>
+<pre><code><code> php artisan passport:install  </code></code></pre>
+<p>1、生成oauth-private.key（用于构建认证服务器），oauth-public.key（用于构建资源服务器）<br />
+2、oauth_clients数据库生成「个人访问」客户端和「密码授权]两条数据。</p>
+<h4 id="配置passport参考官方文档">配置Passport（参考官方文档）</h4>
+<p>在Model中，我们需要增加 HasApiTokens class<br />
+在AuthServiceProvider中， 增加 &quot;Passport::routes()&quot;<br />
+在 auth.php中， 更改 api 认证方式为passport</p>
+<h4 id="申请客户端以及私人访问令牌-两种方式">申请客户端以及私人访问令牌 （两种方式）</h4>
+<h6 id="命令形式不方便客户注册">1. 命令形式（不方便客户注册）</h6>
+<pre><code><code>php artisan passport:client</code></code></pre>
+<p><img src="./images/单点登录 -  API 认证系统 Passport（二）0.jpg" alt="8" /></p>
+<h6 id="passport-vue-组件">2. Passport Vue 组件</h6>
+<pre><code><code>php artisan vendor:publish --tag=passport-components  //发布 Passport Vue，组件位于resources/assets/js/components下</code></code></pre>
+<p>//注册到resources/assets/js/app.js 文件，记得要放在new Vue上面</p>
+<pre><code><code>Vue.component(
+    &#39;passport-clients&#39;,
+    require(&#39;./components/passport/Clients.vue&#39;)
+);
+
+Vue.component(
+    &#39;passport-authorized-clients&#39;,
+    require(&#39;./components/passport/AuthorizedClients.vue&#39;)
+);
+
+Vue.component(
+    &#39;passport-personal-access-tokens&#39;,
+    require(&#39;./components/passport/PersonalAccessTokens.vue&#39;)
+);</code></code></pre>
+<p>//编译前端资源</p>
+<pre><code><code>npm install   //此处报错，移步larravel Mix文档
+npm run dev</code></code></pre>
+<p>编译后资源放在public/js/app.js下</p>
+<p>//组件放入应用模板（记得引入编译后的app.js）</p>
+<pre><code><code>&lt;passport-clients&gt;&lt;/passport-clients&gt;
+&lt;passport-authorized-clients&gt;&lt;/passport-authorized-clients&gt;
+&lt;passport-personal-access-tokens&gt;&lt;/passport-personal-access-tokens&gt;</code></code></pre>
+<p><img src="./images/单点登录 -  API 认证系统 Passport（二）1.jpg" alt="9" /><br />
+以上认证服务器都已经搭建完成</p>
+<h4 id="第三方应用实现登录">第三方应用实现登录</h4>
+<h6 id="申请客户端">1. 申请客户端</h6>
+<p><img src="./images/单点登录 -  API 认证系统 Passport（二）2.jpg" alt="10" /><br />
+回调地址 http://third.plat.goods/dew/sso</p>
+<h6 id="申请授权码和访问令牌">申请授权码和访问令牌</h6>
+<p>//获取授权码 code （第一次交互）</p>
+<pre><code><code>$query = http_build_query(array(
+        &#39;client_id&#39; =&gt; 3,
+        &#39;redirect_uri&#39; =&gt; &#39;http://third.plat.goods/dew/sso&#39;, //地址必须为上面的回调地址
+        &#39;response_type&#39; =&gt; &#39;code&#39;,  //固定值
+        &#39;scope&#39; =&gt; &#39;&#39;,
+        &#39;state&#39; =&gt; urlencode(&#39;http://laravel.plat.goods/user&#39;)   //可以放用户访问的地址。
+));
+
+return redirect(&#39;http://laravel.plat.goods/oauth/authorize?&#39;.$query);  ///laravel.plat.goods为上面认证服务器</code></code></pre>
+<p><img src="./images/单点登录 -  API 认证系统 Passport（二）3.jpg" alt="11" /><br />
+//获取访问令牌 access token 以及向资源服务器请求用户信息<br />
+授权后会重定向回调地址</p>
+<pre><code><code>Route::get(&#39;/dew/sso&#39;, &#39;SSOController@callback&#39;);  //路由文件里添加
+php artisan make:controller SSOController //创建文件</code></code></pre>
+<pre><code><code>&lt;?php
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use GuzzleHttp\Client;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class SSOController extends Controller
+{
+    protected $http;
+    public function __construct()
+    {
+        $this-&gt;http = new Client();
+    }
+
+    /**
+     * 获取授权码后的回调URL
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function callback(Request $request)
+    {
+
+        $token = $this-&gt;token($request); //第二次交互
+        $login = $this-&gt;login($token);//第三次交互
+
+        if($login){
+
+            if($request_url = $request-&gt;input(&#39;state&#39;, null)){
+                $request-&gt;session()-&gt;put(&#39;url.intended&#39;, urldecode($request_url));
+            }
+            return redirect()-&gt;intended();  //跳转到 http://laravel.plat.goods/user
+        }else{
+            return redirect()-&gt;to(&#39;http://laravel.plat.com/home/public/login&#39;); //服务提供商网站必须登录
+        }
+    }
+
+    /**
+     * 获取access token
+     * @param $request
+     * @return array|mixed
+     */
+    protected function token($request)
+    {
+        $code = $request-&gt;code;
+        if($code) {
+
+            try {
+
+                $response = $this-&gt;http-&gt;post(&#39;http://laravel.plat.goods/oauth/token&#39;, [
+                    &#39;form_params&#39; =&gt; [
+                        &#39;grant_type&#39; =&gt; &#39;authorization_code&#39;,  //固定值
+                        &#39;client_id&#39; =&gt; 3,
+                        &#39;client_secret&#39; =&gt; &#39;UihXNHoSqohdtQ8Js6Av7AOyk3GBNB9rJziDPaWf&#39;,
+                        &#39;redirect_uri&#39; =&gt; &#39;http://third.plat.goods/dew/sso&#39;,
+                        &#39;code&#39; =&gt; $code,
+                    ],
+                ]);
+
+                $response_data = json_decode((string)$response-&gt;getBody(), true);
+
+                return $response_data;
+            } catch (\Exception $e) {
+
+                Log::error(&#39;get token by code failed: &#39;.$code.&#39; - &#39;.$e-&gt;getMessage().&#39; - &#39;.$e-&gt;getTraceAsString());
+
+                return [];
+            }
+        }else{
+
+            return [];
+        }
+
+    }
+    /**
+     * 通过token获取用户信息，并进行登录操作
+     * @param $token
+     * @return bool
+     */
+    protected function login($token)
+    {
+        if(empty($token)) return false;
+
+        $access_token = $token[&#39;access_token&#39;];
+        try {
+           
+           // 资源服务器和认证服务器放在了一起，可以独立。
+            $response = $this-&gt;http-&gt;request(&#39;GET&#39;, &#39;http://laravel.plat.goods/api/user&#39;, [
+                &#39;headers&#39; =&gt; [
+                    &#39;Accept&#39; =&gt; &#39;application/json&#39;,
+                    &#39;Authorization&#39; =&gt; $token[&#39;token_type&#39;] . &#39; &#39; . $access_token,
+                ]
+            ]);
+            $users_body = $response-&gt;getBody();
+            $data = json_decode($users_body, true);
+            if($data) {
+                $user = new User($data);
+
+                //because of employee_id is guarded
+                $user-&gt;setAttribute($user-&gt;getKeyName(), $data[&#39;employee_id&#39;]);
+                //login user in my system
+                auth()-&gt;login($user, false);
+
+                return true;
+            }else{
+
+                return false;
+            }
+        }catch (\Exception $e){
+
+            Log::error(&#39;get user failed by access_token:&#39;.$access_token.&#39;|&#39;.$e-&gt;getMessage());
+            return false;
+        }
+    }
+}</code></code></pre>
+<p>//设置资源文件</p>
+<pre><code><code>Route::middleware(&#39;auth:api&#39;)-&gt;get(&#39;/user&#39;, &#39;UserController@user&#39;); //routes/api.php文件中设置
+php artisan make:controller UserController //创建文件</code></code></pre>
+<pre><code><code>class UserController extends Controller
+{
+    public function user(Request $request)
+    {
+        return $request-&gt;user();
+    }
+}</code></code></pre>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

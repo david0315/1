@@ -1,0 +1,486 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修laravel  的用户认证' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>laravel  的用户认证</center></div><div class='banquan'>原文出处:本文由博客园博主码猿先生提供。<br/>
+原文连接:https://www.cnblogs.com/caorui-log/p/10538040.html</div><br>
+    <h3 id="toc_0"><strong>1、简介</strong></h3>
+<p>Laravel&nbsp;中实现用户认证非常简单。实际上，几乎所有东西都已经为你配置好了。配置文件位于<code>config/auth.php</code>，其中包含了用于调整认证服务行为的、文档友好的选项配置。</p>
+<p>在底层代码中，Laravel 的认证组件由&ldquo;guards&rdquo;和&ldquo;providers&rdquo;组成，Guard 定义了用户在每个请求中如何实现认证，例如，Laravel 通过&nbsp;<code>session</code>&nbsp;guard来维护 Session 存储的状态、Cookie 以及&nbsp;<code>token</code>&nbsp;guard，<code>token</code>&nbsp;guard 是认证用户发送请求时带的&ldquo;API token&rdquo;。</p>
+<p>Provider 定义了如何从持久化存储中获取用户信息，Laravel 底层支持通过 Eloquent 和数据库查询构建器两种方式来获取用户，如果需要的话，你还可以定义额外的 Provider。</p>
+<p>如果看到这些名词觉得云里雾里，大可不必太过担心，因为对绝大多数应用而言，只需使用默认认证配置即可，不需要做什么改动。</p>
+<h4 id="toc_1"><strong>数据库考量</strong></h4>
+<p>默认情况下，Laravel 在&nbsp;<code>app</code>&nbsp;目录下包含了一个&nbsp;<a href="http://laravelacademy.org/post/2995.html">Eloquent</a>&nbsp;模型<code>App\User</code>，这个模型可以和默认的 Eloquent 认证驱动一起使用。如果你的应用不使用 Eloquent，你可以使用&nbsp;<code>database</code>认证驱动，该驱动使用了 Laravel 查询构建器。</p>
+<p>为&nbsp;<code>App\User</code>&nbsp;模型构建数据库表结构的时候，确保&nbsp;<code>password</code>&nbsp;字段长度至少有60位。</p>
+<p>还有，你应该验证&nbsp;<code>users</code>&nbsp;表包含了可以为空的、字符串类型的&nbsp;<code>remember_token</code>&nbsp;字段长度为100，该字段用于存储被应用维护的&rdquo;记住我（remember me）&ldquo;的 Session 令牌，这可以通过在迁移中使用&nbsp;<code>$table-&gt;rememberToken();</code>&nbsp;来实现。</p>
+<h3 id="toc_2"><strong>2、快速入门</strong></h3>
+<p>Laravel 开箱提供了两个认证控制器，位于&nbsp;<code>App\Http\Controllers\Auth</code>&nbsp;命名空间下，<code>AuthController</code>&nbsp;处理新用户注册和登录，<code>PasswordController</code>&nbsp;用于帮助用户找回密码。每个控制器都使用 trait 来引入它们需要的方法。对很多应用而言，你根本不需要修改这两个控制器。</p>
+<h4 id="toc_3"><strong>路由</strong></h4>
+<p>Laravel 通过运行如下命令可快速生成认证所需要的路由和视图：</p>
+<pre><code><code>php&nbsp;artisan&nbsp;make:auth</code></code></pre>
+<p>运行该命令会生成注册和登录视图，以及所有的认证路由，同时生成&nbsp;<code>HomeController</code>&nbsp;，因为登录成功后会跳转到该控制器下的动作。当然，你也可以不用这个命令根据应用需求完全自定义或者移除这个控制器。</p>
+<h4 id="toc_4"><strong>视图</strong></h4>
+<p>正如上面所提到的，<code>php artisan make:auth</code>&nbsp;命令会在&nbsp;<code>resources/views/auth</code>&nbsp;目录下创建所有认证需要的视图。</p>
+<p><code>make:auth</code>&nbsp;命令还创建了&nbsp;<code>resources/views/layouts</code>&nbsp;目录，该目录下包含了应用的基础布局文件。所有这些视图都使用了 Bootstrap CSS 框架，你也可以根据需要对其进行自定义。</p>
+<h4 id="toc_5"><strong>认证</strong></h4>
+<p>现在你已经为自带的认证控制器设置好了路由和视图，接下来我们来实现新用户注册和登录认证。你可以在浏览器中访问定义好的路由，认证控制器默认已经包含了注册及登录逻辑（通过trait）。</p>
+<h5><strong>自定义路径</strong></h5>
+<p>当一个用户成功进行登录认证后，默认将会跳转到<code>/</code>，你可以通过在&nbsp;<code>AuthController</code>&nbsp;中设置&nbsp;<code>redirectTo</code>属性来自定义登录认证成功之后的跳转路径：</p>
+<pre><code><code>protected&nbsp;$redirectTo&nbsp;=&nbsp;'/home';</code></code></pre>
+<p>当一个用户登录认证失败后，默认将会跳转回登录表单对应的页面。</p>
+<h5><strong>自定义Guard</strong></h5>
+<p>你还可以自定义实现用户认证的&ldquo;guard&rdquo;，要实现这一功能，需要在&nbsp;<code>AuthController</code>&nbsp;中定义&nbsp;<code>guard</code>&nbsp;属性，该属性的值对应认证配置文件&nbsp;<code>auth.php</code>&nbsp;中的相应 guard 配置：</p>
+<pre><code><code>protected&nbsp;$guard&nbsp;=&nbsp;'admin';</code></code></pre>
+<h5><strong>自定义验证/存储</strong></h5>
+<p>要修改新用户注册所必需的表单字段，或者自定义新用户字段如何存储到数据库，你可以修改&nbsp;<code>AuthController</code>&nbsp;类。该类负责为应用验证输入参数和创建新用户。</p>
+<p><code>AuthController</code>&nbsp;的&nbsp;<code>validator</code>&nbsp;方法包含了新用户的验证规则，你可以按需要自定义该方法。</p>
+<p><code>AuthController</code>&nbsp;的&nbsp;<code>create</code>&nbsp;方法负责使用&nbsp;<a href="http://laravelacademy.org/post/2995.html">Eloquent ORM</a>&nbsp;在数据库中创建新的&nbsp;<code>App\User</code>&nbsp;记录。当然，你也可以基于自己的需要自定义该方法。</p>
+<h4 id="toc_6"><strong>获取认证用户</strong></h4>
+<p>你可以通过&nbsp;<code>Auth</code>&nbsp;门面访问认证用户：</p>
+<pre><code><code>$user&nbsp;=&nbsp;Auth::user();</code></code></pre>
+<p>此外，用户通过认证后，你还可以通过&nbsp;<code>Illuminate\Http\Request</code>&nbsp;实例访问认证用户：</p>
+<pre><code><code>&lt;?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
+class ProfileController extends Controller{
+    /**
+     * 更新用户属性.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function updateProfile(Request $request)
+    {
+        if ($request-&gt;user()) {
+            // $request-&gt;user() 返回认证用户实例...
+        }
+    }
+}</code></code></pre>
+<h5><strong>判断当前用户是否通过认证</strong></h5>
+<p>要判断某个用户是否登录到应用，可以使用&nbsp;<code>Auth</code>&nbsp;<a href="http://laravelacademy.org/post/2920.html">门面</a>的&nbsp;<code>check</code>方法，如果用户通过认证则返回&nbsp;<code>true</code>：</p>
+<pre><code><code>if (Auth::check()) {
+    // The user is logged in...
+}</code></code></pre>
+<p>此外，你还可以在用户访问特定路由/控制器之前使用中间件来验证用户是否通过认证，想要了解更多，可以查看下面的路由保护：</p>
+<h4 id="toc_7"><strong>路由保护</strong></h4>
+<p><a href="http://laravelacademy.org/post/2803.html">路由中间件</a>可用于只允许通过认证的用户访问给定路由。Laravel 通过定义在&nbsp;<code>app\Http\Middleware\Authenticate.php</code>&nbsp;的&nbsp;<code>auth</code>&nbsp;中间件来处理这一操作。你所要做的仅仅是将该中间件加到相应的路由定义中：</p>
+<pre><code><code>// 使用路由闭包...
+Route::get('profile', ['middleware' =&gt; 'auth', function() {
+    // 只有认证用户可以进入...
+}]);
+// 使用控制器...
+Route::get('profile', [
+    'middleware' =&gt; 'auth',
+    'uses' =&gt; 'ProfileController@show'
+]);</code></code></pre>
+<p>当然，如果你正在使用<a href="http://laravelacademy.org/post/2816.html">控制器类</a>，也可以在控制器的构造方法中调用&nbsp;<code>middleware</code>&nbsp;方法而不是在路由器中直接定义：</p>
+<pre><code><code>public&nbsp;function&nbsp;__construct(){
+    $this-&gt;middleware('auth');
+}</code></code></pre>
+<h5><strong>指定一个Guard</strong></h5>
+<p>添加&nbsp;<code>auth</code>&nbsp;中间件到路由后，还需要指定使用哪个 guard 来实现认证：</p>
+<pre><code><code>Route::get('profile',&nbsp;[
+    'middleware'&nbsp;=&gt;&nbsp;'auth:api',
+    'uses'&nbsp;=&gt;&nbsp;'ProfileController@show'
+]);
+</code>
+</code></pre>
+<p>指定的 guard 对应配置文件&nbsp;<code>auth.php&nbsp;</code>中&nbsp;<code>guards</code>&nbsp;数组的某个键。</p>
+<h4 id="toc_8"><strong>登录失败次数限制</strong></h4>
+<p>如果你使用了 Laravel 内置的&nbsp;<code>AuthController</code>&nbsp;类， 可以使用&nbsp;<code>Illuminate\Foundation\Auth\ThrottlesLogins</code>&nbsp;trait 来限制用户登录失败次数。默认情况下，用户在几次登录失败后将在一分钟内不能登录，这种限制基于用户的用户名/邮箱地址+IP地址：</p>
+<pre><code><code>&lt;?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\User;use Validator;
+use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\ThrottlesLogins;
+use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
+
+class AuthController extends Controller{
+    use AuthenticatesAndRegistersUsers, ThrottlesLogins;
+
+    // AuthController类的其它部分...
+}</code></code></pre>
+<h3 id="toc_9"><strong>3、手动认证用户</strong></h3>
+<p>当然，你也可以不使用 Laravel 自带的认证控制器。如果你选择移除这些控制器，你需要直接使用 Laravel 认证类来管理用户认证。别担心，这很简单！</p>
+<p>我们将会通过&nbsp;<code>Auth</code>&nbsp;门面来访问认证服务，因此我们需要确保在类的顶部导入了&nbsp;<code>Auth</code>&nbsp;门面，让我们看看&nbsp;<code>attempt</code>&nbsp;方法：</p>
+<pre><code><code>&lt;?php
+
+namespace App\Http\Controllers;
+
+use Auth;
+use Illuminate\Routing\Controller;
+
+class AuthController extends Controller{
+    /**
+     * 处理登录认证
+     *
+     * @return Response
+     */
+    public function authenticate()
+    {
+        if (Auth::attempt(['email' =&gt; $email, 'password' =&gt; $password])) {
+            // 认证通过...
+            return redirect()-&gt;intended('dashboard');
+        }
+    }
+}</code></code></pre>
+<p><code>attempt</code>&nbsp;方法接收键值数组对作为第一个参数，数组中的值被用于从数据表中查找用户，因此，在上面的例子中，用户将会通过<code>email</code>&nbsp;的值获取，如果用户被找到，经哈希运算后存储在数据中的密码将会和传递过来的经哈希运算处理的密码值进行比较。如果两个经哈希运算的密码相匹配那么将会为这个用户开启一个认证Session。</p>
+<p>如果认证成功的话&nbsp;<code>attempt</code>&nbsp;方法将会返回&nbsp;<code>true</code>。否则，返回&nbsp;<code>false</code>。</p>
+<p>重定向器上的&nbsp;<code>intended</code>&nbsp;方法将用户重定向到登录之前用户想要访问的 URL，在目标 URL 无效的情况下备用 URI 将会传递给该方法。</p>
+<h5><strong>指定额外条件</strong></h5>
+<p>如果需要的话，除了用户邮件和密码之外还可以在认证查询时添加额外的条件，例如，我们可以验证被标记为有效的用户：</p>
+<pre><code><code>if&nbsp;(Auth::attempt(['email'&nbsp;=&gt;&nbsp;$email,&nbsp;'password'&nbsp;=&gt;&nbsp;$password,&nbsp;'active'&nbsp;=&gt;&nbsp;1]))&nbsp;{
+//&nbsp;The&nbsp;user&nbsp;is&nbsp;active,&nbsp;not&nbsp;suspended,&nbsp;and&nbsp;exists.
+}
+</code></code></pre>
+<blockquote>
+<p>注：在这些例子中，并不仅仅限于使用 email 进行登录认证，这里只是作为演示示例，你可以将其修改为数据库中任何其他可用作&ldquo;username&rdquo;的字段。</p>
+</blockquote>
+<h5><strong>访问指定 Guard 实例</strong></h5>
+<p>你可以使用&nbsp;<code>Auth</code>&nbsp;门面的&nbsp;<code>guard</code>&nbsp;方法指定想要使用的 guard 实例，这种机制允许你在同一个应用中对不同的认证模型或用户表实现完全独立的用户认证。</p>
+<p>传递给&nbsp;<code>guard</code>&nbsp;方法的 guard 名称对应配置文件&nbsp;<code>auth.php</code>&nbsp;中&nbsp;<code>guards</code>&nbsp;配置的某个键：</p>
+<pre><code><code>if&nbsp;(Auth::guard('admin')-&gt;attempt($credentials))&nbsp;{
+//
+}</code></code></pre>
+<h5><strong>退出</strong></h5>
+<p>要退出应用，可以使用&nbsp;<code>Auth</code>&nbsp;门面的&nbsp;<code>logout</code>&nbsp;方法，这将会清除用户 Session 中的认证信息：</p>
+<pre><code><code>Auth::logout();</code></code></pre>
+<h4 id="toc_10"><strong>记住用户</strong></h4>
+<p>如果你想要在应用中提供&ldquo;记住我&rdquo;的功能，可以传递一个布尔值作为第二个参数到&nbsp;<code>attempt</code>&nbsp;方法，这样用户登录认证状态就会一直保持直到他们手动退出。当然，你的&nbsp;<code>users</code>&nbsp;表必须包含&nbsp;<code>remember_token</code>&nbsp;字段，该字段用于存储&ldquo;记住我&rdquo;令牌。</p>
+<pre><code><code>if (Auth::attempt(['email' =&gt; $email, 'password' =&gt; $password], $remember)) {
+    // The user is being remembered...
+}</code></code></pre>
+<p>如果你要&ldquo;记住&rdquo;用户，可以使用&nbsp;<code>viaRemember</code>&nbsp;方法来判断用户是否使用&ldquo;记住我&rdquo;cookie进行认证：</p>
+<pre><code><code>if (Auth::viaRemember()) {
+    //
+}</code></code></pre>
+<h4 id="toc_11"><strong>其它认证方法</strong></h4>
+<h5><strong>认证一个用户实例</strong></h5>
+<p>如果你需要将一个已存在的用户实例登录到应用中，可以调用&nbsp;<code>Auth</code>&nbsp;门面的&nbsp;<code>login</code>&nbsp;方法并传入用户实例，传入实例必须是<code>Illuminate\Contracts\Auth\Authenticatable</code>&nbsp;契约的实现，当然，Laravel 自带的&nbsp;<code>App\User</code>&nbsp;模型已经实现了该接口：</p>
+<pre><code><code>Auth::login($user);</code></code></pre>
+<h5><strong>通过ID认证用户</strong></h5>
+<p>要通过用户ID登录到应用，可以使用&nbsp;<code>loginUsingId</code>&nbsp;方法，该方法接收你想要认证用户的主键作为参数：</p>
+<pre><code><code>Auth::loginUsingId(1);</code></code></pre>
+<h5><strong>一次性认证用户</strong></h5>
+<p>你可以使用&nbsp;<code>once</code>&nbsp;方法只在单个请求中将用户登录到应用，而不存储任何 Session 和 Cookie，这在构建无状态的 API 时很有用。<code>once</code>方法和<code>attempt</code>方法用法差不多：</p>
+<pre><code><code>if (Auth::once($credentials)) {
+    //
+}</code></code></pre>
+<h3 id="toc_12"><strong>4、基于 HTTP 的基本认证</strong></h3>
+<p><a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP基本认证</a>能够帮助用户快速实现登录认证而不用设置专门的登录页面，首先要在路由中加上&nbsp;<code>auth.basic</code>&nbsp;<a href="http://laravelacademy.org/post/2803.html">中间件</a>。该中间件是 Laravel 自带的，所以不需要自己定义：</p>
+<pre><code><code>Route::get('profile', ['middleware' =&gt; 'auth.basic', function() {
+    // 只有认证用户可以进入...
+}]);</code></code></pre>
+<p>中间件加到路由中后，当在浏览器中访问该路由时，会自动提示需要认证信息，默认情况下，<code>auth.basic</code>&nbsp;中间件使用用户记录上的&nbsp;<code>email</code>&nbsp;字段作为&ldquo;用户名&rdquo;。</p>
+<h5><strong>FastCGI上注意点</strong></h5>
+<p>如果你使用 PHP FastCGI，HTTP 基本认证将不能正常工作，需要在&nbsp;<code>.htaccess</code>&nbsp;文件加入如下内容：</p>
+<pre><code><code>RewriteCond %{HTTP:Authorization} ^(.+)$
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]</code></code></pre>
+<h4 id="toc_13"><strong>无状态的HTTP基本认证</strong></h4>
+<p>使用 HTTP 基本认证也不需要在 Session 中设置用户标识 Cookie，这在 API 认证中非常有用。要实现这个，需要定义一个调用&nbsp;<code>onceBasic</code>&nbsp;方法的中间件。如果该方法没有返回任何响应，那么请求会继续走下去：</p>
+<pre><code><code>&lt;?php
+
+namespace Illuminate\Auth\Middleware;
+
+use Auth;
+use Closure;
+
+class AuthenticateOnceWithBasicAuth{
+    /**
+     * 处理输入请求.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
+     */
+    public function handle($request, Closure $next)
+    {
+        return Auth::onceBasic() ?: $next($request);
+    }
+
+}</code></code></pre>
+<p>接下来，注册路由中间件并将其添加到路由中：</p>
+<pre><code><code>Route::get('api/user', ['middleware' =&gt; 'auth.basic.once', function() {
+    // 只有认证用户可以进入...
+}]);</code></code></pre>
+<h3 id="toc_14"><strong>5、重置密码</strong></h3>
+<h4 id="toc_15"><strong>数据库考量</strong></h4>
+<p>大多数 web 应用提供了用户重置密码的功能，Laravel 提供了便利方法用于发送密码提示及执行密码重置而不需要你在每个应用中重新实现。</p>
+<p>开始之前，先验证&nbsp;<code>App\User</code>&nbsp;模型实现了&nbsp;<code>Illuminate\Contracts\Auth\CanResetPassword</code>&nbsp;契约。当然，Laravel 自带的&nbsp;<code>App\User</code>&nbsp;模型已经实现了该接口，并使用&nbsp;<code>Illuminate\Auth\Passwords\CanResetPassword</code>&nbsp;trait来包含实现该接口需要的方法。</p>
+<h5><strong>生成重置令牌表迁移</strong></h5>
+<p>接下来，用来存储密码重置令牌的表必须被创建，Laravel 已经自带了这张表的迁移，就存放在&nbsp;<code>database/migrations</code>目录。所有，你所要做的仅仅是运行迁移：</p>
+<pre><code><code>php artisan migrate</code></code></pre>
+<h4 id="toc_16"><strong>路由</strong></h4>
+<p>Laravel 自带了&nbsp;<code>Auth\PasswordController</code>，其中包含了重置用户密码的相应逻辑。重置密码所需的路由都已经通过&nbsp;<code>make:auth</code>&nbsp;命令自动生成了：</p>
+<pre><code><code>php&nbsp;artisan&nbsp;make:auth</code></code></pre>
+<h4 id="toc_17"><strong>视图</strong></h4>
+<p>和路由一样，重置密码所需的视图文件也通过&nbsp;<code>make:auth</code>&nbsp;命令一并生成了，这些视图文件位于&nbsp;<code>resources/views/auth/passwords</code>&nbsp;目录下，你可以按照所需对生成的文件进行相应修改。</p>
+<h4 id="toc_18"><strong>重置密码后</strong></h4>
+<p>定义好重置用户密码路由和视图后，只需要在浏览器中访问这些路由即可。框架自带的&nbsp;<code>PasswordController</code>&nbsp;已经包含了发送密码重置链接邮件以及更新数据库中密码的逻辑。</p>
+<p>密码被重置后，用户将会自动登录到应用并重定向到&nbsp;<code>/home</code>。你可以通过定义上&nbsp;<code>PasswordController</code>&nbsp;的<code>redirectTo</code>属性来自定义密码重置成功后的跳转链接：</p>
+<pre><code><code>protected $redirectTo = '/dashboard';</code></code></pre>
+<blockquote>
+<p>注意：默认情况下，密码重置令牌一小时内有效，你可以通过修改&nbsp;<code>config/auth.php</code>&nbsp;文件中的选项<code>reminder.expire</code>&nbsp;来改变有效时间。</p>
+</blockquote>
+<h4 id="toc_19"><strong>自定义</strong></h4>
+<h5><strong>自定义认证 Guard</strong></h5>
+<p>在配置文件&nbsp;<code>auth.php</code>&nbsp;中，可以配置多个&rdquo;guards&ldquo;，以便用于实现多用户表独立认证，你可以通过添加&nbsp;<code>$guard</code>&nbsp;属性到自带的&nbsp;<code>PasswordController</code>&nbsp;控制器的方法来使用你选择的 guard：</p>
+<pre><code><code>/**
+*&nbsp;The&nbsp;authentication&nbsp;guard&nbsp;that&nbsp;should&nbsp;be&nbsp;used.
+*
+*&nbsp;@var&nbsp;string
+*/
+protected&nbsp;$guard&nbsp;=&nbsp;'admins';</code></code></pre>
+<h5><strong>自定义密码 broker</strong></h5>
+<p>在配置文件&nbsp;<code>auth.php</code>&nbsp;中，可以配置多个密码，以便用于重置多个用户表的密码 broker，同样，可以通过在自带的&nbsp;<code>PasswordController</code>&nbsp;控制器中添加&nbsp;<code>$broker</code>&nbsp;属性来使用你选择的 broker：</p>
+<pre><code><code>/**
+*&nbsp;The&nbsp;password&nbsp;broker&nbsp;that&nbsp;should&nbsp;be&nbsp;used.
+*
+*&nbsp;@var&nbsp;string
+*/
+protected&nbsp;$broker&nbsp;=&nbsp;'admins';
+</code></code></pre>
+<h3 id="toc_20"><strong>6、社会化登录认证</strong></h3>
+<p>Laravel 中还可以使用&nbsp;<a href="http://laravelacademy.org/post/1305.html">Laravel Socialite</a>&nbsp;通过 OAuth 提供者进行简单、方便的认证，也就是社会化登录，目前支持使用Facebook、Twitter、LinkedIn、GitHub和Bitbucket进行登录认证。</p>
+<p>要使用社会化登录，需要在&nbsp;<code>composer.json</code>&nbsp;文件中添加依赖：</p>
+<pre><code><code>composer require laravel/socialite</code></code></pre>
+<h4 id="toc_21"><strong>配置</strong></h4>
+<p>安装完社会化登录库后，在配置文件&nbsp;<code>config/app.php</code>&nbsp;中注册&nbsp;<code>Laravel\Socialite\SocialiteServiceProvider</code>：</p>
+<pre><code><code>'providers' =&gt; [
+    // 其它服务提供者...
+    Laravel\Socialite\SocialiteServiceProvider::class,
+],</code></code></pre>
+<p>还要在&nbsp;<code>app</code>&nbsp;配置文件中添加&nbsp;<code>Socialite门面到&nbsp;<code>aliases</code>&nbsp;数组：</code></p>
+<pre><code><code>'Socialite' =&gt; Laravel\Socialite\Facades\Socialite::class,</code></code></pre>
+<p>你还需要为应用使用的 OAuth 服务添加认证信息，这些认证信息位于配置文件&nbsp;<code>config/services.php</code>，而且键为<code>facebook</code>,&nbsp;<code>twitter</code>,<code>linkedin</code>,&nbsp;<code>google</code>,&nbsp;<code>github</code>或<code>bitbucket</code>，这取决于应用需要的提供者。例如：</p>
+<pre><code><code>'github' =&gt; [
+    'client_id' =&gt; 'your-github-app-id',
+    'client_secret' =&gt; 'your-github-app-secret',
+    'redirect' =&gt; 'http://your-callback-url',
+],</code></code></pre>
+<h4 id="toc_22"><strong>基本使用</strong></h4>
+<p>接下来，准备好认证用户！你需要两个路由：一个用于重定向用户到 OAuth 提供者，另一个用户获取认证后来自提供者的回调。我们使用&nbsp;<code>Socialite</code>&nbsp;门面访问 Socialite&nbsp;：</p>
+<pre><code><code>&lt;?php
+
+namespace App\Http\Controllers;
+
+use Socialite;
+use Illuminate\Routing\Controller;
+
+class AuthController extends Controller{
+    /**
+     * 将用户重定向到GitHub认证页面.
+     *
+     * @return Response
+     */
+    public function redirectToProvider()
+    {
+        return Socialite::driver('github')-&gt;redirect();
+    }
+
+    /**
+     * 从GitHub获取用户信息.
+     *
+     * @return Response
+     */
+    public function handleProviderCallback()
+    {
+        $user = Socialite::driver('github')-&gt;user();
+
+        // $user-&gt;token;
+    }
+}</code></code></pre>
+<p><code>redirect</code>&nbsp;方法将用户发送到 OAuth 提供者，<code>user</code>&nbsp;方法读取请求信息并从提供者中获取用户信息，在重定向用户之前，你还可以在请求上使用&nbsp;<code>scope</code>&nbsp;方法设置&rdquo;作用域&rdquo;，该方法将会重写已存在的所有作用域：</p>
+<pre><code><code>return Socialite::driver('github')
+            -&gt;scopes(['scope1', 'scope2'])-&gt;redirect();</code></code></pre>
+<p>当然，你需要定义路由到控制器方法：</p>
+<pre><code><code> Route::get('auth/github', 'Auth\AuthController@redirectToProvider');
+ Route::get('auth/github/callback', 'Auth\AuthController@handleProviderCallback');</code></code></pre>
+<h5><strong>获取用户信息</strong></h5>
+<p>有了用户实例之后，可以获取用户的更多详情：</p>
+<pre><code><code>$user = Socialite::driver('github')-&gt;user();
+// OAuth Two Providers
+$token = $user-&gt;token;
+// OAuth One Providers
+$token = $user-&gt;token;
+$tokenSecret = $user-&gt;tokenSecret;
+// All Providers
+$user-&gt;getId();
+$user-&gt;getNickname();
+$user-&gt;getName();
+$user-&gt;getEmail();
+$user-&gt;getAvatar();</code></code></pre>
+<h3 id="toc_23"><strong>7、添加自定义的 Guard</strong></h3>
+<p>你可以通过&nbsp;<code>Auth</code>&nbsp;门面的&nbsp;<code>extend</code>&nbsp;方法定义自己的认证 guard，该功能需要在某个服务提供者的&nbsp;<code>boot</code>&nbsp;方法中实现：</p>
+<pre><code><code>&lt;?php</code>
+
+namespace&nbsp;App\Providers;
+
+use&nbsp;Auth;
+use&nbsp;App\Services\Auth\JwtGuard;
+use&nbsp;Illuminate\Support\ServiceProvider;
+
+class&nbsp;AuthServiceProvider&nbsp;extends&nbsp;ServiceProvider{
+    /**
+     *&nbsp;Perform&nbsp;post-registration&nbsp;booting&nbsp;of&nbsp;services.
+     *
+     *&nbsp;@return&nbsp;void
+     */
+    public&nbsp;function&nbsp;boot()
+    {
+        Auth::extend('jwt',&nbsp;function($app,&nbsp;$name,&nbsp;array&nbsp;$config)&nbsp;{
+           //&nbsp;Return&nbsp;an&nbsp;instance&nbsp;of&nbsp;Illuminate\Contracts\Auth\Guard...
+
+            return&nbsp;new&nbsp;JwtGuard(Auth::createUserProvider($config['provider']));
+        });
+    }
+
+    /**
+     *&nbsp;Register&nbsp;bindings&nbsp;in&nbsp;the&nbsp;container.
+     *
+     *&nbsp;@return&nbsp;void
+     */
+    public&nbsp;function&nbsp;register()
+    {
+        //
+    }
+}</code></pre>
+<p>正如你在上述例子中所看到的，传递给&nbsp;<code>extend</code>&nbsp;方法的闭包回调需要返回&nbsp;<code>Illuminate\Contracts\Auth\Guard</code>&nbsp;的实现实例，该接口包含了自定义认证 guard 需要的一些方法。</p>
+<p>定义好自己的认证 guard 之后，可以在配置文件的&nbsp;<code>guards</code>&nbsp;配置中使用话这个 guard：</p>
+<pre><code><code>'guards'&nbsp;=&gt;&nbsp;[
+    'api'&nbsp;=&gt;&nbsp;[
+        'driver'&nbsp;=&gt;&nbsp;'jwt',
+        'provider'&nbsp;=&gt;&nbsp;'users',
+    ],
+],</code></code></pre>
+<h3 id="toc_24"><strong>8、添加自定义用户提供者</strong></h3>
+<p>如果你没有使用传统的关系型数据库存储用户信息，则需要使用自己的认证用户提供者来扩展 Laravel。我们使用 Auth&nbsp;<a href="http://laravelacademy.org/post/2920.html">门面</a>上的&nbsp;<code>provider</code>&nbsp;方法定义自定义该提供者，在<a href="http://laravelacademy.org/post/2900.html">服务提供者</a>调用&nbsp;<code>provider</code>&nbsp;方法如下：</p>
+<pre><code><code>&lt;?php</code>
+
+namespace&nbsp;App\Providers;
+
+use&nbsp;Auth;
+use&nbsp;App\Extensions\RiakUserProvider;
+use&nbsp;Illuminate\Support\ServiceProvider;
+
+class&nbsp;AuthServiceProvider&nbsp;extends&nbsp;ServiceProvider{
+    /**
+     *&nbsp;Perform&nbsp;post-registration&nbsp;booting&nbsp;of&nbsp;services.
+     *
+     *&nbsp;@return&nbsp;void
+     */
+    public&nbsp;function&nbsp;boot()
+    {
+        Auth::provider('riak',&nbsp;function($app,array $config)&nbsp;{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; //&nbsp;返回Illuminate\Contracts\Auth\UserProvider实例...
+            return&nbsp;new&nbsp;RiakUserProvider($app['riak.connection']);
+        });
+    }
+
+    /**
+     *&nbsp;在容器中注册绑定.
+     *
+     *&nbsp;@return&nbsp;void
+     */
+    public&nbsp;function&nbsp;register()
+    {
+        //
+    }
+}
+</code></pre>
+<p>通过&nbsp;<code>provider</code>&nbsp;方法注册用户提供者后，你可以在配置文件&nbsp;<code>config/auth.php</code>&nbsp;中切换到新的用户提供者。首先，在该配置文件定义一个使用新驱动的&nbsp;<code>providers</code>&nbsp;数组：</p>
+<pre><code><code>'providers'&nbsp;=&gt;&nbsp;[
+    'users'&nbsp;=&gt;&nbsp;[
+        'driver'&nbsp;=&gt;&nbsp;'riak',
+    ],
+],
+</code></code></pre>
+<p>然后，可以在你的&nbsp;<code>guards</code>&nbsp;配置中使用这个提供者：</p>
+<pre><code><code>'guards'&nbsp;=&gt;&nbsp;[
+    'web'&nbsp;=&gt;&nbsp;[
+        'driver'&nbsp;=&gt;&nbsp;'session',
+        'provider'&nbsp;=&gt;&nbsp;'users',</code>
+    ],
+],</code></pre>
+<h4 id="toc_25"><strong>UserProvider 契约</strong></h4>
+<p><code>Illuminate\Contracts\Auth\UserProvider</code>&nbsp;实现只负责从持久化存储系统中获取<code>Illuminate\Contracts\Auth\Authenticatable</code>&nbsp;实现，例如MySQL、Riak等等。这两个接口允许 Laravel 认证机制继续起作用而不管用户数据如何存储或者何种类来展现。</p>
+<p>让我们先看看&nbsp;<code>Illuminate\Contracts\Auth\UserProvider</code>契约：</p>
+<pre><code><code>&lt;?php
+
+namespace Illuminate\Contracts\Auth;
+
+interface UserProvider {
+
+    public function retrieveById($identifier);
+    public function retrieveByToken($identifier, $token);
+    public function updateRememberToken(Authenticatable $user, $token);
+    public function retrieveByCredentials(array $credentials);
+    public function validateCredentials(Authenticatable $user, array $credentials);
+
+}</code></code></pre>
+<p><code>retrieveById</code>&nbsp;方法通常获取一个代表用户的键，例如 MySQL 数据中的自增ID。该方法获取并返回匹配该ID的<code>Authenticatabl</code>&nbsp;实现。</p>
+<p><code>retrieveByToken</code>&nbsp;函数通过唯一标识和存储在&nbsp;<code>remember_token</code>&nbsp;字段中的&ldquo;记住我&rdquo;令牌获取用户。和上一个方法一样，该方法也返回&nbsp;<code>Authenticatabl</code>&nbsp;实现。</p>
+<p><code>updateRememberToken</code>&nbsp;方法使用新的&nbsp;<code>$token</code>&nbsp;更新&nbsp;<code>$user</code>&nbsp;的&nbsp;<code>remember_token</code>&nbsp;字段，新令牌可以是新生成的令牌（在登录是选择&ldquo;记住我&rdquo;被成功赋值）或者null（用户退出）。</p>
+<p><code>retrieveByCredentials</code>&nbsp;方法在尝试登录系统时获取传递给&nbsp;<code>Auth::attempt</code>&nbsp;方法的认证信息数组。该方法接下来去底层持久化存储系统查询与认证信息匹配的用户，通常，该方法运行一个带&ldquo;where&rdquo;条件（<code>$credentials[&lsquo;username&rsquo;]</code>）的查询。然后该方法返回&nbsp;<code>UserInterface</code>&nbsp;的实现。这个方法不做任何密码校验和认证。</p>
+<p><code>validateCredentials</code>&nbsp;方法比较给定&nbsp;<code>$user</code>和<code>$credentials</code>&nbsp;来认证用户。例如，这个方法比较&nbsp;<code>$user-&gt;getAuthPassword()</code>&nbsp;字符串和经&nbsp;<code>Hash::make</code>&nbsp;处理的&nbsp;<code>$credentials['password']</code>。这个方法只验证用户认证信息并返回布尔值。</p>
+<h4 id="toc_26"><strong>Authenticatable 契约</strong></h4>
+<p>既然我们已经探索了&nbsp;<code>UserProvider</code>&nbsp;上的每一个方法，接下来让我们看看&nbsp;<code>Authenticatable</code>。该提供者应该从&nbsp;<code>retrieveById</code>&nbsp;和&nbsp;<code>retrieveByCredentials</code>&nbsp;方法中返回接口实现：</p>
+<pre><code><code>&lt;?php
+
+namespace Illuminate\Contracts\Auth;
+
+interface Authenticatable {
+
+    public function getAuthIdentifier();
+    public function getAuthPassword();
+    public function getRememberToken();
+    public function setRememberToken($value);
+    public function getRememberTokenName();
+
+}</code></code></pre>
+<p>这个接口很简单，<code>getAuthIdentifier</code>&nbsp;方法返回用户&ldquo;主键&rdquo;，在 MySQL 后台中是ID，<code>getAuthPassword</code>&nbsp;返回经哈希处理的用户密码，这个接口允许认证系统处理任何用户类，不管是你使用的是 ORM 还是存储抽象层。默认情况下，Laravel 自带的&nbsp;<code>app</code>&nbsp;目录下的&nbsp;<code>User</code>&nbsp;类实现了这个接口，所以你可以将这个类作为实现例子。</p>
+<h3 id="toc_27"><strong>9、事件</strong></h3>
+<p>Laravel 支持在认证过程中触发多种事件，你可以在自己的&nbsp;<code>EventServiceProvider</code>&nbsp;中监听这些事件：</p>
+<pre><code><code>/**
+ *&nbsp;The&nbsp;event&nbsp;listener&nbsp;mappings&nbsp;for&nbsp;the&nbsp;application.
+ *
+ *&nbsp;@var&nbsp;array
+ */
+protected&nbsp;$listen&nbsp;=&nbsp;[
+    'Illuminate\Auth\Events\Attempting'&nbsp;=&gt;&nbsp;[
+        'App\Listeners\LogAuthenticationAttempt',
+    ],
+
+    'Illuminate\Auth\Events\Login'&nbsp;=&gt;&nbsp;[
+        'App\Listeners\LogSuccessfulLogin',
+    ],
+
+    'Illuminate\Auth\Events\Logout'&nbsp;=&gt;&nbsp;[
+        'App\Listeners\LogSuccessfulLogout',
+    ],
+];</code></code></pre>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

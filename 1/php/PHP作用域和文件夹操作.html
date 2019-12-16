@@ -1,0 +1,122 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP作用域和文件夹操作' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP作用域和文件夹操作</center></div><div class='banquan'>原文出处:本文由博客园博主行走的阳光提供。<br/>
+原文连接:https://www.cnblogs.com/shineguang/p/10977034.html</div><br>
+    <p><span style="font-size: 18px;"><strong>1.作用域</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp;1.1变量作用域</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp;<span style="font-size: 16px;">1.全局变量：在函数外面</span></strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; 2.局部变量：在函数里面，默认情况下，函数内部是不会访问函数外部的变量</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; 3.超全局变量：可以在函数内部和函数外部访问</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; 在函数内部访问全局变量</strong></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$num</span>=10;  <span style="color: #008000;">//</span><span style="color: #008000;">全局变量</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> fun() {
+    </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$GLOBALS</span>['num'];    <span style="color: #008000;">//</span><span style="color: #008000;">输出全局的$num</span>
+<span style="color: #000000;">}
+fun();</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 16px;"><strong> &nbsp;global关键字</strong></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$num</span>=10<span style="color: #000000;">;
+</span><span style="color: #0000ff;">function</span><span style="color: #000000;"> fun() {
+    </span><span style="color: #0000ff;">global</span> <span style="color: #800080;">$num</span>;   <span style="color: #008000;">//</span><span style="color: #008000;">将全局变量的$num的地址引入到函数内部  相当于$num=&amp;GLOBALS['num']</span>
+    <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$num</span>;    <span style="color: #008000;">//</span><span style="color: #008000;">10</span>
+    <span style="color: #800080;">$num</span>=100<span style="color: #000000;">;
+}
+fun();
+</span><span style="color: #0000ff;">echo</span> '&lt;br&gt;'<span style="color: #000000;">;
+</span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$num</span>;    <span style="color: #008000;">//</span><span style="color: #008000;">100</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<span style="font-size: 16px;"><strong>小结：</strong></span></p>
+<p>&nbsp; &nbsp; &nbsp; <span style="font-size: 16px;"><strong>&nbsp; &nbsp; 1.$GLOBALS保存的是全局变量的所有的值</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;2.global用于创建一个全局变量的引用</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;3.常量是没有作用域的概念</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;">&nbsp;1.2静态变量（static）</span></strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;静态变量一般指的是静态局部变量</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;静态变量只初始化一次</strong></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">function</span><span style="color: #000000;"> fun() {
+    </span><span style="color: #0000ff;">static</span> <span style="color: #800080;">$num</span>=10;    <span style="color: #008000;">//</span><span style="color: #008000;">静态变量只初始化一次，调用完毕吧不销毁，第二次调用的时候就不再初始化</span>
+    <span style="color: #800080;">$num</span>++<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">echo</span> <span style="color: #800080;">$num</span>,'&lt;br&gt;'<span style="color: #000000;">;
+}
+fun();    </span><span style="color: #008000;">//</span><span style="color: #008000;">11</span>
+fun();    <span style="color: #008000;">//</span><span style="color: #008000;">12</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 16px;"><strong>常量和静态变量的区别：</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 1.常量和静态变量都是初始化一次</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;2.常量不能改变值，静态变量可以改变值</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;3.常量没有作用域，静态变量有作用域</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;">&nbsp;1.3匿名函数use()</span></strong></span></p>
+<p><span style="font-size: 16px;"><strong><span style="font-size: 18px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 16px;">&nbsp;默认情况下，函数内部不能访问函数外部的变量，但在匿名函数中，可以通过use将外部变量引入</span>匿名函数中</span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$num</span>=10<span style="color: #000000;">;
+</span><span style="color: #800080;">$fun</span>=<span style="color: #0000ff;">function</span>() <span style="color: #0000ff;">use</span>(<span style="color: #800080;">$num</span>) {  <span style="color: #008000;">//</span><span style="color: #008000;">将$num引入到匿名函数中,引用多个变量时用逗号分隔开</span>
+    <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$num</span><span style="color: #000000;">;     
+};
+</span><span style="color: #800080;">$fun</span>();   <span style="color: #008000;">//</span><span style="color: #008000;">10</span></code></pre>
+
+<p><span style="font-size: 18px;"><strong>2.文件夹操作：</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 16px;">&nbsp;2.1创建文件夹(mkdir（路径，权限，是否递归创建）)</span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #008000;">//</span><span style="color: #008000;">1、创建目录
+//mkdir('./aa');    //创建aa文件夹
+//mkdir('./aa/bb');    //在aa目录下创建bb(aa目录必须存在)</span>
+<span style="color: #008080;">mkdir</span>('./aa/bb/cc/dd',0777,<span style="color: #0000ff;">true</span>);    <span style="color: #008000;">//</span><span style="color: #008000;">递归创建</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 16px;"><strong> &nbsp;2.2删除文件夹（rmdir()）</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">remove:移除</span>
+
+<span style="color: #008080;">rmdir</span>('./aa/bb/cc/dd');    <span style="color: #008000;">//</span><span style="color: #008000;">删除dd文件夹</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 16px;"><strong>&nbsp; &nbsp;注意：</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 1、删除的文件夹必须是空的</strong></span></p>
+<p><span style="font-size: 16px;"><strong><em id="__mceDel">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </em>2、PHP基于安全考虑，没有提供递归删除。</strong></span></p>
+<p><span style="font-size: 16px;"><strong><em>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </em>2.3重命名文件夹（rename(旧名字，新姓名)）</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">rename</span>('./aa','./aaa');    <span style="color: #008000;">//</span><span style="color: #008000;">将aa改为aaa</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 16px;"><strong>&nbsp; &nbsp; 2.4是否是文件夹（is_dir()）</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">echo</span> <span style="color: #008080;">is_dir</span>('./aaa')?'  是文件夹':'不是文件夹';</code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 16px;"><strong>&nbsp; &nbsp;2.5打开文件夹、读取文件夹、关闭文件夹</strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$folder</span>=<span style="color: #008080;">opendir</span>('./');    <span style="color: #008000;">//</span><span style="color: #008000;">打开目录
+//var_dump($folder);        //resource(3) of type (stream) </span>
+<span style="color: #0000ff;">while</span>(<span style="color: #800080;">$f</span>=<span style="color: #008080;">readdir</span>(<span style="color: #800080;">$folder</span>)){    <span style="color: #008000;">//</span><span style="color: #008000;">读取文件夹</span>
+    <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$f</span>=='.' || <span style="color: #800080;">$f</span>=='..'<span style="color: #000000;">)
+        </span><span style="color: #0000ff;">continue</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">echo</span> <span style="color: #008080;">iconv</span>('gbk','utf-8',<span style="color: #800080;">$f</span>),'&lt;br&gt;';  <span style="color: #008000;">//</span><span style="color: #008000;">将gbk转成utf-8</span>
+<span style="color: #000000;">}
+</span><span style="color: #008080;">closedir</span>(<span style="color: #800080;">$folder</span>);        <span style="color: #008000;">//</span><span style="color: #008000;">关闭文件夹</span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 16px;"><strong> &nbsp;小结：</strong></span></p>
+<p><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 1、opendir()返回资源类型</strong></span><br /><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2、每个文件夹中都有.和..</strong></span><br /><span style="font-size: 16px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 3、iconv()用来做字符编码转换</strong></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

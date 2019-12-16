@@ -1,0 +1,125 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel框架内实现api文档markdown转为html' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel框架内实现api文档markdown转为html</center></div><div class='banquan'>原文出处:本文由博客园博主翟码农提供。<br/>
+原文连接:https://www.cnblogs.com/drunkhero/p/11397605.html</div><br>
+    <p>前后端分离的工作模式于今是非常流行了，前后端工作的对接，就离开不了API文档的辅助。</p>
+<p>&nbsp;</p>
+<p>根据自己以往的工作经历，以及了解的一些资讯，API文档的建立，无非以下几种方式：</p>
+<p>1. word文档模板</p>
+<p>2. 第三方平台，类如postman、showdoc等</p>
+<p>3. 框架内单独自定义一套绑定路由的结构，再解析成html页面</p>
+<p>4. 在框架内每个路由的方法的注释块里按照规则写注释，再解析生成api文档</p>
+<p>5. 框架内直接编辑markdown文件，再转换成html页面</p>
+<p>&nbsp;</p>
+<p>根据自己的使用心得，发表一下个人看法。</p>
+<h3>1.word文档模板：</h3>
+<p>这是在第一家公司--富士康科技集团--接触到的，就是公司准备好了一个API文档的模板，每个api对应一个表格，在表格里填上对应的路径(path)，调用方式(method)、请求参数，返回数据结构等信息。对于刚开始新增api是ok的，当时测试工作和后端正好在不同城市，api文档可以起到很好的沟通作用。但对于后期维护，总要完善了一个接口，就要对应的去word文档里查找并修改，一旦后端没有或忘记更新了，随着时间过着越久，反而后面越容易把自己带到坑里去。</p>
+<p>&nbsp;</p>
+<p>优点：前期工作少，拿个模板就可以开写了。</p>
+<p>缺点：更新接口不是很方便。</p>
+<h3>&nbsp;</h3>
+<h3>2.第三方平台：</h3>
+<p>工作经历中有一家用到，无非就是把api信息录入到第三方平台，本人很是反感。尤其是需要像form表单一样一个个栏位填写，一个个接口的添加，简直是作践后端的时间价值。维护？简直是更乱，因为第三方平台需要登录账号，每多一小步，人发懒的概率就越大，时间久了，api文档不同步的概率和范围就更大更广。</p>
+<p>&nbsp;</p>
+<p>工作中现在我一直用postman测试接口，所以postman是必用的工具。至于用它写api文档是否支持又是否方便，本人没有接触过，就不发表看法了。</p>
+<p>showDoc是编辑markdown方式，对于添加API接口，撰写体验还是很不错的。但接口信息像postman一样一条条分开的，查找浏览不方便，维护一般首先就是要查找，所以维护体验也感觉很不好。所以以往有的公司，项目涉及到成员多批变迁时，就有那种同一个功能出现几个不同的api。因为新增接口信息可以避免去了解去确认此功能接口之前是否已经撰写过，人都有惰性，就干脆直接新增了接口文档记录，结果就自然导致同样接口的文档记录有两三条，文档就慢慢失去了原本的价值：辅助新员工快速了解功能和开展工作。</p>
+<p>&nbsp;</p>
+<p>那什么时候考虑第三方平台呢？</p>
+<p>有的第三方平台实现了接口功能实时监控及安全防护，就是有受到攻击或者接口挂掉的情况时，可以给你手机发短信通知你。如果你非常需要这个，那你就用吧。</p>
+<p>&nbsp;</p>
+<p>优点：前期工作少，有可能带有接口安全防护和实时监控，避免因为接口挂掉带来利益损失。</p>
+<p>缺点：不仅多了一步登录操作，而且大多产品设计的页面体验不好，不利于快速新增及更新文档，管理不好的话，容易失去文档的本身价值。</p>
+<h3>&nbsp;</h3>
+<h3>3.自定义绑定路由的结构：</h3>
+<p>这是我自己起的名字，可能不太准确。</p>
+<p>大体实现方式就是，接口写好了并定好了路由，就在另外一个php文件针对每一条路由用php语言来定义好一个api文档所需要的信息。</p>
+<p>例如如下：</p>
+<pre><code>$app-&gt;route("user/getlist")<br />    -&gt;request(<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; array(<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'page' =&gt; '1 //第几页',<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'page_size' =&gt; '10 //每页数据条数'<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)<br />&nbsp;&nbsp;&nbsp;&nbsp;)<br />&nbsp;&nbsp;&nbsp; -&gt;method('post')<br />&nbsp;&nbsp;&nbsp; -&gt;response(<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; array(<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'data' =&gt; array(<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'total_count' =&gt; '199 //总记录条数',<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'list' =&gt; array(<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'username' =&gt; 'coderzhai //姓名',<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'gender' =&gt; '1  //1-男 2-女'<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)<br />&nbsp;&nbsp;&nbsp;&nbsp;)</code></pre>
+<p>然后自己再根据上述结构解析出对应数据展示在页面里。</p>
+<p>&nbsp;</p>
+<p>优点：跟后端代码一起，文档更新及维护更方便。文档按功能划分、按区域划分、按版本划分、增加用户权限控制等实现比较方便。</p>
+<p>缺点：由于以上代码是用php语言编写的，一旦遇上哪里少了括号或是逗号等php语法错误，就会造成文档页面无法浏览。还需要费时间的去找到问题的所在并及时修复它。接口路由不适宜用resource组合的，因为具体对应增删查改哪几个接口不好确定。</p>
+<p>&nbsp;</p>
+<h3>4.利用方法的注释块生成api文档</h3>
+<p>这种方式是了解apidoc时了解到的，就是按照规定的规则在接口方法的注释块里备注信息，类如如下：</p>
+<pre><code>/**<br /> * @api {get} /user/:id Request User information<br /> * @apiName GetUser<br /> * @apiGroup User<br /> *<br /> * @apiParam {Number} id Users unique ID.<br /> *<br /> * @apiSuccess {String} firstname Firstname of the User.<br /> * @apiSuccess {String} lastname  Lastname of the User.<br /> *<br /> * @apiSuccessExample Success-Response:<br /> *     HTTP/1.1 200 OK<br /> *     {<br /> *       "firstname": "John",<br /> *       "lastname": "Doe"<br /> *     }<br /> *<br /> * @apiError UserNotFound The id of the User was not found.<br /> *<br /> * @apiErrorExample Error-Response:<br /> *     HTTP/1.1 404 Not Found<br /> *     {<br /> *       "error": "UserNotFound"<br /> *     }<br /> */</code></pre>
+<p>以上是我从网上随便粘贴的一段，虽说本人写代码不是非常洁癖，但这么一大串的注释，本人看着就表示不爽，所以没一点深入了解它的欲望。不介意的就自行研究喽。</p>
+<p>&nbsp;</p>
+<p>优点：同后端代码一起，更新维护距离近在咫尺。</p>
+<p>缺点：注释太大块了，感觉影响看功能，代码显得十分拖沓，影响美观。</p>
+<p>&nbsp;</p>
+<h3>&nbsp;</h3>
+<h3>5.框架内直接编辑markdown文件</h3>
+<p>这就是我目前最喜欢的方式，也是本文要讲解实现的方式。</p>
+<p>&nbsp;</p>
+<p>优点：同后端代码一起，维护方便；markdown格式编写，文档撰写省时；所有接口在一个页面或几个划分好的页面里，方便浏览和查找。</p>
+<p>缺点：要做一些前期工作来实现。但现在有了现成的插件和本文的教程支持，缺点就可以忽略不计了。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>以上几种方式都比较完了，现在我就来实现在Laravel内撰写Api文档，支持网页浏览。</p>
+<p>&nbsp;</p>
+<p>要实现的功能主要就是把指定的md文件转换成html。</p>
+<p>github上有一个人气很旺的插件：erusev/parsedown, 地址：<a href="https://github.com/erusev/parsedown" target="_blank">php解析markdown为html的插件:erusev/parsedown</a></p>
+<p>&nbsp;</p>
+<p>一般项目涉及PC后台，我这里就新增一个路由文件专门来放这些后台的api。</p>
+<p>&nbsp;</p>
+<h4>1.安装erusev/parsedown插件。</h4>
+<p>编辑composer.json文件，添加代码如下：</p>
+<pre><code> "require": {<br />        "php": "^7.1.3",<br />        "fideloper/proxy": "^4.0",<br />        "laravel/framework": "5.7.*",<br />        "laravel/tinker": "^1.0",<br />        "erusev/parsedown":"^1.6"  //新增的<br />    },</code></pre>
+<p>&nbsp;</p>
+<p>项目根目录下执行composer install进行安装。在vendor文件夹下可看到erusev文件夹，则代表安装成功。</p>
+<h4>&nbsp;</h4>
+<h4>2.在app/Providers/RouteServiceProvider.php中引入自定义的后台路由文件。</h4>
+<pre><code>public function map()<br />{<br />    $this-&gt;mapApiRoutes();<br />    $this-&gt;mapWebRoutes();<br />    //新增的后台路由<br />    $this-&gt;mapAdminRoutes();<br />}<br /><br />protected function mapAdminRoutes()<br />{<br />    Route::prefix('admin')<br />    //    -&gt;middleware('api')   //避免篇幅过长，中间件的引入这里就忽略了<br />        -&gt;namespace($this-&gt;namespace)<br />        -&gt;group(base_path('routes/admin.php'));<br />}</code></pre>
+<h4>&nbsp;</h4>
+<h4>&nbsp;</h4>
+<h4>3.添加路由，添加控制器，先调试，要可以成功进入控制器方法。</h4>
+<p>routes问价下新增admin.php文件，里面加上我们的api文档路由：</p>
+<pre><code>Route::get('/apidoc', 'Admin\ApiDocController@showDoc');  //注意后面是反斜杠\,否则会报错</code></pre>
+<p>laravel框架入口是public/index.php,为了隐藏这个就自定义个本地解析的名称，编辑apache的httpd-vhosts文件如下：</p>
+<pre><code>&lt;VirtualHost *:80&gt;<br />	ServerName testlaravel<br />	DocumentRoot E:/wamp64/www/laravel/public<br />	&lt;Directory  "E:/wamp64/www/laravel/public/"&gt;<br />		Options +Indexes +Includes +FollowSymLinks +MultiViews<br />		AllowOverride All<br />		Allow from all<br />		Header set Access-Control-Allow-Origin  *<br />	&lt;/Directory&gt;<br />	RewriteEngine On<br />	RewriteCond $1 !^(index\.php|images|robots\.txt)<br />	RewriteRule ^(.*)$ /index.php/$1 [L]<br />&lt;/VirtualHost&gt;</code></pre>
+<p>编辑好后，重启apache服务。</p>
+<p>&nbsp;</p>
+<p>现在来加控制器，laravel可以用artisan命令生成，方便快捷。在项目根目录执行如下命令：</p>
+<pre><code>php artisan <a href="make:controller">make:controller</a> Admin/ApiDocController</code></pre>
+<p>接下来编辑controller文件：</p>
+<pre><code>&lt;?php<br /><br />namespace App\Http\Controllers\Admin;<br /><br />use Illuminate\Http\Request;<br />use App\Http\Controllers\Controller;<br /><br />class ApiDocController extends Controller<br />{<br />    public function showDoc(Request $request){<br />        echo "hello coder";<br />    }<br />}<span style="background-color: #f7faff;"><br /></span></code></pre>
+<p>浏览器输入http://laraveltest/admin/apidoc,直到出现hello coder后才可以进行后面步骤。</p>
+<h4>&nbsp;</h4>
+<h4>4. 使用插件实现markdown转为html</h4>
+<p>功能很简单，就直接上代码啦。</p>
+<pre><code>&lt;?php<br /><br />namespace App\Http\Controllers\Admin;<br /><br />use Illuminate\Http\Request;<br />use App\Http\Controllers\Controller;<br />use Parsedown;<br /><br />class ApiDocController extends Controller<br />{<br />    public function __construct(){<br />        $this-&gt;markdownParser = new Parsedown();<br />    }<br /><br />    public function showDoc(Request $request){<br />        $fileContent = file_get_contents(storage_path('doc/admin_api.md'));<br />        $htmlContent = $this-&gt;convertMarkdownToHtml($fileContent);<br />        $content = $this-&gt;convertMarkdownToHtml($htmlContent);<br />        return view('apidoc_admin')-&gt;with('content',$content);<br />    }<br /><br />    public function convertMarkdownToHtml($markdown)<br />    {<br />        $convertedHmtl = $this-&gt;markdownParser-&gt;setBreaksEnabled(true)-&gt;text($markdown);<br />        return $convertedHmtl;<br />    }<br />}<span style="background-color: #f7faff;"><br /></span></code></pre>
+<p>本文推荐的就是用markdown编辑api的方式，md就是markdown文件的后缀，我现在把这个文件放在storage/doc/admin_api.md处。</p>
+<p>为了测试，我暂时在文件里粘贴了一个markdown格式的api：</p>
+<pre><code>**简要描述：** <br /><br />- 用户登录接口<br /><br />**请求URL：** <br />- ` http://xx.com/api/user/login `<br />  <br />**请求方式：**<br />- POST <br /><br />**参数：** <br /><br />|参数名|必选|类型|说明|<br />|:----    |:---|:----- |-----   |<br />|username |是  |string |用户名   |<br />|password |是  |string | 密码    |<br /><br /><br /> **返回示例**<br />``` <br />  {<br />    "error_code": 0,<br />    "data": {<br />      "uid": "1",<br />      "username": "zhai coder",<br />      "name": "翟码农",<br />      "groupid": 2 ,<br />      "reg_time": "2019-08-01",<br />      "last_login_time": "0",<br />    }<br />  }<br />```<br /> **返回参数说明** <br /><br />|参数名|类型|说明|<br />|:-----  |:-----|-----                           |<br />|groupid |int   |用户组id，1：超级管理员；2：普通用户  |<br /><br /> **备注** <br /><br />- 更多返回错误代码请看首页的错误代码描述<br /><br /></code></pre>
+<p>最后还需要准备好一个view文件。</p>
+<p>我是创建在resources/views文件夹下的，文件名为：apidoc_admin.blade.php。</p>
+<p>方便表达我强烈的推荐意愿，css样式我都给大家调好了，大家直接拿去用吧。</p>
+<pre><code>&lt;!doctype html&gt;<br />&lt;html lang="{{ str_replace('_', '-', app()-&gt;getLocale()) }}"&gt;<br />&lt;head&gt;<br />&lt;meta charset="utf-8"&gt;<br />&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;<br />&lt;title&gt;Laravel&lt;/title&gt;<br />&lt;style&gt;<br />    html, body {<br />        background-color: #fff;<br />        color: #636b6f;<br />        font-family: 'Nunito', sans-serif;<br />        font-weight: 200;<br />        height: 100vh;<br />        margin: 0;<br />        color:#222;  }<br />    .container{<br />        width:800px;<br />        margin:10px auto;<br />        padding:20px;<br />        border-left:2px solid silver;<br />        border-right:2px solid silver; }<br />    table th,td{<br />        border:1px solid #ede;<br />        padding:5px 10px; }<br />    pre{<br />        background: #666;<br />        color: white;<br />        padding: 20px 10px;<br />        font-family: yahei;<br />        overflow: auto; }<br />    li code{<br />        font-size: 28px;<br />        color: #4eb4ee;<br />        font-weight: bold;<br />    }<br />&lt;/style&gt;<br />&lt;/head&gt;<br />&lt;body&gt;<br />&lt;div class="container"&gt;<br />    {!! $content !!}<br />&lt;/div&gt;<br />&lt;/body&gt;<br />&lt;/html&gt;</code></pre>
+<p>&nbsp;</p>
+<p>到这里，所有工作算是完成了。</p>
+<p>在浏览器输入api文档访问地址：</p>
+<pre><code>http://testlaravel/admin/apidoc</code></pre>
+<p>一幅如画卷般的文档页面就出来喽。</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

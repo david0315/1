@@ -1,0 +1,48 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修阿里云服务器+宝塔环境+LNMP+tp5.1安装和调试' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>阿里云服务器+宝塔环境+LNMP+tp5.1安装和调试</center></div><div class='banquan'>原文出处:本文由博客园博主xuxxnb提供。<br/>
+原文连接:https://www.cnblogs.com/wutianfei/p/10570533.html</div><br>
+    <p>1.首先肯定得有个阿里云服务器，楼主是用来自己测试用得，所以就买了个1年得突发性实例，虽然网上都说别买这种，不过个人测试还是没有多少要求得</p>
+<p>2.买了服务器之前可以顺带买个域名，再顺带去备案一下，阿里云里面就有链接，已备后续有用，你申请域名的时候需要本人的身份证，接下去他会免费寄给你幕布，拍个照传上去就可以了，不过就是要等很久就是了</p>
+<p>3.要求不高，所以用宝塔安装环境，首先得安装宝塔</p>
+<p>4.宝塔安装可以去宝塔官网，用远程连接软件连接服务器，楼主用得Xshell，连接之后直接复制宝塔安装命令即可，由于是服务器，不用文档后续的挂载磁盘操作，然后用提供的地址+账号密码登陆即可</p>
+<p>5.登陆宝塔之后，会提示你想安装哪一种环境，选择LNMP</p>
+<p>6.安装完LNMP，之后来安装tp5.1，进入官网之后，需要先装composer，楼主用的国外的网站链接，然后复制安装tp的命令运行即可，自动装的5.1.35版本</p>
+<p>7.在宝塔界面设置tp框架的站点，网站-添加站点-如果没有域名就用服务器的ip当作需要填入的域名，根目录选择tp根目录，点确定。在进入刚设置的站点右侧的设置，设置网站目录，运行目录选择为public</p>
+<p>8.到第7步位置，直接访问服务器ip，就能显示tp的入口页面了</p>
+<p>9.接下来测试访问ip+路由访问页面。在index模块下创建一个view目录，再创建一个index文件夹，再其中创建一个index.html，稍微写一点内容进去。进入controller中的Index.php，按照tp官网的说法，use think\Controller可用可不用，还是用一下吧，再继承一下Controller，在index方法中return view()，渲染默认模板输出。</p>
+<p>10.再次访问服务器ip，如果提示提示页面错误！请稍后再试～或者其他错误，需要开启tp的debug，在config中的app.php中，debug=&gt;true，再刷新页面再看报错内容</p>
+<p>11.会有一个mkdir(): Permission denied的报错，将runtime的权限改成777</p>
+<p>12.此时再次访问服务器ip就能看到上面创建的index.html的内容了，但是如果在ip后加入index/index这个路由的话，还是会报404的错误，这是因为nginx不支持pathinfo，需要手动开启一下</p>
+<p>13.手动在网站站点的设置-配置文件中加入一下代码</p>
+<p><span style="color: #ff0000;">location / { #第一部分 起始</span><br /><span style="color: #ff0000;">	    try_files $uri $uri/ /index.php$uri;</span><br /><span style="color: #ff0000;">           #下面这两个if是为了能获取$_GET参数，不加则无法获取</span><br /><span style="color: #ff0000;">	    if ( -f $request_filename) {  </span><br /><span style="color: #ff0000;">            break;  </span><br /><span style="color: #ff0000;">        }  </span><br /><span style="color: #ff0000;">        if ( !-e $request_filename) {  </span><br /><span style="color: #ff0000;">            rewrite ^(.*)$ /index.php/$1 last;  </span><br /><span style="color: #ff0000;">            break;  </span><br /><span style="color: #ff0000;">        }  </span><br /><span style="color: #ff0000;">	}	#第一部分 结束</span></p>
+<p><span style="color: #ff0000;">location ~ /\.ht { #第二部分 起始</span><br /><span style="color: #ff0000;">		deny all;</span><br /><span style="color: #ff0000;">	} #第二部 结束</span></p>
+<p><span style="color: #ff0000;">#START-PHP</span><br /><span style="color: #ff0000;">	location ~* \.php(.*)$ {</span><br /><span style="color: #ff0000;">		root   /www/tp5/public/;<span style="color: #339966;">#这是tp的入后文件所在，需要根据实际手动改</span></span><br /><span style="color: #ff0000;">		fastcgi_pass   127.0.0.1:9000;</span><br /><span style="color: #ff0000;">		fastcgi_index  index.php;</span><br /><span style="color: #ff0000;">		fastcgi_split_path_info ^((?U).+\.php)(/?.+)$;  #第三部分  起始</span><br /><span style="color: #ff0000;">		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; </span><br /><span style="color: #ff0000;">     	fastcgi_param PATH_INFO $fastcgi_path_info;  #第三部分 结束</span><br /><span style="color: #ff0000;">		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br /><span style="color: #ff0000;">		include        fastcgi_params;</span><br /><span style="color: #ff0000;">    }</span></p>
+<p>14.加入以上代码之后，在宝塔界面的软件管理中，重启nginx，在用ip+路由的方式访问，现在也能够访问的index.html的内容了。</p>
+<p>15.相关操作的文件路径，可以在宝塔界面的安全按钮的界面中看，任何操作都有会记录，会有相关的文件地址</p>
+<p>由于楼主也是新手，各位大佬见谅，相关tp开发问题后续看情况了，主要还是给自己看的，上面步骤是针对宝塔安装的环境，谢谢</p>
+<p>16.在tp框架下的config的app.php中开始app_debug和url_route_must,在对面控制器下创建好模板，在route.php中设置一个路由即可通过路由访问，例如Route::rule("admin/index","admin/Index/index");这是开启强制路由了，每次访问之前都要配置路由，不过tp5.1默认是开启路由了的，不开启强制路由也没关系</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>到今天算是完成了一个小项目，最近挺迷茫的，没啥目标，哎</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

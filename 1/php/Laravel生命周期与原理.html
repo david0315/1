@@ -1,0 +1,329 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Laravel生命周期与原理' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Laravel生命周期与原理</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11890362.html</div><br>
+    <src><br />
+<src>
+<p>一旦用户（浏览器）发送了一个HTTP请求，我们的apache或者nginx一般都转到index.php，因此，之后的一系列步骤都是从index.php开始的，我们先来看一看这个文件代码。</p>
+<src class="highlight">
+<pre><code><code class="language-text">&lt;?php
+require __DIR__.'/../bootstrap/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
+/*
+|--------------------------------------------------------------------------
+| Run The Application
+|--------------------------------------------------------------------------
+|
+| Once we have the application, we can handle the incoming request
+| through the kernel, and send the associated response back to
+| the client's browser allowing them to enjoy the creative
+| and wonderful application we have prepared for them.
+|
+*/
+$kernel = $app-&gt;make(Illuminate\Contracts\Http\Kernel::class);
+$response = $kernel-&gt;handle(
+  $request = Illuminate\Http\Request::capture()
+);
+$response-&gt;send();
+$kernel-&gt;terminate($request, $response);
+</code></code></pre>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>这里在注释里谈了kernel的作用，kernel处理来访的请求，并且发送相应返回给用户浏览器。</p>
+<p>这里又涉及到了一个app对象，所以附上app对象的源码，这份源码是\bootstrap\app.php</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">/*</span>
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">|--------------------------------------------------------------------------
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">| Create The Application
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">|--------------------------------------------------------------------------
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">|
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">| The first thing we will do is create a new Laravel application instance
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">| which serves as the "glue" for all the components of Laravel, and is
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">| the IoC container for the system binding all of the various parts.
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">|
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">12</span> <span style="color: #800080;">$app</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Illuminate\Foundation\Application(
+</span><span style="color: #008080;">13</span>   <span style="color: #008080;">realpath</span>(__DIR__.'/../'<span style="color: #000000;">)
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">15</span> <span style="color: #008000;">/*</span>
+<span style="color: #008080;">16</span> <span style="color: #008000;">|--------------------------------------------------------------------------
+</span><span style="color: #008080;">17</span> <span style="color: #008000;">| Bind Important Interfaces
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">|--------------------------------------------------------------------------
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">|
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">| Next, we need to bind some important interfaces into the container so
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">| we will be able to resolve them when needed. The kernels serve the
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">| incoming requests to this application from both the web and CLI.
+</span><span style="color: #008080;">23</span> <span style="color: #008000;">|
+</span><span style="color: #008080;">24</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">25</span> <span style="color: #800080;">$app</span>-&gt;<span style="color: #000000;">singleton(
+</span><span style="color: #008080;">26</span>   Illuminate\Contracts\Http\Kernel::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">27</span>   App\Http\Kernel::<span style="color: #0000ff;">class</span>
+<span style="color: #008080;">28</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">29</span> <span style="color: #800080;">$app</span>-&gt;<span style="color: #000000;">singleton(
+</span><span style="color: #008080;">30</span>   Illuminate\Contracts\Console\Kernel::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">31</span>   App\Console\Kernel::<span style="color: #0000ff;">class</span>
+<span style="color: #008080;">32</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">33</span> <span style="color: #800080;">$app</span>-&gt;<span style="color: #000000;">singleton(
+</span><span style="color: #008080;">34</span>   Illuminate\Contracts\Debug\ExceptionHandler::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">35</span>   App\Exceptions\Handler::<span style="color: #0000ff;">class</span>
+<span style="color: #008080;">36</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">/*</span>
+<span style="color: #008080;">38</span> <span style="color: #008000;">|--------------------------------------------------------------------------
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">| Return The Application
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">|--------------------------------------------------------------------------
+</span><span style="color: #008080;">41</span> <span style="color: #008000;">|
+</span><span style="color: #008080;">42</span> <span style="color: #008000;">| This script returns the application instance. The instance is given to
+</span><span style="color: #008080;">43</span> <span style="color: #008000;">| the calling script so we can separate the building of the instances
+</span><span style="color: #008080;">44</span> <span style="color: #008000;">| from the actual running of the application and sending responses.
+</span><span style="color: #008080;">45</span> <span style="color: #008000;">|
+</span><span style="color: #008080;">46</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;">47</span> <span style="color: #0000ff;">return</span> <span style="color: #800080;">$app</span>;</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>请看app变量是Illuminate\Foundation\Application类的对象，所以调用了这个类的构造函数，具体做了什么事，我们看源码。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$basePath</span> = <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">3</span>   <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$basePath</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span>     <span style="color: #800080;">$this</span>-&gt;setBasePath(<span style="color: #800080;">$basePath</span><span style="color: #000000;">);
+</span><span style="color: #008080;">5</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">6</span>   <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">registerBaseBindings();
+</span><span style="color: #008080;">7</span>   <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">registerBaseServiceProviders();
+</span><span style="color: #008080;">8</span>   <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">registerCoreContainerAliases();
+</span><span style="color: #008080;">9</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>构造器做了3件事，前两件事很好理解，创建Container，注册了ServiceProvider，看代码</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;"> * Register the basic bindings into the container.
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;"> *
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> * @return void
+</span><span style="color: #008080;"> 5</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> registerBaseBindings()
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 8</span>   <span style="color: #0000ff;">static</span>::setInstance(<span style="color: #800080;">$this</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 9</span>   <span style="color: #800080;">$this</span>-&gt;instance('app', <span style="color: #800080;">$this</span><span style="color: #000000;">);
+</span><span style="color: #008080;">10</span>   <span style="color: #800080;">$this</span>-&gt;instance(Container::<span style="color: #0000ff;">class</span>, <span style="color: #800080;">$this</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">12</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">13</span> <span style="color: #008000;"> * Register all of the base service providers.
+</span><span style="color: #008080;">14</span> <span style="color: #008000;"> *
+</span><span style="color: #008080;">15</span> <span style="color: #008000;"> * @return void
+</span><span style="color: #008080;">16</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">17</span> <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> registerBaseServiceProviders()
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">19</span>   <span style="color: #800080;">$this</span>-&gt;register(<span style="color: #0000ff;">new</span> EventServiceProvider(<span style="color: #800080;">$this</span><span style="color: #000000;">));
+</span><span style="color: #008080;">20</span>   <span style="color: #800080;">$this</span>-&gt;register(<span style="color: #0000ff;">new</span> LogServiceProvider(<span style="color: #800080;">$this</span><span style="color: #000000;">));
+</span><span style="color: #008080;">21</span>   <span style="color: #800080;">$this</span>-&gt;register(<span style="color: #0000ff;">new</span> RoutingServiceProvider(<span style="color: #800080;">$this</span><span style="color: #000000;">));
+</span><span style="color: #008080;">22</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>最后一件事，是做了个很大的数组，定义了大量的别名，侧面体现程序员是聪明的懒人。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;"> * Register the core class aliases in the container.
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;"> *
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> * @return void
+</span><span style="color: #008080;"> 5</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 6</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> registerCoreContainerAliases()
+</span><span style="color: #008080;"> 7</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 8</span>   <span style="color: #800080;">$aliases</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;"> 9</span>     'app'         =&gt; [\Illuminate\Foundation\Application::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Container\Container::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Foundation\Application::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">10</span>     'auth'         =&gt; [\Illuminate\Auth\AuthManager::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Auth\Factory::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">11</span>     'auth.driver'     =&gt; [\Illuminate\Contracts\Auth\Guard::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">12</span>     'blade.compiler'    =&gt; [\Illuminate\View\Compilers\BladeCompiler::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">13</span>     'cache'        =&gt; [\Illuminate\Cache\CacheManager::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Cache\Factory::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">14</span>     'cache.store'     =&gt; [\Illuminate\Cache\Repository::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Cache\Repository::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">15</span>     'config'        =&gt; [\Illuminate\Config\Repository::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Config\Repository::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">16</span>     'cookie'        =&gt; [\Illuminate\Cookie\CookieJar::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Cookie\Factory::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Cookie\QueueingFactory::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">17</span>     'encrypter'      =&gt; [\Illuminate\Encryption\Encrypter::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Encryption\Encrypter::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">18</span>     'db'          =&gt; [\Illuminate\Database\DatabaseManager::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">19</span>     'db.connection'    =&gt; [\Illuminate\Database\Connection::<span style="color: #0000ff;">class</span>, \Illuminate\Database\ConnectionInterface::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">20</span>     'events'        =&gt; [\Illuminate\Events\Dispatcher::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Events\Dispatcher::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">21</span>     'files'        =&gt; [\Illuminate\Filesystem\Filesystem::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">22</span>     'filesystem'      =&gt; [\Illuminate\Filesystem\FilesystemManager::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Filesystem\Factory::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">23</span>     'filesystem.disk'   =&gt; [\Illuminate\Contracts\Filesystem\Filesystem::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">24</span>     'filesystem.cloud'   =&gt; [\Illuminate\Contracts\Filesystem\Cloud::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">25</span>     'hash'         =&gt; [\Illuminate\Contracts\Hashing\Hasher::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">26</span>     'translator'      =&gt; [\Illuminate\Translation\Translator::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Translation\Translator::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">27</span>     'log'         =&gt; [\Illuminate\<span style="color: #008080;">Log</span>\Writer::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Logging\<span style="color: #008080;">Log</span>::<span style="color: #0000ff;">class</span>, \Psr\<span style="color: #008080;">Log</span>\LoggerInterface::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">28</span>     'mailer'        =&gt; [\Illuminate\<span style="color: #008080;">Mail</span>\Mailer::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\<span style="color: #008080;">Mail</span>\Mailer::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\<span style="color: #008080;">Mail</span>\MailQueue::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">29</span>     'auth.password'    =&gt; [\Illuminate\Auth\Passwords\PasswordBrokerManager::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Auth\PasswordBrokerFactory::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">30</span>     'auth.password.broker' =&gt; [\Illuminate\Auth\Passwords\PasswordBroker::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Auth\PasswordBroker::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">31</span>     'queue'        =&gt; [\Illuminate\Queue\QueueManager::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Queue\Factory::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Queue\Monitor::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">32</span>     'queue.connection'   =&gt; [\Illuminate\Contracts\Queue\Queue::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">33</span>     'queue.failer'     =&gt; [\Illuminate\Queue\Failed\FailedJobProviderInterface::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">34</span>     'redirect'       =&gt; [\Illuminate\Routing\Redirector::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">35</span>     'redis'        =&gt; [\Illuminate\Redis\RedisManager::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Redis\Factory::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">36</span>     'request'       =&gt; [\Illuminate\Http\Request::<span style="color: #0000ff;">class</span>, \Symfony\Component\HttpFoundation\Request::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">37</span>     'router'        =&gt; [\Illuminate\Routing\Router::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Routing\Registrar::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Routing\BindingRegistrar::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">38</span>     'session'       =&gt; [\Illuminate\Session\SessionManager::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">39</span>     'session.store'    =&gt; [\Illuminate\Session\Store::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Session\Session::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">40</span>     'url'         =&gt; [\Illuminate\Routing\UrlGenerator::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Routing\UrlGenerator::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">41</span>     'validator'      =&gt; [\Illuminate\Validation\Factory::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\Validation\Factory::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">42</span>     'view'         =&gt; [\Illuminate\View\Factory::<span style="color: #0000ff;">class</span>, \Illuminate\Contracts\View\Factory::<span style="color: #0000ff;">class</span>],
+<span style="color: #008080;">43</span> <span style="color: #000000;">  ];
+</span><span style="color: #008080;">44</span>   <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$aliases</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span> =&gt; <span style="color: #800080;">$aliases</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">45</span>     <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$aliases</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$alias</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">46</span>       <span style="color: #800080;">$this</span>-&gt;alias(<span style="color: #800080;">$key</span>, <span style="color: #800080;">$alias</span><span style="color: #000000;">);
+</span><span style="color: #008080;">47</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">48</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">49</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>这里出现了一个instance函数，其实这并不是Application类的函数，而是Application类的父类Container类的函数</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;"> * Register an existing instance as shared in the container.
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;"> *
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> * @param string $abstract
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;"> * @param mixed  $instance
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;"> * @return void
+</span><span style="color: #008080;"> 7</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 8</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> instance(<span style="color: #800080;">$abstract</span>, <span style="color: #800080;">$instance</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">10</span>   <span style="color: #800080;">$this</span>-&gt;removeAbstractAlias(<span style="color: #800080;">$abstract</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>   <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$this</span>-&gt;aliases[<span style="color: #800080;">$abstract</span><span style="color: #000000;">]);
+</span><span style="color: #008080;">12</span>   <span style="color: #008000;">//</span><span style="color: #008000;"> We'll check to determine if this type has been bound before, and if it has
+</span><span style="color: #008080;">13</span> <span style="color: #008000;">  // we will fire the rebound callbacks registered with the container and it
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">  // can be updated with consuming classes that have gotten resolved here.</span>
+<span style="color: #008080;">15</span>   <span style="color: #800080;">$this</span>-&gt;instances[<span style="color: #800080;">$abstract</span>] = <span style="color: #800080;">$instance</span><span style="color: #000000;">;
+</span><span style="color: #008080;">16</span>   <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;bound(<span style="color: #800080;">$abstract</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;">17</span>     <span style="color: #800080;">$this</span>-&gt;rebound(<span style="color: #800080;">$abstract</span><span style="color: #000000;">);
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">  }
+</span><span style="color: #008080;">19</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>Application是Container的子类，所以<code>$app</code>不仅是Application类的对象，还是Container的对象，所以，新出现的singleton函数我们就可以到Container类的源代码文件里查。</p>
+<p>singleton这个函数，前一个参数是实际类名，后一个参数是类的&ldquo;别名&rdquo;。</p>
+<p><code>$app</code>对象声明了3个单例模型对象，分别是HttpKernel，ConsoleKernel，ExceptionHandler。请注意，这里并没有创建对象，只是声明，也只是起了一个&ldquo;别名&rdquo;。</p>
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>大家有没有发现，index.php中也有一个$kernel变量，但是只保存了make出来的HttpKernel变量，因此本文不再讨论，ConsoleKernel，ExceptionHandler。。。</p>
+<p>继续在文件夹下找到App\Http\Kernel.php，既然我们把实际的HttpKernel做的事情都写在这个php文件里，就从这份代码里看看究竟做了哪些事？</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">namespace App\Http;
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">use</span> Illuminate\Foundation\Http\Kernel <span style="color: #0000ff;">as</span><span style="color: #000000;"> HttpKernel;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">class</span> Kernel <span style="color: #0000ff;">extends</span><span style="color: #000000;"> HttpKernel
+</span><span style="color: #008080;"> 5</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 6</span>   <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">   * The application's global HTTP middleware stack.
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;">   *
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;">   * These middleware are run during every request to your application.
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">   *
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">   * @var array
+</span><span style="color: #008080;">12</span>    <span style="color: #008000;">*/</span>
+<span style="color: #008080;">13</span>   <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$middleware</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;">14</span>     \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">15</span>     <span style="color: #008000;">//</span><span style="color: #008000;">\App\Http\Middleware\MyMiddleware::class,</span>
+<span style="color: #008080;">16</span> <span style="color: #000000;">  ];
+</span><span style="color: #008080;">17</span>   <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">18</span> <span style="color: #008000;">   * The application's route middleware groups.
+</span><span style="color: #008080;">19</span> <span style="color: #008000;">   *
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">   * @var array
+</span><span style="color: #008080;">21</span>    <span style="color: #008000;">*/</span>
+<span style="color: #008080;">22</span>   <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$middlewareGroups</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;">23</span>     'web' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;">24</span>       \App\Http\Middleware\EncryptCookies::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">25</span>       \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">26</span>       \Illuminate\Session\Middleware\StartSession::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">27</span>       \Illuminate\View\Middleware\ShareErrorsFromSession::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">28</span>       \App\Http\Middleware\VerifyCsrfToken::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">29</span>     ],
+<span style="color: #008080;">30</span>     'api' =&gt;<span style="color: #000000;"> [
+</span><span style="color: #008080;">31</span>       'throttle:60,1',
+<span style="color: #008080;">32</span>     ],
+<span style="color: #008080;">33</span> <span style="color: #000000;">  ];
+</span><span style="color: #008080;">34</span>   <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">35</span> <span style="color: #008000;">   * The application's route middleware.
+</span><span style="color: #008080;">36</span> <span style="color: #008000;">   *
+</span><span style="color: #008080;">37</span> <span style="color: #008000;">   * These middleware may be assigned to groups or used individually.
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">   *
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">   * @var array
+</span><span style="color: #008080;">40</span>    <span style="color: #008000;">*/</span>
+<span style="color: #008080;">41</span>   <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$routeMiddleware</span> =<span style="color: #000000;"> [
+</span><span style="color: #008080;">42</span>     'auth' =&gt; \App\Http\Middleware\Authenticate::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">43</span>     'auth.basic' =&gt; \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">44</span>     'guest' =&gt; \App\Http\Middleware\RedirectIfAuthenticated::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">45</span>     'throttle' =&gt; \Illuminate\Routing\Middleware\ThrottleRequests::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">46</span>   'mymiddleware'=&gt;\App\Http\Middleware\MyMiddleware::<span style="color: #0000ff;">class</span>,
+<span style="color: #008080;">47</span> <span style="color: #000000;">  ];
+</span><span style="color: #008080;">48</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<p>一目了然，HttpKernel里定义了中间件数组。</p>
+<p>该做的做完了，就开始了请求到响应的过程，见index.php</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #800080;">$response</span> = <span style="color: #800080;">$kernel</span>-&gt;<span style="color: #000000;">handle(
+</span><span style="color: #008080;">2</span>   <span style="color: #800080;">$request</span> = Illuminate\Http\Request::<span style="color: #000000;">capture()
+</span><span style="color: #008080;">3</span> <span style="color: #000000;">);
+</span><span style="color: #008080;">4</span> <span style="color: #800080;">$response</span>-&gt;send();</code></pre>
+
+<p>&nbsp;</p>
+
+<p>最后在中止，释放所有资源。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">* Call the terminate method on any terminable middleware.
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;">*
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">* @param \Illuminate\Http\Request $request
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">* @param \Illuminate\Http\Response $response
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;">* @return void
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 8</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> terminate(<span style="color: #800080;">$request</span>, <span style="color: #800080;">$response</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">10</span>     <span style="color: #800080;">$this</span>-&gt;terminateMiddleware(<span style="color: #800080;">$request</span>, <span style="color: #800080;">$response</span><span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>     <span style="color: #800080;">$this</span>-&gt;app-&gt;<span style="color: #000000;">terminate();
+</span><span style="color: #008080;">12</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>总结一下，简单归纳整个过程就是：</strong></p>
+<p>1.index.php加载\bootstrap\app.php，在Application类的构造函数中创建Container，注册了ServiceProvider，定义了别名数组，然后用app变量保存构造函数构造出来的对象。</p>
+<p>2.使用app这个对象，创建1个单例模式的对象HttpKernel，在创建HttpKernel时调用了构造函数，完成了中间件的声明。</p>
+<p>3.以上这些工作都是在请求来访之前完成的，接下来开始等待请求，然后就是：接受到请求--&gt;处理请求--&gt;发送响应--&gt;中止app变量</p>
+<ul>
+<li>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></li>
+</ul>
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

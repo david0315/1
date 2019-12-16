@@ -1,0 +1,485 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修使用PHP开发HR系统（6）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>使用PHP开发HR系统（6）</center></div><div class='banquan'>原文出处:本文由博客园博主ChristineZ提供。<br/>
+原文连接:https://www.cnblogs.com/zsnzsn/p/11380397.html</div><br>
+    <p style="margin-left: 27pt"> 
+ </p><p><span style="color:black"><span style="font-size:10pt"><strong><span style="font-family:微软雅黑; background-color:white">本节讲述如何连接</span><span style="background-color:white">Postgre<span style="font-family:微软雅黑">数据库并查询与显示数据</span></span></strong></span><span style="font-size:10pt"><strong>。</strong><span style="font-family:微软雅黑">
+				</span></span></span></p><p><span style="color:black; font-size:10pt"><strong>==================================================================================================</strong>
+		</span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt">前几节我们搭建了环境并处理了页面的一些问题，本节我们研究如何连接真实的数据库并把数据显示在页面上。
+</span></p><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">从主页我们看到有"在职人员总数"，我们就以这个数据为例来说明：</span>
+			<span style="font-family:微软雅黑">
+			</span></span></p><p style="margin-left: 27pt"><img src="./images/使用PHP开发HR系统（6）0.jpg" alt=""/><span style="color:black; font-family:微软雅黑; font-size:10pt">
+		</span></p><p> 
+ </p><p><span style="color:black; font-family:微软雅黑; font-size:10pt"><strong>1、建立数据集库表</strong>
+		</span></p><src style="margin-left: 24pt"><table style="border-collapse:collapse; background: #bdd7ee" border="0"><colgroup><col style="width:818px"/></colgroup><tbody valign="top"><tr><td style="padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; border-top:  solid #a3a3a3 1.0pt; border-left:  solid #a3a3a3 1.0pt; border-bottom:  solid #a3a3a3 1.0pt; border-right:  solid #a3a3a3 1.0pt"><p><span style="font-family:微软雅黑; font-size:10pt">CREATE TABLE "public"."t_employee" (
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"cid" varchar(255) COLLATE "default" NOT NULL,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"cname" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"cname_e" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"department_unit_code" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"department_unit" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"personnel_scope" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"personnel_subscope" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"salary_range" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"office" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"position_number" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"position_name" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"post_directory_code" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"post_directory_name" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"jobs_numbers" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"jobs_name" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"jobs_seq_name" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"jobs_subseq_name" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"jobs_second_name" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"post_hierarchy_name" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"employee_group" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"employee_subgroup" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"is_frontline" varchar(8) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"higher_position" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"line_manager" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"line_manager_id" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"hrbp_id" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"hrbp_name" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"nationality" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"male" varchar(2) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"marriage" varchar(4) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"fertility" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"census" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"census_addr" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"census_nature" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"birthdate" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"age" int4,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"id_cards" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"mobile_telephone" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"enterprise_email" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"personal_email" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"education" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"profession" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"institution" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"graduation_date" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"bank_account" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"payee" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"kinsfolk" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"kinsfolk_phone" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"kinsfolk_relation" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"date_of_appointment" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"state_employees" varchar(4) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"permanent_office" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"sources_of_recruitment" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"sources_of_secondary_recruitment" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"date_of_entry" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"date_of_inbloc" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"date_of_seniority" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"date_of_work" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"date_of_dimission" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"date_of_contract_start" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"date_of_contract_end" date,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"the_subject_of_contracts" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"the_count_of_contracts" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"is_second_work" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"address" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"is_competition_agreement" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"performance_manager_name" varchar(255) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"performance_manager_id" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"profile_photo" bytea,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"post_subhierarchy_name" varchar(32) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"pay_rank" varchar(4) COLLATE "default",
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">"nation" varchar(32) COLLATE "default"
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">)
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">WITH (OIDS=FALSE)
+</span></p><p> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."cid" IS '员工编号';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."cname" IS '员工姓名';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."cname_e" IS '员工英文名';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."department_unit_code" IS '部门编码';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."department_unit" IS '部门';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."fertility" IS '生育状况';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."census" IS '户籍所在地';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."census_addr" IS '户籍地址';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."census_nature" IS '户口性质';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."education" IS '学历';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."profession" IS '所学专业';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."institution" IS '院校';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."graduation_date" IS '毕业时间';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."bank_account" IS '银行账号';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."payee" IS '收款人';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."date_of_dimission" IS '离职日期';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">COMMENT ON COLUMN "public"."t_employee"."nation" IS '民族';
+</span></p><p> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">-- ----------------------------
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">-- Alter Sequences Owned By 
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">-- ----------------------------
+</span></p><p> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">-- ----------------------------
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">-- Primary Key structure for table t_employee
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">-- ----------------------------
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">ALTER TABLE "public"."t_employee" ADD PRIMARY KEY ("cid");</span></p></td></tr></tbody></table><p><span style="color:black; font-family:微软雅黑; font-size:10pt">并导入一些员工信息；
+</span></p><p> 
+ </p><p><span style="color:black; font-family:微软雅黑; font-size:10pt"><strong>2、配置数据库连接</strong>
+		</span></p><p><span style="color:black; font-size:10pt"><strong>2.1 <span style="font-family:微软雅黑">配置</span>php.ini<span style="font-family:微软雅黑">文件</span></strong>
+		</span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt">去掉extension=php_pdo_pgsql.dll和extension=php_pgsql.dll之前的逗号
+</span></p><src style="margin-left: 24pt"><table style="border-collapse:collapse; background: #bdd7ee" border="0"><colgroup><col style="width:818px"/></colgroup><tbody valign="top"><tr><td style="padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; border-top:  solid #a3a3a3 1.0pt; border-left:  solid #a3a3a3 1.0pt; border-bottom:  solid #a3a3a3 1.0pt; border-right:  solid #a3a3a3 1.0pt"><p><span style="font-family:微软雅黑; font-size:10pt">;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_bz2.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_curl.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_com_dotnet.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">;extension=php_enchant.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_fileinfo.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_gd2.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_gettext.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_gmp.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_intl.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_imap.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">;extension=php_interbase.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_ldap.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_mbstring.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_exif.dll      ; Must be after mbstring as it depends on it
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_mysql.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_mysqli.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">;extension=php_oci8_12c.dll  ; Use with Oracle Database 12c Instant Client
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_openssl.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">;extension=php_pdo_firebird.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_pdo_mysql.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_pdo.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=sqlite3.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_pdo_sqlite.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_pdo_oci.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_pdo_odbc.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_pdo_pgsql.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_pgsql.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">;extension=php_shmop.dll
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">extension=php_sqlsrv_56_ts.dll</span></p></td></tr></tbody></table><p><span style="color:black; font-size:10pt"><strong>2.2 <span style="font-family:微软雅黑">配置</span>CI<span style="font-family:微软雅黑">数据库连接参数</span></strong>
+		</span></p><p><span style="color:black; font-size:10pt"><strong><span style="font-family:微软雅黑">打开</span>application<span style="font-family:微软雅黑">-&gt;config-&gt;database.php文件，修改默认数据库连接参数</span></strong>
+		</span></p><src style="margin-left: 24pt"><table style="border-collapse:collapse; background: #bdd7ee" border="0"><colgroup><col style="width:818px"/></colgroup><tbody valign="top"><tr><td style="padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; border-top:  solid #a3a3a3 1.0pt; border-left:  solid #a3a3a3 1.0pt; border-bottom:  solid #a3a3a3 1.0pt; border-right:  solid #a3a3a3 1.0pt"><p><span style="font-family:微软雅黑; font-size:10pt">&lt;?php
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">defined('BASEPATH') OR exit('No direct script access allowed');
+</span></p><p> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">/*
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| -------------------------------------------------------------------
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| DATABASE CONNECTIVITY SETTINGS
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| -------------------------------------------------------------------
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| This file will contain the settings needed to access your database.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| For complete instructions please consult the 'Database Connection'
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| page of the User Guide.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| -------------------------------------------------------------------
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| EXPLANATION OF VARIABLES
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| -------------------------------------------------------------------
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['dsn']      The full DSN string describe a connection to the database.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['hostname'] The hostname of your database server.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['username'] The username used to connect to the database
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['password'] The password used to connect to the database
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['database'] The name of the database you want to connect to
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['dbdriver'] The database driver. e.g.: mysqli.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                        Currently supported:
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 cubrid, ibase, mssql, mysql, mysqli, oci8,
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 odbc, pdo, postgre, sqlite, sqlite3, sqlsrv
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['dbprefix'] You can add an optional prefix, which will be added
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 to the table name when using the  Query Builder class
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['pconnect'] TRUE/FALSE - Whether to use a persistent connection
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['db_debug'] TRUE/FALSE - Whether database errors should be displayed.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['cache_on'] TRUE/FALSE - Enables/disables query caching
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['cachedir'] The path to the folder where cache files should be stored
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['char_set'] The character set used in communicating with the database
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['dbcollat'] The character collation used in communicating with the database
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 NOTE: For MySQL and MySQLi databases, this setting is only used
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                  as a backup if your server is running PHP &lt; 5.2.3 or MySQL &lt; 5.0.7
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 (and in table creation queries made with DB Forge).
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                  There is an incompatibility in PHP with mysql_real_escape_string() which
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                  can make your site vulnerable to SQL injection if you are using a
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                  multi-byte character set and are running versions lower than these.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                  Sites using Latin-1 or UTF-8 database character set and collation are unaffected.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['swap_pre'] A default table prefix that should be swapped with the dbprefix
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['encrypt']  Whether or not to use an encrypted connection.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                        'mysql' (deprecated), 'sqlsrv' and 'pdo/sqlsrv' drivers accept TRUE/FALSE
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                        'mysqli' and 'pdo/mysql' drivers accept an array with the following options:
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                'ssl_key'    - Path to the private key file
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                'ssl_cert'   - Path to the public key certificate file
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                'ssl_ca'     - Path to the certificate authority file
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                'ssl_capath' - Path to a directory containing trusted CA certificates in PEM format
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                'ssl_cipher' - List of *allowed* ciphers to be used for the encryption, separated by colons (':')
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                'ssl_verify' - TRUE/FALSE; Whether verify the server certificate or not
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['compress'] Whether or not to use client compression (MySQL only)
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['stricton'] TRUE/FALSE - forces 'Strict Mode' connections
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                                        - good for ensuring strict SQL while developing
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['ssl_options']        Used to set various SSL options that can be used when making SSL connections.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['failover'] array - A array with 0 or more data for connections if the main should fail.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|        ['save_queries'] TRUE/FALSE - Whether to "save" all executed queries.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 NOTE: Disabling this will also effectively disable both
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 $this-&gt;db-&gt;last_query() and profiling of DB queries.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 When you run a query, with this setting set to TRUE (default),
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 CodeIgniter will store the SQL statement for debugging purposes.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 However, this may cause high memory usage, especially if you run
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|                                 a lot of SQL queries ... disable this to avoid that problem.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| The $active_group variable lets you choose which connection group to
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| make active.  By default there is only one group (the 'default' group).
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">|
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| The $query_builder variables lets you determine whether or not to load
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">| the query builder class.
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">*/
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">$active_group = 'default';
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">$query_builder = TRUE;
+</span></p><p> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">$db['default'] = array(
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'dsn'        =&gt; '',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'hostname' =&gt; 'localhost',
+</span></p><p style="margin-left: 27pt"><span style="font-size:10pt"><span style="font-family:微软雅黑">'username' =&gt; '</span>username<span style="font-family:微软雅黑">',</span><span style="font-family:宋体">
+								</span></span></p><p style="margin-left: 27pt"><span style="font-size:10pt"><span style="font-family:微软雅黑">'password' =&gt; '</span>password<span style="font-family:微软雅黑">',</span>
+							</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'database' =&gt; 'SIM',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'dbdriver' =&gt; 'postgre',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'port'=&gt;'5432',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'dbprefix' =&gt; '',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'pconnect' =&gt; FALSE,
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'db_debug' =&gt; (ENVIRONMENT !== 'production'),
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'cache_on' =&gt; FALSE,
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'cachedir' =&gt; '',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'char_set' =&gt; 'utf8',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'dbcollat' =&gt; 'utf8_general_ci',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'swap_pre' =&gt; '',
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'encrypt' =&gt; FALSE,
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'compress' =&gt; FALSE,
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'stricton' =&gt; FALSE,
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'failover' =&gt; array(),
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">'save_queries' =&gt; TRUE
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">);</span></p></td></tr></tbody></table><p><span style="color:black; font-family:微软雅黑; font-size:10pt">其中需要注意几点：
+</span></p><p><span style="color:black; font-size:10pt">1<span style="font-family:微软雅黑">）</span>dbdriver<span style="font-family:微软雅黑">设置为'</span>postgre',<span style="font-family:微软雅黑">注意不是'</span>postgres<span style="font-family:微软雅黑">',为什么会是这个名字，我猜是这样：打开system\database\drivers可以看到</span>postgre<span style="font-family:微软雅黑">目录
+</span></span></p><p><img src="./images/使用PHP开发HR系统（6）1.jpg" alt=""/><span style="color:black; font-family:微软雅黑; font-size:10pt">
+		</span></p><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">这个目录下放的就是</span>postgre<span style="font-family:微软雅黑">数据库相关的数据库文件；
+</span></span></p><p><span style="color:black; font-size:10pt">2<span style="font-family:微软雅黑">）'port'=&gt;'5432'，注意默认是不包含这个项的，如果电脑上安装了</span>mysql<span style="font-family:微软雅黑">之类的数据库，可能会有问题，所以需要增加这项，笔者的电脑上
+</span></span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt">没有设置这项显示出错；
+</span></p><p> 
+ </p><p><span style="color:black; font-size:10pt"><strong><span style="font-family:微软雅黑">3、建立</span>model<span style="font-family:微软雅黑">文件</span></strong>
+		</span></p><p><span style="color:black; font-size:10pt"><strong>CI<span style="font-family:微软雅黑">采用了</span>MVC<span style="font-family:微软雅黑">模式，连接数据库操作需要建立</span>model<span style="font-family:微软雅黑">文件。</span></strong>
+		</span></p><p><span style="color:black; font-size:10pt"><strong>1<span style="font-family:微软雅黑">）在</span>application<span style="font-family:微软雅黑">-&gt;models文件夹下新建memployee.php文件，代码如下：</span></strong>
+		</span></p><src style="margin-left: 24pt"><table style="border-collapse:collapse; background: #bdd7ee" border="0"><colgroup><col style="width:818px"/></colgroup><tbody valign="top"><tr><td style="padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; border-top:  solid #a3a3a3 1.0pt; border-left:  solid #a3a3a3 1.0pt; border-bottom:  solid #a3a3a3 1.0pt; border-right:  solid #a3a3a3 1.0pt"><p><span style="font-family:微软雅黑; font-size:10pt">&lt;?php
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">defined('BASEPATH') OR exit('No direct script access allowed');
+</span></p><p> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">class MEmployee extends CI_Model  {
+</span></p><p> 
+ </p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">public function __construct(){
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        parent::__construct();
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        $this-&gt;load-&gt;database();        
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    } 
+</span></p><p>    
+ </p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">public function index()
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">{
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">}
+</span></p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">/**
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">* 
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">* 
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">* @return
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">*/
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">public function getEmployeeNum(){
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">$sql = "select state_employees,count(cid) from t_employee group by state_employees";
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">$query = $this-&gt;db-&gt;query($sql);
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">//var_dump($query);
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">return $query-&gt;result();
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">}
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">}</span></p></td></tr></tbody></table><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">通过</span>get<span style="font-family:微软雅黑">EmployeeNum函数，我们查询在职员工数量，并返回查询数据集；注意我们首先要在构造函数中加载数据库类：
+</span></span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt">$this-&gt;load-&gt;database();
+</span></p><p> 
+ </p><p><span style="color:black; font-family:微软雅黑; font-size:10pt"><strong>4、建立control文件</strong>
+		</span></p><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">由于我们是在主页中显示'在职员工总数'这个数据，因此我们修改</span>application-&gt;controllers<span style="font-family:微软雅黑">-&gt;Main.php文件
+</span></span></p><src style="margin-left: 24pt"><table style="border-collapse:collapse; background: #bdd7ee" border="0"><colgroup><col style="width:818px"/></colgroup><tbody valign="top"><tr><td style="padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; border-top:  solid #a3a3a3 1.0pt; border-left:  solid #a3a3a3 1.0pt; border-bottom:  solid #a3a3a3 1.0pt; border-right:  solid #a3a3a3 1.0pt"><p><span style="font-family:微软雅黑; font-size:10pt">&lt;?php
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">defined('BASEPATH') OR exit('No direct script access allowed');
+</span></p><p> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">class Main extends CI_Controller {
+</span></p><p> 
+ </p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">public function __construct(){
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        parent::__construct();
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        $this-&gt;load-&gt;helper('url_helper');
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        $this-&gt;load-&gt;model('MEmployee');                
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    } 
+</span></p><p>    
+ </p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">public function index()
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">{
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">$data['param'] = $this-&gt;MEmployee-&gt;getEmployeeNum();
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">$this-&gt;load-&gt;view('container',$data);
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">}
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">}</span></p></td></tr></tbody></table><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">我们通过调用</span>Memployee-&gt;get<span style="font-family:微软雅黑">EmployeeNum（）函数得到'在职员工数量',并通过数组$data传递到页面；
+</span></span></p><p> 
+ </p><p><span style="color:black; font-family:微软雅黑; font-size:10pt"><strong>5、修改application-&gt;views-&gt;container.php文件</strong>
+		</span></p><src style="margin-left: 24pt"><table style="border-collapse:collapse; background: #bdd7ee" border="0"><colgroup><col style="width:818px"/></colgroup><tbody valign="top"><tr><td style="padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; border-top:  solid #a3a3a3 1.0pt; border-left:  solid #a3a3a3 1.0pt; border-bottom:  solid #a3a3a3 1.0pt; border-right:  solid #a3a3a3 1.0pt"><p><span style="font-family:微软雅黑; font-size:10pt">?php
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">defined('BASEPATH') OR exit('No direct script access allowed');
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">?&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">&lt;!DOCTYPE html&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">&lt;!--[if IE 8]&gt; &lt;html lang="en" class="ie8"&gt; &lt;![endif]--&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">&lt;!--[if IE 9]&gt; &lt;html lang="en" class="ie9"&gt; &lt;![endif]--&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">&lt;!--[if !IE]&gt;&lt;!--&gt; 
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">&lt;html lang="en"&gt; &lt;!--&lt;![endif]--&gt;
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;?php $this-&gt;load-&gt;view('templates/header'); ?&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">&lt;body class="fixed-top"&gt;
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;?php $this-&gt;load-&gt;view('templates/top'); ?&gt;
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;div id="container" class="row-fluid"&gt;
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;?php $this-&gt;load-&gt;view('templates/menu'); ?&gt;
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;div id="main-content"&gt;
+</span></p><p style="margin-left: 81pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;?php $this-&gt;load-&gt;view('main',$param); ?&gt;        
+</span></p><p style="margin-left: 54pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;/div&gt;        
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;/div&gt;       
+</span></p><p style="margin-left: 27pt"><span style="font-family:微软雅黑; font-size:10pt">&lt;?php $this-&gt;load-&gt;view('templates/footer'); ?&gt;
+</span></p><p style="margin-left: 27pt"> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">&lt;/body&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">&lt;/html&gt;</span></p></td></tr></tbody></table><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">注意这句：&lt;?php $this-&gt;load-&gt;view('main',$param); ?&gt;，这里把参数传递到了</span>application<span style="font-family:微软雅黑">-&gt;views-&gt;</span>main<span style="font-family:微软雅黑">.php文件中；
+</span></span></p><p> 
+ </p><p><span style="color:black; font-family:微软雅黑; font-size:10pt"><strong>6、修改application-&gt;views-&gt;main.php文件代码：</strong>
+		</span></p><src style="margin-left: 24pt"><table style="border-collapse:collapse; background: #bdd7ee" border="0"><colgroup><col style="width:818px"/></colgroup><tbody valign="top"><tr><td style="padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; border-top:  solid #a3a3a3 1.0pt; border-left:  solid #a3a3a3 1.0pt; border-bottom:  solid #a3a3a3 1.0pt; border-right:  solid #a3a3a3 1.0pt"><p><span style="font-family:微软雅黑; font-size:10pt">     &lt;div class="container-fluid"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    &lt;!-- BEGIN PAGE HEADER--&gt;   
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    &lt;div class="row-fluid"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">       &lt;div class="span12"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">          &lt;!-- BEGIN PAGE TITLE &amp; BREADCRUMB--&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">           &lt;h3 class="page-title"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">           &lt;/h3&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">           &lt;ul class="breadcrumb"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">               &lt;li&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                   &lt;a href="&lt;?php echo site_url('main/index');?&gt;"&gt;首页&lt;/a&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;span class="divider"&gt;/&lt;/span&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">               &lt;/li&gt;    
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">               &lt;li class="active"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                   人力资源总览
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">               &lt;/li&gt;                  
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">               &lt;li class="pull-right search-wrap"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                   &lt;form action="search_result.html" class="hidden-phone"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                       &lt;div class="input-append search-input-area"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                           &lt;input class="" id="appendedInputButton" type="text"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                           &lt;button class="btn" type="button"&gt;&lt;i class="fa fa-search"&gt;&lt;/i&gt; &lt;/button&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                       &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                   &lt;/form&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">               &lt;/li&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">           &lt;/ul&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">           &lt;!-- END PAGE TITLE &amp; BREADCRUMB--&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">       &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    &lt;!-- END PAGE HEADER--&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    &lt;!-- BEGIN PAGE CONTENT--&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    &lt;div class="row-fluid"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        &lt;!--BEGIN METRO STATES--&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        &lt;div class="metro-nav" id="metro-nav1"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;div class="metro-nav-block nav-block-orange"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;a data-original-title="" href="#"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;i class="fa fa-user"&gt;&lt;/i&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="info"&gt;&lt;?php echo $param[0]-&gt;count; ?&gt;&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="status"&gt;在职人员总数&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;/a&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;div class="metro-nav-block nav-olive"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;a data-original-title="" href="#"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;i class="fa fa-tags"&gt;&lt;/i&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="info"&gt;&lt;?php echo $param[1]-&gt;count; ?&gt;&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="status"&gt;本年度离职人数&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;/a&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;div class="metro-nav-block nav-block-yellow"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;a data-original-title="" href="#"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;i class="fa fa-comments-alt"&gt;&lt;/i&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="info"&gt;&lt;?php echo $param[2]-&gt;count; ?&gt;&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="status"&gt;本年度异动人数&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;/a&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;div class="metro-nav-block nav-block-green double"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;a data-original-title="" href="#"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;i class="fa fa-eye-open"&gt;&lt;/i&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="info"&gt;288&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="status"&gt;本月离职人数&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;/a&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;div class="metro-nav-block nav-block-red"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;a data-original-title="" href="#"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;i class="fa fa-bar-chart"&gt;&lt;/i&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="info"&gt;255&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="status"&gt;本月待招聘人数&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;/a&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        &lt;div class="metro-nav"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;div class="metro-nav-block nav-light-purple double"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;a data-original-title="" href="#"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;i class="fa fa-shopping-cart"&gt;&lt;/i&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="info"&gt;$8979322442&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="status"&gt;本年薪酬福利&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;/a&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;div class="metro-nav-block nav-light-blue double"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;a data-original-title="" href="#"&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;i class="fa fa-tasks"&gt;&lt;/i&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="info"&gt;$37624&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="status"&gt;本月薪酬福利&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                &lt;/a&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">            &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        &lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        &lt;div class="space10"&gt;&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">        &lt;!--END METRO STATES--&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">    &lt;/div&gt;
+</span></p><p> 
+ </p><p><span style="font-family:微软雅黑; font-size:10pt">    &lt;!-- END PAGE CONTENT--&gt;         
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt"> &lt;/div&gt;</span></p></td></tr></tbody></table><p><span style="color:black; font-family:微软雅黑; font-size:10pt">代码中这里引用了参数
+</span></p><src style="margin-left: 24pt"><table style="border-collapse:collapse; background: #bdd7ee" border="0"><colgroup><col style="width:818px"/></colgroup><tbody valign="top"><tr><td style="padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; border-top:  solid #a3a3a3 1.0pt; border-left:  solid #a3a3a3 1.0pt; border-bottom:  solid #a3a3a3 1.0pt; border-right:  solid #a3a3a3 1.0pt"><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="info"&gt;&lt;?php echo $param[0]-&gt;count; ?&gt;&lt;/div&gt;
+</span></p><p><span style="font-family:微软雅黑; font-size:10pt">                    &lt;div class="status"&gt;在职人员总数&lt;/div&gt;</span></p></td></tr></tbody></table><p> 
+ </p><p><span style="color:black; font-size:10pt">6<span style="font-family:微软雅黑">、目前我们的工程结构如下
+</span></span></p><p style="margin-left: 27pt"><img src="./images/使用PHP开发HR系统（6）2.jpg" alt=""/><span style="color:black; font-family:微软雅黑; font-size:10pt">
+		</span></p><p> 
+ </p><p><span style="color:black; font-size:10pt"><strong>7<span style="font-family:微软雅黑"> 运行测试</span></strong>
+		</span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt">运行主页如下所示；
+</span></p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"><img src="./images/使用PHP开发HR系统（6）3.jpg" alt=""/><span style="color:black; font-family:微软雅黑; font-size:10pt">
+		</span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt"><strong>总结：</strong>
+		</span></p><p><span style="color:black; font-size:10pt">
+			<span style="font-family:微软雅黑">本文通过建立数据库表，设置连接参数，并分别创建了</span>MVC<span style="font-family:微软雅黑">的不同对象，提取数据显示在界面上，展示了</span>CI<span style="font-family:微软雅黑">数据库操作
+</span></span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt">的步骤与方法；
+</span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt">程序调试过程中一些错误的处理办法：
+</span></p><p><span style="color:black; font-size:10pt">1<span style="font-family:微软雅黑">、<strong>php连接postgreSQL，总是报错"Call to undefined function pg_connect()"</strong>
+			</span></span></p><p><span style="color:black; font-size:10pt"><strong>
+				<span style="font-family:微软雅黑">这是因为系统找不到dll文件造成的，一般在php.ini文件中，去掉extension=php_pdo_pgsql.dll和extension=php_pgsql.dll</span></strong>
+		</span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt"><strong>之前的逗号就可以了，如果还不行，考虑pgAdmin III文件安装中是否在系统Path路径中加载了对应pgAdmin III目录；</strong>
+		</span></p><p><span style="color:black; font-size:10pt">2<span style="font-family:微软雅黑">、在</span>m<span style="font-family:微软雅黑">Employee.php文件中，我们如果使用汉字例如$sql = "select count(cid) from t_employee where
+</span></span></p><p><span style="color:black; font-family:微软雅黑; font-size:10pt"> state_employees='激活'";系统有时候会报编码错误，这是因为这个文件的默认格式不对，可以按照如下方法修改
+</span></p><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">在</span>CodeLobster IDE<span style="font-family:微软雅黑">中，选择</span>File-<span style="font-family:微软雅黑">&gt;Change encoding
+</span></span></p><p style="margin-left: 27pt"><img src="./images/使用PHP开发HR系统（6）4.jpg" alt=""/><span style="color:black; font-family:微软雅黑; font-size:10pt">
+		</span></p><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">修改编码为</span>UTF-<span style="font-family:微软雅黑">8即可。
+</span></span></p><p> 
+ </p><p><span style="color:black; font-size:10pt"><span style="font-family:微软雅黑">====================================The</span>
+			<span style="font-family:微软雅黑">End==========================
+</span></span></p><p> 
+ </p><p> 
+ </p><p> 
+ </p><p>      
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"> 
+ </p><p style="margin-left: 27pt"><span style="color:black; font-family:微软雅黑; font-size:10pt">
+		</span> </p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

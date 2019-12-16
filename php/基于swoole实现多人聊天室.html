@@ -1,0 +1,335 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修基于swoole实现多人聊天室' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>基于swoole实现多人聊天室</center></div><div class='banquan'>原文出处:本文由博客园博主我爱读活法提供。<br/>
+原文连接:https://www.cnblogs.com/wadhf/p/11827834.html</div><br>
+    <p><strong>核心的swoole代码</strong></p>
+<p>基本的cs(client-sercer)结构不变,这里利用的是redis的哈希和set来储存和分组;从而达到了分组,统计,定时推送等功能;最后利用onclose事件来剔除断开的连接,全部代码如下:(没做前端,就不展示了)</p>
+<p>核心的swoole ws.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+  
+namespace app\common; 
+</span><span style="color: #0000ff;">require_once</span> 'Predis.php'<span style="color: #000000;">; 
+</span><span style="color: #0000ff;">require_once</span> 'Task.php'<span style="color: #000000;">; 
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">* 
+*  socket面向对象的编译 
+</span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Ws 
+{ 
+  </span><span style="color: #0000ff;">CONST</span> HOST='0.0.0.0'<span style="color: #000000;">; 
+  </span><span style="color: #0000ff;">CONST</span> PORT='9501'<span style="color: #000000;">; 
+  </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$ws</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">; 
+  </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$getmsg</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">; 
+  </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$server</span>=<span style="color: #0000ff;">null</span><span style="color: #000000;">; 
+  
+  </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct() 
+  {   
+    </span><span style="color: #800080;">$this</span>-&gt;ws=<span style="color: #0000ff;">new</span> \swoole_websocket_server(self::HOST,self::<span style="color: #000000;">PORT); 
+    </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;<span style="color: #000000;">set([ 
+      </span><span style="color: #008000;">//</span><span style="color: #008000;">启动task必须要设置其数量 </span>
+      'worker_num' =&gt; 4, 
+      'task_worker_num' =&gt; 2, 
+      <span style="color: #008000;">//</span><span style="color: #008000;"> 'heartbeat_check_interval' =&gt; 5, 
+      // 'heartbeat_idle_time' =&gt; 10, </span>
+<span style="color: #000000;">    ]); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">监听新端口 </span>
+    <span style="color: #800080;">$this</span>-&gt;server=<span style="color: #800080;">$this</span>-&gt;ws-&gt;listen("127.0.0.1", 9502,<span style="color: #000000;"> SWOOLE_SOCK_TCP); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">关闭websocket模式 </span>
+    <span style="color: #800080;">$this</span>-&gt;server-&gt;<span style="color: #000000;">set([ 
+      </span>'open_websocket_protocol' =&gt; <span style="color: #0000ff;">false</span>,<span style="color: #000000;"> 
+    ]); 
+  
+    </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;on("start", [<span style="color: #800080;">$this</span>, 'onStart'<span style="color: #000000;">]); 
+    </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;on('open',[<span style="color: #800080;">$this</span>,'onopen'<span style="color: #000000;">]); 
+    </span><span style="color: #800080;">$this</span>-&gt;server-&gt;on("receive", [<span style="color: #800080;">$this</span>, 'onReceive'<span style="color: #000000;">]); 
+    </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;on('task',[<span style="color: #800080;">$this</span>,'onTask'<span style="color: #000000;">]); 
+    </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;on('finish',[<span style="color: #800080;">$this</span>,'onFinish'<span style="color: #000000;">]); 
+    </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;on('message',[<span style="color: #800080;">$this</span>,'onmessage'<span style="color: #000000;">]); 
+    </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;on('close',[<span style="color: #800080;">$this</span>,'onclose'<span style="color: #000000;">]); 
+    </span><span style="color: #800080;">$this</span>-&gt;server-&gt;on("close", [<span style="color: #800080;">$this</span>, 'oncloses'<span style="color: #000000;">]); 
+    </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;<span style="color: #000000;">start(); 
+  } 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">监听数据接收事件 </span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onReceive(<span style="color: #800080;">$serv</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$from_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #800080;">$shuju</span>=json_decode(<span style="color: #800080;">$data</span>,<span style="color: #000000;">ture); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;"> print_r($shuju).PHP_EOL; </span>
+    <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$shuju</span>['data'<span style="color: #000000;">])) { 
+      </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;push(Predis::getInstance()-&gt;get('fd'), <span style="color: #800080;">$data</span><span style="color: #000000;">); 
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+      </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$shuju</span>['msg'<span style="color: #000000;">])) { 
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">执行异步任务 </span>
+        <span style="color: #800080;">$this</span>-&gt;ws-&gt;task(<span style="color: #800080;">$shuju</span><span style="color: #000000;">); 
+      }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+        </span><span style="color: #800080;">$push_arr</span>=Predis::getInstance()-&gt;hvals(<span style="color: #800080;">$shuju</span>['data'<span style="color: #000000;">]); 
+        </span><span style="color: #008000;">//</span><span style="color: #008000;"> echo "集群是:".print_r($push_arr); </span>
+        <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$push_arr</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">) { 
+          </span><span style="color: #800080;">$this</span>-&gt;ws-&gt;push(<span style="color: #800080;">$v</span>, <span style="color: #800080;">$shuju</span>['msg'<span style="color: #000000;">]); 
+        } 
+      } 
+    } 
+  } 
+  </span><span style="color: #008000;">/*</span><span style="color: #008000;">* 
+   * 设置进程名，为后续平滑重启进程 
+   * @param $server 
+   </span><span style="color: #008000;">*/</span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onStart(<span style="color: #800080;">$server</span><span style="color: #000000;">) { 
+    swoole_set_process_name(</span>"live_master"<span style="color: #000000;">); 
+  }    
+  </span><span style="color: #008000;">/*</span><span style="color: #008000;">* 
+    监听开启事件的回调 
+  </span><span style="color: #008000;">*/</span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onopen(<span style="color: #800080;">$server</span>, <span style="color: #800080;">$request</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #008080;">print_r</span>("这时的fd是:",<span style="color: #800080;">$request</span>-&gt;<span style="color: #000000;">fd); 
+    Predis</span>::getInstance()-&gt;set('fd',<span style="color: #800080;">$request</span>-&gt;<span style="color: #000000;">fd); 
+  } 
+    
+  </span><span style="color: #008000;">/*</span><span style="color: #008000;">* 
+    监听接收事件的回调 
+  </span><span style="color: #008000;">*/</span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onmessage(<span style="color: #800080;">$server</span>, <span style="color: #800080;">$frame</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #800080;">$server</span>-&gt;push(<span style="color: #800080;">$frame</span>-&gt;fd, "{<span style="color: #800080;">$frame</span>-&gt;data}"<span style="color: #000000;">); 
+  } 
+  </span><span style="color: #008000;">/*</span><span style="color: #008000;">* 
+    监听关闭事件的回调 
+  </span><span style="color: #008000;">*/</span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onclose(<span style="color: #800080;">$ser</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #008080;">print_r</span>("你好,我的{<span style="color: #800080;">$fd</span>}\n"<span style="color: #000000;">); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">退出并删除多余的分组fd </span>
+    <span style="color: #800080;">$group</span>=Predis::getInstance()-&gt;sMembers('group'<span style="color: #000000;">); 
+    </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$group</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$v</span><span style="color: #000000;">) { 
+      </span><span style="color: #800080;">$fangjian</span>=Predis::getInstance()-&gt;hgetall(<span style="color: #800080;">$v</span><span style="color: #000000;">); 
+      </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$fangjian</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$vv</span><span style="color: #000000;">) { 
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$fd</span> == <span style="color: #800080;">$vv</span><span style="color: #000000;">) { 
+          Predis</span>::getInstance()-&gt;hdel(<span style="color: #800080;">$v</span>,<span style="color: #800080;">$k</span><span style="color: #000000;">); 
+        } 
+      } 
+    } 
+  } 
+  </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> oncloses(<span style="color: #800080;">$ser</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #008080;">print_r</span>("这个是client{<span style="color: #800080;">$fd</span>}\n"<span style="color: #000000;">); 
+  } 
+  
+  </span><span style="color: #008000;">/*</span><span style="color: #008000;">* 
+  *  $serv      服务 
+  *  $task_id    任务ID，由swoole扩展内自动生成，用于区分不同的任务 
+  *  $src_worker_id $task_id和$src_worker_id组合起来才是全局唯一的，不同的worker进程投递的任务ID可能会有相同 
+  *  $data      是任务的内容 
+  </span><span style="color: #008000;">*/</span>
+   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onTask(<span style="color: #800080;">$serv</span>,<span style="color: #800080;">$task_id</span>,<span style="color: #800080;">$src_worker_id</span>,<span style="color: #800080;">$data</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">引入任务 </span>
+    <span style="color: #800080;">$obj</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Task; 
+    </span><span style="color: #800080;">$method</span> = <span style="color: #800080;">$data</span>['data'<span style="color: #000000;">]; 
+    </span><span style="color: #800080;">$arr</span> = <span style="color: #800080;">$data</span>['arr'<span style="color: #000000;">]; 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">发布具体的任务 </span>
+    <span style="color: #800080;">$flag</span> = <span style="color: #800080;">$obj</span>-&gt;<span style="color: #800080;">$method</span>(<span style="color: #800080;">$arr</span>, <span style="color: #800080;">$serv</span><span style="color: #000000;">); 
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$flag</span>; <span style="color: #008000;">//</span><span style="color: #008000;"> 告诉worker </span>
+<span style="color: #000000;">  } 
+  </span><span style="color: #008000;">/*</span><span style="color: #008000;">* 
+  *  $task_id    是任务的ID 
+  *  $data      是任务处理的结果内容 
+  </span><span style="color: #008000;">*/</span>
+   <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> onFinish(<span style="color: #800080;">$serv</span>,<span style="color: #800080;">$task_id</span>,<span style="color: #800080;">$data</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$data</span>).'/n'<span style="color: #000000;">; 
+  } 
+  
+} 
+  
+</span><span style="color: #0000ff;">new</span> Ws(); </code></pre>
+
+<p><span style="color: #222222; font-family: tahoma, arial, 'Microsoft YaHei';">分发任务task.php</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">* 
+ * 代表的是 swoole里面 后续 所有 task异步 任务 都放这里来 
+ * Date: 18/3/27 
+ * Time: 上午1:20 
+ </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+namespace app\common; 
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> include 'Predis.php'; </span>
+  
+<span style="color: #0000ff;">class</span><span style="color: #000000;"> Task { 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">异步创建房间 </span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> chuangjian(<span style="color: #800080;">$data</span>,<span style="color: #800080;">$serv</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #800080;">$time</span>=<span style="color: #800080;">$data</span>['time']*1000<span style="color: #000000;">; 
+    swoole_timer_after(</span><span style="color: #800080;">$time</span>, <span style="color: #0000ff;">function</span>() <span style="color: #0000ff;">use</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">){ 
+      </span><span style="color: #008000;">//</span><span style="color: #008000;">创建房间(修改拍卖商品状态) </span>
+      self::post("https://code.77wx.cn/index/index/in"<span style="color: #000000;">); 
+    }); 
+  } 
+  
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">进入房间并缓存信息 </span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> jingru(<span style="color: #800080;">$data</span>,<span style="color: #800080;">$serv</span><span style="color: #000000;">) 
+  { 
+    </span><span style="color: #800080;">$fd</span>=Predis::getInstance()-&gt;get('fd'<span style="color: #000000;">); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">加入分组 </span>
+    Predis::getInstance()-&gt;hset(<span style="color: #800080;">$data</span>['name'],<span style="color: #800080;">$data</span>['uid'],<span style="color: #800080;">$fd</span><span style="color: #000000;">); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">加入组集合 </span>
+    Predis::getInstance()-&gt;sadd('group',<span style="color: #800080;">$data</span>['name'<span style="color: #000000;">]); 
+  } 
+  
+  
+  </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> post(<span style="color: #800080;">$url</span>,<span style="color: #800080;">$params</span>=<span style="color: #0000ff;">false</span>,<span style="color: #800080;">$ispost</span>=0<span style="color: #000000;">) 
+  { 
+    </span><span style="color: #800080;">$httpInfo</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">(); 
+    </span><span style="color: #800080;">$ch</span> =<span style="color: #000000;"> curl_init(); 
+    curl_setopt( </span><span style="color: #800080;">$ch</span>, CURLOPT_HTTP_VERSION ,<span style="color: #000000;"> CURL_HTTP_VERSION_1_1 ); 
+    curl_setopt( </span><span style="color: #800080;">$ch</span>, CURLOPT_USERAGENT , 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'<span style="color: #000000;"> ); 
+    curl_setopt( </span><span style="color: #800080;">$ch</span>, CURLOPT_CONNECTTIMEOUT , 30<span style="color: #000000;"> ); 
+    curl_setopt( </span><span style="color: #800080;">$ch</span>, CURLOPT_TIMEOUT , 30<span style="color: #000000;">); 
+    curl_setopt( </span><span style="color: #800080;">$ch</span>, CURLOPT_RETURNTRANSFER , <span style="color: #0000ff;">true</span><span style="color: #000000;"> ); 
+    </span><span style="color: #0000ff;">if</span>( <span style="color: #800080;">$ispost</span><span style="color: #000000;"> ) 
+    { 
+      curl_setopt( </span><span style="color: #800080;">$ch</span> , CURLOPT_POST , <span style="color: #0000ff;">true</span><span style="color: #000000;"> ); 
+      curl_setopt( </span><span style="color: #800080;">$ch</span> , CURLOPT_POSTFIELDS , <span style="color: #800080;">$params</span><span style="color: #000000;"> ); 
+      curl_setopt( </span><span style="color: #800080;">$ch</span> , CURLOPT_URL , <span style="color: #800080;">$url</span><span style="color: #000000;"> ); 
+    } 
+    </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+    { 
+      </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$params</span><span style="color: #000000;">){ 
+        curl_setopt( </span><span style="color: #800080;">$ch</span> , CURLOPT_URL , <span style="color: #800080;">$url</span>.'?'.<span style="color: #800080;">$params</span><span style="color: #000000;"> ); 
+      }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+        curl_setopt( </span><span style="color: #800080;">$ch</span> , CURLOPT_URL , <span style="color: #800080;">$url</span><span style="color: #000000;">); 
+      } 
+    } 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">执行 </span>
+    <span style="color: #800080;">$response</span> = curl_exec( <span style="color: #800080;">$ch</span><span style="color: #000000;"> ); 
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$response</span> === <span style="color: #0000ff;">FALSE</span><span style="color: #000000;">) { 
+      </span><span style="color: #008000;">//</span><span style="color: #008000;">echo "cURL Error: " . curl_error($ch); </span>
+      <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">; 
+    } 
+  
+    </span><span style="color: #800080;">$httpCode</span> = curl_getinfo( <span style="color: #800080;">$ch</span> ,<span style="color: #000000;"> CURLINFO_HTTP_CODE ); 
+    </span><span style="color: #800080;">$httpInfo</span> = <span style="color: #008080;">array_merge</span>( <span style="color: #800080;">$httpInfo</span> , curl_getinfo( <span style="color: #800080;">$ch</span><span style="color: #000000;"> ) ); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">关闭url请求 </span>
+    curl_close( <span style="color: #800080;">$ch</span><span style="color: #000000;"> ); 
+    </span><span style="color: #0000ff;">return</span> json_decode(<span style="color: #800080;">$response</span>,1<span style="color: #000000;">); 
+  } 
+  
+}</span></code></pre>
+
+<p><span style="color: #222222; font-family: tahoma, arial, 'Microsoft YaHei';">客户端 client.php</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+namespace app\common; 
+  
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Client 
+{ 
+  </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$msg</span>=''<span style="color: #000000;">; 
+  
+  </span><span style="color: #0000ff;">public</span> <span style="color: #800080;">$data</span>=<span style="color: #000000;">[]; 
+  
+  </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> lianjie(){ 
+  
+    </span><span style="color: #800080;">$cli</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> \swoole_client(SWOOLE_SOCK_TCP); 
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">判断连接状态（同步连接模式） </span>
+    <span style="color: #800080;">$res</span>=<span style="color: #800080;">$cli</span>-&gt;connect('127.0.0.1', 9502<span style="color: #000000;">); 
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$res</span><span style="color: #000000;">)) { 
+      </span><span style="color: #0000ff;">return</span> "连接失败"<span style="color: #000000;">; 
+    } 
+  
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">data)) { 
+      </span><span style="color: #008000;">//</span><span style="color: #008000;">发送消息给server </span>
+      <span style="color: #800080;">$rel</span>=<span style="color: #800080;">$cli</span>-&gt;send(json_encode(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">data)); 
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+      </span><span style="color: #008000;">//</span><span style="color: #008000;">发送消息给server </span>
+      <span style="color: #800080;">$rel</span>=<span style="color: #800080;">$cli</span>-&gt;send(<span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">msg); 
+    } 
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$rel</span><span style="color: #000000;">)) { 
+      </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$rel</span><span style="color: #000000;">; 
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+      </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> flash; 
+    } 
+  } 
+}</span></code></pre>
+
+<p><span style="color: #222222; font-family: tahoma, arial, 'Microsoft YaHei';">控制器index.php</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php 
+namespace app\index\controller; 
+  
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> app\common\Client; 
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> app\common\Predis; 
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> app\common\Sql; 
+</span><span style="color: #0000ff;">use</span><span style="color: #000000;"> app\index\model\User; 
+  
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Index 
+{ 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">创建房间(添加拍卖倒计时) </span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> chuangjian() 
+  { 
+    </span><span style="color: #800080;">$data</span>['time']=input("time"<span style="color: #000000;">); 
+    </span><span style="color: #800080;">$data</span>['id']=input("id"<span style="color: #000000;">); 
+    </span><span style="color: #800080;">$cli</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Client(); 
+    </span><span style="color: #800080;">$cli</span>-&gt;data =<span style="color: #000000;"> [ 
+      </span>'data' =&gt; 'chuangjian', 
+      'arr' =&gt; <span style="color: #800080;">$data</span><span style="color: #000000;">
+    ]; 
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$cli</span>-&gt;<span style="color: #000000;">lianjie(); 
+  } 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">点击添加哈希(进入房间) </span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> jingru() 
+  { 
+    </span><span style="color: #800080;">$data</span>['name']=input("name"<span style="color: #000000;">); 
+    </span><span style="color: #800080;">$data</span>['uid']=input("uid"<span style="color: #000000;">); 
+    </span><span style="color: #800080;">$cli</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Client(); 
+    </span><span style="color: #800080;">$cli</span>-&gt;data =<span style="color: #000000;"> [ 
+      </span>'data' =&gt; 'jingru', 
+      'arr' =&gt; <span style="color: #800080;">$data</span><span style="color: #000000;">
+    ]; 
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$cli</span>-&gt;<span style="color: #000000;">lianjie(); 
+  } 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">本房间推送(出价格成功并推送) </span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> pushfan() 
+  { 
+    </span><span style="color: #800080;">$data</span>['fan']=input("fan"<span style="color: #000000;">); 
+    </span><span style="color: #800080;">$cli</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Client(); 
+    </span><span style="color: #800080;">$cli</span>-&gt;data =<span style="color: #000000;"> [ 
+      </span>'data' =&gt; <span style="color: #800080;">$data</span>['fan'], 
+      'msg' =&gt; "恭喜用户111,喜当爹!!!!"<span style="color: #000000;">
+    ]; 
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$cli</span>-&gt;<span style="color: #000000;">lianjie(); 
+  } 
+  </span><span style="color: #008000;">//</span><span style="color: #008000;">时间结束并指定推送 </span>
+  <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> zhiding() 
+  { 
+    </span><span style="color: #800080;">$data</span>['fan']=input("fan"<span style="color: #000000;">); 
+    </span><span style="color: #800080;">$cli</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Client(); 
+    </span><span style="color: #800080;">$cli</span>-&gt;data =<span style="color: #000000;"> [ 
+      </span>'data' =&gt; <span style="color: #800080;">$data</span>['fan'], 
+      'msg' =&gt; "恭喜用户111,喜当爹!!!!"<span style="color: #000000;">
+    ]; 
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$cli</span>-&gt;<span style="color: #000000;">lianjie(); 
+  } 
+  
+}</span></code></pre>
+
+<p>完事！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

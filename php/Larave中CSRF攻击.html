@@ -1,0 +1,48 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Larave中CSRF攻击' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Larave中CSRF攻击</center></div><div class='banquan'>原文出处:本文由博客园博主行走的阳光提供。<br/>
+原文连接:https://www.cnblogs.com/shineguang/p/11337245.html</div><br>
+    <h2><strong>1、什么是CSRF攻击？</strong></h2>
+<p><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;">&nbsp;</span><span style="font-size: 18px;">CSRF是跨站请求伪造（Cross-site request forgery）的英文缩写\</span></strong></p>
+<p><strong><span style="font-size: 18px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Laravel框架中避免CSRF攻击很简单：Laravel自动为每个用户Session生成了一个CSRF Token，该Token可用于验证登录用户和发起请求者是否是同一人，如果不是则请求失败。【<strong>该原理和验证码的原理是一致</strong>】</span></strong></p>
+<p><strong><span style="font-size: 18px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span><span style="font-size: 18px;">Laravel提供了一个全局帮助函数csrf_token来获取该Token值，因此只需在视图提交表单中添加如下HTML代码即可在请求中带上Token：</span></strong></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 18px;"><strong>&lt;input type="hidden" name="_token" value="&lt;?php echo csrf_token(); ?&gt;"&gt;</strong></span></p>
+<p><span style="font-size: 18px;"><strong>2.Laravel中如何避免CSRF攻击</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <strong>Laravel框架是默认开启了csrf认证的（必须）。</strong>&nbsp;</strong></span></p>
+<p><strong><span style="font-size: 18px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;可以在表单中添加一个隐藏域：</span></strong></p>
+<p><strong><span style="font-size: 18px;"><img src="./images/Larave中CSRF攻击0.jpg" alt="" /></span></strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="font-size: 18px;"><strong><span style="color: #000000;">{{csrf_token()}}：表示直接输出token值；
+{{csrf_field()}}：表示的是直接输出整个隐藏域的input框；</span></strong></span></code></pre>
+
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="font-size: 18px;"><strong>&nbsp;场景选择：一般在视图里用csrf_field即可，大部分的时候在JavaScript代码段中（特别是在做ajax异步提交的时候）可以考虑用csrf_token。</strong></span></p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="font-size: 18px;"><strong>CSRF验证机制与图形验证码的原理是一致的，都是将用户提交的值与与session中的值进行比对，如果一致则通过，否则不通过。</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; </strong></span><span style="font-size: 18px;"><strong>&nbsp; &nbsp;</strong><strong>针对csrf_token</strong><strong>与csrf_field</strong><strong>的选择问题：</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;如果只需要使用值（例如，在ajax</strong><strong>的post</strong><strong>提交的时候），则使用csrf_token</strong><strong>，如果需要的是隐藏域（在表单里），则使用csrf_field</strong><strong>。</strong></span></p>
+<p><span style="font-size: 18px;"><strong>3、从CSRF验证中排除例外路由</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</strong></span><span style="font-size: 18px;"><strong>并不是所有请求都需要避免CSRF攻击，比如去第三方API获取数据的请求。</strong></span></p>
+<p><span style="font-size: 18px;"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;可以通过在VerifyCsrfToken（app/Http/Middleware/VerifyCsrfToken.php）中间件中将要排除的请求URL添加到$except属性数组中：</strong></span></p>
+<p><span style="font-size: 18px;"><strong><img src="./images/Larave中CSRF攻击1.jpg" alt="" /></strong></span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,139 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【多进程】php多进程编程' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【多进程】php多进程编程</center></div><div class='banquan'>原文出处:本文由博客园博主码缘提供。<br/>
+原文连接:https://www.cnblogs.com/itsuibi/p/11184396.html</div><br>
+    <p>先看下我已经安装的php版本</p>
+<src class="cnblogs_code">
+<pre><code>PHP <span style="color: #800080;">7.3</span>.<span style="color: #800080;">7</span> (cli) (built: Jul <span style="color: #800080;">12</span> <span style="color: #800080;">2019</span> <span style="color: #800080;">22</span>:<span style="color: #800080;">25</span>:<span style="color: #800080;">55</span><span style="color: #000000;">) ( NTS )
+Copyright (c) </span><span style="color: #800080;">1997</span>-<span style="color: #800080;">2018</span><span style="color: #000000;"> The PHP Group
+Zend Engine v3.</span><span style="color: #800080;">3.7</span>, Copyright (c) <span style="color: #800080;">1998</span>-<span style="color: #800080;">2018</span> Zend Technologies</code></pre>
+
+<p>php实现多进程需要安装pcntl模块，这个模块是php官方提供的，所以我们可以在PHP源码中找到，下载 php7.3.7 源码并解压到&nbsp; /home 目录下，这时我们需要的扩展 pcntl 在&nbsp;<span style="background-color: #888888; color: #ffffff;"> /home/php-7.3.7/ext/pcntl&nbsp;</span></p>
+<p>依次执行以下命令</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">phpize
+.</span>/configure --with-php-config=/usr/local/bin/php-<span style="color: #000000;">config
+make </span>&amp; make install</code></pre>
+
+<p>这里面确定 php-config 文件的路径可以使用&nbsp; <span style="background-color: #888888;">&nbsp;<span style="color: #ffffff;">find / -name php-config</span>&nbsp;<span style="background-color: #ffffff;">&nbsp; 最后生成 pcntl.so 文件。</span></span></p>
+<p><span style="background-color: #888888;"><span style="background-color: #ffffff;">然后找到 php的ini文件所在路径 可以使用&nbsp; <span style="background-color: #808080;">&nbsp;</span><span style="background-color: #808080; color: #ffffff;">php --ini&nbsp;<span style="background-color: #ffffff;">&nbsp; <span style="color: #333333;">命令查看</span></span></span></span></span></p>
+<p><span style="background-color: #888888;"><span style="background-color: #ffffff;"><span style="background-color: #808080; color: #ffffff;"><span style="background-color: #ffffff;"><span style="color: #333333;">至于php的扩展模块路径可以使用&nbsp;<span style="background-color: #c0c0c0; color: #ffffff;"> php&nbsp;-i | grep extension_dir&nbsp;<span style="background-color: #ffffff;">&nbsp;&nbsp;<span style="color: #000000;">查看，然后将生成的so文件拷到模块路径下并且将&nbsp;<span style="background-color: #c0c0c0; color: #ffffff;"> extension=pcntl&nbsp;</span> 加到php.ini文件中</span></span></span></span></span></span></span></span></p>
+<p><span style="background-color: #888888;"><span style="background-color: #ffffff;"><span style="background-color: #808080; color: #ffffff;"><span style="background-color: #ffffff;"><span style="color: #333333;"><span style="background-color: #c0c0c0; color: #ffffff;"><span style="background-color: #ffffff;"><span style="color: #000000;">使用 php -m 查看模块是否被加载！到这里pcntl 模块就安装好啦，下面开始编码</span></span></span></span></span></span></span></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; 3; <span style="color: #800080;">$i</span>++<span style="color: #000000;">){   
+    </span><span style="color: #800080;">$pid</span> =<span style="color: #000000;"> pcntl_fork();
+     </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$pid</span> == -1<span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">die</span>("开启进程失败"<span style="color: #000000;">);
+    } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$pid</span><span style="color: #000000;">) { 
+         </span><span style="color: #0000ff;">echo</span> "启动子进程 <span style="color: #800080;">$pid</span> \n"<span style="color: #000000;">;
+    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+      </span><span style="color: #0000ff;">echo</span> "子进程 ".<span style="color: #008080;">getmypid</span>()." 正在处理任务\n"<span style="color: #000000;">;
+      </span><span style="color: #008080;">sleep</span>(<span style="color: #008080;">rand</span>(5,10<span style="color: #000000;">));
+      </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">while</span> (pcntl_waitpid(0, <span style="color: #800080;">$status</span>) != -1<span style="color: #000000;">) {
+    </span><span style="color: #800080;">$status</span> = pcntl_wexitstatus(<span style="color: #800080;">$status</span><span style="color: #000000;">);    
+    </span><span style="color: #0000ff;">echo</span> "子进程推出，状态码 <span style="color: #800080;">$status</span> \n"<span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<blockquote>
+<p><span class="function">pcntl_fork()函数创建一个子进程，</span>成功时，在父进程执行线程内返回产生的子进程的PID，在子进程执行线程内返回0。失败时，在 父进程上下文返回-1，不会创建子进程，并且会引发一个PHP错误。</p>
+<p><span class="refname">pcntl_waitpid() &mdash;&nbsp;<span class="dc-title">等待或返回fork的子进程状态,挂起当前进程的执行直到参数<code class="parameter">pid</code>指定的进程号的进程退出， 或接收到一个信号要求中断当前进程或调用一个信号处理函数。返回的值可以是-1，0或者 &gt;0的值， 如果是-1, 表示子进程出错， 如果&gt;0表示子进程已经退出且值是退出的子进程pid，至于如何退出， 可以通过$status状态码反应</span></span></p>
+</blockquote>
+<p>执行效果</p>
+<src class="cnblogs_code">
+<pre><code>root@4226aaf8d937:/home/demo<span style="color: #008000;">#</span><span style="color: #008000;"> php index.php </span>
+启动子进程 150<span style="color: #000000;"> 
+启动子进程 </span>151<span style="color: #000000;"> 
+启动子进程 </span>152<span style="color: #000000;"> 
+子进程 </span>152<span style="color: #000000;"> 正在处理任务
+子进程 </span>151<span style="color: #000000;"> 正在处理任务
+子进程 </span>150<span style="color: #000000;"> 正在处理任务
+子进程推出，状态码 </span>0<span style="color: #000000;"> 
+子进程推出，状态码 </span>0<span style="color: #000000;"> 
+子进程推出，状态码 </span>0 </code></pre>
+
+<src class="cnblogs_code">
+<pre><code>root@4226aaf8d937:/<span style="color: #008000;">#</span><span style="color: #008000;"> ps -aux</span>
+USER       PID %CPU %MEM    VSZ   RSS TTY      <span style="color: #008080;">STAT</span> START   <span style="color: #008080;">TIME</span><span style="color: #000000;"> COMMAND
+root         </span>1  0.0  0.3   3976  3180 pts/0    Ss   04:42   0:00<span style="color: #000000;"> bash
+root        </span>17  0.0  0.3   3868  3184 pts/1    Ss   04:48   0:00<span style="color: #000000;"> bash
+root       </span>149  0.3  2.1  79740 21888 pts/0    S+   06:18   0:00 php index.<span style="color: #000000;">php
+root       </span>150  0.0  0.6  79740  6664 pts/0    S+   06:18   0:00 php index.<span style="color: #000000;">php
+root       </span>151  0.0  0.6  79740  6604 pts/0    S+   06:18   0:00 php index.<span style="color: #000000;">php
+root       </span>152  0.0  0.6  79740  6604 pts/0    S+   06:18   0:00 php index.<span style="color: #000000;">php
+root       </span>153  0.0  0.2   7640  2660 pts/1    R+   06:18   0:00 ps -aux</code></pre>
+
+<p>&nbsp;</p>
+<p><span style="background-color: #ff9900; color: #ffffff; font-size: 16px;">当子进程被使用 kill -9 进程id 强制杀死的时候如何处理？</span></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$pid_arr</span> =<span style="color: #000000;"> [];
+</span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span> = 0; <span style="color: #800080;">$i</span> &lt; 3; <span style="color: #800080;">$i</span>++<span style="color: #000000;">){   
+    </span><span style="color: #800080;">$pid</span> =<span style="color: #000000;"> pcntl_fork();
+     </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$pid</span> == -1<span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">die</span>("开启进程失败"<span style="color: #000000;">);
+    } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$pid</span><span style="color: #000000;">) { 
+         </span><span style="color: #0000ff;">echo</span> "启动子进程 <span style="color: #800080;">$pid</span> \n"<span style="color: #000000;">;
+         </span><span style="color: #008080;">array_push</span>(<span style="color: #800080;">$pid_arr</span>, <span style="color: #800080;">$pid</span><span style="color: #000000;">);
+    } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+      </span><span style="color: #0000ff;">echo</span> "子进程 ".<span style="color: #008080;">getmypid</span>()." 正在处理任务\n"<span style="color: #000000;">;
+      </span><span style="color: #008080;">sleep</span>(<span style="color: #008080;">rand</span>(5,10<span style="color: #000000;">));
+      </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+    }
+}
+
+</span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0; <span style="color: #800080;">$i</span> &lt; <span style="color: #008080;">count</span>(<span style="color: #800080;">$pid_arr</span>); <span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">while</span> (pcntl_waitpid(<span style="color: #800080;">$pid_arr</span>[<span style="color: #800080;">$i</span>], <span style="color: #800080;">$status</span>) != -1<span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span>(!pcntl_wifexited(<span style="color: #800080;">$status</span><span style="color: #000000;">)){
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">进程非正常退出</span>
+            <span style="color: #0000ff;">if</span>(pcntl_wifsignaled(<span style="color: #800080;">$status</span><span style="color: #000000;">)){
+                </span><span style="color: #800080;">$signal</span> = pcntl_wtermsig(<span style="color: #800080;">$status</span><span style="color: #000000;">);
+                </span><span style="color: #008000;">//</span><span style="color: #008000;">不是通过接受信号中断</span>
+                <span style="color: #0000ff;">echo</span> "子进程 <span style="color: #800080;">$pid_arr</span>[<span style="color: #800080;">$i</span>] 属于非正常停止，接收到信号 <span style="color: #800080;">$signal</span> \n"<span style="color: #000000;">;
+            }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                </span><span style="color: #008080;">print_r</span>("子进程 <span style="color: #800080;">$pid_arr</span>[<span style="color: #800080;">$i</span>] 完成任务并退出 \n"<span style="color: #000000;">);
+            }
+
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">获取进程终端的退出状态码;</span>
+            <span style="color: #800080;">$code</span> = pcntl_wexitstatus(<span style="color: #800080;">$status</span><span style="color: #000000;">);
+            </span><span style="color: #008080;">print_r</span>("子进程 <span style="color: #800080;">$pid_arr</span>[<span style="color: #800080;">$i</span>] 正常结束任务并退出，状态码 <span style="color: #800080;">$status</span> \n "<span style="color: #000000;">);
+        }
+    }
+}</span></code></pre>
+
+<blockquote>
+<ul class="chunklist chunklist_book chunklist_children">
+<li><a href="https://www.php.net/manual/zh/function.pcntl-wifexited.php">pcntl_wifexited</a>&nbsp;&mdash; 检查状态代码是否代表一个正常的退出。</li>
+<li><a href="https://www.php.net/manual/zh/function.pcntl-wifsignaled.php">pcntl_wifsignaled</a>&nbsp;&mdash; 检查子进程状态码是否代表由于某个信号而中断</li>
+<li><a href="https://www.php.net/manual/zh/function.pcntl-wtermsig.php">pcntl_wtermsig</a>&nbsp;&mdash; 返回导致子进程中断的信号</li>
+</ul>
+</blockquote>
+<p>我们打开两个窗口，其中一个</p>
+<p>&nbsp;<img src="./images/【多进程】php多进程编程0.jpg" alt="" /><img src="./images/【多进程】php多进程编程1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

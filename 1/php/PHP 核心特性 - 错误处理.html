@@ -1,0 +1,199 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 核心特性 - 错误处理' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 核心特性 - 错误处理</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11914460.html</div><br>
+    <h2>错误与异常</h2>
+<p>错误，可以理解程序本身的错误，例如语法错误。而异常则更偏向于程序运行不符合预期或者不符合正常流程；对于 PHP 语言而言，处理错误和处理异常使用的机制完全不同，因此很容易让人产生困惑。</p>
+<p>例如，我们希望通过捕获异常来处理除数为 0 的情况，但是在捕获到异常之前，PHP 就触发了错误。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">2</span>     <span style="color: #800080;">$a</span> = 5 / 0<span style="color: #000000;">;
+</span><span style="color: #008080;">3</span> } <span style="color: #0000ff;">catch</span> (<span style="color: #0000ff;">Exception</span> <span style="color: #800080;">$e</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">4</span>     <span style="color: #800080;">$e</span>-&gt;<span style="color: #000000;">getMessage();
+</span><span style="color: #008080;">5</span>     <span style="color: #800080;">$a</span> = -1;  <span style="color: #008000;">//</span><span style="color: #008000;"> 通过异常来处理 $a 为 0 的情况，但是实际上，捕获不到该异常</span>
+<span style="color: #008080;">6</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">7</span> 
+<span style="color: #008080;">8</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$a</span><span style="color: #000000;">;
+</span><span style="color: #008080;">9</span> <span style="color: #008000;">//</span><span style="color: #008000;"> PHP Warning:  Division by zero</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>也就是说，PHP 将除数为 0 的情况当成了错误而触发，而不会自动抛出异常，因此没法捕获。类似的，在很多情况下，PHP 都没办法自动抛出异常。只能通过&nbsp;<code>if - else</code>&nbsp;语句判断再结合&nbsp;<code>throw</code>&nbsp;方法来并手动抛出异常。</p>
+<p>上述情况的发生，主要还是因为异常机制是 PHP 向面向对象演进后得到的产物。而在此之前 PHP 的报错主要还是通过错误机制，因此，在很多情况下，PHP 的错误要比异常更有价值。不过 PHP7 开始统一这两者，使错误也可以像异常那样抛出（这部分内容将放在异常部分讲解）。</p>
+<p>&nbsp;</p>
+<h2>错误级别</h2>
+<p>PHP 中的错误可理解为&nbsp;使脚本不运行不正常的情况，根据错误级别从高到低可划分为五类</p>
+<ol>
+<li>Parse error 或 Syntax Error - 语法解析错误，触发该错误后，脚本完全无法运行；</li>
+<li>Fatal Error - 致命错误，触发该错误后，后面的脚本无法继续执行；</li>
+<li>Warning Error - 出现比较不恰当的地方，脚本可继续执行；</li>
+<li>Notice Error - 出现不恰当的地方，但是程度比 Warning Error 低，脚本可继续执行；</li>
+<li>Deprecated Error - 不推荐这么使用，未来可能会废弃，脚本可继续执行；</li>
+</ol>
+<p>默认情况下，PHP 触发错误，并显示错误的级别及对应的提示。</p>
+<p>Parse Error 示例 - 语句结尾不写分号</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">echo</span> "abc"
+<span style="color: #008080;">2</span> <span style="color: #008000;">//</span><span style="color: #008000;"> PHP Parse error:  syntax error, unexpected end of file, expecting ',' or ';</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>Fatal Error 示例 - 使用不存在的函数</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">echo</span> "before\n"<span style="color: #000000;">;
+</span><span style="color: #008080;">2</span> <span style="color: #000000;">foo();
+</span><span style="color: #008080;">3</span> <span style="color: #0000ff;">echo</span> "after"; <span style="color: #008000;">//</span><span style="color: #008000;"> 本行无法继续执行
+</span><span style="color: #008080;">4</span> <span style="color: #008000;">// before
+</span><span style="color: #008080;">5</span> <span style="color: #008000;">// PHP Fatal error:  Uncaught Error: Call to undefined function foo()</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>Warning Error 示例 - 引入不存在的文件</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$a</span> = "foo"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 2</span> <span style="color: #0000ff;">include</span>('bar.php'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$a</span>; <span style="color: #008000;">//</span><span style="color: #008000;"> 程序继续执行
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">// PHP Warning:  include(bar.php): failed to open stream: No such file or directory ...
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">// foo</span>
+<span style="color: #008080;"> 6</span> Notice Error 示例 -<span style="color: #000000;"> 输出不存在的变量
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$foo</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 9</span> <span style="color: #0000ff;">echo</span> 12345<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> <span style="color: #008000;">//</span><span style="color: #008000;"> PHP Notice:  Undefined variable: foo
+</span><span style="color: #008080;">11</span> <span style="color: #008000;">// 12345</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>Deprecated Error 示例 - 在一些字符串函数中传入数字而非字符串</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008080;">strpos</span>('12345', 3<span style="color: #000000;">);
+</span><span style="color: #008080;">2</span> <span style="color: #008000;">//</span><span style="color: #008000;"> PHP Deprecated:  strpos(): Non-string needles will be interpreted as strings in the future</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>除了默认触发消息外，用户也可以使用&nbsp;<code>set_error_handler</code>&nbsp;函数自定义错误处理，大多数错误类型都可以进行自定义处理，除了&nbsp;<code>E_ERROR</code>、&nbsp;<code>E_PARSE</code>、&nbsp;<code>E_CORE_ERROR</code>、&nbsp;<code>E_CORE_WARNING</code>、&nbsp;<code>E_COMPILE_ERROR</code>、&nbsp;<code>E_COMPILE_WARNING</code>&nbsp;外。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #008080;">set_error_handler</span> ( callable <span style="color: #800080;">$error_handler</span> [, int <span style="color: #800080;">$error_types</span> = <span style="color: #ff00ff;">E_ALL</span> | <span style="color: #ff00ff;">E_STRICT</span> ] ) : <span style="color: #0000ff;">mixed</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>示例</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">//</span><span style="color: #008000;"> E_ALL - 处理全部错误类型</span>
+<span style="color: #008080;"> 3</span> <span style="color: #008080;">set_error_handler</span>('customError', <span style="color: #ff00ff;">E_ALL</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;"> * @param  int $errno 错误的级别
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;"> * @param  string $errstr  错误的信息
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;"> * @param  string $errfile 错误的文件名(可选)
+</span><span style="color: #008080;"> 9</span> <span style="color: #008000;"> * @param  string $errline 错误发生的行号（可选）
+</span><span style="color: #008080;">10</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">11</span> <span style="color: #0000ff;">function</span> customError(int <span style="color: #800080;">$errno</span>, <span style="color: #0000ff;">string</span> <span style="color: #800080;">$errstr</span>, <span style="color: #0000ff;">string</span> <span style="color: #800080;">$errfile</span>, <span style="color: #0000ff;">string</span> <span style="color: #800080;">$errline</span><span style="color: #000000;">)
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">13</span>     <span style="color: #0000ff;">echo</span> <span style="color: #008080;">sprintf</span>('错误消息为 %s', <span style="color: #800080;">$errstr</span><span style="color: #000000;">);
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">15</span> 
+<span style="color: #008080;">16</span> <span style="color: #800080;">$a</span> = 5 / 0;  <span style="color: #008000;">//</span><span style="color: #008000;"> 错误消息为 Division by zero</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p>用户也可以通过&nbsp;<code>trigger_error</code>&nbsp;函数来手动触发一个用户级别的错误（<code>E_USER_ERROR</code>、<code>E_USER_WARNING</code>、<code>E_USER_NOTICE</code>、<code>E_USER_DEPRECATED</code>）。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">function</span> division(<span style="color: #800080;">$a</span>, <span style="color: #800080;">$b</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">2</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$b</span> == 0<span style="color: #000000;">){
+</span><span style="color: #008080;">3</span>         @<span style="color: #008080;">trigger_error</span>("0 不能作为除数", <span style="color: #ff00ff;">E_USER_NOTICE</span><span style="color: #000000;">);
+</span><span style="color: #008080;">4</span>         <span style="color: #0000ff;">return</span> -1<span style="color: #000000;">;
+</span><span style="color: #008080;">5</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">6</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$a</span> / <span style="color: #800080;">$b</span><span style="color: #000000;">;
+</span><span style="color: #008080;">7</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">8</span> 
+<span style="color: #008080;">9</span> <span style="color: #0000ff;">echo</span> division(10, 0);</code></pre>
+
+<p>&nbsp;</p>
+
+<p class="ztext-empty-paragraph">&nbsp;</p>
+<h2>与错误有关的配置</h2>
+<p>一些错误处理相关的常用配置</p>
+<ul>
+<li><code>error_reporting</code>&nbsp;- 设置错误的报告级别</li>
+<li><code>display_errors</code>&nbsp;- 是否显示错误</li>
+<li><code>display_startup_error</code>&nbsp;- 是否显示 PHP 启动过程中的显示</li>
+<li><code>log_errors</code>&nbsp;- 设置是否将脚本运行的错误信息记录到服务器错误日志或者 error_log 之中</li>
+</ul>
+<p>《Modern PHP》提出了四个规则</p>
+<ol>
+<li>一定要让 PHP 报告错误；</li>
+<li>在开发环境中要显示错误；</li>
+<li>在生产环境中不能显示错误；</li>
+<li>在开发环境和生产环境中都要记录错误；</li>
+</ol>
+<p>开发环境推荐配置</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> display_errors =<span style="color: #000000;"> On
+</span><span style="color: #008080;">2</span> display_startup_error =<span style="color: #000000;"> On
+</span><span style="color: #008080;">3</span> <span style="color: #008080;">error_reporting</span> = -1
+<span style="color: #008080;">4</span> log_errors = On</code></pre>
+
+<p>&nbsp;</p>
+
+<p>生产环境推荐配置</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> display_errors =<span style="color: #000000;"> Off
+</span><span style="color: #008080;">2</span> display_startup_error =<span style="color: #000000;"> Off
+</span><span style="color: #008080;">3</span> <span style="color: #000000;">; 报告 Notice 以外的所有错误
+</span><span style="color: #008080;">4</span> <span style="color: #008080;">error_reporting</span> = <span style="color: #ff00ff;">E_ALL</span> &amp; ~<span style="color: #ff00ff;">E_NOTICE</span>
+<span style="color: #008080;">5</span> log_errors =<span style="color: #000000;"> On
+</span><span style="color: #008080;">6</span>  </code></pre>
+
+<p>&nbsp;</p>
+
+<h2>Symfony 编码规范相关</h2>
+<p>异常和错误消息字符串必须使用&nbsp;<code>sprintf</code>&nbsp;来进行拼接；</p>
+<src class="highlight">
+<pre><code><code class="language-text">throw new CommandNotFoundException(sprintf('Command "%s" does not exist.', $name));</code></code></pre>
+
+<p>当错误类型为&nbsp;<code>E_USER_DEPRECATED</code>&nbsp;时，需要添加&nbsp;<code>@</code></p>
+<src class="highlight">
+<pre><code><code class="language-text">@trigger_error("foo", E_USER_DEPRECATED);</code></code></pre>
+
+<p>参考资料</p>
+<ul>
+<li><a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//phoenixnap.com/kb/php-error-types" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">PHP Errors: 4 Different Types (Warning, Parse, Fatal, and Notice Error)</a></li>
+<li><a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//www.php.net/manual/zh/errorfunc.constants.php" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">PHP: 预定义常量 - Manual</a></li>
+<li><a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//book.douban.com/subject/20370984/" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">PHP 核心技术与最佳实践 (豆瓣)</a></li>
+<li><a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//www.php.net/manual/zh/errorfunc.configuration.php%23ini.display-startup-errors" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">PHP: 运行时配置 - Manual</a></li>
+<li><a class=" wrap external" href="https://link.zhihu.com/?target=https%3A//learnku.com/articles/36079" rel="nofollow noreferrer" target="_blank" data-za-detail-view-id="1043">PHP 规范 - Symfony 代码规范 | PHP 技术论坛</a></li>
+<li>很<strong>多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" target="_blank">677079770</a></strong></li>
+</ul>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

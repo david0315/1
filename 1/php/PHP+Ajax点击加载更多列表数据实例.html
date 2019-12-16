@@ -1,0 +1,66 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP+Ajax点击加载更多列表数据实例' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP+Ajax点击加载更多列表数据实例</center></div><div class='banquan'>原文出处:本文由博客园博主mrlime提供。<br/>
+原文连接:https://www.cnblogs.com/mrlime/p/11526369.html</div><br>
+    <p>一款简单实用的PHP+Ajax点击加载更多列表数据实例，实现原理：通过&ldquo;更多&rdquo;按钮向服务端发送Ajax请求，PHP根据分页参数查询将最新的几条记录，数据以JSON形式返回，前台Query解析JSON数据，并将数据追加到列表页。其实也是Ajax分页效果。</p>
+<p><img src="./images/PHP+Ajax点击加载更多列表数据实例0.jpg" alt="" /></p>
+<p>html代码：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">id</span><span style="color: #0000ff;">="more"</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;"> 2</span>      <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="single_item"</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;"> 3</span>            <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="element_head"</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;"> 4</span>                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="date"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;"> 5</span>                <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="author"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;"> 6</span>             <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;"> 7</span>             <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">div </span><span style="color: #ff0000;">class</span><span style="color: #0000ff;">="content"</span><span style="color: #0000ff;">&gt;&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;"> 8</span>      <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;"> 9</span>      <span style="color: #0000ff;">&lt;</span><span style="color: #800000;">a </span><span style="color: #ff0000;">href</span><span style="color: #0000ff;">="javascript:;"</span><span style="color: #ff0000;"> class</span><span style="color: #0000ff;">="get_more"</span><span style="color: #0000ff;">&gt;</span>::点击加载更多内容::<span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">a</span><span style="color: #0000ff;">&gt;</span>  
+<span style="color: #008080;">10</span> <span style="color: #0000ff;">&lt;/</span><span style="color: #800000;">div</span><span style="color: #0000ff;">&gt;</span></code></pre>
+
+<p><br />引入jQuery插件和jquery.more.js加载更多插件：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;script type="text/javascript" src="jquery.js"&gt;&lt;/script&gt;  
+<span style="color: #008080;">2</span> &lt;script type="text/javascript" src="jquery.more.js"&gt;&lt;/script&gt;
+<span style="color: #008080;">3</span> $(<span style="color: #0000ff;">function</span><span style="color: #000000;">(){  
+</span><span style="color: #008080;">4</span>     $('#more').more({'address': 'data.php'<span style="color: #000000;">})  
+</span><span style="color: #008080;">5</span> });</code></pre>
+
+<p><br />data.php接收前台页面提交过来的两个参数，$_POST['last']即开始记录数，$_POST['amount']即单次显示记录数，看SQL语句就明白，其实就是分页中用到的语句。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">require_once</span>('connect.php'<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 2</span>  
+<span style="color: #008080;"> 3</span> <span style="color: #800080;">$last</span> = <span style="color: #800080;">$_POST</span>['last'<span style="color: #000000;">]; 
+</span><span style="color: #008080;"> 4</span> <span style="color: #800080;">$amount</span> = <span style="color: #800080;">$_POST</span>['amount'<span style="color: #000000;">]; 
+</span><span style="color: #008080;"> 5</span>  
+<span style="color: #008080;"> 6</span> <span style="color: #800080;">$query</span> = <span style="color: #008080;">mysql_query</span>("select * from article order by id desc limit <span style="color: #800080;">$last</span>,<span style="color: #800080;">$amount</span>"<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 7</span> <span style="color: #0000ff;">while</span> (<span style="color: #800080;">$row</span> = <span style="color: #008080;">mysql_fetch_array</span>(<span style="color: #800080;">$query</span><span style="color: #000000;">)) { 
+</span><span style="color: #008080;"> 8</span>     <span style="color: #800080;">$sayList</span>[] = <span style="color: #0000ff;">array</span><span style="color: #000000;">( 
+</span><span style="color: #008080;"> 9</span>         'title' =&gt; "&lt;a href='http://www.xxx.com/".<span style="color: #800080;">$row</span>['id'].".html' target='_blank'&gt;".<span style="color: #800080;">$row</span>['title']."&lt;/a&gt;", 
+<span style="color: #008080;">10</span>         'author' =&gt; <span style="color: #800080;">$row</span>['id'], 
+<span style="color: #008080;">11</span>         'date' =&gt; <span style="color: #008080;">date</span>('m-d H:i', <span style="color: #800080;">$row</span>['addtime'<span style="color: #000000;">]) 
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">    ); 
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">} 
+</span><span style="color: #008080;">14</span> <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$sayList</span>);</code></pre>
+
+<p><br />本文转自：<a href="https://www.sucaihuo.com/php/380.html" target="_blank">https://www.sucaihuo.com/php/380.html</a> 转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

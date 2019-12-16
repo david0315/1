@@ -1,0 +1,616 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11792151.html</div><br>
+    <p>一、开发环境的搭建</p>
+<p>&nbsp;&nbsp; （1）apache+php+mysql环境搭建</p>
+<p>&nbsp;&nbsp; 因为要用apache来做服务器，mysql作为数据库来存储数据，php来写代码以此实现网页与数据库的交互数据，所以需要下载上述软件，但上述软件的安装环境、配置很麻烦，所以在这里用了一个功能强大的建站集成软件包---XAMPP<br /><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp; 当然，也有可能启动Apache时候出现错误。</p>
+<p>&nbsp;&nbsp; （2）数据库客户端软件navigat</p>
+<p>&nbsp;&nbsp; 直接在cmd命令控制台操作数据库并不方便，不够直白，当然也可以直接用phpmyadmin来操作（上述xampp软件包安装之后在游览器输入127.0.0.1/phpmyadmin即可打开），但是phpmyadmin来操作也不方便，这里便采用Oracle公司出品的数据库客户端Navicat<br /><br /></p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）1.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;点击连接，输入连接名，（这里我直接取了IP地址的名字127.0.0.1），主机名和端口号都不用变，这里的用户名和密码。如果是你用的是xampp，那么用户名是root，密码为空；如果不是用的是xampp安装的，按照你设置的用户名和密码登录即可。填写完毕之后点击连接测试，没有问题直接确定即可连接好数据库。</p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）2.jpg" alt="" /></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p>
+<p>&nbsp;&nbsp;&nbsp; 此外你要是想掌握数据库，简单来讲你想对数据库的任何操作，都必须操作sql语句，总的来说分为四个操作：增删改查。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; ①增：向数据库写入数据</p>
+<p>&nbsp;&nbsp;&nbsp; 语句：insert into users (`username`,`password`) values ('name','passwd')</p>
+<p>&nbsp;&nbsp;&nbsp; （ps新手一定要注意这离users这个数据表后面的``这个符号是在tab键上方的引号，而values后面的就是个单引号）</p>
+<p>&nbsp;&nbsp;&nbsp; ②删：删除已有数据</p>
+<p>&nbsp;&nbsp;&nbsp; 语句：delete from users WHERE id='3'</p>
+<p>&nbsp;&nbsp;&nbsp; ③改：修改数据</p>
+<p>&nbsp;&nbsp;&nbsp; 语句：update set users username='新值', password='新值' WHERE id=3</p>
+<p>&nbsp;&nbsp;&nbsp; ④查：从数据库读取数据</p>
+<p>&nbsp;&nbsp;&nbsp; 语句：select * from users where id&gt;1 order by id desc limit 0,2<br /><br /></p>
+<p>（3）html网页的编写工具sublime text</p>
+<p><strong>phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的</strong>（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群677079770</a></p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）3.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp; Sublime Text 是一个代码编辑器（Sublime Text 2是收费软件，但可以无限期试用），也是HTML和散文先进的文本编辑器。Sublime text具有漂亮的用户界面和强大的功能，非常适合写代码的程序猿。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br />&nbsp;&nbsp; 用sublime text来写网页代码，可以掌握这样一个小技巧，先新建一个文件，格式保存为html网页格式，然后在sublime text中打开，输入html:4s 然后按下tab键即可生成大体框架。当然这个快捷键要想使用是要按照我上述给的链接，按照步骤安装好Emmet这个插件，才能使用。</p>
+<p>&nbsp; （4）网站域名的配置</p>
+<p>&nbsp;&nbsp; 一般来讲，你在游览器打开127.0.0.1这个网址，会转到apache默认目录下的一个网址，这里我对其进行修改，修改为我做项目的目录，E:\PHP\xampp\apache\conf，打开httpd.conf文件，将里面的路径修改为你存储网站的目录，在这里我的修改为</p>
+<p>&nbsp;&nbsp;&nbsp; DocumentRoot "E:/php/xampp/workplace"<br />&nbsp;&nbsp;&nbsp; &lt;Directory "E:/PHP/xampp/workplace"&gt;</p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp; 这里要注意按照自己的下载按照路径来修改为自己的目录，其次我还对这个127.0.0.1这个网址再次做了修改，使其虚拟域名为blog.com，修改完之后重启之后，在游览器输入blog.com，便会出现下述场景：</p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）4.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;<br />&nbsp;&nbsp; 在这里我发现我修改的DNS配置，不知道何时再前面加了一条注释，导致没法打开，大家也要注意按照我给的连接配置好之后，如果打不开再看一下配置文件有无错误。</p>
+<p>总之，配置环境和工具基本上也搭建成功了，接下来我就开始讲解这个blog的项目。</p>
+<p>&nbsp;&nbsp; 二、博客网站的书写</p>
+<p>&nbsp;&nbsp; 1.总体框架</p>
+<p>&nbsp;&nbsp; 首先在这里我先介绍一下我的总体框架，讲解一下，让大家先熟悉一下。</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）5.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><br />&nbsp; blog是项目的名字，admin文件夹里面存储的是后台登录文件 &nbsp;core文件夹里面存储核心文件，theme文件夹存储网页的样式文件 &nbsp;upfiles文件夹是存储从本地上传到服务器的图片信息，之后config.php文件是整个博客网站的配置文件，header.inc.php是加载了一个页面样式信息，index.php文件是网站的首页，read.php文件是网站首页文章的具体链接。</p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）6.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><br />&nbsp;&nbsp; 数据库表中的设计在这里我给出，方便大家参考学习，这里我主要建立了三个表，admin这个表示用来存储后台管理员注册和登录的数据，即账户和密码：</p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）7.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><br />&nbsp;&nbsp;&nbsp; page这个表主要是用来存储博客信息，在这里也给图片，方便安装图来建表：</p>
+<p>&nbsp;<img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）8.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp; 最后给出setting这个表，主要是用来存储博客的系统设置：</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）9.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp; 2.网站后台admin的书写</p>
+<p>&nbsp;（1）登录界面（login.php）</p>
+<p>&nbsp;<img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）10.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp; 关于这个页面我会在这里给出源码，登录页面其实也就是个从数据库读取的过程，这个登录页面的设计我主要是采用了bootstrap来设计的，不明白的可以百度一下bootstrap</p>
+<p>&nbsp;<img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）11.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp; 在这里面它包含了各式的样式、组件和JavaScript插件，可以说很好用。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）12.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp; 在这里我的使用方法是将bootstrap下载下来，然后将文件加压，复制到theme这个文件夹下面，调用方法见下面的源码，在源码中我都给出了详细的解释。</p>
+<p>&nbsp;&nbsp; 源码：<br /><br /></p>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span> <span style="color: #008000;">/*</span>
+<span style="color: #008080;">  3</span> <span style="color: #008000;">后台管理员登录窗口
+</span><span style="color: #008080;">  4</span>  <span style="color: #008000;">*/</span> 
+<span style="color: #008080;">  5</span>     
+<span style="color: #008080;">  6</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">启动session服务，记录账号登录的cookies</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">  7</span>     <span style="color: #008080;">session_start</span><span style="color: #000000;">();
+</span><span style="color: #008080;">  8</span>     
+<span style="color: #008080;">  9</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">包含一个配置文件</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 10</span>     <span style="color: #0000ff;">include</span>('../config.php'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 11</span>     
+<span style="color: #008080;"> 12</span>  
+<span style="color: #008080;"> 13</span>      <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$input</span>-&gt;get('do')=='check'<span style="color: #000000;">){
+</span><span style="color: #008080;"> 14</span>          <span style="color: #008000;">/*</span><span style="color: #008000;">获取页面提交的用户名和密码数据</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 15</span>          <span style="color: #800080;">$ausername</span>=<span style="color: #800080;">$input</span>-&gt;post('ausername'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 16</span>          <span style="color: #800080;">$apassword</span>=<span style="color: #800080;">$input</span>-&gt;post('apassword'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 17</span>  
+<span style="color: #008080;"> 18</span>          <span style="color: #008000;">/*</span><span style="color: #008000;">查询页面提交的数据是否在数据库提供的数据存在的sql语句</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 19</span>           <span style="color: #800080;">$sql</span>="select * from admin where ausername='{<span style="color: #800080;">$ausername</span>}' and apassword='{<span style="color: #800080;">$apassword</span>}' "<span style="color: #000000;">;
+</span><span style="color: #008080;"> 20</span>           <span style="color: #008000;">/*</span><span style="color: #008000;">数据库查询语句返回结果</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 21</span>           <span style="color: #800080;">$mysqli_result</span>=<span style="color: #800080;">$db</span>-&gt;query(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 22</span>           <span style="color: #008000;">/*</span><span style="color: #008000;">以数组形式存储数据库查询语句的返回结果</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 23</span>           <span style="color: #800080;">$row</span>=<span style="color: #800080;">$mysqli_result</span>-&gt;<span style="color: #000000;">fetch_array( MYSQLI_ASSOC);
+</span><span style="color: #008080;"> 24</span>           <span style="color: #008000;">/*</span><span style="color: #008000;">如果row确实返回了结果，则将结果的aid存储在session里，并转向home.php文件</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 25</span>           <span style="color: #0000ff;">if</span>(<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$row</span><span style="color: #000000;">)){
+</span><span style="color: #008080;"> 26</span>               <span style="color: #800080;">$_SESSION</span>['aid']=<span style="color: #800080;">$row</span>['aid'<span style="color: #000000;">];
+</span><span style="color: #008080;"> 27</span>               <span style="color: #008080;">header</span>("location:home.php"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 28</span>           }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 29</span>               <span style="color: #0000ff;">echo</span>("账户或密码错误"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 30</span> <span style="color: #000000;">          }
+</span><span style="color: #008080;"> 31</span> <span style="color: #000000;">     }
+</span><span style="color: #008080;"> 32</span> ?&gt;
+<span style="color: #008080;"> 33</span>  
+<span style="color: #008080;"> 34</span> &lt;!--后台管理员登录界面&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 35</span> &lt;!DOCTYPE HTML <span style="color: #0000ff;">PUBLIC</span> "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;
+<span style="color: #008080;"> 36</span> &lt;html lang="en"&gt;
+<span style="color: #008080;"> 37</span> &lt;head&gt;
+<span style="color: #008080;"> 38</span>     &lt;meta http-equiv="Content-Type" content="text/html;charset=UTF-8"&gt;
+<span style="color: #008080;"> 39</span>     &lt;title&gt;管理员登录界面&lt;/title&gt;
+<span style="color: #008080;"> 40</span>     &lt;!--加载包含bootstrap里css和javascript里的文件&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 41</span>     &lt;?php <span style="color: #0000ff;">include</span>(PATH . '/header.inc.php');?&gt;
+<span style="color: #008080;"> 42</span>     
+<span style="color: #008080;"> 43</span>  
+<span style="color: #008080;"> 44</span> &lt;/head&gt;
+<span style="color: #008080;"> 45</span> &lt;body&gt;
+<span style="color: #008080;"> 46</span>     &lt;!--最外面的container容器&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 47</span>     &lt;div <span style="color: #0000ff;">class</span>="container"&gt;
+<span style="color: #008080;"> 48</span>         &lt;!--bootstrap使用时建议使用一个row表格类，包含12个列&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 49</span>         &lt;div <span style="color: #0000ff;">class</span>="row" style="margin-top:200px;"&gt;
+<span style="color: #008080;"> 50</span>             &lt;!--距左边3个列&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 51</span>             &lt;div <span style="color: #0000ff;">class</span>="col-md-3"&gt;&lt;/div&gt;
+<span style="color: #008080;"> 52</span>             &lt;!--中间部分占据6列&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 53</span>             &lt;div <span style="color: #0000ff;">class</span>="col-md-6" "<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 54</span>              
+<span style="color: #008080;"> 55</span>                 &lt;div class="panel panel-primary"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 56</span> <span style="color: #000000;">                    &lt;!--登录头部分&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 57</span>                       &lt;div class="panel-heading"<span style="color: #000000;">&gt;管理员登录&lt;/div&gt;
+</span><span style="color: #008080;"> 58</span> <span style="color: #000000;">                      &lt;!--登录的身体部分&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 59</span>                       &lt;div class="panel-body"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 60</span>                         
+<span style="color: #008080;"> 61</span>                         &lt;form  class="form-horizontal" action="login.php?<span style="color: #0000ff;">do</span>=check" method="post"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 62</span> <span style="color: #000000;">                            &lt;!--登录的用户名那一行&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 63</span>                             &lt;div class="form-group"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 64</span>                                 &lt;label for="inputEmail3" class="col-sm-2 control-label"<span style="color: #000000;">&gt;用户名&lt;/label&gt;
+</span><span style="color: #008080;"> 65</span>                             &lt;div class="col-sm-10"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 66</span>                                   &lt;input type="text" class="form-control" name="ausername" id="ausername" placeholder="请输入用户名" datatype="*3-10" errormsg="请输入长度 范围在3-10之间的昵称"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 67</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 68</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 69</span>                             
+<span style="color: #008080;"> 70</span> <span style="color: #000000;">                            &lt;!--登录的密码那一行&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 71</span>                             &lt;div class="form-group"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 72</span>                                 &lt;label for="inputEmail3" class="col-sm-2 control-label"<span style="color: #000000;">&gt;密码&lt;/label&gt;
+</span><span style="color: #008080;"> 73</span>                             &lt;div class="col-sm-10"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 74</span>                                   &lt;input type="password" class="form-control" name="apassword" id="apassword" placeholder="请输入密码"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 75</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 76</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 77</span>                             
+<span style="color: #008080;"> 78</span> <span style="color: #000000;">                            &lt;!--登录、注册那一行&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 79</span>                             &lt;div class="form-group"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 80</span>                             &lt;div class="col-sm-3"<span style="color: #000000;">&gt;&lt;/div&gt;
+</span><span style="color: #008080;"> 81</span> <span style="color: #000000;">                            &lt;!--登录&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 82</span>                             &lt;div class="col-sm-4"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 83</span>                                   &lt;input type="submit" value="登录"<span style="color: #000000;"> class='btn btn-primary'&gt;
+</span><span style="color: #008080;"> 84</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 85</span> <span style="color: #000000;">                            &lt;!--注册&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 86</span>                             &lt;div class="col-sm-4"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 87</span>                                 &lt;a href="register.php"&gt;&lt;input type="button" value="注册" class="btn btn-primary"<span style="color: #000000;">&gt; &lt;/a&gt;
+</span><span style="color: #008080;"> 88</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 89</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 90</span> <span style="color: #000000;">                        &lt;/form&gt;
+</span><span style="color: #008080;"> 91</span>  
+<span style="color: #008080;"> 92</span>                         
+<span style="color: #008080;"> 93</span>  
+<span style="color: #008080;"> 94</span> <span style="color: #000000;">                    &lt;/div&gt;
+</span><span style="color: #008080;"> 95</span> <span style="color: #000000;">                     &lt;!--登录的尾部分&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 96</span>                        &lt;div class="panel-footer text-right"<span style="color: #000000;">&gt;版权所有，盗版必究&lt;/div&gt;
+</span><span style="color: #008080;"> 97</span> <span style="color: #000000;">                &lt;/div&gt;
+</span><span style="color: #008080;"> 98</span>             
+<span style="color: #008080;"> 99</span> <span style="color: #000000;">            &lt;/div&gt;
+</span><span style="color: #008080;">100</span> <span style="color: #000000;">            &lt;!--距离右边三列&gt;&lt;/!--&gt;
+</span><span style="color: #008080;">101</span>             &lt;div class="col-md-3"<span style="color: #000000;">&gt;&lt;/div&gt;
+</span><span style="color: #008080;">102</span> <span style="color: #000000;">        &lt;/div&gt;
+</span><span style="color: #008080;">103</span> <span style="color: #000000;">    &lt;/div&gt;
+</span><span style="color: #008080;">104</span> <span style="color: #000000;">    &lt;!--窗口背景的script加载&gt;&lt;/!--&gt;
+</span><span style="color: #008080;">105</span>     &lt;script type="text/javascript"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;">106</span> <span style="color: #000000;">        window.onload = function() {
+</span><span style="color: #008080;">107</span> <span style="color: #000000;">            var config = {
+</span><span style="color: #008080;">108</span> <span style="color: #000000;">                vx : 4,
+</span><span style="color: #008080;">109</span> <span style="color: #000000;">                vy : 4,
+</span><span style="color: #008080;">110</span> <span style="color: #000000;">                height : 2,
+</span><span style="color: #008080;">111</span> <span style="color: #000000;">                width : 2,
+</span><span style="color: #008080;">112</span> <span style="color: #000000;">                count : 100,
+</span><span style="color: #008080;">113</span>                 color : "121, 162, 185"<span style="color: #000000;">,
+</span><span style="color: #008080;">114</span>                 stroke : "100, 200, 180"<span style="color: #000000;">,
+</span><span style="color: #008080;">115</span> <span style="color: #000000;">                dist : 6000,
+</span><span style="color: #008080;">116</span> <span style="color: #000000;">                e_dist : 20000,
+</span><span style="color: #008080;">117</span> <span style="color: #000000;">                max_conn : 10
+</span><span style="color: #008080;">118</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">119</span> <span style="color: #000000;">            CanvasParticle(config);
+</span><span style="color: #008080;">120</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">121</span> <span style="color: #000000;">    &lt;/script&gt;
+</span><span style="color: #008080;">122</span>     &lt;script type="text/javascript" src="../theme/js/canvas-particle.js"<span style="color: #000000;">&gt;&lt;/script&gt;
+</span><span style="color: #008080;">123</span> <span style="color: #000000;">    &lt;/script&gt;
+</span><span style="color: #008080;">124</span> <span style="color: #000000;">&lt;/body&gt;
+</span><span style="color: #008080;">125</span> &lt;/html&gt;</code></pre>
+
+<p align="justify">&nbsp;（2）注册界面(register.php)</p>
+<p align="justify">&nbsp;&nbsp; 注册界面其实也就是个往数据库增加数据的过程。</p>
+<p>&nbsp;<img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）13.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp;还是给出源码，源码中我给出了详解。</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">包含一个配置文件</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">  3</span>     <span style="color: #0000ff;">include</span>('../config.php'<span style="color: #000000;">);
+</span><span style="color: #008080;">  4</span>     
+<span style="color: #008080;">  5</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$input</span>-&gt;get('do')=='check'<span style="color: #000000;">){
+</span><span style="color: #008080;">  6</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">获取用户页面注册传来的用户名和密码数据</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">  7</span>         <span style="color: #800080;">$ausername</span>=<span style="color: #800080;">$input</span>-&gt;post('ausername'<span style="color: #000000;">);
+</span><span style="color: #008080;">  8</span>         <span style="color: #800080;">$apassword</span>=<span style="color: #800080;">$input</span>-&gt;post('apassword'<span style="color: #000000;">);
+</span><span style="color: #008080;">  9</span>         <span style="color: #800080;">$aconfirmpassword</span>=<span style="color: #800080;">$input</span>-&gt;post('aconfirmpassword'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 10</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">注册时的处理</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 11</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$apassword</span>!=<span style="color: #800080;">$aconfirmpassword</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 12</span>             <span style="color: #0000ff;">echo</span> "前后两次输入的密码不一致"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 13</span>             <span style="color: #0000ff;">exit</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 14</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 15</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">将用户填入的数据插入到数据库的sql语句</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 16</span>         <span style="color: #800080;">$sql</span>="INSERT INTO admin(`ausername`,`apassword`) values('<span style="color: #800080;">$ausername</span>','<span style="color: #800080;">$apassword</span>')"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 17</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">提交sql语句到数据库处理</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 18</span>         <span style="color: #800080;">$is</span>=<span style="color: #800080;">$db</span>-&gt;query(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 19</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">判断是否注册成功</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 20</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$is</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 21</span>             <span style="color: #0000ff;">echo</span> "注册成功"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 22</span>             <span style="color: #008080;">header</span>("Location:login.php"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 23</span>         }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 24</span>             <span style="color: #0000ff;">echo</span> "注册失败"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 25</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 26</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 27</span>  
+<span style="color: #008080;"> 28</span>  
+<span style="color: #008080;"> 29</span> ?&gt;
+<span style="color: #008080;"> 30</span>  
+<span style="color: #008080;"> 31</span>  
+<span style="color: #008080;"> 32</span>  
+<span style="color: #008080;"> 33</span> &lt;!--后台管理员登录界面&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 34</span> &lt;!DOCTYPE HTML <span style="color: #0000ff;">PUBLIC</span> "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;
+<span style="color: #008080;"> 35</span> &lt;html lang="en"&gt;
+<span style="color: #008080;"> 36</span> &lt;head&gt;
+<span style="color: #008080;"> 37</span>     &lt;meta http-equiv="Content-Type" content="text/html;charset=UTF-8"&gt;
+<span style="color: #008080;"> 38</span>     &lt;title&gt;管理员注册界面&lt;/title&gt;
+<span style="color: #008080;"> 39</span>     &lt;!--加载包含bootstrap里css和javascript里的文件&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 40</span>     &lt;?php <span style="color: #0000ff;">include</span>(PATH . '/header.inc.php');?&gt;
+<span style="color: #008080;"> 41</span>     
+<span style="color: #008080;"> 42</span> &lt;/head&gt;
+<span style="color: #008080;"> 43</span> &lt;body&gt;
+<span style="color: #008080;"> 44</span>     &lt;!--最外面的container容器&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 45</span>     &lt;div <span style="color: #0000ff;">class</span>="container"&gt;
+<span style="color: #008080;"> 46</span>         &lt;!--bootstrap使用时建议使用一个row表格类，包含12个列&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 47</span>         &lt;div <span style="color: #0000ff;">class</span>="row" style="margin-top:200px;"&gt;
+<span style="color: #008080;"> 48</span>             &lt;!--距左边3个列&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 49</span>             &lt;div <span style="color: #0000ff;">class</span>="col-md-3"&gt;&lt;/div&gt;
+<span style="color: #008080;"> 50</span>             &lt;!--中间部分占据6列&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 51</span>             &lt;div <span style="color: #0000ff;">class</span>="col-md-6" "<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 52</span>              
+<span style="color: #008080;"> 53</span>                 &lt;div class="panel panel-primary"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 54</span> <span style="color: #000000;">                    &lt;!--注册头部分&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 55</span>                       &lt;div class="panel-heading"<span style="color: #000000;">&gt;管理员注册&lt;/div&gt;
+</span><span style="color: #008080;"> 56</span> <span style="color: #000000;">                      &lt;!--注册的身体部分&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 57</span>                       &lt;div class="panel-body"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 58</span>                         
+<span style="color: #008080;"> 59</span>                         &lt;form  class="form-horizontal" action="register.php?<span style="color: #0000ff;">do</span>=check" method="post"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 60</span> <span style="color: #000000;">                            &lt;!--注册的用户名那一行&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 61</span>                             &lt;div class="form-group"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 62</span>                                 &lt;label for="inputEmail3" class="col-sm-2 control-label"<span style="color: #000000;">&gt;用户名&lt;/label&gt;
+</span><span style="color: #008080;"> 63</span>                             &lt;div class="col-sm-10"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 64</span>                                   &lt;input type="text" class="form-control" name="ausername" id="ausername" placeholder="请输入用户名"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 65</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 66</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 67</span>                             
+<span style="color: #008080;"> 68</span> <span style="color: #000000;">                            &lt;!--注册的密码那一行&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 69</span>                             &lt;div class="form-group"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 70</span>                                 &lt;label for="inputEmail3" class="col-sm-2 control-label"<span style="color: #000000;">&gt;密码&lt;/label&gt;
+</span><span style="color: #008080;"> 71</span>                             &lt;div class="col-sm-10"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 72</span>                                   &lt;input type="password" class="form-control" name="apassword" id="apassword" placeholder="请输入密码"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 73</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 74</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 75</span> <span style="color: #000000;">                            &lt;!--注册的密码确定那一行&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 76</span>                             &lt;div class="form-group"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 77</span>                                 &lt;label for="inputEmail3" class="col-sm-2 control-label"<span style="color: #000000;">&gt;确认密码&lt;/label&gt;
+</span><span style="color: #008080;"> 78</span>                             &lt;div class="col-sm-10"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 79</span>                                   &lt;input type="password" class="form-control" name="aconfirmpassword" id="aconfirmpassword" placeholder="请再次输入密码"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 80</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 81</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 82</span>                             
+<span style="color: #008080;"> 83</span> <span style="color: #000000;">                            &lt;!--提交注册那一行&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 84</span>                             &lt;div class="form-group"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 85</span>                             &lt;div class="col-sm-4"<span style="color: #000000;">&gt;&lt;/div&gt;
+</span><span style="color: #008080;"> 86</span>                             &lt;div class="col-sm-6"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;"> 87</span>                                   &lt;input type="submit" value="注册"<span style="color: #000000;"> class='btn btn-primary btn-lg btn-block'&gt;
+</span><span style="color: #008080;"> 88</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 89</span> <span style="color: #000000;">                            &lt;/div&gt;
+</span><span style="color: #008080;"> 90</span> <span style="color: #000000;">                        &lt;/form&gt;
+</span><span style="color: #008080;"> 91</span>  
+<span style="color: #008080;"> 92</span>                         
+<span style="color: #008080;"> 93</span>  
+<span style="color: #008080;"> 94</span> <span style="color: #000000;">                    &lt;/div&gt;
+</span><span style="color: #008080;"> 95</span> <span style="color: #000000;">                     &lt;!--登录的尾部分&gt;&lt;/!--&gt;
+</span><span style="color: #008080;"> 96</span>                        &lt;div class="panel-footer text-right"<span style="color: #000000;">&gt;版权所有，盗版必究&lt;/div&gt;
+</span><span style="color: #008080;"> 97</span> <span style="color: #000000;">                &lt;/div&gt;
+</span><span style="color: #008080;"> 98</span>             
+<span style="color: #008080;"> 99</span> <span style="color: #000000;">            &lt;/div&gt;
+</span><span style="color: #008080;">100</span> <span style="color: #000000;">            &lt;!--距离右边三列&gt;&lt;/!--&gt;
+</span><span style="color: #008080;">101</span>             &lt;div class="col-md-3"<span style="color: #000000;">&gt;&lt;/div&gt;
+</span><span style="color: #008080;">102</span> <span style="color: #000000;">        &lt;/div&gt;
+</span><span style="color: #008080;">103</span> <span style="color: #000000;">    &lt;/div&gt;
+</span><span style="color: #008080;">104</span> <span style="color: #000000;">    &lt;!--窗口背景的script加载&gt;&lt;/!--&gt;
+</span><span style="color: #008080;">105</span>     &lt;script type="text/javascript"<span style="color: #000000;">&gt;
+</span><span style="color: #008080;">106</span> <span style="color: #000000;">        window.onload = function() {
+</span><span style="color: #008080;">107</span> <span style="color: #000000;">            var config = {
+</span><span style="color: #008080;">108</span> <span style="color: #000000;">                vx : 4,
+</span><span style="color: #008080;">109</span> <span style="color: #000000;">                vy : 4,
+</span><span style="color: #008080;">110</span> <span style="color: #000000;">                height : 2,
+</span><span style="color: #008080;">111</span> <span style="color: #000000;">                width : 2,
+</span><span style="color: #008080;">112</span> <span style="color: #000000;">                count : 100,
+</span><span style="color: #008080;">113</span>                 color : "121, 162, 185"<span style="color: #000000;">,
+</span><span style="color: #008080;">114</span>                 stroke : "100, 200, 180"<span style="color: #000000;">,
+</span><span style="color: #008080;">115</span> <span style="color: #000000;">                dist : 6000,
+</span><span style="color: #008080;">116</span> <span style="color: #000000;">                e_dist : 20000,
+</span><span style="color: #008080;">117</span> <span style="color: #000000;">                max_conn : 10
+</span><span style="color: #008080;">118</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">119</span> <span style="color: #000000;">            CanvasParticle(config);
+</span><span style="color: #008080;">120</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">121</span> <span style="color: #000000;">    &lt;/script&gt;
+</span><span style="color: #008080;">122</span>     &lt;script type="text/javascript" src="../theme/js/canvas-particle.js"<span style="color: #000000;">&gt;&lt;/script&gt;
+</span><span style="color: #008080;">123</span> <span style="color: #000000;">    &lt;/script&gt;
+</span><span style="color: #008080;">124</span> <span style="color: #000000;">&lt;/body&gt;
+</span><span style="color: #008080;">125</span> &lt;/html&gt;</code></pre>
+
+<p>（3）后台管理页面（home.php）</p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）14.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p align="justify">&nbsp;在源码中将上述网站的标题那部分单独给拿出来做了一个文件（nav.inc.php）,这里也是给出源码，供大家学习参考。</p>
+<p align="justify">&nbsp;home.php源码</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;">/*</span>
+<span style="color: #008080;"> 3</span> <span style="color: #008000;">后台管理员登录之后php控制端
+</span><span style="color: #008080;"> 4</span>  <span style="color: #008000;">*/</span>     
+<span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">include</span> ('check.php'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 6</span> ?&gt;
+<span style="color: #008080;"> 7</span>  
+<span style="color: #008080;"> 8</span> &lt;!--后台管理员登录之后的界面&lt;&gt;/!--&gt;
+<span style="color: #008080;"> 9</span> &lt;!DOCTYPE HTML <span style="color: #0000ff;">PUBLIC</span> "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;
+<span style="color: #008080;">10</span> &lt;html lang="en"&gt;
+<span style="color: #008080;">11</span> &lt;head&gt;
+<span style="color: #008080;">12</span>     &lt;meta http-equiv="Content-Type" content="text/html;charset=UTF-8"&gt; 
+<span style="color: #008080;">13</span>     &lt;title&gt;管理员登录&lt;/title&gt;
+<span style="color: #008080;">14</span>     &lt;?php <span style="color: #0000ff;">include</span>(PATH . '/header.inc.php');?&gt;  &lt;!--所有的页面都需加载这个文件&gt;&lt;/!--&gt;
+<span style="color: #008080;">15</span> &lt;/head&gt;
+<span style="color: #008080;">16</span> &lt;body&gt;
+<span style="color: #008080;">17</span>     &lt;?php <span style="color: #0000ff;">include</span>('nav.inc.php');?&gt;  &lt;!--管理员登录页面的标题部分&gt;&lt;/!--&gt;
+<span style="color: #008080;">18</span> &lt;/body&gt;
+<span style="color: #008080;">19</span> &lt;/html&gt;</code></pre>
+
+<p>nav.inc.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;!--后台管理界面的上方标题&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 2</span> &lt;nav <span style="color: #0000ff;">class</span>="navbar navbar-default" role="navigation"&gt;
+<span style="color: #008080;"> 3</span>       &lt;div <span style="color: #0000ff;">class</span>="container-fluid"&gt;
+<span style="color: #008080;"> 4</span>         &lt;!-- Brand and toggle get grouped <span style="color: #0000ff;">for</span> better mobile display --&gt;
+<span style="color: #008080;"> 5</span>         &lt;div <span style="color: #0000ff;">class</span>="navbar-header"&gt;
+<span style="color: #008080;"> 6</span>           &lt;button type="button" <span style="color: #0000ff;">class</span>="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"&gt;
+<span style="color: #008080;"> 7</span>             &lt;span <span style="color: #0000ff;">class</span>="sr-only"&gt;Toggle navigation&lt;/span&gt;
+<span style="color: #008080;"> 8</span>             &lt;span <span style="color: #0000ff;">class</span>="icon-bar"&gt;&lt;/span&gt;
+<span style="color: #008080;"> 9</span>             &lt;span <span style="color: #0000ff;">class</span>="icon-bar"&gt;&lt;/span&gt;
+<span style="color: #008080;">10</span>             &lt;span <span style="color: #0000ff;">class</span>="icon-bar"&gt;&lt;/span&gt;
+<span style="color: #008080;">11</span>           &lt;/button&gt;
+<span style="color: #008080;">12</span>           &lt;a <span style="color: #0000ff;">class</span>="navbar-brand" href="home.php"&gt;ADMIN&lt;/a&gt;
+<span style="color: #008080;">13</span>         &lt;/div&gt;
+<span style="color: #008080;">14</span>  
+<span style="color: #008080;">15</span>         &lt;!-- Collect the nav links, forms, and other content <span style="color: #0000ff;">for</span> toggling --&gt;
+<span style="color: #008080;">16</span>         &lt;div <span style="color: #0000ff;">class</span>="collapse navbar-collapse" id="bs-example-navbar-collapse-1"&gt;
+<span style="color: #008080;">17</span>           &lt;ul <span style="color: #0000ff;">class</span>="nav navbar-nav"&gt;
+<span style="color: #008080;">18</span>             &lt;li &gt;&lt;a href="blog.php"&gt;博客管理 &lt;span <span style="color: #0000ff;">class</span>="sr-only"&gt;(<span style="color: #008080;">current</span>)&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+<span style="color: #008080;">19</span>             &lt;li&gt;&lt;a href="auser.php"&gt;管理员管理&lt;/a&gt;&lt;/li&gt;
+<span style="color: #008080;">20</span>              &lt;li&gt;&lt;a href="setting.php"&gt;系统管理&lt;/a&gt;&lt;/li&gt;
+<span style="color: #008080;">21</span>           &lt;/ul&gt;
+<span style="color: #008080;">22</span>          
+<span style="color: #008080;">23</span>           &lt;ul <span style="color: #0000ff;">class</span>="nav navbar-nav navbar-right"&gt;
+<span style="color: #008080;">24</span>            
+<span style="color: #008080;">25</span>             &lt;li <span style="color: #0000ff;">class</span>="dropdown"&gt;
+<span style="color: #008080;">26</span>               &lt;a href="#" <span style="color: #0000ff;">class</span>="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"&gt; &lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$session_user</span>['ausername'];?&gt; &lt;span <span style="color: #0000ff;">class</span>="caret"&gt;&lt;/span&gt;&lt;/a&gt;  &lt;!--输出此时登录的账户名&gt;&lt;/!--&gt;
+<span style="color: #008080;">27</span>               &lt;ul <span style="color: #0000ff;">class</span>="dropdown-menu"&gt;
+<span style="color: #008080;">28</span>                 &lt;li&gt;&lt;a href="logout.php"&gt;退出&lt;/a&gt;&lt;/li&gt;
+<span style="color: #008080;">29</span>                
+<span style="color: #008080;">30</span>               &lt;/ul&gt;
+<span style="color: #008080;">31</span>             &lt;/li&gt;
+<span style="color: #008080;">32</span>           &lt;/ul&gt;
+<span style="color: #008080;">33</span>         &lt;/div&gt;&lt;!-- /.navbar-collapse --&gt;
+<span style="color: #008080;">34</span>       &lt;/div&gt;&lt;!-- /.container-fluid --&gt;
+<span style="color: #008080;">35</span>     &lt;/nav&gt;        </code></pre>
+
+<p align="justify">&nbsp;（4）博客管理界面(blog.php）</p>
+<p align="justify">&nbsp; 这里有三个功能，修改、删除、添加博客界面，下面我将单独列出添加博客这个界面</p>
+<p align="justify"><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）15.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p align="justify">（5）添加博客界面(blog_add.php)</p>
+<p align="justify">&nbsp;&nbsp; 为什么要单独列出添加博客这个界面呢？因为在添加博客这个界面中加载了一个编辑器，一个强大的在线编辑器simditor在这里这个编辑器如果需要图片上传功能的话，需要在文件中设置，这个文件设置为（blog_uopload.php）</p>
+<p align="justify">&nbsp; &nbsp;blog_add.php源码</p>
+<p align="justify">&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">后台除去管理员登录界面，均需加载这个文件，来验证该页面管理员是否登录</span><span style="color: #008000;">*/</span> 
+<span style="color: #008080;">  3</span>     <span style="color: #0000ff;">include</span> ('check.php'<span style="color: #000000;">);
+</span><span style="color: #008080;">  4</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">取出传来的pid从而判断是添加还是修改操作</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">  5</span>     <span style="color: #800080;">$pid</span>=<span style="color: #800080;">$input</span>-&gt;get('pid'<span style="color: #000000;">);
+</span><span style="color: #008080;">  6</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">初始化page，为了区别添加还是修改操作</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">  7</span>     <span style="color: #800080;">$page</span>=<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">  8</span>             'title'   =&gt; '',
+<span style="color: #008080;">  9</span>             'author'  =&gt; '',
+<span style="color: #008080;"> 10</span>             'content' =&gt; '',
+<span style="color: #008080;"> 11</span> <span style="color: #000000;">        );
+</span><span style="color: #008080;"> 12</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">如果pid大于0，可以得出并不是添加操作，而是修改操作</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 13</span>      <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$pid</span>&gt;0<span style="color: #000000;">){
+</span><span style="color: #008080;"> 14</span>          <span style="color: #800080;">$sql</span>="select * from page where pid ='{<span style="color: #800080;">$pid</span>}' "<span style="color: #000000;">;
+</span><span style="color: #008080;"> 15</span>          <span style="color: #800080;">$res</span>=<span style="color: #800080;">$db</span>-&gt;query(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 16</span>          <span style="color: #800080;">$page</span>=<span style="color: #800080;">$res</span>-&gt;<span style="color: #000000;">fetch_array(MYSQLI_ASSOC);
+</span><span style="color: #008080;"> 17</span> <span style="color: #000000;">     }
+</span><span style="color: #008080;"> 18</span>  
+<span style="color: #008080;"> 19</span>  
+<span style="color: #008080;"> 20</span>  
+<span style="color: #008080;"> 21</span>      <span style="color: #008000;">/*</span><span style="color: #008000;">对于添加操作操作而言，账户或密码不能为空</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 22</span>     <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$input</span>-&gt;get('do')=='add'<span style="color: #000000;">){
+</span><span style="color: #008080;"> 23</span>         <span style="color: #800080;">$title</span>=<span style="color: #800080;">$input</span>-&gt;post('title'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 24</span>         <span style="color: #800080;">$author</span>=<span style="color: #800080;">$input</span>-&gt;post('author'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 25</span>         <span style="color: #800080;">$content</span>=<span style="color: #800080;">$input</span>-&gt;post('content'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 26</span>         <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$title</span>)||<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$author</span>)||<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$content</span><span style="color: #000000;">)){
+</span><span style="color: #008080;"> 27</span>             <span style="color: #0000ff;">echo</span>("数据不能为空"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 28</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 29</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">如果aid大于1，则得出更新操作，否则执行添加操作</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 30</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$pid</span>&gt;0<span style="color: #000000;">){
+</span><span style="color: #008080;"> 31</span>             <span style="color: #800080;">$uptime</span>=<span style="color: #008080;">time</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 32</span>             <span style="color: #800080;">$sqlTpl</span>="UPDATE page set title='%s',author='%s',content='%s',uptime='%d' where pid='%d' "<span style="color: #000000;">;
+</span><span style="color: #008080;"> 33</span>             <span style="color: #800080;">$sql</span>=<span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$sqlTpl</span>,<span style="color: #800080;">$title</span>,<span style="color: #800080;">$author</span>,<span style="color: #800080;">$content</span>,<span style="color: #800080;">$uptime</span>,<span style="color: #800080;">$pid</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 34</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 35</span>         <span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 36</span>             <span style="color: #800080;">$intime</span>=<span style="color: #008080;">time</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 37</span>             <span style="color: #800080;">$sqlTpl</span>="INSERT INTO page(`title`,`author`,`content`,`intime`,`uptime`) values('%s','%s','%s','%d','%d')"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 38</span>             <span style="color: #800080;">$sql</span>=<span style="color: #008080;">sprintf</span>(<span style="color: #800080;">$sqlTpl</span>,<span style="color: #800080;">$title</span>,<span style="color: #800080;">$author</span>,<span style="color: #800080;">$content</span>,<span style="color: #800080;">$intime</span>,0<span style="color: #000000;">);
+</span><span style="color: #008080;"> 39</span>             
+<span style="color: #008080;"> 40</span> <span style="color: #000000;">        }            
+</span><span style="color: #008080;"> 41</span>         <span style="color: #008000;">/*</span><span style="color: #008000;">判断是否有结果</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 42</span>         <span style="color: #800080;">$is</span>=<span style="color: #800080;">$db</span>-&gt;query(<span style="color: #800080;">$sql</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 43</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$is</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 44</span>             <span style="color: #008080;">header</span>("location:blog.php"<span style="color: #000000;">);
+</span><span style="color: #008080;"> 45</span>         }<span style="color: #0000ff;">else</span><span style="color: #000000;">{
+</span><span style="color: #008080;"> 46</span>             <span style="color: #0000ff;">echo</span> "执行失败"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 47</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 48</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 49</span> ?&gt;
+<span style="color: #008080;"> 50</span>  
+<span style="color: #008080;"> 51</span> &lt;!--管理员添加博客或修改博客的界面&lt;&gt;/!--&gt;
+<span style="color: #008080;"> 52</span> &lt;!DOCTYPE HTML <span style="color: #0000ff;">PUBLIC</span> "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;
+<span style="color: #008080;"> 53</span> &lt;html lang="en"&gt;
+<span style="color: #008080;"> 54</span> &lt;head&gt;
+<span style="color: #008080;"> 55</span>     &lt;meta http-equiv="Content-Type" content="text/html;charset=UTF-8"&gt;
+<span style="color: #008080;"> 56</span>     &lt;title&gt;添加博客&lt;/title&gt;
+<span style="color: #008080;"> 57</span>     &lt;?php <span style="color: #0000ff;">include</span>(PATH . '/header.inc.php');?&gt;
+<span style="color: #008080;"> 58</span>  
+<span style="color: #008080;"> 59</span>     &lt;!--加载simiditor编辑器的文件&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 60</span>     &lt;link rel="stylesheet" type="text/css" href="../theme/simditor/styles/simditor.css" /&gt;
+<span style="color: #008080;"> 61</span>     &lt;script type="text/javascript" src="../theme/simditor/scripts/module.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 62</span>     &lt;script type="text/javascript" src="../theme/simditor/scripts/hotkeys.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 63</span>     &lt;script type="text/javascript" src="../theme/simditor/scripts/uploader.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 64</span>     &lt;script type="text/javascript" src="../theme/simditor/scripts/simditor.js"&gt;&lt;/script&gt;
+<span style="color: #008080;"> 65</span>  
+<span style="color: #008080;"> 66</span> &lt;/head&gt;
+<span style="color: #008080;"> 67</span> &lt;body&gt;
+<span style="color: #008080;"> 68</span>     &lt;?php <span style="color: #0000ff;">include</span>('nav.inc.php');?&gt;
+<span style="color: #008080;"> 69</span>     &lt;div <span style="color: #0000ff;">class</span>="container"&gt;
+<span style="color: #008080;"> 70</span>     &lt;h2&gt; 博客管理 &lt;small <span style="color: #0000ff;">class</span>="pull-right"&gt;&lt;a <span style="color: #0000ff;">class</span>='btn btn-default' href="blog.php"&gt;返回&lt;/a&gt;&lt;/small&gt;&lt;/h2&gt;
+<span style="color: #008080;"> 71</span>     &lt;hr/&gt;
+<span style="color: #008080;"> 72</span>         &lt;div <span style="color: #0000ff;">class</span>="rows"&gt;
+<span style="color: #008080;"> 73</span>             &lt;form <span style="color: #0000ff;">class</span>="form-horizontal" role="form" action="blog_add.php?do=add&amp;pid=&lt;?php echo <span style="color: #800080;">$pid</span>;?&gt;" method="post"&gt;
+<span style="color: #008080;"> 74</span>               &lt;div <span style="color: #0000ff;">class</span>="form-group"&gt;
+<span style="color: #008080;"> 75</span>                 &lt;label <span style="color: #0000ff;">for</span>="inputEmail3" <span style="color: #0000ff;">class</span>="col-sm-2 control-label"&gt;标题&lt;/label&gt;
+<span style="color: #008080;"> 76</span>                 &lt;div <span style="color: #0000ff;">class</span>="col-sm-6"&gt;
+<span style="color: #008080;"> 77</span>                   &lt;input type="text" <span style="color: #0000ff;">class</span>="form-control" name="title" placeholder="请输入标题" value='&lt;?php echo $page['title'];?&gt;'&gt;
+<span style="color: #008080;"> 78</span>                 &lt;/div&gt;
+<span style="color: #008080;"> 79</span>               &lt;/div&gt;
+<span style="color: #008080;"> 80</span>               &lt;div <span style="color: #0000ff;">class</span>="form-group"&gt;
+<span style="color: #008080;"> 81</span>                 &lt;label <span style="color: #0000ff;">for</span>="inputPassword3" <span style="color: #0000ff;">class</span>="col-sm-2 control-label"&gt;作者&lt;/label&gt;
+<span style="color: #008080;"> 82</span>                 &lt;div <span style="color: #0000ff;">class</span>="col-sm-4"&gt;
+<span style="color: #008080;"> 83</span>                   &lt;input type="text" <span style="color: #0000ff;">class</span>="form-control" name="author" placeholder="请输入作者" value='&lt;?php echo $page['author'];?&gt;' &gt;
+<span style="color: #008080;"> 84</span>                 &lt;/div&gt;
+<span style="color: #008080;"> 85</span>               &lt;/div&gt;
+<span style="color: #008080;"> 86</span>  
+<span style="color: #008080;"> 87</span>               &lt;div <span style="color: #0000ff;">class</span>="form-group"&gt;
+<span style="color: #008080;"> 88</span>                 &lt;label <span style="color: #0000ff;">for</span>="inputPassword3" <span style="color: #0000ff;">class</span>="col-sm-2 control-label"&gt;正文&lt;/label&gt;
+<span style="color: #008080;"> 89</span>                 &lt;div <span style="color: #0000ff;">class</span>="col-sm-8"&gt;
+<span style="color: #008080;"> 90</span>                      &lt;textarea id="content" name="content" <span style="color: #0000ff;">class</span>="form-control"&gt;&lt;?php <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$page</span>['content'];?&gt;&lt;/textarea&gt;
+<span style="color: #008080;"> 91</span>                      &lt;!--在script中初始化编辑器,在这里注意script里加载的textarea的ID要与上方textarea的id号一致&gt;&lt;/!--&gt;
+<span style="color: #008080;"> 92</span>                     &lt;script&gt;
+<span style="color: #008080;"> 93</span>                         <span style="color: #0000ff;">var</span> editor = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Simditor({
+</span><span style="color: #008080;"> 94</span>                           textarea: $('#content'),
+<span style="color: #008080;"> 95</span>                           upload:<span style="color: #000000;">{
+</span><span style="color: #008080;"> 96</span>                               url:'blog_upload.php',
+<span style="color: #008080;"> 97</span>                               fileKey:'file1'
+<span style="color: #008080;"> 98</span> <span style="color: #000000;">                          }
+</span><span style="color: #008080;"> 99</span>                           <span style="color: #008000;">//</span><span style="color: #008000;">optional options</span>
+<span style="color: #008080;">100</span> <span style="color: #000000;">                        });
+</span><span style="color: #008080;">101</span>                     &lt;/script&gt;                     
+<span style="color: #008080;">102</span>                 &lt;/div&gt;
+<span style="color: #008080;">103</span>               &lt;/div&gt;
+<span style="color: #008080;">104</span>               
+<span style="color: #008080;">105</span>               &lt;div <span style="color: #0000ff;">class</span>="form-group"&gt;
+<span style="color: #008080;">106</span>                 &lt;div <span style="color: #0000ff;">class</span>="col-sm-offset-2 col-sm-6"&gt;
+<span style="color: #008080;">107</span>                   &lt;button type="submit" <span style="color: #0000ff;">class</span>="btn btn-default"&gt;提交&lt;/button&gt;
+<span style="color: #008080;">108</span>                 &lt;/div&gt;
+<span style="color: #008080;">109</span>               &lt;/div&gt;
+<span style="color: #008080;">110</span>             &lt;/form&gt;
+<span style="color: #008080;">111</span>             
+<span style="color: #008080;">112</span>         &lt;/div&gt;
+<span style="color: #008080;">113</span>     &lt;/div&gt;
+<span style="color: #008080;">114</span> &lt;/body&gt;
+<span style="color: #008080;">115</span> &lt;/html&gt;
+<span style="color: #008080;">116</span> &nbsp;</code></pre>
+
+<p>&nbsp; blog_upload.php源码</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 2</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">后台除去管理员登录界面，均需加载这个文件，来验证该页面管理员是否登录</span><span style="color: #008000;">*/</span> 
+<span style="color: #008080;"> 3</span>     <span style="color: #0000ff;">include</span>('check.php'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">将文件上传到服务器的目录里</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 5</span>     <span style="color: #800080;">$key</span>='file1'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 6</span>     <span style="color: #800080;">$dir</span>='../upfiles/'<span style="color: #000000;">;
+</span><span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$key</span><span style="color: #000000;">])){
+</span><span style="color: #008080;"> 8</span>         <span style="color: #800080;">$file</span>=<span style="color: #800080;">$_FILES</span>[<span style="color: #800080;">$key</span><span style="color: #000000;">];
+</span><span style="color: #008080;"> 9</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$file</span>['error']==0<span style="color: #000000;">){
+</span><span style="color: #008080;">10</span>             <span style="color: #008000;">/*</span><span style="color: #008000;">文件所处服务器的目录</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">11</span>             <span style="color: #800080;">$pathName</span>=<span style="color: #800080;">$dir</span> . <span style="color: #800080;">$file</span>['name'<span style="color: #000000;">];
+</span><span style="color: #008080;">12</span>             <span style="color: #008000;">/*</span><span style="color: #008000;">文件所在服务器的网址</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">13</span>             <span style="color: #800080;">$urlName</span>='http://blog.com/blog/upfiles' . <span style="color: #800080;">$file</span>['name'<span style="color: #000000;">];
+</span><span style="color: #008080;">14</span>             <span style="color: #800080;">$is</span>=<span style="color: #008080;">move_uploaded_file</span>(<span style="color: #800080;">$file</span>['tmp_name'], <span style="color: #800080;">$pathName</span><span style="color: #000000;">);
+</span><span style="color: #008080;">15</span>             <span style="color: #008000;">/*</span><span style="color: #008000;">判断是否移动成功</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">16</span>             <span style="color: #0000ff;">if</span>(!<span style="color: #800080;">$is</span><span style="color: #000000;">){
+</span><span style="color: #008080;">17</span>                 <span style="color: #0000ff;">die</span>("上传失败"<span style="color: #000000;">);
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">19</span>             <span style="color: #008000;">/*</span><span style="color: #008000;">编辑器来判断是否成功上传图片</span><span style="color: #008000;">*/</span>
+<span style="color: #008080;">20</span>             <span style="color: #800080;">$json</span>=<span style="color: #0000ff;">array</span><span style="color: #000000;">(
+</span><span style="color: #008080;">21</span>                 'success' =&gt; <span style="color: #0000ff;">true</span>,
+<span style="color: #008080;">22</span>                 'msg'     =&gt; '',
+<span style="color: #008080;">23</span>                 'file_path'=&gt;<span style="color: #800080;">$urlName</span>
+<span style="color: #008080;">24</span> <span style="color: #000000;">                );
+</span><span style="color: #008080;">25</span>             <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$json</span><span style="color: #000000;">);
+</span><span style="color: #008080;">26</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">27</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">28</span> ?&gt;</code></pre>
+
+<p align="justify">（6）管理员管理界面（auser.php）</p>
+<p align="justify">&nbsp; 这里还是有三个功能，修改、删除和添加，这里我就不单独一一列出来了，具体可参考文末给出的源码</p>
+<p align="justify"><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）16.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p align="justify">&nbsp;（7）系统管理界面</p>
+<p align="justify">&nbsp; 系统管理可以在这里设置标题、介绍和博客每页的显示数量</p>
+<p align="justify"><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）17.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;&nbsp;3.主界面（index.php）</p>
+<p>&nbsp; 这里是游客访问的主界面，这里给出源码大家作为参考，</p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）18.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;阅读界面（read.php）</p>
+<p>&nbsp; 当你想阅读该文章时，可点击标题进入阅读页，进行阅读,同样给出源码，作为参考</p>
+<p><img src="./images/【实战】如何通过html+css+mysql+php来快速的制作动态网页（以制作一个博客网站为列）19.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p><strong>phper在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家，需要的</strong>（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=56Td5IJ">我的官方群677079770</a></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

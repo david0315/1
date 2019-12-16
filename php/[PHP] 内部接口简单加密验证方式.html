@@ -1,0 +1,48 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 内部接口简单加密验证方式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 内部接口简单加密验证方式</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11475580.html</div><br>
+    <p>1. 当有内部系统之间进行调用的时候,也需要简单的进行一下调用方的验证,一种简单的内部接口加密验证方式.此加密方式需要三个参数,分别是api地址,pin码,entry标识,其中pin和entry是接口双方约定的两个参数.</p>
+<p>举例说明:<br />service_api="/1/service"<br />pin="6879hsdhj4323nmn32j3jn23n44j"<br />entry="entadmin"</p>
+<p>2. GET请求:<br />https://i.api.test.com/1/service?s2={sign}&amp;entry={entry}&amp;myname=taoshihan&amp;uid=1</p>
+<p>变量sign的生成规则如下:<br />api地址为 "/1/service"<br />args参数为 array("myname"=&gt;'taoshihan',"uid"=&gt;1);不包含s2和entry<br />method为 "GET"<br />pin为 "6879hsdhj4323nmn32j3jn23n44j"</p>
+<src class="cnblogs_code">
+<pre><code>makeInternalApiSign(<span style="color: #800080;">$api</span>, <span style="color: #800080;">$args</span>, <span style="color: #800080;">$method</span>, <span style="color: #800080;">$pin</span><span style="color: #000000;">) {
+    </span><span style="color: #008080;">ksort</span>(<span style="color: #800080;">$args</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$ls</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$args</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span> =&gt; <span style="color: #800080;">$v</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$v</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$ak</span> = <span style="color: #008080;">sprintf</span>('%s[]', <span style="color: #800080;">$k</span><span style="color: #000000;">);
+            </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$v</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$i</span><span style="color: #000000;">) {
+                </span><span style="color: #800080;">$ls</span>[] = <span style="color: #008080;">sprintf</span>("%s=%s", <span style="color: #008080;">rawurlencode</span>(<span style="color: #800080;">$ak</span>), <span style="color: #008080;">rawurlencode</span>(<span style="color: #800080;">$i</span><span style="color: #000000;">));
+            }
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$ls</span>[] = <span style="color: #008080;">sprintf</span>('%s=%s', <span style="color: #008080;">rawurlencode</span>(<span style="color: #800080;">$k</span>), <span style="color: #008080;">rawurlencode</span>(<span style="color: #800080;">$v</span><span style="color: #000000;">));
+        }
+    }
+    </span><span style="color: #0000ff;">return</span> hash_hmac('sha1', <span style="color: #008080;">sprintf</span>('%s:%s?%s', <span style="color: #800080;">$method</span>, <span style="color: #800080;">$api</span>, <span style="color: #008080;">implode</span>('&amp;', <span style="color: #800080;">$ls</span>)), <span style="color: #800080;">$pin</span><span style="color: #000000;">);
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>这个加密规则可以有效的约束接口参数数据,防止增删篡改参数,防止随意变更接口地址</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

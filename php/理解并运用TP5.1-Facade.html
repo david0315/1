@@ -1,0 +1,136 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修理解并运用TP5.1-Facade' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>理解并运用TP5.1-Facade</center></div><div class='banquan'>原文出处:本文由博客园博主我爱读活法提供。<br/>
+原文连接:https://www.cnblogs.com/wadhf/p/11908653.html</div><br>
+    <src>
+<src>
+<h2>1.内容介绍</h2>
+<p>深入解析tp5.1与laravel 中Facade底层原理实现</p>
+<p>&nbsp;</p>
+<p>1. 什么是Facade</p>
+<p>2. 为什么需要有什么好处</p>
+<p>3.&nbsp;&nbsp;Facade实现原理</p>
+<p>4. 功能实现、</p>
+<p>5. 容器注入</p>
+<p>&nbsp;</p>
+<h2>2.知识讲解</h2>
+<h3>0.什么是Facade？？为什么需要？有什么好处</h3>
+<p>专业解释：</p>
+<p>门面模式（Facade）又称外观模式，用于为子系统中的一组接口提供一个一致的界面。门面模式定义了一个高层接口，这个接口使得子系统更加容易使用：引入门面角色之后，用户只需要直接与门面角色交互，用户与子系统之间的复杂关系由门面角色来实现，从而降低了系统的耦合度。</p>
+<p>&nbsp;</p>
+<p>通俗解释：</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;门面为容器中的类提供了一个静态调用接口，相比于传统的静态方法调用， 带来了更好的可测试性和扩展性，你可以为任何的非静态类库定义一个facade类。</p>
+<p>&nbsp;</p>
+<p>对于一个非静态的类，如果要调用这个类的方法我们可能就是要通过new&nbsp;创建这个对象，然后再通过&nbsp;-&gt; 调用这个类的方法</p>
+<p>如：</p>
+<p><img src="./images/理解并运用TP5.1-Facade0.jpg" alt="" width="548.9299926757812" height="276.92999267578125" data-img-idx="0" data-src="./images/理解并运用TP5.1-Facade0.jpg" /></p>
+<p>&nbsp;</p>
+<p>我们要调用这个类的方法就是</p>
+<p><img src="./images/理解并运用TP5.1-Facade1.jpg" alt="" width="553.469970703125" height="70.47000122070312" data-img-idx="1" data-src="./images/理解并运用TP5.1-Facade1.jpg" /></p>
+<p>这样调用类，但是如果调用的次数多了，自己每次调用这方法都要创建类从写法上就觉得不是很好而我们更多的是想直接以静态通过类名::方法（） 的方式调用，并且开发速度不快以及不够优雅，</p>
+<p>&nbsp;</p>
+<p>而如果我们使用facade模式</p>
+<p>给这个类一个静态代理对象，然后我们就可以通过静态的方式调用</p>
+<p><img src="./images/理解并运用TP5.1-Facade2.jpg" alt="" width="489.92999267578125" height="74.0" data-img-idx="2" data-src="./images/理解并运用TP5.1-Facade2.jpg" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>当然如上是TP5手册的例子</p>
+<p>&nbsp;</p>
+<h3>1.自己实践一次</h3>
+<p>首先我们可以创建一个工具类UserUtil</p>
+<p><img src="./images/理解并运用TP5.1-Facade3.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="3" data-src="./images/理解并运用TP5.1-Facade3.jpg" /></p>
+<p>如果说我们需要使用这个类的时候，比如：在index控制器中进行调用UserUtil中的index方法</p>
+<p><img src="./images/理解并运用TP5.1-Facade4.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="4" data-src="./images/理解并运用TP5.1-Facade4.jpg" /></p>
+<p>如上代码，这就是我们一般的操作方式。</p>
+<p>这样我们就会看起来不够的优雅。我在使用的时候还需要new出这个对象，我不想new怎么办？</p>
+<p>&nbsp;</p>
+<p>我们修改一下UserUtil中的index方法，用static修饰</p>
+<p><img src="./images/理解并运用TP5.1-Facade5.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="5" data-src="./images/理解并运用TP5.1-Facade5.jpg" /></p>
+<p>然后在控制器中，就可以通过类名的方式静态的调用了</p>
+<p><img src="./images/理解并运用TP5.1-Facade6.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="6" data-src="./images/理解并运用TP5.1-Facade6.jpg" /></p>
+<p>但是实际上这样并不是很好，如果说我们的UserUtil中会定义很多方法，如果说我们的Util中不止一个UserUtil，比如有TreeUtil等等其他类，这个时候我们就需要一一的给这些类定义static很明显就不够优雅，同时在内存中会一直保存这些静态属性，有很多使用其实次数不多但是也会保存很显然会占用一部分空间和资源。</p>
+<p>&nbsp;</p>
+<p>其实还有一个最大的问题就是扩展和维护不强。</p>
+<p>比如我们在做项目的时候我们在1.0版本的时候我们可能会在index方法添加很多代码，同时又有很多其他的方法，可是有一天产品经理需要改需求，这个时候你发现你定义的这个类没用了不满足这个需求的时候那么我们就只有需改源码</p>
+<p>&nbsp;</p>
+<p>那么接下来我们就需要对于这个UserUtil中的方法需改，可是当需改一个类的时间比一个新建一个类的时间要多的时候最好的办法就是重写。这个时候我们可能在接下来的操作中要需改很多调用这个UserUtil的地方。肿么办？？</p>
+<p>&nbsp;</p>
+<p>我们就可以使用fa&ccedil;ade作为这种类代理。</p>
+<p>&nbsp;</p>
+<p>首先：我们先把UserUtil类中的index需改回来</p>
+<p><img src="./images/理解并运用TP5.1-Facade7.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="7" data-src="./images/理解并运用TP5.1-Facade7.jpg" /></p>
+<p>然后创建一个app\facade\UserUtil.php的门面代理类</p>
+<p><img src="./images/理解并运用TP5.1-Facade8.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="8" data-src="./images/理解并运用TP5.1-Facade8.jpg" /></p>
+<p>在类中继承Facade，同时重写think\Facade类中的getFacadeClass方法</p>
+<p>在方法中return的值就是 这个类要代理的实际类 你也可以是</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return &ldquo;app\util\UserUtil&rdquo;;</p>
+<p>只是那样可以显得高大上哈哈哈~~~</p>
+<p>&nbsp;</p>
+<p>然后我们在控制器中使用</p>
+<p>注意！引入的是app\facade\UserUtil</p>
+<p><img src="./images/理解并运用TP5.1-Facade9.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="9" data-src="./images/理解并运用TP5.1-Facade9.jpg" /></p>
+<p>然后就成功了。</p>
+<p>&nbsp;</p>
+<p>在代理类中除了重写getFacadeClass方法外还可以使用think\Facade的bind方法</p>
+<p><img src="./images/理解并运用TP5.1-Facade10.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="10" data-src="./images/理解并运用TP5.1-Facade10.jpg" /></p>
+<p>&nbsp;</p>
+<p>首先我们一起看一下tp5.1对于框架是怎么对于核心类库用facade代理的</p>
+<p>打开thinkphp\base.php这个文件，就可以发现tp5.1的核心类库是通过Think\Facade中的bind方法进行了定义</p>
+<p>同时又通过Think\Loader中的addClassAlias方法对于核心类别名注册</p>
+<p><img src="./images/理解并运用TP5.1-Facade11.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="11" data-src="./images/理解并运用TP5.1-Facade11.jpg" /></p>
+<p>那么我们也可以模仿</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>首先把app\facade\UserUtil类进行处理</p>
+<p>不重写getFacadeClass方法</p>
+<p><img src="./images/理解并运用TP5.1-Facade12.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="12" data-src="./images/理解并运用TP5.1-Facade12.jpg" /></p>
+<p>然后我们在app\common.php中写</p>
+<p><img src="./images/理解并运用TP5.1-Facade13.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="13" data-src="./images/理解并运用TP5.1-Facade13.jpg" /></p>
+<p>然后使用</p>
+<p><img src="./images/理解并运用TP5.1-Facade14.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="14" data-src="./images/理解并运用TP5.1-Facade14.jpg" /></p>
+<p>Success</p>
+<h3>2.Tp5.1解析Facade</h3>
+<p>执行User::index()时</p>
+<p>&nbsp;</p>
+<p>会进入think\Facade类中</p>
+<p>因为没有实际调用的方法这个时候执行__callStatic</p>
+<p><img src="./images/理解并运用TP5.1-Facade15.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="15" data-src="./images/理解并运用TP5.1-Facade15.jpg" /></p>
+<p>通过createFacade创建实际被代理类的实例</p>
+<p><img src="./images/理解并运用TP5.1-Facade16.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="16" data-src="./images/理解并运用TP5.1-Facade16.jpg" /></p>
+<p>&nbsp;</p>
+<p>首先判断是否创建过</p>
+<p>&nbsp;</p>
+<p>执行子类重写的定义被代理类的方法</p>
+<p><br /><img src="./images/理解并运用TP5.1-Facade17.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="17" data-src="./images/理解并运用TP5.1-Facade17.jpg" /><br /><br /><img src="./images/理解并运用TP5.1-Facade18.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="18" data-src="./images/理解并运用TP5.1-Facade18.jpg" /><br /><br />如果没有重写定义这个被代理类的地址</p>
+<p>这个时候就检查是否被绑定</p>
+<p>重邦定的$bind中获取实例</p>
+<p><img src="./images/理解并运用TP5.1-Facade19.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="19" data-src="./images/理解并运用TP5.1-Facade19.jpg" /></p>
+<p>创建实例并执行实例的方法</p>
+<p>&nbsp;</p>
+
+
+
+
+<p>
+<img src="./images/理解并运用TP5.1-Facade20.jpg" alt="图片" data-albumname="说说和日志相册" data-albumpriv="3" data-from="local" data-img-idx="20" data-src="./images/理解并运用TP5.1-Facade20.jpg" /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

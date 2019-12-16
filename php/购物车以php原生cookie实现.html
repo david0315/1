@@ -1,0 +1,352 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修购物车以php原生cookie实现' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>购物车以php原生cookie实现</center></div><div class='banquan'>原文出处:本文由博客园博主老猫爱豆提供。<br/>
+原文连接:https://www.cnblogs.com/laomao666/p/10951859.html</div><br>
+    <blockquote>
+<p>index.php //入口文件</p>
+</blockquote>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+/**
+ * @name index.php
+ * @decs
+ * @author 老猫 &lt;18368091722@163.com&gt;
+ * Updated on: 2019/5/30 9:49
+ */
+include "goods.php";
+</code></pre>
+
+<blockquote>
+<p>　　conn.inc.php //数据库连接常量设置</p>
+</blockquote>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+/**
+ * @name conn.inc.php
+ * @decs 数据库常量配置
+ * @author 老猫 &lt;18368091722@163.com&gt;
+ * Updated on: 2019/5/30 9:43
+ */
+define("HOST",'13.232.50.253');
+define("USER",'liuyu');
+define("PWD",'94492474');
+define("DBNAME",'onecms');
+</code></pre>
+
+<blockquote>
+<p>　　mysqli.php //数据库连接</p>
+</blockquote>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+/**
+ * @name mysqli.php
+ * @decs 数据库连接
+ * @author 老猫 &lt;18368091722@163.com&gt;
+ * Updated on: 2019/5/30 9:44
+ */
+include 'conn.inc.php';
+$mysqli=new mysqli(HOST,USER,PWD,DBNAME);
+if($mysqli-&gt;connect_errno){
+    die('数据库连接出现错误，请检查配置'.$mysqli-&gt;connect_error);
+}
+</code></pre>
+
+<blockquote>
+<p>　　goods.php //商品展示</p>
+</blockquote>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+/**
+ * @name goods.php
+ * @decs
+ * @author 老猫 &lt;18368091722@163.com&gt;
+ * Updated on: 2019/5/30 9:46
+ */
+header("Content-type:text/html;charset=utf-8");
+include "mysqli.php";
+?&gt;
+&lt;div style='width:800px;float:none'&gt;
+    &lt;h1&gt;商品列表&lt;/h1&gt;
+    &lt;!--    显示当前系统时间--&gt;
+    &lt;h3&gt;&lt;p id="demo"&gt;&lt;/p&gt;
+        &lt;script&gt;
+            var myVar=setInterval(function(){myTimer()},1000);
+            function myTimer() {
+                var d = new Date();
+                document.getElementById("demo").innerHTML = d.toLocaleTimeString();
+            }
+        &lt;/script&gt;
+    &lt;/h3&gt;
+    &lt;form method="get" action=""&gt;
+        &lt;table style="100%" border="1"&gt;
+            &lt;tr&gt;
+                &lt;td&gt;
+                    &lt;select name="gid"&gt;
+                        &lt;option value="0"&gt;请选择商品&lt;/option&gt;
+
+                        &lt;?php
+                        /**
+                         * @name show
+                         * @decs 无限级分类
+                         * 关联model：
+                         * @param $fid
+                         * @param $i
+                         * @author 老猫 &lt;18368091722@163.com&gt;
+                         * Updated on: 2019/5/30 10:12
+                         */
+                        function show($fid,$i)
+                        {
+                            global $mysqli;//全球变量关键字，将前面的变量作用域使其在函数内生效
+                            $sql = "select *from goodstype where fid=$fid";
+                            $result = $mysqli-&gt;query($sql);
+                            $str=" ";
+                            $i++;
+                            for($n=1;$n&lt;$i;$n++) {
+                                $str .= "---";
+                            }
+                            $id=isset($_GET["gid"])?$id=$_GET["gid"]:"";
+                            ?&gt;
+                            &lt;?php
+                            while ($row = $result-&gt;fetch_assoc()) {
+                                ?&gt;
+                                &lt;option &lt;?php if($id==$row['id']){echo "selected";}?&gt; id="&lt;?php echo $str.$row["classname"] ?&gt;" value="&lt;?php echo $row["id"] ?&gt;"&gt;
+                                    &lt;?php echo $str.$row["classname"] ?&gt;
+                                &lt;/option&gt;
+                                &lt;?php
+                                show($fid=$row["id"],$i);
+                                ?&gt;
+                                &lt;?php
+                            }
+                        }
+                        show(0,0);
+
+                        ?&gt;
+                        &lt;input id="select" type="submit" value="查询"&gt;&lt;/select&gt;&lt;/td&gt;&lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;/form&gt;
+&lt;/div&gt;
+&lt;div style="float: none;width: 600px"&gt;
+    &lt;?php
+    $id=isset($_GET["gid"])?$id=$_GET["gid"]:"";
+    if(!empty($id)){
+        $sql="select *from goods where goodstypefid=$id or goodstypefstr like '%$id%' and checkinfo=1 and delstate=0";
+    }else{
+        $sql="select *from goods";
+    }
+    $result=$mysqli-&gt;query($sql);
+    ?&gt;
+    &lt;table border="1" cellpadding="3" cellspacing="0" width="60%"&gt;
+        &lt;tr bgcolor="skyblue"&gt;
+            &lt;?php
+            while($row=$result-&gt;fetch_assoc()){
+                ?&gt;
+                &lt;td &gt;
+                    &lt;image width="200px" height="200px" src="&lt;?php echo $row["picurl"]?&gt;"&gt;&lt;/image&gt;
+                    &lt;a title="查看商品详细信息" href="goodsshow.php?id=&lt;?php echo $row["id"]?&gt;"&gt;&lt;?php echo $row["title"]?&gt;&lt;/a&gt;
+                &lt;/td&gt;
+                &lt;?php
+            }
+            ?&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+
+<blockquote>
+<p>　　goodsshow.php //商品详情页展示</p>
+</blockquote>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+/**
+ * @name goodsshow.php
+ * @decs
+ * @author 老猫 &lt;18368091722@163.com&gt;
+ * Updated on: 2019/5/30 10:15
+ */
+header("Content-type:text/html;charset=utf-8");
+include "mysqli.php";
+?&gt;
+&lt;?php
+$id=isset($_GET["id"])?$_GET["id"]:1;
+$sql="update goods set hits=hits+1 where id=".$id;
+$mysqli-&gt;query($sql);
+$sql="select *from goods where id=".$id;
+$result=$mysqli-&gt;query($sql);
+while($row=$result-&gt;fetch_assoc()){
+?&gt;
+&lt;div&gt;
+    &lt;span&gt;&lt;?php echo $row["title"] ?&gt;&lt;/span&gt;
+    &lt;hr&gt;
+    &lt;image src="&lt;?php echo $row["picurl"] ?&gt;" width="200"&gt;&lt;/image&gt;
+    &lt;br&gt;
+    数量:-&lt;input type="text" id="buynum" value="1"&gt;+
+    价格:
+    &lt;del&gt;市场价:&lt;?php echo $row["marketprice"] ?&gt;&lt;/del&gt;
+    出售价:&lt;i style="color: red"&gt;&lt;?php echo $row["salesprice"] ?&gt;&lt;/i&gt;
+    &lt;input type="hidden" id="id" value="&lt;?php echo $row["id"] ?&gt;"&gt;
+    &lt;hr&gt;
+    内容:&lt;?php echo $row["content"] ?&gt;&lt;br&gt;
+
+    &lt;a href="javascript:;" onclick="buynow()"&gt;立刻购买&lt;/a&gt;  &lt;a href="javascript:;" onclick="addshoppingcart()"&gt;加入购物车&lt;/a&gt;
+    &lt;?php
+    }
+    ?&gt;
+&lt;/div&gt;
+&lt;script src="jquery.min.js"&gt;&lt;/script&gt;
+
+    &lt;script&gt;
+    //立即购买
+    function buynow(){
+        //先添加到购物车再进行跳转到购买页面
+        addshoppingcart("buy");
+    }
+    //添加到购物车
+    function addshoppingcart(a){
+        $.ajax({
+            url:"shoppingcart.php?a=addshoppingcart",
+            type:"post",
+            data:{'buynum':$("#buynum").val(),'id':$("#id").val()},
+            dataType:"html",
+            success:function (data) {
+            if(a=="buy"){
+                location.href="shoppingcart.php?a=buynow";
+            }else{
+                if(data){
+                    alert("添加购物车成功!");
+                }
+            }
+        }
+        })
+    }
+&lt;/script&gt;
+</code></pre>
+
+<blockquote>
+<p>　　shoppingcart.php //购物车功能</p>
+</blockquote>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+/**
+ * @name shoppingcart.php
+ * @decs
+ * @author 老猫 &lt;18368091722@163.com&gt;
+ * Updated on: 2019/5/30 10:20
+ */
+
+
+
+header("Content-type:text/html;charset=utf-8");
+include "mysqli.php";
+$a=isset($_GET["a"])?$_GET["a"]:"";
+//添加购物车
+if($a=="addshoppingcart"){
+    $buynum=$_POST["buynum"];
+    $id=$_POST["id"];
+//    echo "&lt;script&gt;alert($buynum+$id)&lt;/script&gt;";
+    if(!empty($_COOKIE["shoppingcart"]))
+        $shoppingcart=unserialize($_COOKIE["shoppingcart"]);
+    else
+        $shoppingcart=array();
+    if(isset($id) &amp;&amp; isset($buynum)){
+        $id=intval($id);
+        $buynum=intval($buynum);
+        $shoppingcart[]=array($id,$buynum);
+    }
+    setcookie('shoppingcart',serialize($shoppingcart));//商品属性进行序列化保存到cookie中
+    return true;
+}elseif($a=="buynow") {
+    //下面写购物车页面
+    if (!empty($_COOKIE["shoppingcart"])) {
+        ?&gt;
+        &lt;table width="36%" border="1" cellspacing="0" cellpadding="0"&gt;
+            &lt;tr bgcolor="#87ceeb"&gt;
+                &lt;td width="20%"&gt;商品ID&lt;/td&gt;
+                &lt;td width="35%" height="30"&gt;商品名称&lt;/td&gt;
+                &lt;td width="25%"&gt;购买数量&lt;/td&gt;
+                &lt;td width="15%"&gt;价格&lt;/td&gt;
+                &lt;td width="5%"&gt;操作&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td height="10" colspan="4"&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;?php
+            $totalprice = "";
+            $shoppingcart = unserialize($_COOKIE["shoppingcart"]);
+            foreach ($shoppingcart as $key =&gt; $value) {
+                $keys = array($key);
+                ?&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;&lt;?php echo $value[0] ?&gt;&lt;/td&gt;
+                    &lt;td height="30"&gt;
+                        &lt;?php
+                        $sql = "select *from goods where id=" . intval($value[0]);
+                        $result = $mysqli-&gt;query($sql);
+                        $row = $result-&gt;fetch_assoc();
+                        $totalprice += $row["salesprice"] * $value[1];
+                        echo '&lt;a href="goodsshow.php?cid=' . $row['goodstypeid'] . '&amp;id=' . $row['id'] . '" class="title" target="_blank"&gt;' . $row['title'] . '&lt;/a&gt;';
+                        ?&gt;
+                    &lt;/td&gt;
+                    &lt;td&gt;&lt;?php echo $value[1] ?&gt;&lt;/td&gt;
+                    &lt;td&gt;&lt;?php echo $row["salesprice"] * $value[1] ?&gt;&lt;/td&gt;
+                    &lt;td&gt; &lt;a href="shoppingcart.php?a=delone&amp;key=&lt;?php echo $key ?&gt;" onclick=""&gt;取消&lt;/a&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;?php
+            }
+            ?&gt;
+        &lt;/table&gt;
+        &lt;hr&gt;
+        &lt;span style="float: left;width: 250px;height: 150px"&gt;
+        总价格:&lt;?php echo $totalprice ?&gt;&lt;a href=""&gt;下一步&lt;/a&gt;  &lt;a href="shoppingcart.php?a=empty"&gt;清空购物车&lt;/a&gt;
+
+    &lt;/span&gt;
+        &lt;?php
+    }
+}elseif($a=="delone"){
+    $key=$_GET["key"];
+    $shoppingcart=unserialize($_COOKIE["shoppingcart"]);
+    unset($shoppingcart[$key]);
+    if(empty($_COOKIE)){
+        setcookie($shoppingcart,"",time()-3600);
+    }elseif(empty($shoppingcart)){
+        setcookie("shoppingcart",serialize($shoppingcart));
+        echo "&lt;div class='shoppingcartempty'&gt;您的购物车目前没有商品！3秒后跳回首页......&lt;/div&gt;";
+        header("Refresh:3;url=goods.php");
+    }else{
+        setcookie("shoppingcart",serialize($shoppingcart));
+        header("location:shoppingcart.php?a=buynow");
+    }
+
+    exit();
+}//清空购物车
+elseif($a=="empty"){
+    //清除整个cookie保存的商品信息
+    unset($_COOKIE["shoppingcart"]);
+    setcookie("shoppingcart","",time()-3600);
+    echo "&lt;div class='shoppingcartempty'&gt;您的购物车目前没有商品！3秒后跳回首页......&lt;/div&gt;";
+    header("Refresh:3;url=goods.php");
+}
+</code></pre>
+
+<p>　　</p>
+<p>以上摘自php中文网</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,35 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修某业务自助开通账户问题排查' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>某业务自助开通账户问题排查</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11577542.html</div><br>
+    <p>现象:销售反馈用户自己开通的账户,只收到了提示邮件,账户没有实际生成<br />前因:<br />1. 用户开通账户调用接口后,在该接口中再次调用销售系统接口实际开通账户<br />2. 有同事开发另一功能时提交过销售系统的代码</p>
+<p>排查流程:<br />1. webmail.log中记录了调用销售系统的参数和返回内容,用户自助申请中的请求信息正常,返回信息是空的</p>
+<p>2. 日志服务器会在每天凌晨汇总前一天的所有日志过来,登陆日志服务器,查看当天的日志,24号目录记录的是23号所产生的日志内容.进入目录后使用命令 zcat */*webmail.log* |grep "关键字" 可以看到指定内容.正常情况下销售系统返回的是 {"code":"1","msg":null} , 异常情况下没有返回值</p>
+<p>3. 登陆销售系统的线上服务器, 查看access日志,可以看到请求返回的是500, 查看php的错误日志 php -i|grep error_log 查看php错误日志的记录位置, grep 查询php错误日志,可以看到Fatal error ,call undefine,在代码中多了一个函数的调用,但是该函数没有定义</p>
+<p>4. 可以批量登陆线上机器查看当天的所有该接口的请求,注意电信和联通服务器登陆通道机不同</p>
+<p>企邮线上服务器:<br />    通道机:dxxxxxx<br />略</p>
+<p>    通道机:ltxxxxxx<br />略</p>
+<p>销售系统的线上服务器:<br />略<br />集中日志服务器:<br />    略<br />    企邮日志目录:/data1/mailLog/email/webmail/</p>
+<p>企邮程序记录的日志目录:<br />    /var/log/sinamail/webmail/webmail.log</p>
+<p>access和error日志,php的error日志 可以查询配置得到 ,</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

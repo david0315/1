@@ -1,0 +1,62 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP代码优化—array_push' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP代码优化—array_push</center></div><div class='banquan'>原文出处:本文由博客园博主bilberry提供。<br/>
+原文连接:https://www.cnblogs.com/bilberry/p/10610850.html</div><br>
+    <p>PHP中数组插入数据通常有这么几种：</p>
+<ol>
+<li>定义的时候直接赋值</li>
+</ol>
+<pre><code><code>$arr = array(‘apple’, ’banana’);</code></code></pre>
+<ol>
+<li>使用数组变量操作</li>
+</ol>
+<pre><code><code>$arr = array();
+$arr[] = ‘apple’;
+$arr[] = ‘banana’;</code></code></pre>
+<ol>
+<li>使用array_push()插入</li>
+</ol>
+<pre><code><code>$arr = array(‘apple’);
+array_push($arr, ‘banana’, ‘orange’);</code></code></pre>
+<p>在项目中，我们大部分情况都是先从数据库中获取数据，然后转成数组形式，而对于第一种情况，在定义数组的时候直接赋值往往只适合数据量很小，而且是已知的情况，所以就不存在什么代码优化了，我们主要讲第二种和第三种。</p>
+<p>关于array_push的使用，就不多介绍，自己看官方文档(<a href="https://secure.php.net/manual/en/function.array-push.php" class="uri">https://secure.php.net/manual/en/function.array-push.php</a>)。</p>
+<h3 id="性能比较">性能比较</h3>
+<p>我们使用<code>php 7.2</code>来测试，并且没有做任何配置上的优化。测试方法：定义一个数组，分别用第二种和第三种方式插入10万条记录，代码大致如下：</p>
+<p><img src="./images/PHP代码优化—array_push0.jpg" /></p>
+<p><img src="./images/PHP代码优化—array_push1.jpg" /></p>
+<p><code>convert</code>函数用来查看内存占用情况，运行结果如下：</p>
+<p><img src="./images/PHP代码优化—array_push2.jpg" /></p>
+<p><img src="./images/PHP代码优化—array_push3.jpg" /></p>
+<p>通过多次运行上述代码，可以发现直接使用数组变量赋值耗时在<code>0.0045</code>左右，而使用<code>array_push</code>的方式耗时在<code>0.006</code>左右，消耗的内存都是一样的，因为都是10万条记录。</p>
+<p>对比两种方法，发现方法二确实比调用<code>array_push</code>快，因为在每次循环时函数调用需要消耗一些时间，但仅仅看上面的测试，并不觉得第二种方法比第三种方法快多少，完全可以忽略不计的。</p>
+<p>的确，这种优化在绝大多数应用中和没优化没啥区别，但是当应用达到瓶颈的时候，每一处不起眼的优化可能都会使性能提高不少，况且我们的测试中数组的结构很简单，真实项目中数据类型不是这么单一，可能还是嵌套的数组，数组的大小可能也不止10万。</p>
+<p>我们再来看看两者的差异，<code>array_push()</code>是函数调用，另一个不是，这就是说了，从代码量上看两者也是一样的，从数组结构上看，测试中我们都没有使用索引，默认都是从0开始，如果要使用<code>key =&gt; value</code>形式插入数据时，<code>array_push()</code>就不是很好处理了，这时使用法二就很方便：<code>$array1[$key] =&gt; $x</code>。</p>
+<p>前面都是说<code>array_push()</code>怎么不好，但有时候<code>array_push</code>还是很好用的。比如我们要一次插入多个元素时，就可以这样使用：</p>
+<pre><code><code>$arr = array(‘a’, ’b’);
+array_push($arr, ‘c’, ‘d’);
+// $arr = array(‘a’, ’b’, ‘c’, ‘d’);</code></code></pre>
+<p>通过上面对比可见，PHP中数组插值的方法有很多，虽然每种方法差不多，但了解每一种方法何时使用还是很有必要的。</p>
+<p>欢迎关注我的公众号：</p>
+<p><img src="./images/PHP代码优化—array_push4.jpg" alt="正义的程序猿" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

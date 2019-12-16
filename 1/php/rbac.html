@@ -1,0 +1,124 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修rbac' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>rbac</center></div><div class='banquan'>原文出处:本文由博客园博主php毛宏历的博客提供。<br/>
+原文连接:https://www.cnblogs.com/maohongli/p/11207190.html</div><br>
+    <src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">登陆控制器   </span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;">  actionLogin(){
+        </span><span style="color: #800080;">$name</span>=Yii::<span style="color: #800080;">$app</span>-&gt;request-&gt;post("name"<span style="color: #000000;">);
+
+        </span><span style="color: #800080;">$pass</span>=Yii::<span style="color: #800080;">$app</span>-&gt;request-&gt;post("pass"<span style="color: #000000;">);
+       </span><span style="color: #800080;">$res</span>= Yii::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand("select * from user where name='<span style="color: #800080;">$name</span>' and pass='<span style="color: #800080;">$pass</span>'")-&gt;<span style="color: #000000;">queryOne();
+
+       </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$res</span><span style="color: #000000;">){
+             </span><span style="color: #800080;">$session</span>=Yii::<span style="color: #800080;">$app</span>-&gt;<span style="color: #000000;">session;
+            </span><span style="color: #800080;">$session</span>-&gt;set("uid",<span style="color: #800080;">$res</span>['id'<span style="color: #000000;">]);
+             </span><span style="color: #800080;">$id</span>=<span style="color: #800080;">$res</span>['id'<span style="color: #000000;">];
+
+         </span><span style="color: #800080;">$sql</span>=Yii::<span style="color: #800080;">$app</span>-&gt;db-&gt;createCommand("SELECT * from user join u_t on  `user`.id=u_t.u_id join teacher on u_t.t_id=teacher.id JOIN t_p  on teacher.id=t_p.t_id join power on t_p.p_id=power.id where `user`.id=<span style="color: #800080;">$id</span>")-&gt;<span style="color: #000000;">queryAll();
+
+         </span><span style="color: #800080;">$session</span>-&gt;set("power",json_encode(<span style="color: #800080;">$sql</span><span style="color: #000000;">));
+         </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;redirect(["one/show"<span style="color: #000000;">]);
+
+       }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+           </span><span style="color: #0000ff;">echo</span> "&lt;a href='add'&gt;登陆失败&lt;/a&gt;"<span style="color: #000000;">;
+       }
+    }</span></code></pre>
+
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">权限控制器 </span>
+  <span style="color: #0000ff;">function</span><span style="color: #000000;">  init()
+    {
+      </span><span style="color: #800080;">$session</span>=Yii::<span style="color: #800080;">$app</span>-&gt;<span style="color: #000000;">session;
+      </span><span style="color: #800080;">$id</span>=<span style="color: #800080;">$session</span>-&gt;get("uid"<span style="color: #000000;">);
+
+     </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$id</span><span style="color: #000000;">)){
+         </span><span style="color: #0000ff;">echo</span> "&lt;a href='/mon/add'&gt;权限不足&lt;/a&gt;"<span style="color: #000000;">;
+     }
+
+     </span><span style="color: #800080;">$power</span>= <span style="color: #800080;">$session</span>-&gt;get("power"<span style="color: #000000;">);
+      </span><span style="color: #800080;">$power</span>= json_decode(<span style="color: #800080;">$power</span><span style="color: #000000;">);
+     </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$power</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">){
+             </span><span style="color: #800080;">$arr</span>[]=<span style="color: #800080;">$v</span>-&gt;controller.'/'.<span style="color: #800080;">$v</span>-&gt;<span style="color: #0000ff;">function</span><span style="color: #000000;">;
+     }
+      </span><span style="color: #800080;">$res</span>=Yii::<span style="color: #800080;">$app</span>-&gt;<span style="color: #000000;">requestedRoute;
+
+     </span><span style="color: #0000ff;">if</span> (!<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$res</span>,<span style="color: #800080;">$arr</span><span style="color: #000000;">)){
+     </span><span style="color: #0000ff;">echo</span> "&lt;a href='/mon/add'&gt;权限不足&lt;/a&gt;";<span style="color: #0000ff;">die</span><span style="color: #000000;">;
+     }
+
+    }
+
+
+    </span><span style="color: #0000ff;">function</span><span style="color: #000000;">   actionShow(){
+       </span><span style="color: #800080;">$session</span>=Yii::<span style="color: #800080;">$app</span>-&gt;<span style="color: #000000;">session;
+       </span><span style="color: #800080;">$data</span>=<span style="color: #800080;">$session</span>-&gt;get("power"<span style="color: #000000;">);
+       </span><span style="color: #800080;">$arr</span>=json_decode(<span style="color: #800080;">$data</span>,1<span style="color: #000000;">);
+
+      </span><span style="color: #800080;">$res</span>= <span style="color: #800080;">$this</span>-&gt;gettree(<span style="color: #800080;">$arr</span>,0<span style="color: #000000;">);
+      </span><span style="color: #0000ff;">return</span>   <span style="color: #800080;">$this</span>-&gt;render("show",["res"=&gt;<span style="color: #800080;">$res</span><span style="color: #000000;">]);
+    }
+
+
+   </span><span style="color: #0000ff;">function</span>  gettree(<span style="color: #800080;">$data</span>,<span style="color: #800080;">$pid</span><span style="color: #000000;">){
+         </span><span style="color: #800080;">$tree</span>=<span style="color: #000000;">[];
+        </span><span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$data</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span><span style="color: #000000;">){
+             </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$v</span>['pid']==<span style="color: #800080;">$pid</span><span style="color: #000000;">){
+                 </span><span style="color: #800080;">$v</span>['son']=<span style="color: #800080;">$this</span>-&gt;gettree(<span style="color: #800080;">$data</span>,<span style="color: #800080;">$v</span>['id'<span style="color: #000000;">]);
+                 </span><span style="color: #800080;">$tree</span>[]=<span style="color: #800080;">$v</span><span style="color: #000000;">;
+             }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$tree</span><span style="color: #000000;">;
+   }</span></code></pre>
+
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">权限展示</span>
+&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport"<span style="color: #000000;">
+          content</span>="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="ie=edge"&gt;
+    &lt;title&gt;Document&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+ &lt;table&gt;
+     &lt;?php  <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$res</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$key</span>=&gt;<span style="color: #800080;">$value</span>){?&gt;
+    &lt;tr&gt;
+        &lt;?php  <span style="color: #0000ff;">echo</span>  <span style="color: #800080;">$value</span>['power'] ?&gt;&lt;br&gt;
+        &lt;?php  <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$value</span>['son'] <span style="color: #0000ff;">as</span> <span style="color: #800080;">$k</span>=&gt;<span style="color: #800080;">$v</span>){?&gt;
+             &lt;a href="&lt;?php echo <span style="color: #800080;">$v</span>['function'] ?&gt;"&gt;&lt;?php  <span style="color: #0000ff;">echo</span>  <span style="color: #800080;">$v</span>['power'] ?&gt;&lt;br&gt;&lt;/a&gt;
+
+             &lt;/tr&gt;
+         &lt;?php  }?&gt;
+  &lt;?php  }?&gt;
+
+
+
+ &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

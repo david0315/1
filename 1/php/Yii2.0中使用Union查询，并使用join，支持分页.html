@@ -1,0 +1,38 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Yii2.0中使用Union查询，并使用join，支持分页' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Yii2.0中使用Union查询，并使用join，支持分页</center></div><div class='banquan'>原文出处:本文由博客园博主caohongchang提供。<br/>
+原文连接:https://www.cnblogs.com/caohongchang/p/11058399.html</div><br>
+    <src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #800080;">$query1</span> = Class1::find()-&gt;where(<span style="color: #800080;">$where</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 2</span> <span style="color: #800080;">$query2</span> = Class1::find()-&gt;alias('a')-&gt;<span style="color: #008080;">join</span>('left join', Class2::tableName() . 'as b', 'b.id = a.objId')<br />　　　　　　　　-&gt;select('a.*')-&gt;where(<span style="color: #800080;">$where2</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 3</span> <span style="color: #800080;">$queryAll</span> = <span style="color: #800080;">$query1</span>-&gt;union(<span style="color: #800080;">$query2</span>, <span style="color: #0000ff;">true</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 4</span> <span style="color: #800080;">$query</span> = (<span style="color: #0000ff;">new</span> Query())-&gt;from(['c' =&gt; <span style="color: #800080;">$queryAll</span>])-&gt;select('c.*,d.type,d.title')<br />　　　　　　　　-&gt;<span style="color: #008080;">join</span>('left join', Class3::tableName() . 'as d', 'd.id = c.objId')-&gt;distinct(<span style="color: #0000ff;">true</span>)-&gt;orderBy(['c.time'=&gt;<span style="color: #000000;">SORT_DESC]);
+</span><span style="color: #008080;"> 5</span> <span style="color: #800080;">$sql</span> = <span style="color: #800080;">$query</span>-&gt;createCommand()-&gt;<span style="color: #000000;">getRawSql();
+</span><span style="color: #008080;"> 6</span> <span style="color: #800080;">$result</span> = <span style="color: #800080;">$query</span>-&gt;offset((<span style="color: #800080;">$page</span> - 1) * 10)-&gt;limit(10)-&gt;<span style="color: #000000;">all();
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #800080;">$totalCount</span> = <span style="color: #800080;">$query</span>-&gt;<span style="color: #008080;">count</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 9</span> <span style="color: #800080;">$pagination</span> = <span style="color: #0000ff;">new</span> Pagination(['totalCount'=&gt;<span style="color: #800080;">$totalCount</span>, 'pageSize'=&gt;10<span style="color: #000000;">]);
+</span><span style="color: #008080;">10</span> <span style="color: #800080;">$result</span> = <span style="color: #800080;">$query</span>-&gt;offset(<span style="color: #800080;">$pagination</span>-&gt;offset)-&gt;limit(<span style="color: #800080;">$pagination</span>-&gt;limit)-&gt;all();</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

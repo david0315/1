@@ -1,0 +1,157 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修2019年PHP最新面试题（含答案）' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>2019年PHP最新面试题（含答案）</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11892705.html</div><br>
+    <p><strong>1. 数据库设计经验，为什么进行分表？分库？一般多少数据量开始分表？分库？分库分表的目的？什么是数据库垂直拆分？水平拆分？分区等等</strong></p>
+<p><strong>一：为什么要分表</strong></p>
+<p>当一张表的数据达到几百万时，你查询一次所花的时间会变多，如果有联合查询的话，有可能会死在那儿了。分表的目的就在于此，减小数据库的负担，缩短查询时间。日常开发中我们经常会遇到大表的情况，所谓的大表是指存储了百万级乃至千万级条记录的表。这样的表过于庞大，导致数据库在查询和插入的时候耗时太长，性能低下，如果涉及联合查询的情况，性能会更加糟糕。分表和表分区的目的就是减少数据库的负担，提高数据库的效率，通常点来讲就是提高表的增删改查效率。数据库中的数据量不一定是可控的，在未进行分库分表的情况下，随着时间和业务的发展，库中的表会越来越多，表中的数据量也会越来越大，相应地，数据操作，增删改查的开销也会越来越大；另外，由于无法进行分布式式部署，而一台服务器的资源（CPU、磁盘、内存、IO 等）是有限的，最终数据库所能承载的数据量、数据处理能力都将遭遇瓶颈。</p>
+<p><strong>二：分表的方案</strong></p>
+<p><strong>1，做 mysql 集群，有人会问 mysql 集群，根分表有什么关系吗？</strong>虽然它不是实际意义上的分表，但是它启到了分表的作用，做集群的意义是什么呢？为一个数据库减轻负担，说白了就是减少 sql 排队队列中的 sql 的数量，举个例子：有 10 个 sql 请求，如果放在一个数据库服务器的排队队列中，他要等很长时间，如果把这 10 个 sql 请求，分配到 5 个数据库服务器的排队队列中，一个数据库服务器的队列中只有 2 个，这样等待时间是不是大大的缩短了呢？</p>
+<p>linux mysql proxy 的安装，配置，以及读写分离</p>
+<p>mysql replication 互为主从的安装及配置，以及数据同步</p>
+<p>优点：扩展性好，没有多个分表后的复杂操作（php 代码）</p>
+<p>缺点：单个表的数据量还是没有变，一次操作所花的时间还是那么多，硬件开销大。</p>
+<p><strong>2. 垂直分割就是按字段分。水平分割。就是按记录分</strong></p>
+<p><strong>2. 数据库优化有哪些？分别需要注意什么？</strong></p>
+<p>SQL 优化的原则是：将一次操作需要读取的 BLOCK 数减到最低，即在最短的时间达到最大的数据吞吐量。</p>
+<p>调整不良 SQL 通常可以从以下几点切入：</p>
+<p>检查不良的 SQL，考虑其写法是否还有可优化内容</p>
+<p>检查子查询 考虑 SQL 子查询是否可以用简单连接的方式进行重新书写</p>
+<p>检查优化索引的使用</p>
+<p>考虑数据库的优化器</p>
+<p>避免出现 SELECT&nbsp;*&nbsp;FROM&nbsp;table&nbsp;语句，要明确查出的字段。</p>
+<p>在一个 SQL 语句中，如果一个 where 条件过滤的数据库记录越多，定位越准确，则该 where 条件越应该前移。</p>
+<p>查询时尽可能使用索引覆盖。即对 SELECT 的字段建立复合索引，这样查询时只进行索引扫描，不读取数据块。</p>
+<p>在判断有无符合条件的记录时建议不要用 SELECT&nbsp;COUNT&nbsp;（）和 select&nbsp;top&nbsp;1 语句。</p>
+<p>使用内层限定原则，在拼写 SQL 语句时，将查询条件分解、分类，并尽量在 SQL 语句的最里层进行限定，以减少数据的处理量。</p>
+<p>应绝对避免在 order&nbsp;by 子句中使用表达式。</p>
+<p>如果需要从关联表读数据，关联的表一般不要超过 7 个。</p>
+<p>小心使用&nbsp;IN&nbsp;和&nbsp;OR，需要注意 In 集合中的数据量。建议集合中的数据不超过 200 个。</p>
+<p>&lt;&gt; 用 &lt; 、&gt; 代替，&gt; 用 &gt;= 代替，&lt; 用 &lt;= 代替，这样可以有效的利用索引。</p>
+<p>在查询时尽量减少对多余数据的读取包括多余的列与多余的行。</p>
+<p>对于复合索引要注意，例如在建立复合索引时列的顺序是 F1，F2，F3，则在 where 或 order&nbsp;by 子句中这些字段出现的顺序要与建立索引时的字段顺序一致，且必须包含第一列。只能是 F1 或 F1，F2 或 F1，F2，F3。否则不会用到该索引。</p>
+<p>多表关联查询时，写法必须遵循以下原则，这样做有利于建立索引，提高查询效率。格式如下</p>
+<p>select sum（table1.je）&nbsp;from&nbsp;table1 table1, table2 table2, table3 table3&nbsp;where&nbsp;(table1的等值条件（=）)&nbsp;and(table1的非等值条件)&nbsp;and&nbsp;(table2与table1的关联条件)&nbsp;and&nbsp;(table2的等值条件)&nbsp;and&nbsp;(table2的非等值条件)&nbsp;and(table3与table2的关联条件)&nbsp;and&nbsp;(table3的等值条件)&nbsp;and&nbsp;(table3的非等值条件)。</p>
+<p>注：关于多表查询时 from&nbsp;后面表的出现顺序对效率的影响还有待研究。</p>
+<p>子查询问题。对于能用连接方式或者视图方式实现的功能，不要用子查询</p>
+<p>在 WHERE&nbsp;子句中，避免对列的四则运算，特别是 where&nbsp;条件的左边，严禁使用运算与函数对列进行处理。比如有些地方&nbsp;substring&nbsp;可以用 like 代替。</p>
+<p>如果在语句中有 not&nbsp;in（in）操作，应考虑用 not&nbsp;exists（exists）来重写，最好的办法是使用外连接实现。</p>
+<p>对一个业务过程的处理，应该使事物的开始与结束之间的时间间隔越短越好，原则上做到数据库的读操作在前面完成，数据库写操作在后面完成，避免交叉。</p>
+<p>请小心不要对过多的列使用列函数和 order&nbsp;by,group&nbsp;by 等，谨慎使用 disti 软件开发 t。</p>
+<p>用 union&nbsp;all&nbsp;代替&nbsp;union，数据库执行 union 操作，首先先分别执行 union 两端的查询，将其放在临时表中，然后在对其进行排序，过滤重复的记录。</p>
+<p>当已知的业务逻辑决定 query A 和 query B 中不会有重复记录时，应该用 union&nbsp;all 代替 union，以提高查询效率。</p>
+<p>20、选取最适用的字段属性 ，MySQL 可以很好的支持大数据量的存取，但是一般说来，数据库中的表越小，在它上面执行的查询也就会越快。因此，在创建表的时候，为了获得更好的性能，我们可以将表中字段的宽度设得尽可能小。</p>
+<p>例如，在定义邮政编码这个字段时，如果将其设置为 CHAR (255), 显然给数据库增加了不必要的空间，甚至使用 VARCHAR 这种类型也是多余的，因为 CHAR (6) 就可以很好的完成任务了。同样的，如果可以的话，我们应该使用 MEDIUMINT 而不是 BIGIN 来定义整型字段。</p>
+<p>另外一个提高效率的方法是在可能的情况下，应该尽量把字段设置为 NOTNULL，这样在将来执行查询的时候，数据库不用去比较 NULL 值。</p>
+<p>对于某些文本字段，例如 &ldquo;省份&rdquo; 或者 &ldquo;性别&rdquo;，我们可以将它们定义为 ENUM 类型。因为在 MySQL 中，ENUM 类型被当作数值型数据来处理，而数值型数据被处理起来的速度要比文本类型快得多。这样，我们又可以提高数据库的性能。</p>
+<p><strong>3. web 开发方面会遇到哪些缓存？分别如何优化？</strong></p>
+<p>浏览器缓存</p>
+<p>在任何现代浏览器上 (如 IE, FireFox, Chrome) 折腾清除隐私数据的对话框，你很可能会注意到 &ldquo;缓存&rdquo; 这个设置项。</p>
+<p>代理服务器缓存</p>
+<p>Web 代理服务器使用同样的缓存原理，只是规模更大。代理以同样的方式服务千万用户，大公司和 ISP 经常在他们的防火墙或者单独的设备（也被称为中介 (intermediaries)）上架设代理缓存。</p>
+<p>网关缓存</p>
+<p>也被称为 &ldquo;反向代理缓存&rdquo; 或 &ldquo;替代缓存&rdquo;。网关缓存同样是起中介作用的，不过不是网络管理员部署的，而多半是网站管理员（公司专门的运维工程师、或 UED 或程序组某人 Add）部署，这样更容易扩展与维护。</p>
+<p><strong>4. 给你 256M 的内存，统计 10G 文件每个关键字出现的次数如何实现？</strong></p>
+<src class="image-package"><img class="uploaded-img" src="./images/2019年PHP最新面试题（含答案）0.jpg" alt="" width="auto" height="auto" /><br />
+<src class="image-caption">&nbsp;
+
+
+
+
+
+<p>思路</p>
+<p>$handle=fopen("/tmp/uploadfile.txt","r")ordie("Couldn't get handle");if($handle){while(!feof($handle)){$buffer=fgets($handle,4096);// Process buffer here..}fclose($handle);}</p>
+<p><strong>5. PHP 的生命周期 / 启动流程</strong></p>
+<p>完整的生命周期为模块初始化、请求初始化、请求处理、请求关闭、模块关闭五大阶段。</p>
+<p>cli 模式下，每个脚本都会完整的执行上面的五大阶段；对于 fastcgi 模式而言，只在启动时会执行模块初始化，之后的请求都走了请求初始化、处理请求、请求关闭三大阶段，在 fastcgi 关闭时执行模块关闭阶段。各个扩展的加载也是在模块初始化阶段完成的。</p>
+<p><strong>6. 说一下 PHP 的（内存）垃圾回收机制</strong></p>
+<p>每一个变量对应一个 zval 数据结构，在该结构内还有一个 val 结构体，该结构体内有一个引用计数（php7 而言，对于 php5，这个引用计数是保存在 zval 结构中的），标识该对象的引用数，当对象的引用计数为 0 时代表这个对象可被回收。</p>
+<p>对象的 refcount 减少的时机：修改变量、函数返回（释放局部变量）、unset 变量</p>
+<p>对于数组和对象而言，可能存在变量中的成员引用变量本身的情况，也就是循环引用，这样会造成这个变量永远不会被内存回收，而成为垃圾。</p>
+<p>PHP 里对于这种情况给出了垃圾回收机制：如果数组、对象的引用计数减少而且不为零，则认为他们可能是垃圾，把他们放到垃圾收集器里。等垃圾收集器到了一定的数量之后，进行垃圾处理：对所有可能的垃圾 refcount 减 1，如果为 1，说明是垃圾，则进行内存回收；如果不为 1，说明还有其他变量在使用，refcount 重新加 1；这种对象复用以及垃圾回收机制在其他语言中也有体现：redis 中也使用了引用计数表示每个对象的引用数量。</p>
+<p><strong>7. PHP7 与 PHP5 的区别</strong></p>
+<p>改进的性能 - 将 PHPNG 代码合并到 PHP7 中，速度是 PHP 5 的两倍。</p>
+<p>降低内存消耗 - 优化的 PHP 7 使用较少的资源。</p>
+<p>标量类型声明 - 现在可以强制执行参数和返回类型。</p>
+<p>一致的 64 位支持 - 对 64 位体系结构机器的一致支持。</p>
+<p>改进了异常层次 - 异常层次得到了改进</p>
+<p>许多致命的错误转换为例外 - 例外范围增加，涵盖许多致命的错误转换为例外。</p>
+<p>安全随机数发生器 - 增加新的安全随机数发生器 API。</p>
+<p>已弃用的 SAPI 和扩展已删除 - 各种旧的和不受支持的 SAPI 和扩展从最新版本中删除。</p>
+<p>空合并运算符（？） - 添加了新的空合并运算符。</p>
+<p>返回和标量类型声明 - 支持所添加的返回类型和参数类型。</p>
+<p>匿名类 - 支持匿名添加。</p>
+<p>零成本断言 - 支持零成本断言增加。</p>
+<p><strong>8. MongoDB 应用场景</strong></p>
+<p>mongodb 支持副本集、索引、自动分片，可以保证较高的性能和可用性。</p>
+<p>更高的写入负载</p>
+<p>默认情况下，MongoDB 更侧重高数据写入性能，而非事务安全，MongoDB 很适合业务系统中有大量 &ldquo;低价值&rdquo; 数据的场景。但是应当避免在高事务安全性的系统中使用 MongoDB，除非能从架构设计上保证事务安全。</p>
+<p>高可用性</p>
+<p>MongoDB 的复副集 (Master-Slave) 配置非常简洁方便，此外，MongoDB 可以快速响应的处理单节点故障，自动、安全的完成故障转移。这些特性使得 MongoDB 能在一个相对不稳定（如云主机）的环境中，保持高可用性。</p>
+<p>数据量很大或者未来会变得很大</p>
+<p>依赖数据库 (MySQL) 自身的特性，完成数据的扩展是较困难的事，在 MySQL 中，当一个单达表到 5-10GB 时会出现明显的性能降级，此时需要通过数据的水平和垂直拆分、库的拆分完成扩展，使用 MySQL 通常需要借助驱动层或代理层完成这类需求。而 MongoDB 内建了多种数据分片的特性，可以很好的适应大数据量的需求。</p>
+<p>基于位置的数据查询</p>
+<p>MongoDB 支持二维空间索引，因此可以快速及精确的从指定位置获取数据。</p>
+<p>表结构不明确</p>
+<p>在一些传统 RDBMS 中，增加一个字段会锁住整个数据库 / 表，或者在执行一个重负载的请求时会明显造成其它请求的性能降级。通常发生在数据表大于 1G 的时候（当大于 1TB 时更甚）。 因 MongoDB 是文档型数据库，为非结构货的文档增加一个新字段是很快速的操作，并且不会影响到已有数据。另外一个好处当业务数据发生变化时，是将不在需要由 DBA 修改表结构。</p>
+<p><strong>9. PHP 短信验证码防刷机制</strong></p>
+<p>1、时间限制：60 秒后才能再次发送</p>
+<p>从发送验证码开始，前端（客户端）会进行一个 60 秒的倒数，在这一分钟之内，用户是无法提交多次发送信息的请求的。这种方法虽然使用得比较普遍，但是却不是非常有用，技术稍微好点的人完全可以绕过这个限制，直接发送短信验证码。</p>
+<p>2、手机号限制：同一个手机号，24 小时之内不能够超过 5 条</p>
+<p>对使用同一个手机号码进行注册或者其他发送短信验证码的操作的时候，系统可以对这个手机号码进行限制，例如，24 小时只能发送 5 条短信验证码，超出限制则进行报错（如：系统繁忙，请稍后再试）。然而，这也只能够避免人工手动刷短信而已，对于批量使用不同手机号码来刷短信的机器，这种方法也是无可奈何的。</p>
+<p>3、短信验证码限制：30 分钟之内发送同一个验证码</p>
+<p>网上还有一种方法说：30 分钟之内，所有的请求，所发送的短信验证码都是同一个验证码。第一次请求短信接口，然后缓存短信验证码结果，30 分钟之内再次请求，则直接返回缓存的内容。对于这种方式，不是很清楚短信接口商会不会对发送缓存信息收取费用，如果有兴趣可以了解了解。</p>
+<p>4、前后端校验：提交 Token 参数校验</p>
+<p>这种方式比较少人说到，个人觉得可以这种方法值得一试。前端（客户端）在请求发送短信的时候，同时向服务端提交一个 Token 参数，服务端对这个 Token 参数进行校验，校验通过之后，再向请求发送短信的接口向用户手机发送短信。</p>
+<p>5、唯一性限制：微信产品，限制同一个微信 ID 用户的请求数量</p>
+<p>如果是微信的产品的话，可以通过微信 ID 来进行识别，然后对同一个微信 ID 的用户限制，24 小时之内最多只能够发送一定量的短信。</p>
+<p>6、产品流程限制：分步骤进行</p>
+<p>例如注册的短信验证码使用场景，我们将注册的步骤分成 2 步，用户在输入手机号码并设置了密码之后，下一步才进入验证码的验证步骤。</p>
+<p>7、图形验证码限制：图形验证通过后再请求接口</p>
+<p>用户输入图形验证码并通过之后，再请求短信接口获取验证码。为了有更好的用户体验，也可以设计成：一开始不需要输入图形验证码，在操作达到一定量之后，才需要输入图形验证码。具体情况请根据具体场景来进行设计。</p>
+<p>8、IP 及 Cookie 限制：限制相同的 IP/Cookie 信息最大数量</p>
+<p>使用 Cookie 或者 IP，能够简单识别同一个用户，然后对相同的用户进行限制（如：24 小时内最多只能够发送 20 条短信）。然而，Cookie 能够清理、IP 能够模拟，而且 IP 还会出现局域网相同 IP 的情况，因此，在使用此方法的时候，应该根据具体情况来思考。</p>
+<p>9、短信预警机制，做好出问题之后的防护</p>
+<p>以上的方法并不一定能够完全杜绝短信被刷，因此，我们也应该做好短信的预警机制，即当短信的使用量达到一定量之后，向管理员发送预警信息，管理员可以立刻对短信的接口情况进行监控和防护。</p>
+<p><strong>10. 如何设计一个高并发的系统</strong></p>
+<p>① 数据库的优化，包括合理的事务隔离级别、SQL 语句优化、索引的优化</p>
+<p>② 使用缓存，尽量减少数据库 IO</p>
+<p>③ 分布式数据库、分布式缓存</p>
+<p>④ 服务器的负载均衡</p>
+<p><strong>11. PHP 的控制反转 (IOC) 和依赖注入 (DI) 概念</strong></p>
+<p>IOC（inversion of control）控制反转模式；控制反转是将组件间的依赖关系从程序内部提到外部来管理；</p>
+<p>DI（dependency injection）依赖注入模式；依赖注入是指将组件的依赖通过外部以参数或其他形式注入；</p>
+<p>12. mySQL 里有 2000w 数据，redis 中只存 20w 的数据，如何保证 redis 中的数据都是热点数据</p>
+<p>相关知识：redis 内存数据集大小上升到一定大小的时候，就会施行数据淘汰策略（回收策略）。redis 提供 6 种数据淘汰策略：</p>
+<p>volatile-lru：从已设置过期时间的数据集（server.db [i].expires）中挑选最近最少使用的数据淘汰</p>
+<p>volatile-ttl：从已设置过期时间的数据集（server.db [i].expires）中挑选将要过期的数据淘汰</p>
+<p>volatile-random：从已设置过期时间的数据集（server.db [i].expires）中任意选择数据淘汰</p>
+<p>allkeys-lru：从数据集（server.db [i].dict）中挑选最近最少使用的数据淘汰</p>
+<p>allkeys-random：从数据集（server.db [i].dict）中任意选择数据淘汰</p>
+<p>no-enviction（驱逐）：禁止驱逐数据</p>
+<p>&nbsp;</p>
+<p>最后，祝所有大家在面试中过关斩将，拿到心仪offer。</p>
+<p><strong>&nbsp;</strong></p>
+<p><strong>很多人在刚接触这个行业的时候或者是在遇到瓶颈期的时候，总会遇到一些问题，比如学了一段时间感觉没有方向感，不知道该从那里入手去学习，对此我整理了一些资料，需要的可以免费分享给大家<a href="https://link.zhihu.com/?target=https%3A//jq.qq.com/%3F_wv%3D1027%26k%3D55dPDrC" target="_blank">（点击此处加入php高级交流群一起学习交流，11年架构师带你解读年薪50万面试通关秘籍。）</a></strong></p>
+<p><strong>如果喜欢我的文章，想与一群资深开发者一起交流学习的话，获取更多相关大厂面试咨询和指导，欢迎加入我的学习交流群<a href="https://link.zhihu.com/?target=https%3A//jq.qq.com/%3F_wv%3D1027%26k%3D5kN6y8c" target="_blank">677079770</a></strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

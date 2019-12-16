@@ -1,0 +1,156 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修老雷socket编程之PHP利用socket扩展实现聊天服务' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>老雷socket编程之PHP利用socket扩展实现聊天服务</center></div><div class='banquan'>原文出处:本文由博客园博主lrjxgl提供。<br/>
+原文连接:https://www.cnblogs.com/lrjxgl/p/11123923.html</div><br>
+    <p>老雷socket编程之PHP利用socket扩展实现聊天服务</p>
+<p><strong>socket聊天服务原理</strong></p>
+<p><img src="./images/老雷socket编程之PHP利用socket扩展实现聊天服务0.jpg" alt="" /><br /> <br /><strong>PHP有两个socket的扩展 sockets和streams</strong><br /><strong>sockets</strong><br />	socket_create(AF_INET, SOCK_STREAM, SOL_TCP)<br />	socket_write<br />	socket_read<br />	socket_close<br />	客户端<br />	socket_connect($socket, $address, $service_port)；<br />	<br />	服务端<br />	socket_bind($sock, $address, $port)<br />	socket_listen($sock)<br />	socket_accept<br />	<br /><strong>Streams</strong><br />	客户端<br />		stream_socket_client<br />		fwrite<br />		fread<br />		fclose($fp);<br />	服务端<br />		stream_socket_server<br />		stream_set_blocking<br />		stream_select<br />		stream_socket_accept conn<br />		stream_socket_recvfrom<br />		stream_socket_sendto<br />		stream_socket_shutdown<br />		</p>
+<p>课后练习<br />	使用sockets和streams扩展实现客户端跟服务端的功能。</p>
+<p>服务端代码 客服端可使用udp&amp;tcp测试工具</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+
+class SocketService
+{
+	public $host="tcp://0.0.0.0:8000";
+    private $address;
+    private $port;
+    private $_sockets;
+	public $clients;
+	public $maxid=1000;
+    public function __construct($address = '', $port='')
+    {
+            if(!empty($address)){
+                $this-&gt;address = $address;
+            }
+            if(!empty($port)) {
+                $this-&gt;port = $port;
+            }
+    }
+	
+	public function onConnect($client_id){
+		echo  "Client client_id:{$client_id}   \n";
+         
+	}
+	
+	public function onMessage($client_id,$msg){
+		//发给所有的
+		foreach($this-&gt;clients as $kk=&gt;$cc){
+			if($kk&gt;0){
+				$this-&gt;send($cc, $msg);
+			}								
+		}	
+	}
+	
+	public function onClose($client_id){
+		echo "$client_id close \n";
+	}
+	
+    public function service(){
+        //获取tcp协议号码。
+        $tcp = getprotobyname("tcp");
+        $sock = stream_socket_server($this-&gt;host, $errno, $errstr);;
+        
+        if(!$sock)
+        {
+            throw new Exception("failed to create socket: ".socket_strerror($sock)."\n");
+        }
+		stream_set_blocking($sock,0);
+        $this-&gt;_sockets = $sock;
+		 echo "listen on $this-&gt;address $this-&gt;host ... \n";
+    }
+ 
+    public function run(){
+        $this-&gt;service();
+        $this-&gt;clients[] = $this-&gt;_sockets;
+        while (true){
+            $changes = $this-&gt;clients;
+            //$write = NULL;
+            //$except = NULL;
+            stream_select($changes,  $write,  $except, NULL);
+            foreach ($changes as $key =&gt; $_sock){
+                if($this-&gt;_sockets == $_sock){ //判断是不是新接入的socket
+                    if(($newClient = stream_socket_accept($_sock))  === false){
+						unset($this-&gt;clients[$key]);
+						continue;
+                    }
+                    $line = trim(stream_socket_recvfrom($newClient, 1024));
+                     
+					$this-&gt;maxid++;
+                    $this-&gt;clients[$this-&gt;maxid] = $newClient;
+                    $this-&gt;onConnect($this-&gt;maxid);
+                } else {
+					$msg=@stream_socket_recvfrom($_sock,  2048);
+					if(!$msg){
+						stream_socket_shutdown($this-&gt;clients[$key],STREAM_SHUT_RDWR);
+						unset($this-&gt;clients[$key]);
+						$this-&gt;onClose($key);
+					}else{
+						$msg=$this-&gt;decode($msg);
+						$this-&gt;onMessage($key,$msg);
+					}
+					
+                    
+                }
+            }
+        }
+    }
+ 
+	
+	
+	
+	/**
+     * 发送数据
+     * @param $newClinet 新接入的socket
+     * @param $msg   要发送的数据
+     * @return int|string
+     */
+    public function send($newClinet, $msg){
+		$msg=$this-&gt;encode($msg);
+		if($msg){
+			stream_socket_sendto($newClinet, $msg);
+		}
+        
+    }
+    
+	public function encode($msg){
+		  return $msg . "\n";
+	}
+	public function decode($msg){
+		return rtrim($msg, "\r\n");
+	}
+ 
+    /**
+     * 关闭socket
+     */
+    public function close(){
+        return socket_close($this-&gt;_sockets);
+    }
+}
+ 
+$sock = new SocketService('127.0.0.1','9000');
+$sock-&gt;run();
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

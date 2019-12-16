@@ -1,0 +1,89 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修mysql优化' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>mysql优化</center></div><div class='banquan'>原文出处:本文由博客园博主久伴成忆提供。<br/>
+原文连接:https://www.cnblogs.com/starluke/p/11722891.html</div><br>
+    <src id="paperTitleArea" class="lp_title_type_3" align="center"><span id="paperTitle"><span style="color: #000000; font-family: 微软雅黑;">Mysql优化</span></span>
+<src id="blogDetailDiv" data-webp-ctx-e="1">
+<src class="blog_details_20120222">
+<src>
+<src>&nbsp;<strong><span style="font-family: 宋体;">字段设计</span></strong>
+<p><span style="font-family: 宋体;">&nbsp;&nbsp;&nbsp;&nbsp;遵循三范式。你想想你们公司如果连数据库字段都没有一个规则的话，也就是说你们公司开发都没有一个限制，那么你们是不是开发起来对接起来很麻烦呀，包括后面来的人接手前面的工作，完成搞不懂前一个</span>人的开发流程。这样维护起来是不是很麻烦？<br /><br /><strong>&nbsp;&nbsp;&nbsp;&nbsp;原则：定长和非定长数据类型的选择<br /></strong>&nbsp;&nbsp;&nbsp;&nbsp;decimal不会损失精度，存储空间会随数据的增大而增大。double占用固定空间，较大数的存储会损失精度。非定长的还有varchar、text<br />&nbsp;&nbsp;&nbsp;&nbsp;<strong><span style="font-family: 微软雅黑;">原则：尽可能使用</span>&nbsp;not null<br />&nbsp;&nbsp;&nbsp;&nbsp;</strong><span style="font-family: 微软雅黑;">非</span>null<span style="font-family: 微软雅黑;">字段的处理要比</span>null<span style="font-family: 微软雅黑;">字段的处理高效些！且不需要判断是否为</span>null<span style="font-family: 微软雅黑;">。</span><span style="font-family: 微软雅黑;">因为</span>null<span style="font-family: 微软雅黑;">在</span>MySQL中，不好处理，存储需要额外空间，运算也需要特殊的运算符。</p>
+<p><strong><span style="font-family: 微软雅黑;">&nbsp;&nbsp;&nbsp;&nbsp;语句优化：<br />&nbsp;&nbsp;&nbsp;&nbsp;</span></strong><span style="font-family: 微软雅黑;">语句</span>1：select * from student limit 9,4<br />&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-family: 微软雅黑;">语句</span>2：slect * from student limit 4 offset 9<br />&nbsp;&nbsp;&nbsp;&nbsp;// 语句1和2均返回表student的第10、11、12、13行&nbsp;<br />&nbsp;&nbsp;&nbsp;&nbsp;// 语句2中的4表示返回4行，9表示从表的第十行开始<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<strong><span style="font-family: 微软雅黑;">再</span></strong><strong><span style="font-family: 微软雅黑;">说一下我数据库查询这里的思路，因为逐步写入</span>EXCEL的数据实际上来自Mysql的分页查询，大家知道其语法是</strong><strong>LIMIT offset, num</strong><strong>&nbsp;不过随着</strong><strong>offset</strong><strong><span style="font-family: 微软雅黑;">越来越大</span>Mysql在每次分页查询时需要跳过的行数就越多，这会严重影响Mysql查询的效率(包括MongoDB这样的NoSQL也是不建议skip掉多条来取结果集)，所以我采用LastId的方式来做分页查询。</strong><strong><span style="font-family: 微软雅黑;">这样从后面开始查是不是就好一些了？通过</span>ID分组来一个降序查</strong><strong><span style="font-family: 微软雅黑;">：</span></strong><strong>&nbsp;</strong></p>
+<p><strong><span style="font-family: 微软雅黑;">建立索引，但是不是索引越多越好。</span></strong></p>
+<p><span style="font-family: 微软雅黑;">普通索引：对关键字没有限制</span></p>
+<p><span style="font-family: 微软雅黑;">唯一索引：要求记录提供的关键字不能重复</span></p>
+<p><span style="font-family: 微软雅黑;">主键索引：要求关键字唯一且不为</span>null</p>
+<p><span style="font-family: 微软雅黑;">可以尝试在一个字段未建立索引时，根据该字段查询的效率，然后对该字段建立索引（</span>alter table 表名 add index(字段名)<span style="font-family: 微软雅黑;">），同样的</span>SQL执行的效率，你会发现查询效率会有明显的提升（数据量越大越明显）。<br />&nbsp; &nbsp;&nbsp;mysql主从复制作用和原理<br />&nbsp;&nbsp;&nbsp;&nbsp;<strong>一、什么是主从复制?</strong><br />&nbsp;&nbsp;&nbsp;&nbsp;主从复制，是用来建立一个和主数据库完全一样的数据库环境，称为从数据库；主数据库一般是准实时的业务数据库<br />&nbsp; &nbsp;<strong>&nbsp;二、主从复制的作用</strong><br />&nbsp;&nbsp;&nbsp;&nbsp;1、做数据的热备，作为后备数据库，主数据库服务器故障后，可切换到从数据库继续工作，避免数据丢失。<br />&nbsp;&nbsp;&nbsp;&nbsp;2、架构的扩展。业务量越来越大，I/O访问频率过高，单机无法满足，此时做多库的存储，降低磁盘I/O访问的频率，提高单个机器的I/O性能。<br />&nbsp;&nbsp;&nbsp;&nbsp;3、读写分离，使数据库能支撑更大的并发。在报表中尤其重要。由于部分报表sql语句非常的慢，导致锁表，影响前台服务。如果前台使用master，报表使用slave，那么报表sql将不会造成前台锁，保证了前台速度。<br />&nbsp;&nbsp;&nbsp;&nbsp;问题及解决方法<br />&nbsp;&nbsp;&nbsp;&nbsp;mysql主从复制存在的问题：<br />&nbsp;&nbsp;&nbsp;&nbsp;主库宕机后，数据可能丢失<br />&nbsp;&nbsp;&nbsp;&nbsp;从库只有一个sql Thread，主库写压力大，复制很可能延时<br />&nbsp;&nbsp;&nbsp;&nbsp;解决方法：<br />&nbsp;&nbsp;&nbsp;&nbsp;半同步复制---解决数据丢失的问题<br />&nbsp;&nbsp;&nbsp;&nbsp;并行复制----解决从库复制延迟的问题</p>
+<p>&nbsp;&nbsp;<strong>&nbsp;&nbsp;三、主从复制的原理</strong><br />&nbsp;&nbsp;&nbsp;&nbsp;1.数据库有个bin-log二进制文件，记录了所有sql语句。<br />&nbsp;&nbsp;&nbsp;&nbsp;2.我们的目标就是把主数据库的bin-log文件的sql语句复制过来。<br />&nbsp;&nbsp;&nbsp;&nbsp;3.让其在从数据的relay-log重做日志文件中再执行一次这些sql语句即可。<br />&nbsp;&nbsp;&nbsp;&nbsp;4.下面的主从配置就是围绕这个原理配置<br />&nbsp;&nbsp;&nbsp;&nbsp;5.具体需要三个线程来操作：<br />&nbsp;&nbsp;&nbsp;&nbsp;1.binlog输出线程:每当有从库连接到主库的时候，主库都会创建一个线程然后发送binlog内容到从库。在从库里，当复制开始的时候，从库就会创建两个线程进行处理：<br />&nbsp;&nbsp;&nbsp;&nbsp;2.从库I/O线程:当START SLAVE语句在从库开始执行之后，从库创建一个I/O线程，该线程连接到主库并请求主库发送binlog里面的更新记录到从库上。从库I/O线程读取主库的binlog输出线程发送的更新并拷贝这些更新到本地文件，其中包括relay log文件。<br />&nbsp;&nbsp;&nbsp;&nbsp;3.从库的SQL线程:从库创建一个SQL线程，这个线程读取从库I/O线程写到relay log的更新事件并执行。可以知道，对于每一个主从复制的连接，都有三个线程。拥有多个从库的主库为每一个连接到主库的从库创建一个binlog输出线程，每一个从库都有它自己的I/O线程和SQL线程。<br />主从复制如图：</p>
+<p>&nbsp;</p>
+<src><img src="./images/mysql优化0.jpg" alt="" />
+
+
+
+
+
+
+
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;原理图2,帮助理解!
+<src><img src="./images/mysql优化1.jpg" alt="" />
+<p>&nbsp;&nbsp;&nbsp;&nbsp;步骤一：主库db的更新事件(update、insert、delete)被写到binlog<br />&nbsp;&nbsp;&nbsp;&nbsp;步骤二：从库发起连接，连接到主库<br />&nbsp;&nbsp;&nbsp;&nbsp;步骤三：此时主库创建一个binlog dump thread线程，把binlog的内容发送到从库<br />&nbsp;&nbsp;&nbsp;&nbsp;步骤四：从库启动之后，创建一个I/O线程，读取主库传过来的binlog内容并写入到relay log.<br />&nbsp;&nbsp;&nbsp;&nbsp;步骤五：还会创建一个SQL线程，从relay log里面读取内容，从Exec_Master_Log_Pos位置开始执行读取到的更新事件，将更新内容写入到slave的db.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<strong><span style="font-family: 微软雅黑;">优化网站性能</span>&nbsp;<span style="font-family: 微软雅黑;">数据库机构优化</span>:<br /></strong><span style="font-family: 微软雅黑;">读写分离和分库分表：</span>随着用户量的增加，数据库成为最大的瓶颈，改善数据库性能常用的手段是进行读写分离以及分库分表，读写分离顾名思义就是将数据库分为读库和写库，通过主备功能实现数据同步。分库分表则分为水平切分和垂直切分，水平切分则是对一个数据库特大的表进行拆分，例如用户表。垂直切分则是根据业务的不同来切分，如用户业务、商品业务相关的表放在不同的数据库中。</p>
+<p>&nbsp;</p>
+<src><img src="./images/mysql优化2.jpg" alt="" />&nbsp;
+<p><span style="font-family: 微软雅黑;">&nbsp;&nbsp;&nbsp;&nbsp;还可以</span><span style="font-family: 微软雅黑;">使用</span>NoSql数据库和搜索引擎<span style="font-family: 微软雅黑;">来做到这个网站优化性能<br />&nbsp;&nbsp;&nbsp;&nbsp;</span>对于海量数据的查询和分析，我们使用nosql数据库加上搜索引擎可以达到更好的性能。并不是所有的数据都要放在关系型数据中。常用的NOSQL有mongodb、hbase、redis，搜索引擎有lucene、solr、elasticsearch。</p>
+<p>&nbsp;</p>
+<src>&nbsp;<img src="./images/mysql优化3.jpg" alt="" />
+<src><span style="color: #ff0000; font-size: 16px;">架构师进阶之路：<a href="https://jq.qq.com/?_wv=1027&amp;k=5jZlevv" target="_blank">小白-》进阶-》高级-》CTO/架构师</a></span>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

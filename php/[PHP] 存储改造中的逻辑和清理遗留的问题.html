@@ -1,0 +1,42 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 存储改造中的逻辑和清理遗留的问题' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 存储改造中的逻辑和清理遗留的问题</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11550632.html</div><br>
+    <p>现象:用户读信时,根据路径的哈希结果,访问四台服务器中一台请求文件,这四台缓存机器已经下线,访问不到再去后端存储访问浪费了时间</p>
+<p>前因:每一封信都是一个文件,存储在公司内部的分布式文件系统s3上.因为读取速度太慢和经常的网络访问失败,后来在s3系统之上新增了nginx缓存代理,imap pop web各端都能使用这几台缓存.又增加了阿里云oss存储,与s3存储并行.</p>
+<p>1. 访问文件的时候,会根据内部的索引服务返回的location进行判断,结果是4,5,6,分别代表只存s3,只存oss,s3和oss双读.代码中对location进行判断,进行读取访问文件.当存在双读的时候,要根据配置优先读取oss或者优先读取s3,读取不到时再去读取另外的存储</p>
+<p>2. 在需要读取s3时,在这之上要先访问缓存代理.根据指定的哈希规则,对path部分取哈希值,如果在以下四个范围内就访问指定的IP<br />    '0~25'=&gt;'http://xxx.xxx.88',<br />    '25~50'=&gt;'http://xxx.xxx.89',<br />    '50~75'=&gt;'http://xxx.xxx.90',<br />    '75~100'=&gt;'http://xxx.xxx.91'<br />哈希算法如下:</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span> BKDRHash(<span style="color: #800080;">$str</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$hash</span> = 0<span style="color: #000000;">;
+        </span><span style="color: #800080;">$seed</span> = 1313<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$i</span>=0;<span style="color: #800080;">$i</span>&lt;<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$str</span>);<span style="color: #800080;">$i</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$hash</span> = ((<span style="color: #008080;">floatval</span>(<span style="color: #800080;">$hash</span> * <span style="color: #800080;">$seed</span>) &amp; 0x7FFFFFFF) + <span style="color: #008080;">ord</span>(<span style="color: #800080;">$str</span>[<span style="color: #800080;">$i</span>])) &amp; 0x7FFFFFFF<span style="color: #000000;">;
+        }
+        </span><span style="color: #800080;">$hash</span>=<span style="color: #800080;">$hash</span> &amp; 0x7FFFFFFF<span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$hash</span> % 100<span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>3. 运维反馈现在访问文件时是使用的公网域名,把公网域名修改成内网域名,速度会有提升,网络问题也会减少.<br />4. 去掉读信走s3逻辑时候的读取nginx代理cache部分<br />5. 在线上单独拿台机器用于测试,如果没有问题就全量上线</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

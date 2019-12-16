@@ -1,0 +1,93 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP+ajax实现二级联动' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP+ajax实现二级联动</center></div><div class='banquan'>原文出处:本文由博客园博主风吹过的痕提供。<br/>
+原文连接:https://www.cnblogs.com/xiaocong-PHP-12685/p/10569772.html</div><br>
+    <p><span data-cke-copybin-start="1"><span data-cke-copybin-start="1">​</span></span></p>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_focused cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="1">
+<pre><code><code class="language-html hljs"><span class="hljs-meta">&lt;!DOCTYPE html&gt;
+<span class="hljs-tag">&lt;<span class="hljs-name">html <span class="hljs-attr">lang=<span class="hljs-string">"en"&gt;
+<span class="hljs-tag">&lt;<span class="hljs-name">head&gt;
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta <span class="hljs-attr">charset=<span class="hljs-string">"UTF-8"&gt;
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta <span class="hljs-attr">name=<span class="hljs-string">"viewport" <span class="hljs-attr">content=<span class="hljs-string">"width=device-width, initial-scale=1.0"&gt;
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta <span class="hljs-attr">http-equiv=<span class="hljs-string">"X-UA-Compatible" <span class="hljs-attr">content=<span class="hljs-string">"ie=edge"&gt;
+    <span class="hljs-tag">&lt;<span class="hljs-name">title&gt;PHP+ajax实现二级联动<span class="hljs-tag">&lt;/<span class="hljs-name">title&gt;
+<span class="hljs-tag">&lt;/<span class="hljs-name">head&gt;
+<span class="hljs-tag">&lt;<span class="hljs-name">body&gt;
+    <span class="hljs-tag">&lt;<span class="hljs-name">select <span class="hljs-attr">id=<span class="hljs-string">"province"&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">option <span class="hljs-attr">value=<span class="hljs-string">"0"&gt;请选择省份<span class="hljs-tag">&lt;/<span class="hljs-name">option&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">option <span class="hljs-attr">value=<span class="hljs-string">"1"&gt;北京<span class="hljs-tag">&lt;/<span class="hljs-name">option&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">option <span class="hljs-attr">value=<span class="hljs-string">"2"&gt;河北<span class="hljs-tag">&lt;/<span class="hljs-name">option&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">option <span class="hljs-attr">value=<span class="hljs-string">"3"&gt;山东<span class="hljs-tag">&lt;/<span class="hljs-name">option&gt;
+    <span class="hljs-tag">&lt;/<span class="hljs-name">select&gt;
+    <span class="hljs-tag">&lt;<span class="hljs-name">select <span class="hljs-attr">id=<span class="hljs-string">"city"&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">option <span class="hljs-attr">value=<span class="hljs-string">"0"&gt;请选择城市<span class="hljs-tag">&lt;/<span class="hljs-name">option&gt;
+    <span class="hljs-tag">&lt;/<span class="hljs-name">select&gt;
+<span class="hljs-tag">&lt;/<span class="hljs-name">body&gt;
+<span class="hljs-tag">&lt;<span class="hljs-name">script <span class="hljs-attr">src=<span class="hljs-string">"https://code.jquery.com/jquery-3.3.1.min.js"&gt;<span class="undefined"><span class="hljs-tag">&lt;/<span class="hljs-name">script&gt;
+<span class="hljs-tag">&lt;<span class="hljs-name">script&gt;<span class="javascript">
+$(<span class="hljs-function"><span class="hljs-keyword">function(<span class="hljs-params">){
+    $(<span class="hljs-string">"#province").change(<span class="hljs-function"><span class="hljs-keyword">function(<span class="hljs-params">){
+        <span class="hljs-keyword">var province = $(<span class="hljs-keyword">this).val(); <span class="hljs-comment">// 获取province的value值
+        <span class="hljs-keyword">if(province == <span class="hljs-number">0){            <span class="hljs-comment">// province为0的时候停止；否则
+            <span class="hljs-keyword">return;
+        }<span class="hljs-keyword">else{
+            <span class="hljs-keyword">var url = <span class="hljs-string">'demo.php';
+            $.ajax({
+                <span class="hljs-attr">url: url,             <span class="hljs-comment">// php的url路径
+                type: <span class="hljs-string">'post',
+                <span class="hljs-attr">data: {<span class="hljs-attr">province:province},
+                <span class="hljs-attr">dataType: <span class="hljs-string">'json',
+                <span class="hljs-attr">success: <span class="hljs-function"><span class="hljs-keyword">function(<span class="hljs-params">res) {
+                    <span class="hljs-keyword">if(res.code == <span class="hljs-number">200){
+                        <span class="hljs-keyword">var option = <span class="hljs-string">'&lt;option&gt;请选择城市&lt;/option&gt;';
+                        <span class="hljs-keyword">var list = res.list;
+                        <span class="hljs-keyword">for (<span class="hljs-keyword">var i = <span class="hljs-number">0; i &lt; list.length; i++) {   <span class="hljs-comment">// 循环返回的值（城市）
+                            option += <span class="hljs-string">"&lt;option&gt;" + list[i] + <span class="hljs-string">"&lt;/option&gt;";
+                        }
+                    }<span class="hljs-keyword">else{
+                        <span class="hljs-keyword">var option = <span class="hljs-string">'&lt;option&gt;请选择城市&lt;/option&gt;';  <span class="hljs-comment">// 请求失败（默认）
+                    }
+                    $(<span class="hljs-string">"#city").html(option);    <span class="hljs-comment">// js刷新第二个下拉框的值
+                }
+            })
+        }
+    })
+})
+<span class="hljs-tag">&lt;/<span class="hljs-name">script&gt;
+<span class="hljs-tag">&lt;/<span class="hljs-name">html&gt;<br />接下来为PHP代码，注释已表明；<br /><span data-cke-copybin-start="1"><span data-cke-copybin-start="1">​</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<src class="cke_widget_wrapper cke_widget_block cke_widget_codeSnippet cke_widget_wrapper_has cke_widget_focused cke_widget_selected" data-cke-widget-wrapper="1" data-cke-filter="off" data-cke-display-name="代码段" data-cke-widget-id="0">
+<pre class="has cke_widget_element" data-cke-widget-data="{&amp;quot;lang&amp;quot;:&amp;quot;php&amp;quot;,&amp;quot;code&amp;quot;:&amp;quot;&amp;lt;?php\n$province = $_POST['province'];       // 获取ajax传来的值\n$list['1'] = ['朝阳', '海淀', '西城'];\n$list['2'] = ['保定', '唐山', '邯郸'];\n$list['3'] = ['济南', '菏泽', '日照'];\nif($list[$province]){                 // 数组存在值的情况下\n    echo json_encode(['code'=&amp;gt;200, 'list'=&amp;gt;$list[$province]]);  // 200成功，$list[$province]传递相应的数据\n}else{\n    echo json_encode(['code'=&amp;gt;500]);\n}&amp;quot;,&amp;quot;classes&amp;quot;:{&amp;quot;has&amp;quot;:1}}" data-cke-widget-upcasted="1" data-cke-widget-keep-attr="0" data-widget="codeSnippet"><code class="language-php hljs"><span class="hljs-meta">&lt;?php
+$province = $_POST[<span class="hljs-string">'province'];       <span class="hljs-comment">// 获取ajax传来的值
+$list[<span class="hljs-string">'1'] = [<span class="hljs-string">'朝阳', <span class="hljs-string">'海淀', <span class="hljs-string">'西城'];
+$list[<span class="hljs-string">'2'] = [<span class="hljs-string">'保定', <span class="hljs-string">'唐山', <span class="hljs-string">'邯郸'];
+$list[<span class="hljs-string">'3'] = [<span class="hljs-string">'济南', <span class="hljs-string">'菏泽', <span class="hljs-string">'日照'];
+<span class="hljs-keyword">if($list[$province]){                 <span class="hljs-comment">// 数组存在值的情况下
+    <span class="hljs-keyword">echo json_encode([<span class="hljs-string">'code'=&gt;<span class="hljs-number">200, <span class="hljs-string">'list'=&gt;$list[$province]]);  <span class="hljs-comment">// 200成功，$list[$province]传递相应的数据
+}<span class="hljs-keyword">else{
+    <span class="hljs-keyword">echo json_encode([<span class="hljs-string">'code'=&gt;<span class="hljs-number">500]);
+}</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<pre><code><code class="language-html hljs"><span class="hljs-meta"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-attr"><span class="hljs-string"><span class="undefined"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span class="javascript"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-params"><span class="hljs-string"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-comment"><span class="hljs-keyword"><span class="hljs-number"><span class="hljs-comment"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-string"><span class="hljs-attr"><span class="hljs-comment"><span class="hljs-string"><span class="hljs-attr"><span class="hljs-attr"><span class="hljs-attr"><span class="hljs-string"><span class="hljs-attr"><span class="hljs-function"><span class="hljs-keyword"><span class="hljs-params"><span class="hljs-keyword"><span class="hljs-number"><span class="hljs-keyword"><span class="hljs-string"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-number"><span class="hljs-comment"><span class="hljs-string"><span class="hljs-string"><span class="hljs-keyword"><span class="hljs-keyword"><span class="hljs-string"><span class="hljs-comment"><span class="hljs-string"><span class="hljs-comment"><span class="hljs-tag"><span class="hljs-name"><span class="hljs-tag"><span class="hljs-name"><span data-cke-copybin-start="1"><span data-cke-copybin-end="1">​</span></span><br /></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></code></pre>
+<span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" width="15" height="15" data-cke-widget-drag-handler="1" /></span>
+<p><span data-cke-copybin-start="1"><span data-cke-copybin-end="1">​</span></span></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

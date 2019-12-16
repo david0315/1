@@ -1,0 +1,428 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP全栈学习笔记9' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP全栈学习笔记9</center></div><div class='banquan'>原文出处:本文由博客园博主达达前端小酒馆提供。<br/>
+原文连接:https://www.cnblogs.com/dashucoding/p/10772108.html</div><br>
+    <p><img src="./images/PHP全栈学习笔记90.jpg" alt="image.png" /></p>
+<p>php的会话控制，什么是会话控制，http等。<br />
+什么是会话控制思想，http协议。</p>
+<p>cookie 和 session</p>
+<p>http是超文本传输协议，是网络上最广泛的一种网络协议。</p>
+<p>http最大特点是无连接无状态，clinet到http request到server，server到http response到clinet。</p>
+<p>建立一个连接，连接完结束了。</p>
+<p><img src="./images/PHP全栈学习笔记91.jpg" alt="image.png" /></p>
+<p>cookie保存在客户端中，内存中的cookie，由浏览器维护，保存在内存中，浏览器关闭后就没了，保存在硬盘中的 cookie，有一个过期时间，除非手动清除和过期时间过了。</p>
+<p>cookie使用场景</p>
+<p><img src="./images/PHP全栈学习笔记92.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记93.jpg" alt="image.png" /></p>
+<p>Cookie：达成服务器和浏览器之间长久连接的状态。</p>
+<p>浏览器的cookie以小文件的形式保存在客户端中。</p>
+<p>作用：长期登录，购物车。</p>
+<p>设置cookie: bool</p>
+<pre><code><code>setcookie($name,$value,$expire,$path,$domain,$secure,$httponly);</code></code></pre>
+<p>$expire:默认为0s。time()</p>
+<p>认识COOKIE？<br />
+1.cookie是存储在客户端中的，至于怎么存储，存储的文件是什么这和服务器没有关系，和客户端有关系。<br />
+2.COOKIE过期了，也是客户端来判断要不要传递给服务器，如果过期了就删除对应的COOKIE文件。用户也可以手动的清理COOKIE，那么之前保存的COOKIE就全部不见了<br />
+3.COOKIE发送到服务器也是有条件的，不是什么时候都发送，要符合指定的域名，指定的路径等信息才会发送到对应的服务器上去。<br />
+4.COOKIE也是可以伪造的，所以检查服务器发送的COOKIE是否合法有效就很关键</p>
+<pre><code><code>&lt;?php
+// 内存cookie，浏览器关闭后cookie数据消失了
+setcookie(&#39;username&#39;,&#39;dashu&#39;);
+setcookie(&#39;age&#39;,12);
+setcookie(&#39;email&#39;,&#39;dashucoding&#39;);
+?&gt;</code></code></pre>
+<p>读取cookie，cookie数据保持在$_COOKIE，这是一个数组</p>
+<pre><code><code>&lt;?php
+var_dump($_COOKIE);
+?&gt;</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记94.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记95.jpg" alt="image.png" /></p>
+<p>setrawcookie()不会进行urlencode()编码</p>
+<pre><code><code>setrawcookie-send a cookie without urlencoding the cookie value.</code></code></pre>
+<p>更新cookie，删除cookie</p>
+<p><img src="./images/PHP全栈学习笔记96.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记97.jpg" alt="image.png" /></p>
+<p>通过header的方式操作cookie</p>
+<pre><code><code>&lt;?php
+通过header形式设置cookie
+// header(&#39;Set-Cookie: a=1&#39;);
+header(&#39;Set-Cookie: b=2;expires=&#39;.gmdate(&#39;D, d M Y H:i:s \G\M\T&#39;, time() + 3600));
+header(&#39;Set-Cookie: b=2;expires=&#39;.gmdate(&#39;D, d M Y H:i:s \G\M\T&#39;, time() + 3600).&#39;; domain=.php.org&#39;);
+?&gt;</code></code></pre>
+<pre><code><code>var Cookie={
+ set: function(key, val, expiresDays){
+  // 判断是否设置expiresDays
+  if(expiresDays) {
+  var date = new Date();
+  date.setTime(date.getTime() + expiresDays*24*3600*1000);// 格式化时间
+   var expiresStr = &quot;expires=&quot; + date.toGTMString() + &#39;;&#39;;
+   }else{
+    var expiresStr = &#39;&#39;;
+  } 
+   document.cookie = key+&quot;=&quot; +escape(val)+&quot;;&quot;+expiresStr;
+ },
+ get: function(key){
+  var getCookie=document.cookie.replace(/[ ]/g, &#39; &#39; );
+  var resArr = getCookie.split(&#39;;&#39;);
+  var res;
+  for(var i=0, len = resArr.length; i&lt;len; i++){
+   var arr = resArr[i].split(&#39;=&#39;);
+   if(arr[0] == key){
+    res=arr[1];
+    break;
+   }
+  }
+  return unescape(res);
+ }
+};</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记98.jpg" alt="image.png" /></p>
+<p>Cookie实战之自动登陆</p>
+<p><img src="./images/PHP全栈学习笔记99.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记910.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记911.jpg" alt="image.png" /></p>
+<pre><code><code>&lt;?php
+$username = $_POST[&#39;username&#39;];
+$password = md5($_POST[&#39;password&#39;]);
+$autoLogin = $_POST[&#39;autoLogin&#39;];
+$link= mysqli_connect(&#39;localhost&#39;, &#39;root&#39;, &#39;&#39;) or die(&#39;Connect Error&#39;);
+mysqli_set_charset($link, &#39;utf8&#39;);
+mysqli_setlect_db($link, &#39;test1&#39;) or die (&#39;Database Open Error&#39;);
+
+$sql=&quot;SELECT id,username,password FROM user WHERE username=&#39; {$username}&#39; &amp;&amp; password=&#39;{$password}&#39; &quot;;
+
+$sql = mysqli_escape_string($link,$sql);
+$result = mysqli_query($link, $sql);
+
+if(mysqli_num_rows($result) == 1){
+ if($autoLogin == 1){
+ $row = mysqli_fetch_assoc($resutl);
+ setcookie(&#39;username&#39;, $username, strtotime(&#39;+7 days&#39;));
+ $salt = &#39;king&#39;;
+ $auth = md5($username.$password.$salt).&quot;:&quot;.$row[&#39;id&#39;];
+ setcookie(&#39;auth&#39;,$auth,strtotime(&#39;+7 days&#39;));
+ }else{
+ setcookie(&#39;username&#39;, $username);
+ }
+ exit(&quot;&lt;script&gt;alert(&#39;登录成功&#39;); location.href = &#39;index.php&#39;; &lt;/script&gt;&quot;);
+}else{
+ exit(&quot;&lt;script&gt;alert(&#39;登录失败&#39;); location.href = &#39;login.php&#39;; &lt;script&gt;&quot;);
+}</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记912.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记913.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记914.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记915.jpg" alt="image.png" /></p>
+<pre><code><code>mysqli_connect
+
+mysqli_set_charset
+
+mysqli_select_db
+
+mysqli_escape_string
+
+mysqli_query
+
+mysqli_num_rows</code></code></pre>
+<p>封装cookie</p>
+<pre><code><code>// cookie的设置，读取，更新，删除
+&lt;?php
+class CustomCookie{
+ static private $_instance = null;
+ private $expire = 0;
+ private $path=&#39;&#39;;
+ private $domain=&#39;&#39;;
+ private  $secure = false;
+ private $httponly = false;
+// 构造函数完成cookie参数初始化
+ private function __construct(array $options = []) {
+  $this-&gt;setOptions($options);
+ }
+// 设置相关选项
+ private function setOptions(array $options=[]){
+  if(iset($options[&#39;expire&#39;])){
+   $this -&gt; expire = (int) $options[&#39;expire&#39;];
+  }
+  if(isset($options[&#39;path&#39;])){
+   $this-&gt;path = $options[&#39;path&#39;];
+  }
+  if(isset($options[&#39;domain&#39;])){
+   $this-&gt;domain=$options[&#39;domain&#39;];
+   }
+  if(isset($options[&#39;secure&#39;])){
+   $this-&gt;secure=(bool)$options[&#39;secure&#39;]; 
+  }
+  if(isset($options[&#39;httponly&#39;])){
+   $this-&gt;httponly=(bool)$options[&#39;httponly&#39;];
+  }
+  return $this;
+ }
+
+ // 单例模式
+ public  static function getInstance(array $options = []) {
+  if(is_null(self::$_instance)){
+   $class= __CLASS__;
+   self::$_instance = new $class($options);
+  }
+  return self::$_instance;
+ }
+ // 设置cookie
+ public function set(string $name, $value, array $options=[]){
+  if(is_array($options)&amp;&amp;count($options)&gt;0){
+   $this-&gt;setOptions($options);
+  }
+   if(is_array($value) || is_object($value)){
+    $value=json_encode($value,JSON_FORCE_OBJECT);
+    }
+  setcookie($name,$value,$this-expire,$this-&gt;path,$this-&gt;domain,$this-&gt;secure,$this-&gt;httponly);
+ }
+ // 得到指定cookie
+ public function get(string $name){
+  if(isset($_COOKIE[$name])){
+   return substr($_COOKIE[$name],0,1) == &#39;{&#39;?json_decode($_COOKIE[$name]):$_COOKIE[$name];
+  }else{
+   return null;
+   }
+ }
+// 删除
+pulic function delete(string $name, array $options=[]){
+  if(is_array($options) &amp;&amp; count($options)&gt;0){
+   $this-&gt;setOptions($options);
+  }
+   if(isset($_COOKIE[$name])){
+    setcookie($name,&#39;&#39;,time()-1,$this-&gt;path,$this-&gt;domain,$this-&gt;secure,$this-&gt;httponly);
+    unset($_COOKIE[$name]);
+   }
+ }
+  // 删除所有
+ public function deleteAll(array $options=[]){
+    if(is_array($options) &amp;&amp; count($options)&gt;0){
+    $this-&gt;setOptions($options);
+  }
+   if(!empty($_COOKIE)){
+    foreach($_COOKIE as $name=&gt;$value){
+     setcookie($name,&#39;&#39;,time()-1,$this-&gt;path,$this-&gt;domain,$this-&gt;secure,$this-&gt;httponly);
+    unset($_COOKIE[$name]);
+    }
+   }
+ }
+}
+
+$cookie=CustomCookie::getInstance();
+var_dump($cookie);
+
+$cookie -&gt; set(&#39;dashu&#39;,111);
+$cookie -&gt; set(&#39;dashucoding&#39;,111);
+$cookie -&gt; set(&#39;dada&#39;, 222, [&#39;expire&#39;=&gt; time+3600]);
+
+$cookie -&gt; set(&#39;user&#39;, [&#39;username&#39; =&gt; &#39;dashu&#39;, &#39;age&#39;=&gt;12]);
+var_dump($cookie-&gt;get[&#39;user&#39;]);
+
+$cookie-&gt;delete(&#39;user&#39;);
+$cookie-&gt;deleteAll();</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记916.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记917.jpg" alt="image.png" /></p>
+<pre><code><code>var Custom_localStorage={
+ set:function(key,value){
+  var item={
+   data:value
+   }
+   localStorage.setItem(key,JSON.stringify(item));
+ },
+ get:function(key){
+  var val=localStorage.getItem(key);
+  if(!val) return null;
+  val = JSON.parse(val);
+  return val;
+ }
+};</code></code></pre>
+<pre><code><code>var Custom_localStorage={
+ //添加缓存时间
+ set:function(key,value,days){
+  var item={
+  data:value,
+  endTime:new Date().getTime()+days*24*3600*1000
+  };
+  localStorage.setItem(key,JSON.stringify(item));
+ },
+ get:function(key){
+  val val = localStorage.getItem(key);
+  if(!val) return null;
+  val=JSON.parse(val);
+  if(new Date().getTime()&gt;val.endTime){
+   var = null;
+   localStorage.removeItem(key);
+  }
+  return val.data;
+ },
+ remove:function(key){
+  localStorage.removeItem(key);
+  return null;
+ },
+  removeAll: function(){
+   localStorage.clear();
+   return null;
+  }
+};</code></code></pre>
+<p>什么是session？</p>
+<p>session会话控制，会话支持在php中是在并发访问时由一个方法来保存某些数据，从而使你能够构建更多的定制程序，从而提高你的web网站的吸引力。</p>
+<p>一个访问者访问你的web网站将被分配一个唯一的id，就是所谓的会话id，这个id可以存储在用户端的一个cookie中，也可以通过url进行传递。</p>
+<p>session对象存储特定用户会话所需的属性及配置信息。</p>
+<p>session工作原理</p>
+<p><img src="./images/PHP全栈学习笔记918.jpg" alt="image.png" /></p>
+<p>服务器会把session_id发送到浏览器保存，一般浏览器会把这个id保存到cookie中</p>
+<p>之后的每一次访问，都会携带cookie中存储的这个session_id</p>
+<p>凭着session_id到服务器上领取自己的信息</p>
+<pre><code><code>// 开启会话 
+session_start()
+$_SESSION来设置和读取全局变量
+// 销毁
+session_destroy()</code></code></pre>
+<pre><code><code>&lt;?php
+header(&#39;content-type:text/html;charset=utf-8&#39;);
+// 开启会话
+session_start();
+// 设置数据
+$_SESSION[&#39;username&#39;] = &#39;dashu&#39;;
+$_SESSION[&#39;email&#39;] = &#39;23@qq.com&#39;;
+echo &#39;session名字&#39;, session_name(), session_id(), &#39;&lt;br/&gt;&#39;;</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记919.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记920.jpg" alt="image.png" /></p>
+<pre><code><code>&lt;?php
+session_start();
+$_SESSION[&#39;da&#39;] = &#39;dashucoding&#39;;
+setcookie(session_name(), session_id(), time()+3600);</code></code></pre>
+<pre><code><code>&lt;?php
+session_start();
+$userList = [
+ &#39;user1&#39;=&gt;[ &#39;id&#39;=&gt;1, &#39;username&#39;=&gt;&#39;da1&#39;, &#39;email&#39; =&gt; &#39;cc.com&#39;],
+ &#39;user2&#39;=&gt;[ &#39;id&#39;=&gt;1, &#39;username&#39;=&gt;&#39;da1&#39;, &#39;email&#39; =&gt; &#39;cc.com&#39;],
+];
+$_SESSION = $userList</code></code></pre>
+<p><img src="./images/PHP全栈学习笔记921.jpg" alt="image.png" /></p>
+<p>session_id的传递方式：</p>
+<p>session.save_handler string<br />
+session.save_handler定义了来存储和获取与会话关联的数据的处理器的名字</p>
+<p>session.save_path string<br />
+session.save_path定义了传递给存储处理器的参数</p>
+<p>session.name string<br />
+session.name指定会话名以用做cookie的名字</p>
+<p>session.auto_start boolean<br />
+session.auto_start 指定会话模块是否在请求开始时自动启动一个会话，默认为0</p>
+<p>session.serialize_handler string<br />
+session.serialize_handler定义用来序列化/解序列化的处理器名字</p>
+<p><img src="./images/PHP全栈学习笔记922.jpg" alt="image.png" /></p>
+<p>当用户禁用掉cookie之后是否还可以用：</p>
+<p><img src="./images/PHP全栈学习笔记923.jpg" alt="image.png" /></p>
+<p>可以用，原理是传递session_id。</p>
+<p>销毁session，将$_SESSION清空，$_SESSION=[];，将cookie中的数据清除，setcookie()；销毁会话session_destroy()。</p>
+<p>session_destroy: destroys all data registered to a session</p>
+<pre><code><code>// 销毁会话
+&lt;?php
+// 初始化会话
+session_start();
+// 重置会话中的所有变量
+$_SESSION = array();
+if(ini_get(&quot;session.use_cookies&quot;)){
+ $params = session_get_cookie_params();
+ setcookie(session_name(),&#39;&#39;, time() - 42000,
+ $params[&quot;path&quot;],$params[&quot;domain],
+ $params[&quot;secure&quot;],$params[&quot;httponly&quot;]
+ );
+}
+// 最后，销毁会话
+session_destroy();
+?&gt;</code></code></pre>
+<p>session登录应用</p>
+<p><img src="./images/PHP全栈学习笔记924.jpg" alt="image.png" /></p>
+<p>默认会话管理器是文件形式，一个用户对应一个文件，不总以应对千万访问级别。</p>
+<p>使用mysql作为会话管理器，因为需要到数据库进行查询，会影响性能。</p>
+<p>最佳方法：使用memcache或redis作为会话管理器。</p>
+<p>php自定义session 调用方式</p>
+<p><img src="./images/PHP全栈学习笔记925.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记926.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记927.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记928.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记929.jpg" alt="image.png" /></p>
+<p><img src="./images/PHP全栈学习笔记930.jpg" alt="image.png" /></p>
+<p>要在一个函数中访问一个全局变量，需要使用 global 关键字</p>
+<pre><code><code>&lt;?php
+$x=5;
+$y=10; 
+function myTest()
+{
+    global $x,$y;
+    $y=$x+$y;
+}
+myTest();
+echo $y; // 输出 15
+?&gt;</code></code></pre>
+<pre><code><code>&lt;?php
+$x=5;
+$y=10; 
+function myTest()
+{
+    $GLOBALS[&#39;y&#39;]=$GLOBALS[&#39;x&#39;]+$GLOBALS[&#39;y&#39;];
+} 
+myTest();
+echo $y;
+?&gt;</code></code></pre>
+<p>PHP static关键词</p>
+<pre><code><code>&lt;?php
+function myTest()
+{
+    static $x=0;  
+    echo $x;    
+    $x++;
+}
+myTest();
+myTest();
+myTest();
+?&gt;</code></code></pre>
+<p>每次调用，该变量将会保留着前一次被调用时的值。</p>
+<p>两种基本的输出方法：echo、print<br />
+echo 命令输出字符串<br />
+print 命令输出字符串</p>
+<p><img src="./images/PHP全栈学习笔记931.jpg" alt="image.png" /></p>
+<p>PHP字符串<br />
+PHP整型<br />
+PHP浮点型<br />
+PHP 布尔型<br />
+PHP 对象<br />
+PHP NULL 值</p>
+<pre><code><code>&lt;?php 
+$x = &quot;Hello world!&quot;;
+echo $x;
+echo &quot;&lt;br&gt;&quot;; 
+$x = &#39;Hello world!&#39;;
+echo $x;
+?&gt;</code></code></pre>
+<p>PHP 常量<br />
+define() 函数</p>
+<pre><code><code>bool define ( string $name , mixed $value [, bool $case_insensitive = false ] )</code></code></pre>
+<h2 id="结言">结言</h2>
+<p>好了，欢迎在留言区留言，与大家分享你的经验和心得。</p>
+<p>感谢你学习今天的内容，如果你觉得这篇文章对你有帮助的话，也欢迎把它分享给更多的朋友，感谢。</p>
+<p>感谢！承蒙关照！您真诚的赞赏是我前进的最大动力！</p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-da750878d19e7fa1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image" /></p>
+<p><img src="//upload-images.jianshu.io/upload_images/11158618-826395d4148483a1?imageMogr2/auto-orient/strip" alt="image" /></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

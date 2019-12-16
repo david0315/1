@@ -1,0 +1,94 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP]垃圾回收机制' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP]垃圾回收机制</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11196743.html</div><br>
+    <p>PHP的垃圾回收机制:</p>
+<p><br />1. PHP可以自动进行内存管理,清除不需要的对象,主要使用了引用计数</p>
+<p>2. 在zval结构体中定义了ref_count和is_ref , ref_count是引用计数 ,标识此zval被多少个变量引用 , 为0时会被销毁<br />is_ref标识是否使用的 &amp;取地址符强制引用</p>
+<p>3. 为了解决循环引用内存泄露问题 , 使用同步周期回收算法<br />比如当数组或对象循环的引用自身 , unset掉数组的时候 , 当refcount-1后还大于0的 , 就会被当成疑似垃圾 , 会进行遍历 ,并且模拟的删除一次refcount-1如果是0就删除 ,如果不是0就恢复</p>
+<p><strong>顽固垃圾的产生过程</strong></p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$a</span> = "new string"<span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<p>代码中，$a变量内部存储信息为</p>
+<p>a: (refcount_gc=1, is_ref_gc=0)='new string'</p>
+<p>当把$a赋值给另外一个变量的时候，$a对应的zval的refcount_gc会加1</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$a</span> = "new string"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$b</span> = <span style="color: #800080;">$a</span><span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<p>此时$a和$b变量对应的内部存储信息为,$a和$b同时指向一个字符串"new string" ,它的refcount变成2</p>
+<p>a,b: (refcount_gc=2, is_ref=0)='new string'</p>
+<p>当用unset删除$b变量时，"new string" 的refcount_gc会减1变成1。</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$a</span> = "new string"; <span style="color: #008000;">//</span><span style="color: #008000;">a: (refcount_gc=1, is_ref_gc=0)='new string'</span>
+    <span style="color: #800080;">$b</span> = <span style="color: #800080;">$a</span>;           <span style="color: #008000;">//</span><span style="color: #008000;">a,b: (refcount_gc=2, is_ref=0)='new string'</span>
+    <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$b</span>);         <span style="color: #008000;">//</span><span style="color: #008000;">a: (refcount_gc=1, is_ref=0)='new string'</span>
+?&gt;</code></pre>
+
+<p>对于普通的变量来说，这一切很正常，但是在复合类型变量（数组和对象）中，会发生比较有意思的事情：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$a</span> = <span style="color: #0000ff;">array</span>('meaning' =&gt; 'life', 'number' =&gt; 42<span style="color: #000000;">);
+</span>?&gt;</code></pre>
+
+<p>$a内部存储信息为:</p>
+<p>a: (refcount=1, is_ref=0)=array (<br />   'meaning' =&gt; (refcount=1, is_ref=0)='life',<br />   'number' =&gt; (refcount=1, is_ref=0)=42<br />)</p>
+<p>数组变量本身($a)在引擎内部实际上是一个哈希表，这张表中有两个zval项 meaning和number，所以实际上那一行代码中一共生成了3个zval,这3个zval都遵循变量的引用和计数原则，用图来表示:</p>
+<p><img src="./images/[PHP]垃圾回收机制0.jpg" alt="" /></p>
+<p>下面在$a中添加一个元素，并将现有的一个元素的值赋给新的元素:</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$a</span> = <span style="color: #0000ff;">array</span>('meaning' =&gt; 'life', 'number' =&gt; 42<span style="color: #000000;">);
+    </span><span style="color: #800080;">$a</span>['name'] = <span style="color: #800080;">$a</span>['meaning'<span style="color: #000000;">];
+</span>?&gt;</code></pre>
+
+<p>那么$a的内部存储为 , "life" 的ref_count变成2 , 42的ref_count是1:</p>
+<p>a: (refcount=1, is_ref=0)=array (<br />   'meaning' =&gt; (refcount=2, is_ref=0)='life',<br />   'number' =&gt; (refcount=1, is_ref=0)=42,<br />   'name' =&gt; (refcount=2, is_ref=0)='life'<br />)</p>
+<p>如果将数组的引用赋值给数组中的一个元素，有意思的事情就会发生：</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+    </span><span style="color: #800080;">$a</span> = <span style="color: #0000ff;">array</span>('one'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$a</span>[] = &amp;<span style="color: #800080;">$a</span><span style="color: #000000;">;
+</span>?&gt;</code></pre>
+
+<p>这样$a数组就有两个元素，一个索引为0，值为字符one，另外一个索引为1，为$a自身的引用，内部存储如下:</p>
+<p><img src="./images/[PHP]垃圾回收机制1.jpg" alt="" /></p>
+<p>a: (refcount=2, is_ref=1)=array (<br />   0 =&gt; (refcount=1, is_ref=0)='one',<br />   1 =&gt; (refcount=2, is_ref=1)=&hellip;<br />)</p>
+<p>array这个zval的ref_count是2 , 是一个环形引用</p>
+<p>这时对$a进行unset,那么$a会从符号表中删除，同时$a指向的zval的refcount_gc减少1.</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$a</span> = <span style="color: #0000ff;">array</span>('one'<span style="color: #000000;">);
+</span><span style="color: #800080;">$a</span>[] = &amp;<span style="color: #800080;">$a</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$a</span><span style="color: #000000;">);
+</span>?&gt;</code></pre>
+
+<p>那么问题就产生了，$a已经不在符号表中，用户无法再访问此变量，但是$a之前指向的zval的refcount_gc变为1而不是0，因此不能被回收，从而产生内存泄露，新的GC要做的工作就是清理此类垃圾。</p>
+<p><strong>为了解决循环引用内存泄露问题 , 使用同步周期回收算法 , 这种ref_count减1后还大于0的会被作为疑似垃圾</strong><br /><strong>比如当数组或对象循环的引用自身 , unset掉数组的时候 , 当refcount-1后还大于0的 , 会进行遍历 ,并且模拟的删除一次refcount-1如果是0就删除 ,如果不是0就恢复</strong></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

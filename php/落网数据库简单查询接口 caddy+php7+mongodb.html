@@ -1,0 +1,235 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修落网数据库简单查询接口 caddy+php7+mongodb' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>落网数据库简单查询接口 caddy+php7+mongodb</center></div><div class='banquan'>原文出处:本文由博客园博主_st提供。<br/>
+原文连接:https://www.cnblogs.com/edit/p/luoo-service_caddy-php7-mongodb.html</div><br>
+    <p>落网数据库简单查询接口</p>
+<p>一个简单的DEMO，使用了caddy + php7 + mongodb</p>
+<p>数据库&amp;接口设计 来自&nbsp;<a href="https://github.com/Aedron/Luoo.spider">https://github.com/Aedron/Luoo.spider</a>&nbsp;项目(V1.0版本分支)</p>
+<p>参考地址：<a id="Editor_Edit_hlEntryLink" title="view: 落网数据库简单查询接口 caddy+php7+mongodb" href="https://www.cnblogs.com/edit/p/luoo-service_caddy-php7-mongodb.html" target="_blank">https://www.cnblogs.com/edit/p/luoo-service_caddy-php7-mongodb.html</a></p>
+<p>&nbsp;</p>
+<p>环境配置：</p>
+<p>下载程序，新建一个目录，比如 C:\web</p>
+<p><a href="https://caddyserver.com/download" target="_blank">https://caddyserver.com/download</a>&nbsp;下载caddy并解压到文件夹内，比如 C:\web\caddy_v1.0.0_windows_amd64</p>
+<p><a href="https://www.php.net/downloads.php" target="_blank">https://www.php.net/downloads.php</a>&nbsp;下载PHP7.3最新版并解压到文件夹内，比如&nbsp;C:\web\php-7.3.5-nts-Win32-VC15-x64</p>
+<p><a href="https://www.mongodb.com/download-center/community">https://www.mongodb.com/download-center/community</a>&nbsp;下载MongoDB社区版zip包 并解压到文件夹内，比如 C:\web\mongodb-win32-x86_64-2008plus-ssl-4.0.9</p>
+<p>配置&amp;启动脚本:</p>
+<p>【PHP 安装mongodb拓展】&nbsp;</p>
+<p><a href="https://pecl.php.net/package/mongodb">https://pecl.php.net/package/mongodb</a>&nbsp;下载最新的stable版本，比如现在是1.5.3，点击链接 &ldquo;dll&rdquo; ，在弹出的新页面里找到对应你PHP版本的地址然后下载。</p>
+<p>下载完成后把 tgz包里面的&nbsp;php_mongodb.dll 解压到 php 目录下的 ext 文件夹内。</p>
+<p>找到 php目录下的 php.ini-production，复制一份并重命名为 php.ini&nbsp; ，打开文件加入两行配置</p>
+<src class="cnblogs_code">
+<pre><code>extension_dir = "ext"<span style="color: #000000;">
+extension </span>= mongodb</code></pre>
+
+<p>【caddy 配置&amp;启动脚本】&nbsp;</p>
+<p>&nbsp;caddy目录下新建 root 文件夹，用来存放php或html页面</p>
+<p>&nbsp;caddy目录下新建文本文件&nbsp;Caddyfile （不需要后缀名），写入</p>
+<src class="cnblogs_code">
+<pre><code>访问域名 {
+	gzip
+	tls 你的邮箱 #如果不需要https可删除此行
+	root C:\web\root
+	errors {
+		404 404.html # Not Found
+	}
+	on startup _php_cgi.bat &amp;
+	fastcgi php 127.0.0.1:6545 php
+	rewrite /luoo/ {
+		to {path} {path}/ /luoo.php?_url={path}&amp;{query}
+	}
+	header /luoo {
+		Access-Control-Allow-Origin  *
+		Access-Control-Allow-Methods "GET, POST, OPTIONS"
+	}
+	header / {
+		-Server 
+		-X-Powered-By
+	}
+}</code></pre>
+
+<p>caddy目录下新建文本文件 _php_cgi.bat，写入</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">:start
+    C:\web\php</span>-<span style="color: #800080;">7.3</span>.<span style="color: #800080;">5</span>-nts-Win32-VC15-x64\php-cgi.exe -b <span style="color: #800080;">6545</span><span style="color: #000000;">
+    goto start</span></code></pre>
+
+<p>然后就可以 双击caddy.exe 启动了，或者是配置成windows服务使用。</p>
+<p>【Mongodb 配置&amp;导入bson文件】&nbsp;</p>
+<p>Mongodb 目录下新建 data 文件夹</p>
+<p>Mongodb&nbsp;目录下新建文本文件 _start.bat，写入</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">title MongoDB
+cd bin
+mongod </span>--dbpath C:\web\mongodb-win32-x86_64-2008plus-ssl-<span style="color: #800080;">4.0</span>.<span style="color: #800080;">9</span><span style="color: #000000;">\data
+pause</span></code></pre>
+
+<p>双击 _start.bat ，即可启动 Mongodb 。</p>
+<p>Mongodb&nbsp;目录下新建文本文件 _import.bat，写入</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">title MongoDB import
+</span><span style="color: #0000ff;">echo</span><span style="color: #000000;"> MongoDB import
+cd bin
+mongorestore </span>-d luoo C:\web\mongodb-win32-x86_64-2008plus-ssl-<span style="color: #800080;">4.0</span>.<span style="color: #800080;">9</span><span style="color: #000000;">\luoo
+pause</span></code></pre>
+
+<p>顺便去github上下载一份落网数据文件，地址在&nbsp;<a href="https://github.com/Aedron/Luoo.spider/tree/master/db/luoo">https://github.com/Aedron/Luoo.spider/tree/master/db/luoo</a>&nbsp;</p>
+<p>下载完成后，把 db目录下的 luoo 文件夹拷贝到&nbsp;Mongodb 目录下，然后运行上面的 _import.bat 脚本，即可完成数据导入。</p>
+<p>&nbsp;</p>
+<p>PHP代码编写：</p>
+<p>在 C:\web\root 目录下新建 luoo.php，写入</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span> <span style="color: #008080;">header</span>('Content-Type:application/json; charset=utf-8'<span style="color: #000000;">);
+</span><span style="color: #008080;">  3</span> <span style="color: #0000ff;">if</span>(<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_GET</span>['_url'<span style="color: #000000;">])){
+</span><span style="color: #008080;">  4</span>     <span style="color: #0000ff;">exit</span>(json_encode(['code'=&gt;'400','msg'=&gt;'访问异常'<span style="color: #000000;">]));
+</span><span style="color: #008080;">  5</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">  6</span> <span style="color: #800080;">$router</span> = <span style="color: #008080;">explode</span>('/',<span style="color: #008080;">str_replace</span>('/luoo/','',<span style="color: #800080;">$_GET</span>['_url'<span style="color: #000000;">]));
+</span><span style="color: #008080;">  7</span> <span style="color: #008080;">define</span>('API_LIST', ['vol','vols','single','singles','article','latest'<span style="color: #000000;">]);
+</span><span style="color: #008080;">  8</span> <span style="color: #0000ff;">if</span>(!<span style="color: #008080;">in_array</span>(<span style="color: #800080;">$router</span>[0],<span style="color: #000000;">API_LIST)){
+</span><span style="color: #008080;">  9</span>     <span style="color: #0000ff;">exit</span>(json_encode(['code'=&gt;'404','msg'=&gt;'接口不存在'<span style="color: #000000;">]));
+</span><span style="color: #008080;"> 10</span> <span style="color: #000000;">}
+</span><span style="color: #008080;"> 11</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Luoo{
+</span><span style="color: #008080;"> 12</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$manager</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 13</span>     <span style="color: #0000ff;">private</span> <span style="color: #800080;">$config</span> = ["latestVol"=&gt;997,"latestSingle"=&gt;20170721,"latestArticle"=&gt;927<span style="color: #000000;">];
+</span><span style="color: #008080;"> 14</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct(){
+</span><span style="color: #008080;"> 15</span>         <span style="color: #800080;">$this</span>-&gt;manager = <span style="color: #0000ff;">new</span><span style="color: #000000;"> MongoDB\Driver\Manager();
+</span><span style="color: #008080;"> 16</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 17</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> getCount(<span style="color: #800080;">$collection</span>,<span style="color: #800080;">$where</span>=<span style="color: #000000;">[]){
+</span><span style="color: #008080;"> 18</span>         <span style="color: #800080;">$command</span> = <span style="color: #0000ff;">new</span> MongoDB\Driver\Command(['count' =&gt; <span style="color: #800080;">$collection</span>,'query'=&gt;<span style="color: #800080;">$where</span><span style="color: #000000;">]);
+</span><span style="color: #008080;"> 19</span>         <span style="color: #800080;">$result</span> = <span style="color: #800080;">$this</span>-&gt;manager-&gt;executeCommand('luoo',<span style="color: #800080;">$command</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 20</span>         <span style="color: #800080;">$response</span> = <span style="color: #008080;">current</span>(<span style="color: #800080;">$result</span>-&gt;<span style="color: #000000;">toArray());
+</span><span style="color: #008080;"> 21</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$response</span>-&gt;ok==1<span style="color: #000000;">){
+</span><span style="color: #008080;"> 22</span>             <span style="color: #0000ff;">return</span> <span style="color: #800080;">$response</span>-&gt;<span style="color: #000000;">n;
+</span><span style="color: #008080;"> 23</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 24</span>         <span style="color: #0000ff;">return</span> 0<span style="color: #000000;">;
+</span><span style="color: #008080;"> 25</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 26</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span> getLyric(<span style="color: #800080;">$param</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 27</span>         <span style="color: #800080;">$query</span> = <span style="color: #0000ff;">new</span> MongoDB\Driver\Query(<span style="color: #800080;">$param</span>,['projection'=&gt;['_id' =&gt; 0],'limit'=&gt;100<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 28</span>         <span style="color: #800080;">$cursor</span> = <span style="color: #800080;">$this</span>-&gt;manager-&gt;executeQuery('luoo.lyrics', <span style="color: #800080;">$query</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 29</span>         <span style="color: #0000ff;">return</span> <span style="color: #800080;">$cursor</span>-&gt;<span style="color: #000000;">toArray();
+</span><span style="color: #008080;"> 30</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 31</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> vol(int <span style="color: #800080;">$vol</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 32</span>         <span style="color: #800080;">$query</span> = <span style="color: #0000ff;">new</span> MongoDB\Driver\Query(['vol'=&gt;<span style="color: #800080;">$vol</span>], ['projection'=&gt;['_id' =&gt; 0],'limit'=&gt;1<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 33</span>         <span style="color: #800080;">$cursor</span> = <span style="color: #800080;">$this</span>-&gt;manager-&gt;executeQuery('luoo.vols', <span style="color: #800080;">$query</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 34</span>         <span style="color: #800080;">$result</span> = ['code'=&gt;200<span style="color: #000000;">];
+</span><span style="color: #008080;"> 35</span>         <span style="color: #800080;">$result</span>['data'] = <span style="color: #008080;">current</span>(<span style="color: #800080;">$cursor</span>-&gt;<span style="color: #000000;">toArray());
+</span><span style="color: #008080;"> 36</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span>['data'] &amp;&amp; <span style="color: #800080;">$result</span>['data']-&gt;<span style="color: #000000;">id){
+</span><span style="color: #008080;"> 37</span>             <span style="color: #800080;">$volId</span> = <span style="color: #800080;">$result</span>['data']-&gt;<span style="color: #000000;">id;
+</span><span style="color: #008080;"> 38</span>             <span style="color: #800080;">$result</span>['data']-&gt;lyrics = <span style="color: #800080;">$this</span>-&gt;getLyric(['volId'=&gt;<span style="color: #800080;">$volId</span><span style="color: #000000;">]);
+</span><span style="color: #008080;"> 39</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 40</span>         <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 41</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 42</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> vols(int <span style="color: #800080;">$date</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 43</span>         <span style="color: #800080;">$page</span> = <span style="color: #800080;">$_GET</span>['page']??1<span style="color: #000000;">;
+</span><span style="color: #008080;"> 44</span>         <span style="color: #800080;">$where</span> = ['vol'=&gt;['$gte'=&gt;<span style="color: #800080;">$date</span><span style="color: #000000;">]];
+</span><span style="color: #008080;"> 45</span>         <span style="color: #800080;">$options</span> = ['projection'=&gt;['_id' =&gt; 0],'limit'=&gt;10,'sort'=&gt;['vol' =&gt; 1<span style="color: #000000;">]];
+</span><span style="color: #008080;"> 46</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$page</span>&gt;1) <span style="color: #800080;">$options</span>['skip'] = (<span style="color: #800080;">$page</span>-1)*10<span style="color: #000000;">;
+</span><span style="color: #008080;"> 47</span>         <span style="color: #800080;">$count</span> = <span style="color: #800080;">$this</span>-&gt;getCount('singles',<span style="color: #800080;">$where</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 48</span>         <span style="color: #800080;">$query</span> = <span style="color: #0000ff;">new</span> MongoDB\Driver\Query(<span style="color: #800080;">$where</span>, <span style="color: #800080;">$options</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 49</span>         <span style="color: #800080;">$cursor</span> = <span style="color: #800080;">$this</span>-&gt;manager-&gt;executeQuery('luoo.vols', <span style="color: #800080;">$query</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 50</span>         <span style="color: #800080;">$result</span> = ['code'=&gt;200<span style="color: #000000;">];
+</span><span style="color: #008080;"> 51</span>         <span style="color: #800080;">$result</span>['page'] = <span style="color: #800080;">$page</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 52</span>         <span style="color: #800080;">$result</span>['total'] = <span style="color: #800080;">$count</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 53</span>         <span style="color: #800080;">$result</span>['data'] = <span style="color: #800080;">$cursor</span>-&gt;<span style="color: #000000;">toArray();
+</span><span style="color: #008080;"> 54</span>         <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 55</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 56</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> single(int <span style="color: #800080;">$date</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 57</span>         <span style="color: #800080;">$query</span> = <span style="color: #0000ff;">new</span> MongoDB\Driver\Query(['date'=&gt;<span style="color: #800080;">$date</span>],['projection'=&gt;['_id' =&gt; 0],'limit'=&gt;1<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 58</span>         <span style="color: #800080;">$cursor</span> = <span style="color: #800080;">$this</span>-&gt;manager-&gt;executeQuery('luoo.singles', <span style="color: #800080;">$query</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 59</span>         <span style="color: #800080;">$result</span> = ['code'=&gt;200<span style="color: #000000;">];
+</span><span style="color: #008080;"> 60</span>         <span style="color: #800080;">$result</span>['data'] = <span style="color: #008080;">current</span>(<span style="color: #800080;">$cursor</span>-&gt;<span style="color: #000000;">toArray());
+</span><span style="color: #008080;"> 61</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span>['data'] &amp;&amp; <span style="color: #800080;">$result</span>['data']-&gt;<span style="color: #000000;">id){
+</span><span style="color: #008080;"> 62</span>             <span style="color: #800080;">$result</span>['data']-&gt;lyrics = <span style="color: #800080;">$this</span>-&gt;getLyric(['type'=&gt;1,'date'=&gt;<span style="color: #800080;">$date</span><span style="color: #000000;">]);
+</span><span style="color: #008080;"> 63</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 64</span>         <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 65</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 66</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> singles(int <span style="color: #800080;">$date</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 67</span>         <span style="color: #800080;">$page</span> = <span style="color: #800080;">$_GET</span>['page']??1<span style="color: #000000;">;
+</span><span style="color: #008080;"> 68</span>         <span style="color: #800080;">$where</span> = ['date'=&gt;['$gte'=&gt;<span style="color: #800080;">$date</span><span style="color: #000000;">]];
+</span><span style="color: #008080;"> 69</span>         <span style="color: #800080;">$options</span> = ['projection'=&gt;['_id' =&gt; 0],'limit'=&gt;10,'sort'=&gt;['date' =&gt; 1<span style="color: #000000;">]];
+</span><span style="color: #008080;"> 70</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$page</span>&gt;1) <span style="color: #800080;">$options</span>['skip'] = (<span style="color: #800080;">$page</span>-1)*10<span style="color: #000000;">;
+</span><span style="color: #008080;"> 71</span>         <span style="color: #800080;">$count</span> = <span style="color: #800080;">$this</span>-&gt;getCount('singles',<span style="color: #800080;">$where</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 72</span>         <span style="color: #800080;">$query</span> = <span style="color: #0000ff;">new</span> MongoDB\Driver\Query(<span style="color: #800080;">$where</span>, <span style="color: #800080;">$options</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 73</span>         <span style="color: #800080;">$cursor</span> = <span style="color: #800080;">$this</span>-&gt;manager-&gt;executeQuery('luoo.singles', <span style="color: #800080;">$query</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 74</span>         <span style="color: #800080;">$result</span> = ['code'=&gt;200<span style="color: #000000;">];
+</span><span style="color: #008080;"> 75</span>         <span style="color: #800080;">$result</span>['page'] = <span style="color: #800080;">$page</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 76</span>         <span style="color: #800080;">$result</span>['total'] = <span style="color: #800080;">$count</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 77</span>         <span style="color: #800080;">$result</span>['data'] = <span style="color: #800080;">$cursor</span>-&gt;<span style="color: #000000;">toArray();
+</span><span style="color: #008080;"> 78</span>         <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 79</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 80</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> article(int <span style="color: #800080;">$id</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 81</span>         <span style="color: #800080;">$query</span> = <span style="color: #0000ff;">new</span> MongoDB\Driver\Query(['id'=&gt;<span style="color: #800080;">$id</span>], ['projection'=&gt;['_id' =&gt; 0],'limit'=&gt;1<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 82</span>         <span style="color: #800080;">$cursor</span> = <span style="color: #800080;">$this</span>-&gt;manager-&gt;executeQuery('luoo.articles', <span style="color: #800080;">$query</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 83</span>         <span style="color: #800080;">$result</span> = ['code'=&gt;200<span style="color: #000000;">];
+</span><span style="color: #008080;"> 84</span>         <span style="color: #800080;">$result</span>['data'] = <span style="color: #008080;">current</span>(<span style="color: #800080;">$cursor</span>-&gt;<span style="color: #000000;">toArray());
+</span><span style="color: #008080;"> 85</span>         <span style="color: #0000ff;">if</span>(<span style="color: #800080;">$result</span>['data'] &amp;&amp; <span style="color: #800080;">$result</span>['data']-&gt;<span style="color: #000000;">id){
+</span><span style="color: #008080;"> 86</span>             <span style="color: #800080;">$articleId</span> = <span style="color: #800080;">$result</span>['data']-&gt;<span style="color: #000000;">id;
+</span><span style="color: #008080;"> 87</span>             <span style="color: #800080;">$result</span>['data']-&gt;lyrics = <span style="color: #800080;">$this</span>-&gt;getLyric(['articleId'=&gt;<span style="color: #800080;">$articleId</span><span style="color: #000000;">]);
+</span><span style="color: #008080;"> 88</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;"> 89</span>         <span style="color: #0000ff;">echo</span> json_encode(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 90</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 91</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> latest(<span style="color: #0000ff;">string</span> <span style="color: #800080;">$type</span><span style="color: #000000;">){
+</span><span style="color: #008080;"> 92</span>         <span style="color: #0000ff;">switch</span> (<span style="color: #008080;">strtolower</span>(<span style="color: #800080;">$type</span><span style="color: #000000;">)) {
+</span><span style="color: #008080;"> 93</span>             <span style="color: #0000ff;">case</span> 'vol':
+<span style="color: #008080;"> 94</span>                 <span style="color: #800080;">$this</span>-&gt;vol(<span style="color: #800080;">$this</span>-&gt;config['latestVol'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 95</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 96</span>             <span style="color: #0000ff;">case</span> 'single':
+<span style="color: #008080;"> 97</span>                 <span style="color: #800080;">$this</span>-&gt;single(<span style="color: #800080;">$this</span>-&gt;config['latestSingle'<span style="color: #000000;">]);
+</span><span style="color: #008080;"> 98</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;"> 99</span>             <span style="color: #0000ff;">case</span> 'article':
+<span style="color: #008080;">100</span>                 <span style="color: #800080;">$this</span>-&gt;article(<span style="color: #800080;">$this</span>-&gt;config['latestArticle'<span style="color: #000000;">]);
+</span><span style="color: #008080;">101</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">102</span>             <span style="color: #0000ff;">default</span>:
+<span style="color: #008080;">103</span>                 <span style="color: #0000ff;">echo</span> json_encode(['code'=&gt;'400','msg'=&gt;'允许的 type 为 vol 或 single 或 article'<span style="color: #000000;">]);
+</span><span style="color: #008080;">104</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">105</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">106</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">107</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">108</span> <span style="color: #0000ff;">try</span><span style="color: #000000;"> {
+</span><span style="color: #008080;">109</span>     <span style="color: #800080;">$LUOO</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Luoo();
+</span><span style="color: #008080;">110</span>     <span style="color: #800080;">$LUOO</span>-&gt;{<span style="color: #800080;">$router</span>[0]}(<span style="color: #800080;">$router</span>[1<span style="color: #000000;">]);
+</span><span style="color: #008080;">111</span> <span style="color: #000000;">}
+</span><span style="color: #008080;">112</span> <span style="color: #0000ff;">catch</span> (TypeError <span style="color: #800080;">$ex</span>) { <span style="color: #0000ff;">exit</span>(json_encode(['code'=&gt;'400','msg'=&gt;'请求参数有误'<span style="color: #000000;">]));}
+</span><span style="color: #008080;">113</span> <span style="color: #0000ff;">catch</span> (Error <span style="color: #800080;">$ex</span>) { <span style="color: #0000ff;">exit</span>(json_encode(['code'=&gt;'500','msg'=&gt;'服务器内部错误']));}</code></pre>
+
+<p>API列表如下：</p>
+<src class="cnblogs_code">
+<pre><code>/vol/<span style="color: #0000ff;">&lt;</span><span style="color: #800000;">volIndex</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+根据期刊数来获取期刊数据, /vol/717
+/vols/</span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">volIndex</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+根据当前期刊数来获取该期刊之后的所有新的期刊数据, 如 /vols/926
+
+/single/</span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">singleDate</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+根据发布日期来获取单曲数据, 如 /single/20160722
+/singles/</span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">singleDate</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+根据当前发布日期来获取该发布日期之后的所有新的单曲数据, 如 /singles/20170628
+
+/article/</span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">articleIndex</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+根据文章id来获取文章数据, 如 /article/922
+
+/latest/</span><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">type</span><span style="color: #0000ff;">&gt;</span><span style="color: #000000;">
+获取最新的期刊或单曲或文章, 允许的 type 为 vol 或 single 或 article, 如 /latest/vol</span></code></pre>
+
+<p>&nbsp;来源地址：&nbsp;<a id="Editor_Edit_hlEntryLink" title="view: 落网数据库简单查询接口 caddy+php7+mongodb" href="https://www.cnblogs.com/edit/p/10880194.html" target="_blank">https://www.cnblogs.com/edit/p/10880194.html</a>&nbsp;</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

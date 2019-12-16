@@ -1,0 +1,109 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修负载均衡,分布式,集群的理解,多台服务器代码如何同步' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>负载均衡,分布式,集群的理解,多台服务器代码如何同步</center></div><div class='banquan'>原文出处:本文由博客园博主it-world提供。<br/>
+原文连接:https://www.cnblogs.com/it-3327/p/11745836.html</div><br>
+    <h2>集群</h2>
+<p>我们的项目如果跑在一台机器上，如果这台机器出现故障的话，或者用户请求量比较高，一台机器支撑不住的话。我们的网站可能就访问不了。那怎么解决呢？就需要使用多台机器，部署一样的程序，让几个机器同时的运行我们的网站。那怎么怎么分发请求的我们的所有机器上。所以负载均衡的概念就出现了。</p>
+<h2>负载均衡</h2>
+<p>负载均衡是指基于反向代理能将现在所有的请求根据指定的策略算法，分发到不同的服务器上。常用实现负载均衡的可以用nginx,lvs。但是现在也有个问题，如果负载均衡服务器出现问题了怎么办？所有冗余的概念就出现了。</p>
+<h2>冗余</h2>
+<p>冗余其实就是两个或者多台服务器 一个主服务器，一个从服务器。 假设一个主服务器的负载均衡服务器出现了问题，从服务器能够替代主服务器来继续负载均衡。实现的方式就是使用keepalive来抢占虚拟主机。</p>
+<h2>分布式</h2>
+<p>分布式其实就是将一个大项目的拆分出来，单独运行。</p>
+<p>举个上面的例子。假设我们的访问量特别大。我们就可以做成分布式，跟cdn一样的机制。在北京，杭州，深圳三个地方都搭建一个一模一样的集群。离北京近的用户就访问北京的集群，离深圳近的就访问深圳这边的集群。这样就将我们网战给拆分3个区域了，各自独立。</p>
+<p>再举个例子比如我们redis分布式。redis分布式是将redis中的数据分布到不同的服务器上面，每台服务器存储不同的内容，而mysql集群是每台服务器都放着一样的数据。这也就理解了分布式和集群的概念。</p>
+<h2>mysql 主从</h2>
+<p>mysql master服务器会把sql操作日志写入到bin.log 日志里 slave服务器会去读master的bin.log 日志，然后执行sql语句。</p>
+<p>主从有以下几个问题。</p>
+<p>1.master服务器能写又能读，slave却只能写。</p>
+<p>slave读取的数据还没有写入，这样该怎么解决呢？</p>
+<p>1.假如缓存，从缓存中读取。<br />2.强制从master读取。<br />3.使用pxc集群，任何一个节点都是可读可写的，读写强一致性。</p>
+<h2>laravel如何解决数据不一致</h2>
+<p>在config/database.php mysql配置块中将sticky设置为true</p>
+<p>sticky 是一个 可选值，它可用于立即读取在当前请求周期内已写入数据库的记录。若 sticky 选项被启用，并且当前请求周期内执行过 「写」 操作，那么任何 「读」 操作都将使用 「写」 连接。这样可确保同一个请求周期内写入的数据可以被立即读取到，从而避免主从延迟导致数据不一致的问题。不过是否启用它，取决于应用程序的需求。</p>
+<p><img src="./images/负载均衡,分布式,集群的理解,多台服务器代码如何同步0.jpg" alt="" /></p>
+<p><img src="./images/负载均衡,分布式,集群的理解,多台服务器代码如何同步1.jpg" alt="" /></p>
+<p>链接：<a href="https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g" target="_blank">https://pan.baidu.com/s/1v5gm7n0L7TGyejCmQrMh2g</a>&nbsp;提取码：x2p5<br /><br />免费分享，但是X度限制严重，如若链接失效点击链接或搜索加群 群号<a href="https://jq.qq.com/?_wv=1027&amp;k=5Qtjg0V" target="_blank">518475424</a>。</p>
+<h2>如果我们的代码怎么同步到多台服务器上呢？</h2>
+<p>laravel为我们提供了扩展包laravel/envoy，它为定义远程服务器的日常任务，提供了一套简洁、轻量的语法。Blade 风格语法即可实现部署任务的配置、Artisan 命令的执行等。</p>
+<src class="cnblogs_Highlighter">
+<pre><code>composer global require laravel/envoy
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>Envoy 任务都应在项目根目录下的 Envoy.blade.php 中定义。写入一下内容</p>
+<src class="cnblogs_Highlighter">
+<pre><code>@servers(['web-1' =&gt; '192.168.1.1', 'web-2' =&gt; '192.168.1.2'])
+
+ 
+
+@task('deploy', ['on' =&gt; ['web-1', 'web-2']])
+
+    cd site
+
+    git pull origin {{ $branch }}
+
+    composer update
+
+    php artisan migrate
+
+@endtask
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>以上代码意思就是在命令行envoy run deploy时候，我们会ssh到会web-1,web-2 执行</p>
+<src class="cnblogs_Highlighter">
+<pre><code>cd site
+
+git pull origin {{ $branch }}
+
+php artisan migrate
+</code></pre>
+
+<p>&nbsp;</p>
+<table class="syntaxhighlighter  php" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td class="gutter">&nbsp;</td>
+<td class="code">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>当然这个前提是我们已经加入了ssh到远程的服务器上。</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

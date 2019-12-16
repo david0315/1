@@ -1,0 +1,76 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP实现字母数字混合验证码' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP实现字母数字混合验证码</center></div><div class='banquan'>原文出处:本文由博客园博主我乐意啊提供。<br/>
+原文连接:https://www.cnblogs.com/woleyia/p/11168786.html</div><br>
+    <p>一款简单的PHP实现字母数字混合验证码，支持自定义验证码、验证码图片、宽度、高度、个数、背景图片等<br /><img src="./images/PHP实现字母数字混合验证码0.jpg" alt="" width="337" height="333" /></p>
+<p>验证码调用地址：Application\Home\Controller\CodeController.class.php</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> Vendor('Vcode.Vcode', '', '.class.php'<span style="color: #000000;">); 
+</span><span style="color: #008080;">2</span> <span style="color: #800080;">$config</span> = <span style="color: #0000ff;">array</span>("width" =&gt; 100, "height" =&gt; 36, "count" =&gt; 4, "str" =&gt; 2); <span style="color: #008000;">//</span><span style="color: #008000;">配置 </span>
+<span style="color: #008080;">3</span> <span style="color: #800080;">$vcode</span> = <span style="color: #0000ff;">new</span> \Vcode(<span style="color: #800080;">$config</span><span style="color: #000000;">); 
+</span><span style="color: #008080;">4</span> <span style="color: #800080;">$vcode</span>-&gt;getCode(); <span style="color: #008000;">//</span><span style="color: #008000;">获取验证码 </span>
+<span style="color: #008080;">5</span> <span style="color: #800080;">$vcode</span>-&gt;getImg(); <span style="color: #008000;">//</span><span style="color: #008000;">输出图片 </span>
+<span style="color: #008080;">6</span> <span style="color: #0000ff;">exit</span>;</code></pre>
+
+<p>&nbsp;</p>
+<p>验证码图片</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> &lt;img src="__APP__/code/" id="code" onclick="changeCode($('#code'))"/&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>JS通过后缀加随机数Math.random()来刷新验证码</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> changeCode(obj) { 
+</span><span style="color: #008080;">2</span>    obj.attr("src", '__APP__/code/?' + Math.<span style="color: #000000;">random()); 
+</span><span style="color: #008080;">3</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>检测验证码是否输入正确</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> &lt;input type="text" id="input_code" <span style="color: #0000ff;">class</span>="input"/&gt; 
+<span style="color: #008080;"> 2</span> &lt;input type="button" value="提交" <span style="color: #0000ff;">class</span>="btn" onclick="checkCode()"/&gt;
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> checkCode() { 
+</span><span style="color: #008080;"> 4</span>     $.post("__APP__/Code/check", {code: $("#input_code").val()}, <span style="color: #0000ff;">function</span><span style="color: #000000;">(data) { 
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">if</span> (data == '1'<span style="color: #000000;">) { 
+</span><span style="color: #008080;"> 6</span>             alert("验证码正确！"<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 7</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;"> 8</span>             alert("验证码错误！"<span style="color: #000000;">); 
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">10</span>     }, "json"<span style="color: #000000;">) 
+</span><span style="color: #008080;">11</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>PHP验证传过来的参数code和当前session存储的验证码进行比较，若是正确返回1，错误则-1</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> check() { 
+</span><span style="color: #008080;">2</span>         <span style="color: #800080;">$code</span> = I('post.code'<span style="color: #000000;">); 
+</span><span style="color: #008080;">3</span>         <span style="color: #0000ff;">if</span> (<span style="color: #008080;">strtolower</span>(<span style="color: #800080;">$code</span>) == <span style="color: #800080;">$_SESSION</span>["sucaihuo_code"<span style="color: #000000;">]) { 
+</span><span style="color: #008080;">4</span>             <span style="color: #0000ff;">echo</span> "1"<span style="color: #000000;">; 
+</span><span style="color: #008080;">5</span>         } <span style="color: #0000ff;">else</span><span style="color: #000000;"> { 
+</span><span style="color: #008080;">6</span>             <span style="color: #0000ff;">echo</span> "-1"<span style="color: #000000;">; 
+</span><span style="color: #008080;">7</span> <span style="color: #000000;">        } 
+</span><span style="color: #008080;">8</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>本文转自：<a href="https://www.sucaihuo.com/php/533.html" target="_blank">https://www.sucaihuo.com/php/533.html</a> 转载请注明出处！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

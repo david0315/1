@@ -1,0 +1,135 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP DES加解密' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP DES加解密</center></div><div class='banquan'>原文出处:本文由博客园博主没有昵称不想想提供。<br/>
+原文连接:https://www.cnblogs.com/mthp/p/10600075.html</div><br>
+    <p>test.php测试文件</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #0000ff;">require_once</span>('Des.php'<span style="color: #000000;">);
+
+</span><span style="color: #800080;">$des</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Des();
+
+</span><span style="color: #800080;">$data</span>['a'] = 'a'<span style="color: #000000;">;
+</span><span style="color: #800080;">$data</span>['b'] = 'b'<span style="color: #000000;">;
+
+</span><span style="color: #800080;">$conf</span> = ['appkey'=&gt;'AbcdefghijklmnopqrstuvwX','secretcode'=&gt;'Abcdefgh'<span style="color: #000000;">];
+
+</span><span style="color: #800080;">$encode</span> = <span style="color: #800080;">$des</span>-&gt;encode(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$conf</span><span style="color: #000000;">);
+
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$encode</span><span style="color: #000000;">);
+</span><span style="color: #0000ff;">echo</span> "&lt;br&gt;"<span style="color: #000000;">;
+
+</span><span style="color: #800080;">$decode</span> = <span style="color: #800080;">$des</span>-&gt;decode(<span style="color: #800080;">$encode</span>,<span style="color: #800080;">$conf</span><span style="color: #000000;">);
+
+</span><span style="color: #008080;">print_r</span>(<span style="color: #800080;">$decode</span><span style="color: #000000;">);
+
+</span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>Des.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #0000ff;">require_once</span>('TripleDES.php'<span style="color: #000000;">);
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Des {
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> encode(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$configKey</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$tripleDes</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> TripleDES();
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">is_array</span>(<span style="color: #800080;">$data</span><span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$data</span> = json_encode(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$tripleDes</span>-&gt;encode(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$configKey</span>["appkey"], <span style="color: #800080;">$configKey</span>["secretcode"<span style="color: #000000;">]);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> decode(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$configKey</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$tripleDes</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> TripleDES();
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$tripleDes</span>-&gt;decode(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$configKey</span>["appkey"], <span style="color: #800080;">$configKey</span>["secretcode"<span style="color: #000000;">]);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> encodeArr(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$configKey</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$data</span> = json_encode(<span style="color: #800080;">$data</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> self::encode(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$configKey</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> decodeArr(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$configKey</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$res</span> = self::decode(<span style="color: #800080;">$data</span>, <span style="color: #800080;">$configKey</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> json_decode(<span style="color: #800080;">$res</span>,<span style="color: #0000ff;">true</span><span style="color: #000000;">);
+    }
+
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>TripleDES.php</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> TripleDES {
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> genIvParameter() {
+        </span><span style="color: #0000ff;">return</span> mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_TRIPLEDES, MCRYPT_MODE_CBC),<span style="color: #000000;"> MCRYPT_RAND);
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> pkcs5Pad(<span style="color: #800080;">$text</span>, <span style="color: #800080;">$blocksize</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$pad</span> = <span style="color: #800080;">$blocksize</span> - (<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$text</span>) % <span style="color: #800080;">$blocksize</span>); <span style="color: #008000;">//</span><span style="color: #008000;"> in php, strlen returns the bytes of $text</span>
+        <span style="color: #0000ff;">return</span> <span style="color: #800080;">$text</span> . <span style="color: #008080;">str_repeat</span>(<span style="color: #008080;">chr</span>(<span style="color: #800080;">$pad</span>), <span style="color: #800080;">$pad</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> pkcs5Unpad(<span style="color: #800080;">$text</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$pad</span> = <span style="color: #008080;">ord</span>(<span style="color: #800080;">$text</span>{<span style="color: #008080;">strlen</span>(<span style="color: #800080;">$text</span>) - 1<span style="color: #000000;">});
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$pad</span> &gt; <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$text</span><span style="color: #000000;">))
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">strspn</span>(<span style="color: #800080;">$text</span>, <span style="color: #008080;">chr</span>(<span style="color: #800080;">$pad</span>), <span style="color: #008080;">strlen</span>(<span style="color: #800080;">$text</span>) - <span style="color: #800080;">$pad</span>) != <span style="color: #800080;">$pad</span><span style="color: #000000;">)
+            </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">substr</span>(<span style="color: #800080;">$text</span>, 0, -1 * <span style="color: #800080;">$pad</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> encryptText(<span style="color: #800080;">$plain_text</span>, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$iv</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$padded</span> = TripleDES::pkcs5Pad(<span style="color: #800080;">$plain_text</span>, mcrypt_get_block_size(MCRYPT_TRIPLEDES,<span style="color: #000000;"> MCRYPT_MODE_CBC));
+        </span><span style="color: #0000ff;">return</span> mcrypt_encrypt(MCRYPT_TRIPLEDES, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$padded</span>, MCRYPT_MODE_CBC, <span style="color: #800080;">$iv</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> decryptText(<span style="color: #800080;">$cipher_text</span>, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$iv</span><span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">function_exists</span>('mcrypt_decrypt'<span style="color: #000000;">)){
+            </span><span style="color: #800080;">$plain_text</span> = mcrypt_decrypt(MCRYPT_TRIPLEDES, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$cipher_text</span>, MCRYPT_MODE_CBC, <span style="color: #800080;">$iv</span><span style="color: #000000;">);
+        }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+            </span><span style="color: #800080;">$plain_text</span> = openssl_decrypt(<span style="color: #800080;">$cipher_text</span>, 'DES-EDE3-CBC',<span style="color: #800080;">$key</span>, OPENSSL_NO_PADDING,<span style="color: #800080;">$iv</span><span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">return</span> TripleDES::pkcs5Unpad(<span style="color: #800080;">$plain_text</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> decode(<span style="color: #800080;">$cipher_text</span>, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$iv</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$cipher_text</span> = <span style="color: #008080;">base64_decode</span>(<span style="color: #800080;">$cipher_text</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$cipher_text</span> = TripleDES::decryptText(<span style="color: #800080;">$cipher_text</span>, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$iv</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$cipher_text</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">function</span> encode(<span style="color: #800080;">$cipher_text</span>, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$iv</span><span style="color: #000000;">) {
+        </span><span style="color: #800080;">$cipher_text</span> = TripleDES::encryptText(<span style="color: #800080;">$cipher_text</span>, <span style="color: #800080;">$key</span>, <span style="color: #800080;">$iv</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">base64_encode</span>(<span style="color: #800080;">$cipher_text</span><span style="color: #000000;">);
+    }
+
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

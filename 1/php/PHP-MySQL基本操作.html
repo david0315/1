@@ -1,0 +1,152 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP-MySQL基本操作' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP-MySQL基本操作</center></div><div class='banquan'>原文出处:本文由博客园博主ProsperLee提供。<br/>
+原文连接:https://www.cnblogs.com/lprosper/p/10524001.html</div><br>
+    <p><span style="color: #800080;"><strong>PHP-MySQL基本操作<span style="color: #333399;"><br /></span></strong></span></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">  1</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;">  2</span> 
+<span style="color: #008080;">  3</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 1.防止页面中文乱码</span>
+<span style="color: #008080;">  4</span> <span style="color: #008080;">header</span>("content-type:text/html;charset=utf-8"<span style="color: #000000;">);
+</span><span style="color: #008080;">  5</span> 
+<span style="color: #008080;">  6</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 链接数据库</span>
+<span style="color: #008080;">  7</span> @<span style="color: #800080;">$conn</span> = <span style="color: #0000ff;">new</span> mysqli('localhost', 'root', ''<span style="color: #000000;">);
+</span><span style="color: #008080;">  8</span> <span style="color: #0000ff;">echo</span> <span style="color: #800080;">$conn</span> == <span style="color: #0000ff;">true</span> ? '数据库连接成功' : '数据库连接失败'<span style="color: #000000;">;
+</span><span style="color: #008080;">  9</span> 
+<span style="color: #008080;"> 10</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 2.连接到MySQL后设置字符集(防止存入中文乱码)</span>
+<span style="color: #008080;"> 11</span> mysqli_set_charset(<span style="color: #800080;">$conn</span>, 'utf8'<span style="color: #000000;">);
+</span><span style="color: #008080;"> 12</span> 
+<span style="color: #008080;"> 13</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 创建数据库</span>
+<span style="color: #008080;"> 14</span> <span style="color: #800080;">$createDatabaseSql</span> = "create database ProsperLee01 charset utf8"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 15</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 删除数据库</span>
+<span style="color: #008080;"> 16</span> <span style="color: #800080;">$dropDatabaseSql</span> = "drop database ProsperLee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 17</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询数据库</span>
+<span style="color: #008080;"> 18</span> <span style="color: #800080;">$showDatabaseSql</span> = "show databases"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 19</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询创建的数据库信息</span>
+<span style="color: #008080;"> 20</span> <span style="color: #800080;">$showCreateDatabaseSql</span> = "show create database ProsperLee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 21</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 修改数据库（不能修改数据库的名字，只能修改字符集和校对集）语法：alter database 数据库 character set=新的字符集 collate=新的校对集</span>
+<span style="color: #008080;"> 22</span> <span style="color: #800080;">$alterDatabaseSql1</span> = "alter database ProsperLee01 character set=gbk collate=gbk_Chinese_ci"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 23</span> <span style="color: #800080;">$alterDatabaseSql2</span> = "alter database ProsperLee01 charset=utf8 collate=utf8_general_ci"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 24</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询字符集</span>
+<span style="color: #008080;"> 25</span> <span style="color: #800080;">$showCharsetSql</span> = "show charset"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 26</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询校对集</span>
+<span style="color: #008080;"> 27</span> <span style="color: #800080;">$showCollationSql</span> = "show collation"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 28</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 使用数据库</span>
+<span style="color: #008080;"> 29</span> <span style="color: #800080;">$useDatabaseSql</span> = "use ProsperLee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 30</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 创建数据表 语法 CREATE TABLE 库名 表名 (字段名 字段类型 字段选项, 字段名 字段类型 字段选项&middot;&middot;&middot;) 表选项; （表选项：表字符集(charset=utf8)和数据引擎(engine=引擎)）</span>
+<span style="color: #008080;"> 31</span> <span style="color: #800080;">$createTableSql</span> =&lt;&lt;&lt;<span style="color: #000000;">sss
+</span><span style="color: #008080;"> 32</span>     CREATE TABLE `prosperlee01`.<span style="color: #000000;">`Lee01` (
+</span><span style="color: #008080;"> 33</span>         `name` varchar(20) <span style="color: #0000ff;">DEFAULT</span> '小明同学' NOT <span style="color: #0000ff;">NULL</span> COMMENT '姓名',
+<span style="color: #008080;"> 34</span>         `sex` varchar(5) <span style="color: #0000ff;">NULL</span> COMMENT '性别',
+<span style="color: #008080;"> 35</span>         `age` int(2) <span style="color: #0000ff;">NULL</span> COMMENT '年龄',
+<span style="color: #008080;"> 36</span>         `index` int NOT <span style="color: #0000ff;">NULL</span> AUTO_INCREMENT COMMENT '序号',
+<span style="color: #008080;"> 37</span>         `id` varchar(8) NOT <span style="color: #0000ff;">NULL</span> COMMENT 'id',
+<span style="color: #008080;"> 38</span>         PRIMARY <span style="color: #008080;">KEY</span> (`index`,<span style="color: #000000;"> `id`)
+</span><span style="color: #008080;"> 39</span>     ) ENGINE=InnoDB <span style="color: #0000ff;">DEFAULT</span> CHARSET=<span style="color: #000000;">utf8
+</span><span style="color: #008080;"> 40</span> <span style="color: #000000;">sss;
+</span><span style="color: #008080;"> 41</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询数据表</span>
+<span style="color: #008080;"> 42</span> <span style="color: #800080;">$showTablesSql</span> = "show tables"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 43</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查看数据表结构</span>
+<span style="color: #008080;"> 44</span> <span style="color: #800080;">$descTableSql</span> = "desc lee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 45</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询创建的数据表</span>
+<span style="color: #008080;"> 46</span> <span style="color: #800080;">$showCreateTableSql</span> = "show create table Lee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 47</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 修改表名 alter table 旧表名 rename [to] 新表名</span>
+<span style="color: #008080;"> 48</span> <span style="color: #800080;">$alterTableNameSql</span> = "alter table lee01 rename to newlee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 49</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 添加新字段</span>
+<span style="color: #008080;"> 50</span> <span style="color: #800080;">$alterTableAddFieldSql</span> = "alter table lee01 add realname varchar(50) not null default '用户名' comment '真实姓名'"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 51</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 删除字段 alter table 表名 drop column 字段名</span>
+<span style="color: #008080;"> 52</span> <span style="color: #800080;">$alterTableDropFieldSql</span> = "alter table lee01 drop column phone"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 53</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 修改表的字段类型   ALTER TABLE 表名 MODIFY COLUMN 字段名 字段类型定义;</span>
+<span style="color: #008080;"> 54</span> <span style="color: #800080;">$alterTableModifyFieldSql</span> = "ALTER TABLE lee01 MODIFY COLUMN id VARCHAR(32)"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 55</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 修改表的字段名(修改后原始字段存的值不会变，新存入的值不填写变成默认值) alter table 表名 change 原字段名  新字段名  字段的类型</span>
+<span style="color: #008080;"> 56</span> <span style="color: #800080;">$alterTableChangeFieldSql</span> = "ALTER TABLE lee01 change realname phone VARCHAR(11) default '01234567890' comment '电话号'"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 57</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 插入数据 INSERT INTO table_name (列1, 列2,...) VALUES (值1, 值2,....)</span>
+<span style="color: #008080;"> 58</span> <span style="color: #800080;">$insertIntoDataSql1</span> = "INSERT INTO Lee01 (`sex`,`age`,`id`) VALUES ('女',20,'88888888')"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 59</span> <span style="color: #800080;">$insertIntoDataSql2</span> = "INSERT INTO Lee01 (`name`,`sex`,`age`,`id`) VALUES ('Lee','女',20,'66666666')"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 60</span> <span style="color: #800080;">$insertIntoDataSql</span> = &lt;&lt;&lt;<span style="color: #000000;">sss
+</span><span style="color: #008080;"> 61</span>     INSERT INTO Lee01 ( `name`, `sex`, `age`,<span style="color: #000000;"> `id` )
+</span><span style="color: #008080;"> 62</span> <span style="color: #000000;">    VALUES
+</span><span style="color: #008080;"> 63</span>         ( '张三', '女', 16, '12345678' ),
+<span style="color: #008080;"> 64</span>         ( '李四', '男', 18, '87654321' ),
+<span style="color: #008080;"> 65</span>         ( '王五', '女', 20, '22222222' ),
+<span style="color: #008080;"> 66</span>         ( '赵六', '女', 21, '11111111' ),
+<span style="color: #008080;"> 67</span>         ( '八爷', '男', 26, '14725836' ),
+<span style="color: #008080;"> 68</span>         ( '九少', '男', 16, '66666666'<span style="color: #000000;"> )
+</span><span style="color: #008080;"> 69</span> <span style="color: #000000;">sss;
+</span><span style="color: #008080;"> 70</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询语句</span>
+<span style="color: #008080;"> 71</span> <span style="color: #800080;">$selectDataSql1</span> = "select * from lee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 72</span> <span style="color: #800080;">$selectDataSql2</span> = "select * from lee01 where sex = '女' and age = '20'"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 73</span> <span style="color: #800080;">$selectDataSql3</span> = "select * from lee01 where age = '20' or age = '16'"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 74</span> <span style="color: #800080;">$selectDataSql4</span> = "select * from lee01 where not age = '20'"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 75</span> <span style="color: #800080;">$selectDataSql5</span> = "select name,age from lee01 where age = '20' or age = '16'"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 76</span> <span style="color: #008000;">//</span><span style="color: #008000;"> in 查询指定index (无则跳过)</span>
+<span style="color: #008080;"> 77</span> <span style="color: #800080;">$selectDataSql6</span> = "select name,age from lee01 where `index` in (1,2,4,6)"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 78</span> <span style="color: #008000;">//</span><span style="color: #008000;"> between 语法：select 查询字段 from 表名 where 字段 between 最小值 and 最大值;</span>
+<span style="color: #008080;"> 79</span> <span style="color: #800080;">$selectDataSql7</span> = "select name from lee01 where `index` between 2 and 5"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 80</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询数据量(启用别名)</span>
+<span style="color: #008080;"> 81</span> <span style="color: #800080;">$selectDataSql8</span> = "select count(`index`) as count from lee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 82</span> <span style="color: #008000;">//</span><span style="color: #008000;"> like 模糊查询（注：直接写字符，严格匹配）%匹配任何字符</span>
+<span style="color: #008080;"> 83</span> <span style="color: #800080;">$selectDataSql9</span> = "select * from lee01 where name like '%三%'"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 84</span> <span style="color: #008000;">//</span><span style="color: #008000;"> group by （只能查看分组后的数量，而不能查看分组后的信息）</span>
+<span style="color: #008080;"> 85</span> <span style="color: #800080;">$selectDataSql10</span> = "select count(sex),sex from lee01 group by sex"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 86</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询性别数量大于2个的性别的数量</span>
+<span style="color: #008080;"> 87</span> <span style="color: #800080;">$selectDataSql11</span> = "select count(sex) as sexnum,sex from lee01 group by sex having sexnum&gt;2"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 88</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 查询正序(asc)倒序(desc)</span>
+<span style="color: #008080;"> 89</span> <span style="color: #800080;">$selectDataSql12</span> = "select * from lee01 order by id asc"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 90</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 分页查询 （limit 下标,查询数量）</span>
+<span style="color: #008080;"> 91</span> <span style="color: #800080;">$selectDataSql13</span> = "select * from lee01 order by `index` asc limit 0,2"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 92</span> <span style="color: #800080;">$selectDataSql14</span> = "select * from lee01 order by `index` asc limit 2,2"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 93</span> <span style="color: #800080;">$selectDataSql15</span> = "select * from lee01 order by `index` asc limit 4,2"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 94</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 删除数据表</span>
+<span style="color: #008080;"> 95</span> <span style="color: #800080;">$dropTableSql</span> = "drop table lee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 96</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 清空数据表(同时删除自增字段的定义)</span>
+<span style="color: #008080;"> 97</span> <span style="color: #800080;">$truncateTableSql1</span> = "truncate table lee01"<span style="color: #000000;">;
+</span><span style="color: #008080;"> 98</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 清空数据表（删除表中的所有行，一行一行的删）（delete 保留原有自增字段，再次创建不占用删除字段）</span>
+<span style="color: #008080;"> 99</span> <span style="color: #800080;">$deleteTableSql1</span> = "delete from lee01"<span style="color: #000000;">;
+</span><span style="color: #008080;">100</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 按条件删除 delete from 表名 [where条件] [order排序] [limit限定]（删除范围数据可能会用到order、limit）</span>
+<span style="color: #008080;">101</span> <span style="color: #800080;">$deleteTableSql2</span> = "delete from lee01 where phone = '用户名'"<span style="color: #000000;">;
+</span><span style="color: #008080;">102</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 修改数据(无条件全改)</span>
+<span style="color: #008080;">103</span> <span style="color: #800080;">$updateSetSql</span> = "update lee01 set name = 'ProsperLee',age=23 where id = '87654321'"<span style="color: #000000;">;
+</span><span style="color: #008080;">104</span> 
+<span style="color: #008080;">105</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 使用数据库</span>
+<span style="color: #008080;">106</span> <span style="color: #008080;">mysqli_select_db</span>(<span style="color: #800080;">$conn</span>, 'ProsperLee01'); <span style="color: #008000;">//</span><span style="color: #008000;"> 使用数据库
+</span><span style="color: #008080;">107</span> 
+<span style="color: #008080;">108</span> <span style="color: #008000;">// 3.设置通信编码</span>
+<span style="color: #008080;">109</span> <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$conn</span>, "set names utf8"<span style="color: #000000;">);
+</span><span style="color: #008080;">110</span> 
+<span style="color: #008080;">111</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 执行sql语句</span>
+<span style="color: #008080;">112</span> <span style="color: #800080;">$result</span> = <span style="color: #008080;">mysqli_query</span>(<span style="color: #800080;">$conn</span>, <span style="color: #800080;">$selectDataSql1</span><span style="color: #000000;">);
+</span><span style="color: #008080;">113</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$result</span><span style="color: #000000;">);
+</span><span style="color: #008080;">114</span> 
+<span style="color: #008080;">115</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">116</span> <span style="color: #008000;"> * fetch_assoc() 每次拿1条数据
+</span><span style="color: #008080;">117</span> <span style="color: #008000;"> * fetch_all() 拿出全部数据
+</span><span style="color: #008080;">118</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">119</span> <span style="color: #800080;">$showData</span> = <span style="color: #800080;">$result</span>-&gt;<span style="color: #000000;">fetch_all();
+</span><span style="color: #008080;">120</span> <span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$showData</span><span style="color: #000000;">);
+</span><span style="color: #008080;">121</span> 
+<span style="color: #008080;">122</span> <span style="color: #008000;">//</span><span style="color: #008000;"> 关闭数据库</span>
+<span style="color: #008080;">123</span> <span style="color: #008080;">mysqli_close</span>(<span style="color: #800080;">$conn</span>);</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,194 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP 扩展开发初探' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP 扩展开发初探</center></div><div class='banquan'>原文出处:本文由博客园博主tosser提供。<br/>
+原文连接:https://www.cnblogs.com/tosser/p/11564818.html</div><br>
+    <p><strong>什么是 PHP 扩展</strong></p>
+<p><span data-offset-key="fmd1c-0-0">通俗说，PHP 扩展是增强 PHP 语言功能的插件。PHP 提供了编程语言的语法，比如分支、循环、函数、类等，这些是 PHP 本身所提供的。在某些情况下需要在 PHP 语言的基础上进行扩展，那么就需要通过 PHP 底层提供的数据结构和接口来开发 PHP 扩展，从而来补充或扩展 PHP 语言，使之更加的强大。当然了，PHP 本身就已经集成了一些基本的、强大的、优秀的 PHP 扩展。</span></p>
+<p><span data-offset-key="fmd1c-0-0">&nbsp;</span></p>
+<p>&nbsp;</p>
+<p><strong>PHP 扩展的好处</strong></p>
+<p><span data-offset-key="68eha-0-0">从上面的了解得知，PHP 扩展可以在 PHP 原有的基础上来扩展 PHP 的功能，使之更为的强大。另一方面，PHP 扩展可以通过&ldquo;插件式&rdquo;的方式来管理和维护 PHP 的功能，如果将全部的功能整合到 PHP 语言中，PHP 想必会过于臃肿，且又不够灵活。而有了扩展，就解决了这样的问题。</span></p>
+<p><span data-offset-key="68eha-0-0">&nbsp;</span></p>
+<p>&nbsp;</p>
+<p><strong>PHP 扩展的存在形式</strong></p>
+<p><span data-offset-key="38rev-0-0">在 Linux 系统下，PHP 扩展以 .so 文件存在，在 Windows 下以 .dll 文件存在。</span></p>
+<p><span data-offset-key="38rev-0-0">&nbsp;</span></p>
+<p>&nbsp;</p>
+<p><strong>什么时候使用 PHP 扩展</strong></p>
+<p><span data-offset-key="bh7a0-0-0">单独的使用 PHP 语言并不能满足所有的开发，比如在项目中使用 Redis 或 MongoDB 时，就需要相应的 PHP 扩展，来增强 PHP 语言，让 PHP 可以来操作 Redis 或者 MongoDB，以完成更加功能强大的项目。</span></p>
+<p><span data-offset-key="bh7a0-0-0">&nbsp;</span></p>
+<p>&nbsp;</p>
+<p><strong>什么时候开发自己的 PHP 扩展</strong></p>
+<p><span data-offset-key="ao689-0-0">开发自己的 PHP 扩展是必须的么？其实不是。通常情况下，作为一个 PHPer 是不需要自己开发 PHP 扩展的，但是某些情况下可能是必须要开发 PHP 扩展的。比如，我就遇到了这样的问题。合作的第三方提供了 Windows 下的动态链接库文件（.dll 文件，非 COM 的 DLL 文件），而我又没有找到如何在 PHP 下加载调用 DLL 文件的方式，因此我需要写 PHP 扩展，通过 PHP 的扩展来加载和调用第三方提供的 DLL 文件。</span></p>
+<p><span data-offset-key="ao689-0-0">&nbsp;</span></p>
+<p>&nbsp;</p>
+<p><strong>开发自己的 PHP 扩展</strong></p>
+<p><span data-offset-key="d9cuu-0-0">在前面我已经提到了我遇到的问题，合作的第三方提供了 Windows 下的动态链接库文件，而我又没有找到 PHP 下加载和调用 DLL 文件的方式，因此决定自己编写 PHP 扩展来加载和调用第三方提供的 DLL 文件中的导出函数。以下，就是我对于搭建开发 PHP 扩展环境和编译 PHP 扩展源码的记录。</span></p>
+<p><span data-offset-key="d9cuu-0-0">&nbsp;</span></p>
+<p><strong>准备工具</strong></p>
+<p><span data-offset-key="ddbpo-0-0">首先说明一点，DLL 文件只能在 Windows 系统上运行，Linux 系统上是无法进行运行的。那么，我们这个扩展是不考虑 Linux 系统的，只考虑 Windows 系统即可。因此，准备的开发工具是&nbsp;<strong>VS2015</strong>。起初，我在网上查找了一些资料，很多资料中都写到，在 Windows 下开发 PHP 扩展需要安装 CygWin，经过我自己的学习，可以告诉大家&ldquo;<strong>不需要</strong>&rdquo;。当然了，我们的扩展只在 Windows 系统上运行，如果需要在 Linux 系统上运行，是否需要 Cygwin 我就不得而知了。当然了，其他版本的 VS 也应该是可以的，只是我只测试了 VS2015 罢了。</span></p>
+<p><span data-offset-key="ddbpo-0-0">&nbsp;</span></p>
+<p><strong>下载 PHP 的源代码</strong></p>
+<p><span data-offset-key="dml9e-0-0">除了需要安装 VS2015 以外，还需要下载 PHP 的源码，我下载的源码是 PHP 7.2 的源码。</span></p>
+<p><span data-offset-key="6b48k-0-0">下载 PHP 源码的地址是：<span data-offset-key="6b48k-1-0">https://windows.php.net/download/</span></span></p>
+<p>&nbsp;</p>
+<p>打开该地址后，下载如下图所示的源代码：</p>
+<p><img src="./images/PHP 扩展开发初探0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>在这里，下载 PHP 7.2 的源码，并注意在源码下面有一个 VC15 x64 的字样。</p>
+<p>&nbsp;</p>
+<p>下载完的的文件为：<strong>php-7.2.20-src.zip</strong></p>
+<p>下载完源码进行解压，解压后的目录为：<strong>php-7.2.20-src</strong></p>
+<p>&nbsp;</p>
+<p>下载源码并不是一件复杂的事情，但是页面中有多个版本的源码可供下载，选择哪个有时也是比较纠结的问题，这里就下载 php7.2 的源码，因为我本地使用的就是 php7.2 的环境。</p>
+<p><br /><strong>创建扩展</strong></p>
+<p>进入 php-7.2.20-src\ext 目录下，在该目录下有一个名为 ext_skel_win32.php 的文件，在命令行中执行：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> php ext_skel_win32.php --extname=loaddll</code></pre>
+
+<p>其中，<strong>loaddll 是要创建的扩展的名称</strong>。想要成功执行该命令，需要将 PHP 的可执行程序添加到环境变量中。</p>
+<p>&nbsp;</p>
+<p>执行情况如下：</p>
+<src class="cnblogs_code">
+<pre><code>&lambda; php ext_skel_win32.php --extname=<span style="color: #000000;">loaddll
+Creating directory loaddll
+FIND: Parameter format not correct
+</span><span style="color: #0000ff;">chmod</span>: missing operand after &lsquo;<span style="color: #800080;">644</span><span style="color: #000000;">&rsquo;
+Try </span><span style="color: #800000;">'</span><span style="color: #800000;">chmod --help</span><span style="color: #800000;">'</span> <span style="color: #0000ff;">for</span> <span style="color: #0000ff;">more</span><span style="color: #000000;"> information.
+FIND: Parameter format not correct
+</span><span style="color: #0000ff;">chmod</span>: missing operand after &lsquo;<span style="color: #800080;">755</span><span style="color: #000000;">&rsquo;
+Try </span><span style="color: #800000;">'</span><span style="color: #800000;">chmod --help</span><span style="color: #800000;">'</span> <span style="color: #0000ff;">for</span> <span style="color: #0000ff;">more</span><span style="color: #000000;"> information.
+Creating basic files: config.m4 config.w32 .gitignore loaddll.c php_loaddll.h CREDITS EXPERIMENTAL tests</span>/<span style="color: #800080;">001</span>.phpt loaddll.php [<span style="color: #0000ff;">done</span><span style="color: #000000;">].
+
+
+To use your new extension, you will have to execute the following steps:
+
+
+</span><span style="color: #800080;">1</span><span style="color: #000000;">.  $ cd ..
+</span><span style="color: #800080;">2</span>.  $ <span style="color: #0000ff;">vi</span> ext/loaddll/<span style="color: #000000;">config.m4
+</span><span style="color: #800080;">3</span>.  $ ./<span style="color: #000000;">buildconf
+</span><span style="color: #800080;">4</span>.  $ ./configure --[with|enable]-<span style="color: #000000;">loaddll
+</span><span style="color: #800080;">5</span>.  $ <span style="color: #0000ff;">make</span>
+<span style="color: #800080;">6</span>.  $ ./sapi/cli/php -f ext/loaddll/<span style="color: #000000;">loaddll.php
+</span><span style="color: #800080;">7</span>.  $ <span style="color: #0000ff;">vi</span> ext/loaddll/<span style="color: #000000;">loaddll.c
+</span><span style="color: #800080;">8</span>.  $ <span style="color: #0000ff;">make</span><span style="color: #000000;">
+
+
+Repeat steps </span><span style="color: #800080;">3</span>-<span style="color: #800080;">6</span> <span style="color: #0000ff;">until</span> you are satisfied with ext/loaddll/<span style="color: #000000;">config.m4 and
+step </span><span style="color: #800080;">6</span><span style="color: #000000;"> confirms that your module is compiled into PHP. Then, start writing
+code and repeat the </span><span style="color: #0000ff;">last</span> two steps as often as necessary.</code></pre>
+
+<p>看到如上的输出提示，则说明我们创建的 PHP 扩展生成成功了。以上输出如下所示：</p>
+<p><img src="./images/PHP 扩展开发初探1.jpg" alt="" /></p>
+<p>此时，在 \ext 目录下生成了 loaddll 的目录，该目录是生成出的 PHP 的扩展模板，可以在模板的基础上进行开发。</p>
+<p>&nbsp;</p>
+<p><strong>使用 VS2015 创建扩展项目</strong></p>
+<p>打开 VS2015，我这里使用的是 VS2015，其他开发环境没有进行测试。</p>
+<p>在 VS2015 中选择 &ldquo;文件&rdquo; -&gt;&nbsp;&ldquo;新建&rdquo; -&gt; &ldquo;从现有代码创建项目&rdquo;，来创建 PHP 扩展的解决方案，如下图：</p>
+<p><img src="./images/PHP 扩展开发初探2.jpg" alt="" /></p>
+<p>选择了 &ldquo;从现有代码创建项目&rdquo; 后，会出现创建项目的向导，如下图：</p>
+<p><img src="./images/PHP 扩展开发初探3.jpg" alt="" /></p>
+<p>直接点击 &ldquo;下一步&rdquo;，到如下图：</p>
+<p><img src="./images/PHP 扩展开发初探4.jpg" alt="" /></p>
+<p>在此步骤，选择刚才生成的扩展模板的目录，然后填入项目名称，这里是&ldquo;loaddll&rdquo;，点击&ldquo;下一步&rdquo;，到达如下图：</p>
+<p><img src="./images/PHP 扩展开发初探5.jpg" alt="" /></p>
+<p>此步骤选择DLL项目，点击下一步，到达如下图：</p>
+<p><img src="./images/PHP 扩展开发初探6.jpg" alt="" /></p>
+<p>直接点击&ldquo;下一步&rdquo;，到达如下图：</p>
+<p><img src="./images/PHP 扩展开发初探7.jpg" alt="" /></p>
+<p>点击&ldquo;完成&rdquo;，等待 VS2015 开始创建项目。</p>
+<p>&nbsp;</p>
+<p><strong>配置编译选项并编译项目</strong></p>
+<p>在 VS2015 生成项目完毕后，切换项目为 &ldquo;Release&rdquo;和&ldquo;x64&rdquo;的选项，如下图：</p>
+<p><img src="./images/PHP 扩展开发初探8.jpg" alt="" /></p>
+<p>切换完成后，在项目上右键选择&ldquo;属性&rdquo;，如下图：</p>
+<p><img src="./images/PHP 扩展开发初探9.jpg" alt="" /></p>
+<p>修改配置类型为 DLL，这样生成的目标文件扩展名自动变为 .dll，如下图所示：</p>
+<p><img src="./images/PHP 扩展开发初探10.jpg" alt="" /></p>
+<p>选择&ldquo;配置属性&rdquo; -&gt; &ldquo;C/C++&rdquo; -&gt; &ldquo;常规&rdquo;，在&ldquo;附加包含目录&rdquo;中点击&ldquo;编辑&rdquo;来添加相关的目录，如下图：</p>
+<p><img src="./images/PHP 扩展开发初探11.jpg" alt="" /></p>
+<p>这里需要包含的目录包括如下图的几个目录：</p>
+<p><img src="./images/PHP 扩展开发初探12.jpg" alt="" /></p>
+<p>这里主要是添加了 PHP 源码的几个目录，因为编译 PHP 扩展的源码时需要 PHP 的底层内核数据结构进行支持，因此需要包含以上的目录。</p>
+<p>&nbsp;</p>
+<p>选择&ldquo;配置属性&rdquo; -&gt; &ldquo;C/C++&rdquo; -&gt; &ldquo;预处理器&rdquo;，在&ldquo;预处理器定义&rdquo;中点击&ldquo;编辑&rdquo;来添加相关预处理指令，如下图：</p>
+<p><span style="text-decoration: line-through;"><img src="./images/PHP 扩展开发初探13.jpg" alt="" /></span></p>
+<p>在预处理中，HAVE_LOADDLL 中的 LOADDLL 是扩展的名称，COMPILE_DL_LOADDLL 中的 LOADDLL 同样也是扩展的名称，这个名称与最开始生成扩展模板时的名称应该一致。</p>
+<p>&nbsp;</p>
+<p><strong>编译源代码</strong></p>
+<p>把 php-7.2.20-src\win32\build\ 目录下的 config.w32.h.in 复制到 php-7.2.20-src\main\ 目录下，并重命名为 config.w32.h，这个 .h 文件在编译时是需要的，但是在&nbsp;php-7.2.20-src\main\&nbsp;下并没有该文件，因此需要自己手动进行复制。</p>
+<p>&nbsp;</p>
+<p>在 config.w32.h 中增加如下代码</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #0000ff;">#define</span> PHP_COMPILER_ID "VC15" </code></pre>
+
+<p>注意这里的 VC15 ，在下载源代码的时候，我们已经见到过这个标识了。</p>
+<p>&nbsp;</p>
+<p>接着，从 PHP 的安装目录中复制 php7ts.lib 文件到 loaddll 目录下，注意，是从PHP 的安装目录中，而不是 PHP 源代码的目录中。</p>
+<p>&nbsp;</p>
+<p>php7ts.lib 在目录 php7.2.10\dev 目录下，我使用的是 wamp64 下的 php7.2.10，大家自己使用对应的 .lib 文件即可，当然，这个 .lib 文件也必须是 php7.2 的，因为我们下载的是 php7.2 的源码。</p>
+<p>&nbsp;</p>
+<p>在项目的 resource Files 下添加 php7ts.lib 文件，添加该文件就比较简单了，同样是右键添加即可。</p>
+<p>&nbsp;</p>
+<p>按下 F7 生成解决方案，如图：</p>
+<p><img src="./images/PHP 扩展开发初探14.jpg" alt="" /></p>
+<p>看到&ldquo;成功 1 个&rdquo;文件以后，在目录 \php-7.2.20-src\ext\loaddll\x64\Release 下会生成一个 loaddll.dll 文件，这个文件就是我们的 PHP 扩展文件。</p>
+<p>&nbsp;</p>
+<p><strong>PHP 扩展的安装与测试</strong></p>
+<p>将VS2015 生成 loaddll.dll 重命名为 php_loaddll.dll ，将其拷贝到 PHP 环境的扩展中，我的路径是 php\php7.2.10\ext，想必熟悉 PHP 的应该都会添加 PHP 扩展。如下图：</p>
+<p><img src="./images/PHP 扩展开发初探15.jpg" alt="" /></p>
+<p>在 php.ini 文件中增加配置，如下图：</p>
+<p><img src="./images/PHP 扩展开发初探16.jpg" alt="" /></p>
+<p>使用 php -m 来查看是否有 loaddll.dll 模块，如下图：</p>
+<p><img src="./images/PHP 扩展开发初探17.jpg" alt="" /></p>
+<p>phpinfo 查看，如下图：</p>
+<p><img src="./images/PHP 扩展开发初探18.jpg" alt="" /></p>
+<p>通过上面可以看出，我们的 PHP 扩展已经正常安装了，接下来就需要测试我们的扩展是否可以运行了。</p>
+<p>&nbsp;</p>
+<p>在 PHP 源码目录下 php-7.2.20-src\ext\loaddll\ 有一个 loaddll.php 的测试文件，在命令行下进行执行该命令：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> php loaddll.php</code></pre>
+
+<p>输出内容如下：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">1</span> <span style="color: #000000;">&lambda; php loaddll.php
+</span><span style="color: #008080;">2</span> Functions available <span style="color: #0000ff;">in</span><span style="color: #000000;"> the test extension:
+</span><span style="color: #008080;">3</span> <span style="color: #000000;">confirm_loaddll_compiled
+</span><span style="color: #008080;">4</span> 
+<span style="color: #008080;">5</span> Congratulations! You have successfully modified ext/loaddll/config.m4. Module loaddll is now compiled into PHP.</code></pre>
+
+<p>如下图：</p>
+<p><img src="./images/PHP 扩展开发初探19.jpg" alt="" /></p>
+<p>看到如上输出，说明该扩展的模板编译成功，可以继续开发实际的扩展模块了。</p>
+<p>&nbsp;</p>
+<p><strong>总结</strong></p>
+<p>很多时候，学习编程的第一步就是搭建环境，而往往搭建环境的过程中由于步骤过于复杂，而资料又没有傻瓜化的详细步骤，导致很多想要学习或入门的程序员连第一步都无法踏出。对于开发 PHP 扩展而言也是一样的。</p>
+<p>如何通过 PHP 扩展来让 PHP 程序可以直接调用 DLL 中的函数，除了需要掌握 C 语言的知识以外，还需要掌握 Windows 程序设计的知识，本文就不再讨论了，因为有 C 语言的知识和 Windows 程序设计的知识，在 PHP 扩展中调用 DLL 并非难事。</p>
+<p>希望本文对大家有所帮助！</p>
+<p>&nbsp;</p>
+<hr />
+<p>&nbsp;</p>
+<p><strong><strong>我的</strong>微信公众号：&ldquo;码农UP2U&rdquo;</strong></p>
+<p><img src="./images/PHP 扩展开发初探20.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,163 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修实现websocket 主动消息推送，用laravel+Swoole' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>实现websocket 主动消息推送，用laravel+Swoole</center></div><div class='banquan'>原文出处:本文由博客园博主程序媛的明天提供。<br/>
+原文连接:https://www.cnblogs.com/a609251438/p/11917708.html</div><br>
+    <blockquote>
+<p>近来有个需求：想实现一个可以主动触发消息推送的功能，这个可以实现向模板消息那个，给予所有成员发送自定义消息，而不需要通过客户端发送消息，服务端上message中监听传送的消息进行做相对于的业务逻辑。</p>
+</blockquote>
+<p><strong>主动消息推送实现</strong><br />平常我们采用 swoole 来写 WebSocket 服务可能最多的用到的是open,message,close这三个监听状态，但是万万没有看下下面的onRequest回调的使用，没错，解决这次主动消息推送的就是需要用onRequest回调。<br />官方文档：正因为swoole_websocket_server继承自swoole_http_server，所以在 websocket 中有onRequest回调。</p>
+<p><strong>详细实现：</strong></p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">#</span><span style="color: #008000;"> 这里是一个laravel中Commands</span>
+<span style="color: #008080;"> 2</span> <span style="color: #008000;">#</span><span style="color: #008000;"> 运行php artisan swoole start 即可运行</span>
+<span style="color: #008080;"> 3</span> &lt;?<span style="color: #000000;">php
+</span><span style="color: #008080;"> 4</span> 
+<span style="color: #008080;"> 5</span> <span style="color: #000000;">namespace App\Console\Commands;
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> Illuminate\Console\Command;
+</span><span style="color: #008080;"> 8</span> <span style="color: #0000ff;">use</span><span style="color: #000000;"> swoole_websocket_server;
+</span><span style="color: #008080;"> 9</span> 
+<span style="color: #008080;">10</span> <span style="color: #0000ff;">class</span> Swoole <span style="color: #0000ff;">extends</span><span style="color: #000000;"> Command
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">public</span> <span style="color: #800080;">$ws</span><span style="color: #000000;">;
+</span><span style="color: #008080;">13</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">14</span> <span style="color: #008000;">     * The name and signature of the console command.
+</span><span style="color: #008080;">15</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;">16</span> <span style="color: #008000;">     * @var string
+</span><span style="color: #008080;">17</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">18</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$signature</span> = 'swoole {action}'<span style="color: #000000;">;
+</span><span style="color: #008080;">19</span> 
+<span style="color: #008080;">20</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">21</span> <span style="color: #008000;">     * The console command description.
+</span><span style="color: #008080;">22</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;">23</span> <span style="color: #008000;">     * @var string
+</span><span style="color: #008080;">24</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">25</span>     <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$description</span> = 'Active Push Message'<span style="color: #000000;">;
+</span><span style="color: #008080;">26</span> 
+<span style="color: #008080;">27</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">28</span> <span style="color: #008000;">     * Create a new command instance.
+</span><span style="color: #008080;">29</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;">30</span> <span style="color: #008000;">     * @return void
+</span><span style="color: #008080;">31</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">32</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> __construct()
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">34</span>         parent::<span style="color: #000000;">__construct();
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">36</span> 
+<span style="color: #008080;">37</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">38</span> <span style="color: #008000;">     * Execute the console command.
+</span><span style="color: #008080;">39</span> <span style="color: #008000;">     *
+</span><span style="color: #008080;">40</span> <span style="color: #008000;">     * @return mixed
+</span><span style="color: #008080;">41</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">42</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> handle()
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">44</span>         <span style="color: #800080;">$arg</span> = <span style="color: #800080;">$this</span>-&gt;argument('action'<span style="color: #000000;">);
+</span><span style="color: #008080;">45</span>         <span style="color: #0000ff;">switch</span> (<span style="color: #800080;">$arg</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">46</span>             <span style="color: #0000ff;">case</span> 'start':
+<span style="color: #008080;">47</span>                 <span style="color: #800080;">$this</span>-&gt;info('swoole server started'<span style="color: #000000;">);
+</span><span style="color: #008080;">48</span>                 <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">start();
+</span><span style="color: #008080;">49</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">50</span>             <span style="color: #0000ff;">case</span> 'stop':
+<span style="color: #008080;">51</span>                 <span style="color: #800080;">$this</span>-&gt;info('swoole server stoped'<span style="color: #000000;">);
+</span><span style="color: #008080;">52</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">53</span>             <span style="color: #0000ff;">case</span> 'restart':
+<span style="color: #008080;">54</span>                 <span style="color: #800080;">$this</span>-&gt;info('swoole server restarted'<span style="color: #000000;">);
+</span><span style="color: #008080;">55</span>                 <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">56</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">57</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">58</span> 
+<span style="color: #008080;">59</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">60</span> <span style="color: #008000;">     * 启动Swoole
+</span><span style="color: #008080;">61</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">62</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> start()
+</span><span style="color: #008080;">63</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">64</span>         <span style="color: #800080;">$this</span>-&gt;ws = <span style="color: #0000ff;">new</span> swoole_websocket_server("0.0.0.0", 9502<span style="color: #000000;">);
+</span><span style="color: #008080;">65</span>         <span style="color: #008000;">//</span><span style="color: #008000;">监听WebSocket连接打开事件</span>
+<span style="color: #008080;">66</span>         <span style="color: #800080;">$this</span>-&gt;ws-&gt;on('open', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$ws</span>, <span style="color: #800080;">$request</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">67</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;">68</span>         <span style="color: #008000;">//</span><span style="color: #008000;">监听WebSocket消息事件</span>
+<span style="color: #008080;">69</span>         <span style="color: #800080;">$this</span>-&gt;ws-&gt;on('message', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$ws</span>, <span style="color: #800080;">$frame</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">70</span>             <span style="color: #800080;">$this</span>-&gt;info("client is SendMessage\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">71</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;">72</span>         <span style="color: #008000;">//</span><span style="color: #008000;">监听WebSocket主动推送消息事件</span>
+<span style="color: #008080;">73</span>         <span style="color: #800080;">$this</span>-&gt;ws-&gt;on('request', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$request</span>, <span style="color: #800080;">$response</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">74</span>             <span style="color: #800080;">$scene</span> = <span style="color: #800080;">$request</span>-&gt;post['scene'];       <span style="color: #008000;">//</span><span style="color: #008000;"> 获取值</span>
+<span style="color: #008080;">75</span>             <span style="color: #800080;">$this</span>-&gt;info("client is PushMessage\n".<span style="color: #800080;">$scene</span><span style="color: #000000;">);
+</span><span style="color: #008080;">76</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;">77</span>         <span style="color: #008000;">//</span><span style="color: #008000;">监听WebSocket连接关闭事件</span>
+<span style="color: #008080;">78</span>         <span style="color: #800080;">$this</span>-&gt;ws-&gt;on('close', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$ws</span>, <span style="color: #800080;">$fd</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">79</span>             <span style="color: #800080;">$this</span>-&gt;info("client is close\n"<span style="color: #000000;">);
+</span><span style="color: #008080;">80</span> <span style="color: #000000;">        });
+</span><span style="color: #008080;">81</span>         <span style="color: #800080;">$this</span>-&gt;ws-&gt;<span style="color: #000000;">start();
+</span><span style="color: #008080;">82</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">83</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+<p>前面说的是 swoole 中onRequest的实现，下面实现下在控制器中主动触发onRequest回调。实现方法就是我们熟悉的curl请求。</p>
+<src class="highlight">
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">#</span><span style="color: #008000;"> 调用activepush方法以后，会在cmd中打印出 </span>
+<span style="color: #008080;"> 2</span> <span style="color: #008000;">#</span><span style="color: #008000;"> client is PushMessage 主动推送消息 字眼</span>
+<span style="color: #008080;"> 3</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;">     * CURL请求
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;">     * @param $data
+</span><span style="color: #008080;"> 6</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;"> 7</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> curl(<span style="color: #800080;">$data</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 8</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 9</span>         <span style="color: #800080;">$curl</span> =<span style="color: #000000;"> curl_init();
+</span><span style="color: #008080;">10</span>         curl_setopt(<span style="color: #800080;">$curl</span>, CURLOPT_URL, "http://127.0.0.1:9502"<span style="color: #000000;">);
+</span><span style="color: #008080;">11</span>         curl_setopt(<span style="color: #800080;">$curl</span>, CURLOPT_RETURNTRANSFER, 1<span style="color: #000000;">);
+</span><span style="color: #008080;">12</span>         curl_setopt(<span style="color: #800080;">$curl</span>, CURLOPT_HEADER, 1<span style="color: #000000;">);
+</span><span style="color: #008080;">13</span>         curl_setopt(<span style="color: #800080;">$curl</span>, CURLOPT_POST, 1<span style="color: #000000;">);
+</span><span style="color: #008080;">14</span>         curl_setopt(<span style="color: #800080;">$curl</span>, CURLOPT_POSTFIELDS, <span style="color: #800080;">$data</span><span style="color: #000000;">);
+</span><span style="color: #008080;">15</span>         curl_exec(<span style="color: #800080;">$curl</span><span style="color: #000000;">);
+</span><span style="color: #008080;">16</span>         curl_close(<span style="color: #800080;">$curl</span><span style="color: #000000;">);
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span>     
+<span style="color: #008080;">19</span>     <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;">20</span> <span style="color: #008000;">     * 主动触发
+</span><span style="color: #008080;">21</span>      <span style="color: #008000;">*/</span>
+<span style="color: #008080;">22</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> activepush()
+</span><span style="color: #008080;">23</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">24</span>         <span style="color: #800080;">$param</span>['scene'] = '主动推送消息'<span style="color: #000000;">;
+</span><span style="color: #008080;">25</span>         <span style="color: #800080;">$this</span>-&gt;curl(<span style="color: #800080;">$param</span>);            <span style="color: #008000;">//</span><span style="color: #008000;"> 主动推送消息</span></code></pre>
+
+<p>&nbsp;</p>
+
+<p><strong>用途</strong><br />onRequest 回调特别适用于需要在控制器中调用的推送消息，比如模板消息之类，在控制器中调用。</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;"><strong>推荐阅读：</strong></span></p>
+<p><span style="font-size: 14pt;"><strong><a href="https://www.cnblogs.com/a609251438/p/11799297.html" target="_blank">PHP 当Swoole&nbsp;遇上 ThinkPHP5</a></strong></span></p>
+<p><strong><span style="font-size: 14pt;"><a href="https://www.cnblogs.com/a609251438/p/11905420.html" target="_blank">Swoole和Redis实现的并发队列处理系统</a></span></strong></p>
+<p><strong><span style="font-size: 14pt;"><a href="https://www.cnblogs.com/a609251438/p/11811665.html" target="_blank">PHP laravel+thrift+swoole打造微服务框架</a></span></strong></p>
+<p><strong><span style="font-size: 14pt;"><a href="https://www.cnblogs.com/a609251438/p/11806284.html" target="_blank">PHP&nbsp;Swoole-Demo TCP服务端简单实现</a></span></strong></p>
+<p><strong><span style="font-size: 14pt;"><a href="https://www.cnblogs.com/a609251438/p/11836449.html" target="_blank">PHP&nbsp;Swoole长连接常见问题</a></span></strong></p>
+<p><span style="font-size: 14pt;"><strong><a href="https://www.cnblogs.com/a609251438/p/11836701.html" target="_blank">PHP+Swoole并发编程的魅力</a></strong></span></p>
+<p><span style="font-size: 14pt;"><strong><a href="https://www.cnblogs.com/a609251438/p/11905592.html" target="_blank">php&nbsp;Swoole实现毫秒级定时任务</a></strong></span></p>
+<p><span style="font-size: 14pt;"><strong><a href="https://www.cnblogs.com/a609251438/p/11794399.html" target="_blank">Swoole跟thinkphp5结合开发WebSocket在线聊天通讯系统</a></strong></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: 14pt;"><strong>很多PHPer在进阶的时候总会遇到一些问题和瓶颈，业务代码写多了没有方向感，不知道该从那里入手去提升，对此我整理了一些资料，包括但不限于：分布式架构、高可扩展、高性能、高并发、服务器性能调优、TP6，laravel，YII2，Redis，Swoole、Swoft、Kafka、Mysql优化、shell脚本、Docker、微服务、Nginx等多个知识点高级进阶干货需要的可以免费分享给大家<strong>，需要的加群（点击&rarr;）<a href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c" data-cke-saved-href="https://jq.qq.com/?_wv=1027&amp;k=5kN6y8c">677079770</a></strong></strong></span></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

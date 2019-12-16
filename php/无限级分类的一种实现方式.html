@@ -1,0 +1,137 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修无限级分类的一种实现方式' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>无限级分类的一种实现方式</center></div><div class='banquan'>原文出处:本文由博客园博主宋建明提供。<br/>
+原文连接:https://www.cnblogs.com/songjianming/p/11031318.html</div><br>
+    <pre><code>list返回子孙树列表</code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;"> * * list返回子孙树
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;"> * @param array $list 原始列表
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> * @param int $parentId 父id
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;"> * @param int $level 几级子孙
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;"> * @param string $space 空格占位
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;"> * @date:2017.2.17
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;"> * @return array
+</span><span style="color: #008080;"> 9</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">10</span> <span style="color: #0000ff;">function</span> treeList(<span style="color: #800080;">$list</span>, <span style="color: #800080;">$parentId</span> = 0, <span style="color: #800080;">$level</span> = 0, <span style="color: #800080;">$space</span> = '&amp;nbsp;&amp;nbsp;'<span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">static</span> <span style="color: #800080;">$bk</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">13</span>     <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$list</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$each</span><span style="color: #000000;">)
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">15</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$each</span>['parent_id'] == <span style="color: #800080;">$parentId</span><span style="color: #000000;">)
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">17</span>             <span style="color: #800080;">$each</span>['level'] = <span style="color: #800080;">$level</span><span style="color: #000000;">;
+</span><span style="color: #008080;">18</span>             <span style="color: #800080;">$each</span>['show'] = <span style="color: #008080;">str_repeat</span>(<span style="color: #800080;">$space</span>, <span style="color: #800080;">$level</span>) . <span style="color: #800080;">$each</span>['name'<span style="color: #000000;">];
+</span><span style="color: #008080;">19</span>             <span style="color: #800080;">$bk</span>[<span style="color: #800080;">$each</span>['id']] = <span style="color: #800080;">$each</span><span style="color: #000000;">;
+</span><span style="color: #008080;">20</span>             treeList(<span style="color: #800080;">$list</span>, <span style="color: #800080;">$each</span>['id'], <span style="color: #800080;">$level</span> + 1, <span style="color: #800080;">$space</span>);<span style="color: #008000;">//</span><span style="color: #008000;">子孙紧跟在自己后面</span>
+<span style="color: #008080;">21</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">23</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$bk</span><span style="color: #000000;">;
+</span><span style="color: #008080;">24</span> }</code></pre>
+
+<p>&nbsp;</p>
+<pre><code>list返回子孙树数组</code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #008000;">/*</span><span style="color: #008000;">*
+</span><span style="color: #008080;"> 2</span> <span style="color: #008000;"> * * list返回子孙树
+</span><span style="color: #008080;"> 3</span> <span style="color: #008000;"> * @param array $list 原始列表
+</span><span style="color: #008080;"> 4</span> <span style="color: #008000;"> * @param int $parentId 父id
+</span><span style="color: #008080;"> 5</span> <span style="color: #008000;"> * @param int $level 几级子孙
+</span><span style="color: #008080;"> 6</span> <span style="color: #008000;"> * @param string $space 空格占位
+</span><span style="color: #008080;"> 7</span> <span style="color: #008000;"> * @date:2017.2.17
+</span><span style="color: #008080;"> 8</span> <span style="color: #008000;"> * @return array
+</span><span style="color: #008080;"> 9</span>  <span style="color: #008000;">*/</span>
+<span style="color: #008080;">10</span> <span style="color: #0000ff;">function</span> treeArr(<span style="color: #800080;">$list</span>, <span style="color: #800080;">$parentId</span> = 0, <span style="color: #800080;">$level</span> = 0, <span style="color: #800080;">$space</span> = '&amp;nbsp;&amp;nbsp;'<span style="color: #000000;">)
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">{
+</span><span style="color: #008080;">12</span>     <span style="color: #800080;">$bk</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;">13</span>     <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$list</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$each</span><span style="color: #000000;">)
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;">15</span>         <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$each</span>['parent_id'] == <span style="color: #800080;">$parentId</span><span style="color: #000000;">)
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">17</span>             <span style="color: #800080;">$each</span>['level'] = <span style="color: #800080;">$level</span><span style="color: #000000;">;
+</span><span style="color: #008080;">18</span>             <span style="color: #800080;">$each</span>['show'] = <span style="color: #008080;">str_repeat</span>(<span style="color: #800080;">$space</span>, <span style="color: #800080;">$level</span>) . <span style="color: #800080;">$each</span>['name'<span style="color: #000000;">];
+</span><span style="color: #008080;">19</span>             <span style="color: #800080;">$each</span>['sonArr'] = treeArr(<span style="color: #800080;">$list</span>, <span style="color: #800080;">$each</span>['id'], <span style="color: #800080;">$level</span> + 1, <span style="color: #800080;">$space</span><span style="color: #000000;">);
+</span><span style="color: #008080;">20</span>             <span style="color: #800080;">$bk</span>[<span style="color: #800080;">$each</span>['id']] = <span style="color: #800080;">$each</span><span style="color: #000000;">;
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">22</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">23</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$bk</span><span style="color: #000000;">;
+</span><span style="color: #008080;">24</span> }</code></pre>
+
+<p>&nbsp;</p>
+<p>如果只需要所有层级名称</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 获取所有层级名列表
+ * @date:2017.2.17
+ * @return array
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> getFulNameList()
+{
+    </span><span style="color: #800080;">$listRaw</span> =<span style="color: #000000;"> getList();
+    </span><span style="color: #800080;">$list</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">一些处理</span>
+    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$listRaw</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$each</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$list</span>[<span style="color: #800080;">$each</span>['id']] = iconvArray(<span style="color: #800080;">$each</span>, 'GBK', 'UTF-8');<span style="color: #008000;">//</span><span style="color: #008000;">GBK-&gt;UTF-8</span>
+<span style="color: #000000;">    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">加所有层级名</span>
+    <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$list</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$id</span> =&gt; <span style="color: #800080;">$each</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$fulName</span> = <span style="color: #800080;">$list</span>['name'<span style="color: #000000;">];
+        </span><span style="color: #800080;">$parentId</span> = <span style="color: #800080;">$each</span>['parent_id'<span style="color: #000000;">];
+        </span><span style="color: #0000ff;">while</span> (<span style="color: #800080;">$parentId</span> != 0 &amp;&amp; <span style="color: #800080;">$list</span>[<span style="color: #800080;">$parentId</span>]['parent_id'] != 0<span style="color: #000000;">)
+        {
+            </span><span style="color: #800080;">$fulName</span> = <span style="color: #800080;">$list</span>[<span style="color: #800080;">$parentId</span>]['name'].'_'.<span style="color: #800080;">$fulName</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$parentId</span> = <span style="color: #800080;">$list</span>[<span style="color: #800080;">$parentId</span>]['parent_id'<span style="color: #000000;">];
+        }
+        </span><span style="color: #800080;">$list</span>[<span style="color: #800080;">$id</span>]['fulName'] = <span style="color: #800080;">$fulName</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$list</span><span style="color: #000000;">;
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>//获取所有子孙</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">function</span> getSpringId(<span style="color: #800080;">$selfId</span>, <span style="color: #800080;">$list</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 2</span> <span style="color: #000000;">{
+</span><span style="color: #008080;"> 3</span>     <span style="color: #800080;">$springIdArr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 4</span>     <span style="color: #800080;">$parentIdArr</span> = <span style="color: #0000ff;">array</span>(<span style="color: #800080;">$selfId</span> =&gt; <span style="color: #800080;">$selfId</span><span style="color: #000000;">);
+</span><span style="color: #008080;"> 5</span>     <span style="color: #0000ff;">do</span>
+<span style="color: #008080;"> 6</span> <span style="color: #000000;">    {
+</span><span style="color: #008080;"> 7</span>         <span style="color: #800080;">$newSonArr</span> = <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+</span><span style="color: #008080;"> 8</span>         <span style="color: #0000ff;">foreach</span> (<span style="color: #800080;">$list</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$each</span><span style="color: #000000;">)
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">        {
+</span><span style="color: #008080;">10</span>             <span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">isset</span>(<span style="color: #800080;">$parentIdArr</span>[<span style="color: #800080;">$each</span>['parent_id'<span style="color: #000000;">]]))
+</span><span style="color: #008080;">11</span> <span style="color: #000000;">            {
+</span><span style="color: #008080;">12</span>                 <span style="color: #800080;">$springIdArr</span>[<span style="color: #800080;">$each</span>['id']] = <span style="color: #800080;">$each</span>['id'<span style="color: #000000;">];
+</span><span style="color: #008080;">13</span>                 <span style="color: #800080;">$newSonArr</span>[<span style="color: #800080;">$each</span>['id']] = <span style="color: #800080;">$each</span>['id'<span style="color: #000000;">];
+</span><span style="color: #008080;">14</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">15</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">16</span>         <span style="color: #800080;">$parentIdArr</span> = <span style="color: #800080;">$newSonArr</span>;<span style="color: #008000;">//</span><span style="color: #008000;">新一辈父</span>
+<span style="color: #008080;">17</span>     } <span style="color: #0000ff;">while</span> (<span style="color: #008080;">count</span>(<span style="color: #800080;">$parentIdArr</span>) &gt; 0<span style="color: #000000;">);
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>     <span style="color: #0000ff;">return</span> <span style="color: #800080;">$springIdArr</span><span style="color: #000000;">;
+</span><span style="color: #008080;">20</span> }</code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

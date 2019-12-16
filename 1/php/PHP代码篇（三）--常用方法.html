@@ -1,0 +1,239 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP代码篇（三）--常用方法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP代码篇（三）--常用方法</center></div><div class='banquan'>原文出处:本文由博客园博主在斑马线上散布提供。<br/>
+原文连接:https://www.cnblogs.com/camg/p/11202773.html</div><br>
+    <p>模块下不间断更新，PHP常用方法，欢迎留言！</p>
+<src><strong>一、递归删除指定目录下所有文件及文件夹</strong>
+<src>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008080;">/*</span><span style="color: #008080;">*
+ * 递归删除指定目录下所有文件及文件夹
+ * @param unknown $path,删除路径
+ </span><span style="color: #008080;">*/</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> deleteFileWay($path)
+{
+    </span><span style="color: #808080;">//</span><span style="color: #000000;">如果是目录则继续
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;">(is_dir($path)){
+        </span><span style="color: #808080;">//</span><span style="color: #000000;">扫描一个文件夹内的所有文件夹和文件并返回数组
+        $info </span><span style="color: #808080;">=</span><span style="color: #000000;"> scandir($path);
+        foreach($info </span><span style="color: #0000ff;">as</span> $k<span style="color: #808080;">=&gt;</span><span style="color: #000000;">$v){
+             </span><span style="color: #808080;">//</span><span style="color: #000000;">排除目录中的.和..
+            </span><span style="color: #0000ff;">if</span>($v <span style="color: #808080;">!=</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">.</span><span style="color: #ff0000;">'</span> <span style="color: #808080;">&amp;&amp;</span> $v <span style="color: #808080;">!=</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">..</span><span style="color: #ff0000;">'</span><span style="color: #000000;">){
+                </span><span style="color: #0000ff;">if</span><span style="color: #000000;">(is_dir($path.$v)){
+                    </span><span style="color: #808080;">//</span><span style="color: #000000;">子目录中操作删除文件夹和文件
+                    deleteFileWay($path.$v.</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">/</span><span style="color: #ff0000;">'</span><span style="color: #000000;">);
+                    </span><span style="color: #808080;">//</span><span style="color: #000000;">目录清空后删除空文件夹
+                    </span><span style="color: #008000;">@rmdir</span>($path.$v.<span style="color: #ff0000;">'</span><span style="color: #ff0000;">/</span><span style="color: #ff0000;">'</span><span style="color: #000000;">);
+                }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+                    </span><span style="color: #808080;">//</span><span style="color: #000000;">如果是文件直接删除
+                    </span><span style="color: #008000;">@unlink</span><span style="color: #000000;">($path.$v);
+                }
+            }
+        }
+    }
+}
+
+</span><span style="color: #008080;">/*</span><span style="color: #008080;">*
+ * [result14 description]
+ * 查找会员下面所有盟主
+ * 参数$uid会员id
+ * 返回
+ * 'status'=&gt;0，没有下级盟主
+ * 'status'=&gt;1，'data'=&gt;下级盟主id，数组类型
+ </span><span style="color: #008080;">*/</span>
+<span style="color: #0000ff;">function</span><span style="color: #000000;"> result14($uid){
+    $cancel_user_list</span><span style="color: #808080;">=</span>$uid.<span style="color: #ff0000;">'</span><span style="color: #ff0000;">,</span><span style="color: #ff0000;">'</span>;<span style="color: #808080;">//</span><span style="color: #000000;">下级所有盟主列表列表，用于sqlin语句
+    $crt_level_user</span><span style="color: #808080;">=</span>pdo_getall(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">nets_hjk_members</span><span style="color: #ff0000;">'</span>, array(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">from_uid</span><span style="color: #ff0000;">'</span> <span style="color: #808080;">=&gt;</span> $uid), array(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">type</span><span style="color: #ff0000;">'</span>,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">memberid</span><span style="color: #ff0000;">'</span>,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">level</span><span style="color: #ff0000;">'</span><span style="color: #000000;">));
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (empty($crt_level_user)) {
+        </span><span style="color: #0000ff;">return</span> array(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">status</span><span style="color: #ff0000;">'</span><span style="color: #808080;">=&gt;</span><span style="color: #800000; font-weight: bold;">0</span>,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">hint</span><span style="color: #ff0000;">'</span><span style="color: #808080;">=&gt;</span><span style="color: #000000;">"没有需要变更的下级1");
+    }
+    </span><span style="color: #0000ff;">while</span><span style="color: #000000;"> (!empty($crt_level_user)) {
+        </span><span style="color: #808080;">//</span><span style="color: #000000;">从当前用户中提取memberid，用于下一次取下级用户
+        $crt_level_user_for_sqlin</span><span style="color: #808080;">=</span><span style="color: #ff0000;">''</span><span style="color: #000000;">;
+        $crt_level_leader_for_sqlin</span><span style="color: #808080;">=</span><span style="color: #ff0000;">''</span><span style="color: #000000;">;
+        foreach ($crt_level_user </span><span style="color: #0000ff;">as</span><span style="color: #000000;"> $value) {
+            $crt_level_user_for_sqlin .</span><span style="color: #808080;">=</span> $value<span style="color: #ff0000;">[</span><span style="color: #ff0000;">'memberid'</span><span style="color: #ff0000;">]</span>.<span style="color: #ff0000;">'</span><span style="color: #ff0000;">,</span><span style="color: #ff0000;">'</span><span style="color: #000000;">;
+                </span><span style="color: #808080;">//</span><span style="color: #000000;">遍历crt_level_user中所有的行，取出盟主的memberid放在$crt_level_leader_for_sqlin中
+            </span><span style="color: #0000ff;">if</span> ($value<span style="color: #ff0000;">[</span><span style="color: #ff0000;">'type'</span><span style="color: #ff0000;">]</span> <span style="color: #808080;">==</span> <span style="color: #800000; font-weight: bold;">1</span><span style="color: #000000;">) {
+                $crt_level_leader_for_sqlin .</span><span style="color: #808080;">=</span> $value<span style="color: #ff0000;">[</span><span style="color: #ff0000;">'memberid'</span><span style="color: #ff0000;">]</span>.<span style="color: #ff0000;">'</span><span style="color: #ff0000;">,</span><span style="color: #ff0000;">'</span><span style="color: #000000;">;
+            }
+        }
+        $cancel_user_list .</span><span style="color: #808080;">=</span><span style="color: #000000;"> $crt_level_leader_for_sqlin;
+        </span><span style="color: #808080;">//</span><span style="color: #000000;">获取当前层级下级用户
+        </span><span style="color: #0000ff;">if</span><span style="color: #000000;">(!empty($crt_level_user_for_sqlin)){
+            $crt_level_user_for_sqlin</span><span style="color: #808080;">=</span>substr($crt_level_user_for_sqlin,<span style="color: #800000; font-weight: bold;">0</span>,strlen($crt_level_user_for_sqlin)<span style="color: #808080;">-</span><span style="color: #800000; font-weight: bold;">1</span><span style="color: #000000;">);
+        }
+        $crt_level_user</span><span style="color: #808080;">=</span>pdo_fetchall("<span style="color: #0000ff;">SELECT</span> ex.memberid,ex.type <span style="color: #0000ff;">FROM</span> ".tablename(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">nets_hjk_members</span><span style="color: #ff0000;">'</span>)." <span style="color: #0000ff;">AS</span> ex <span style="color: #0000ff;">where</span> from_uid <span style="color: #808080;">in</span><span style="color: #000000;">(". $crt_level_user_for_sqlin.") ");
+    }
+    $junior_user_list </span><span style="color: #808080;">=</span> <span style="color: #ff0000;">''</span><span style="color: #000000;">;
+    $cancel_user_list </span><span style="color: #808080;">=</span> substr($cancel_user_list,<span style="color: #800000; font-weight: bold;">0</span>,strlen($cancel_user_list)<span style="color: #808080;">-</span><span style="color: #800000; font-weight: bold;">1</span><span style="color: #000000;">);
+    $cancel_user_list_arr </span><span style="color: #808080;">=</span><span style="color: #000000;"> explode(",",$cancel_user_list);
+    </span><span style="color: #808080;">//</span><span style="color: #000000;">当下会员下级所有的盟主，数组
+    $cancel_user_list_arr </span><span style="color: #808080;">=</span> array_splice($cancel_user_list_arr,<span style="color: #800000; font-weight: bold;">1</span><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (empty($cancel_user_list_arr)) {
+        </span><span style="color: #0000ff;">return</span> array(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">status</span><span style="color: #ff0000;">'</span><span style="color: #808080;">=&gt;</span><span style="color: #800000; font-weight: bold;">0</span>,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">hint</span><span style="color: #ff0000;">'</span><span style="color: #808080;">=&gt;</span><span style="color: #000000;">"没有需要变更的下级2");
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        </span><span style="color: #0000ff;">return</span> array(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">status</span><span style="color: #ff0000;">'</span><span style="color: #808080;">=&gt;</span><span style="color: #800000; font-weight: bold;">1</span>,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">data</span><span style="color: #ff0000;">'</span><span style="color: #808080;">=&gt;</span><span style="color: #000000;">$cancel_user_list_arr);
+    }
+}</span></code></pre>
+
+<p>&nbsp;</p>
+
+<src>
+<p><strong>二、数据库常用操作</strong></p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #808080;">//</span><span style="color: #000000;">插入一条数据
+</span><span style="color: #0000ff;">INSERT</span> <span style="color: #0000ff;">INTO</span> ims_stat_rule (rid,hit) <span style="color: #0000ff;">VALUES</span> (<span style="color: #800000; font-weight: bold;">351</span>,<span style="color: #800000; font-weight: bold;">990</span><span style="color: #000000;">);
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">删除一条数据
+</span><span style="color: #0000ff;">DELETE</span> <span style="color: #0000ff;">FROM</span> ims_nets_hjk_applyfor <span style="color: #0000ff;">WHERE</span> member_id <span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">49483</span><span style="color: #000000;">;
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">修改一条数据
+</span><span style="color: #0000ff;">update</span> ims_nets_hjk_members <span style="color: #0000ff;">set</span> <span style="color: #0000ff;">level</span> <span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">4</span> <span style="color: #0000ff;">where</span> id <span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">100248</span><span style="color: #000000;">;
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">查询数据
+</span><span style="color: #0000ff;">select</span> <span style="color: #808080;">*</span> <span style="color: #0000ff;">from</span> ims_nets_hjk_members <span style="color: #0000ff;">where</span> memberid <span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">18978</span><span style="color: #000000;">;
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">格式化时间戳
+FROM_UNIXTIME(M1.created_at,</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">%Y-%m-%d %H:%i:%s</span><span style="color: #ff0000;">'</span>) <span style="color: #0000ff;">AS</span><span style="color: #000000;"> created_at;
+
+</span><span style="color: #808080;">//</span>SQL中IF的用法，如果表M1时间戳为0则默认为<span style="color: #ff0000;">'</span><span style="color: #ff0000;">/</span><span style="color: #ff0000;">'</span><span style="color: #000000;">，反之则进行格式化时间戳处理
+</span><span style="color: #0000ff;">IF</span>(M1.finish_time <span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">0</span>,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">/</span><span style="color: #ff0000;">'</span>,FROM_UNIXTIME(M1.finish_time,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">%Y-%m-%d %H:%i:%s</span><span style="color: #ff0000;">'</span>)) <span style="color: #0000ff;">AS</span><span style="color: #000000;"> finish_time</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;三、ThinkPHP5.0常用操作</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #808080;">//</span><span style="color: #000000;">查询区间内
+$device_string </span><span style="color: #808080;">=</span> $db<span style="color: #808080;">-&gt;</span><span style="color: #0000ff;">table</span>(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">ims_nets_hjk_devices</span><span style="color: #ff0000;">'</span><span style="color: #000000;">)
+                    </span><span style="color: #808080;">-&gt;</span><span style="color: #0000ff;">where</span>(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">device_id</span><span style="color: #ff0000;">'</span>,<span style="color: #ff0000;">[</span><span style="color: #ff0000;">'&gt;=',$k</span><span style="color: #ff0000;">]</span>,<span style="color: #ff0000;">[</span><span style="color: #ff0000;">'&lt;=',$j</span><span style="color: #ff0000;">]</span>,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">AND</span><span style="color: #ff0000;">'</span><span style="color: #000000;">)
+                    </span><span style="color: #808080;">-&gt;</span><span style="color: #0000ff;">where</span>(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">status</span><span style="color: #ff0000;">'</span>,<span style="color: #800000; font-weight: bold;">0</span><span style="color: #000000;">)
+                    </span><span style="color: #808080;">-&gt;</span>field(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">device_id</span><span style="color: #ff0000;">'</span><span style="color: #000000;">)
+                    </span><span style="color: #808080;">-&gt;</span>limit(<span style="color: #800000; font-weight: bold;">50</span><span style="color: #000000;">)
+                    </span><span style="color: #808080;">-&gt;</span><span style="color: #0000ff;">select</span><span style="color: #000000;">();
+
+</span><span style="color: #808080;">//</span> 如下为CASE的用法<span style="color: #008080;">--</span><span style="color: #008080;">---------------------------</span>
+$<span style="color: #0000ff;">level</span> <span style="color: #808080;">=</span> Db::query("<span style="color: #0000ff;">SELECT</span> <span style="color: #ff00ff;">SUM</span>(<span style="color: #800000; font-weight: bold;">1</span>) <span style="color: #0000ff;">AS</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">全部用户</span><span style="color: #ff0000;">'</span>,<span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span> type<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">1</span> <span style="color: #808080;">AND</span> <span style="color: #0000ff;">level</span><span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span>) <span style="color: #0000ff;">AS</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">店主</span><span style="color: #ff0000;">'</span>,<span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span> type<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">1</span> <span style="color: #808080;">AND</span> <span style="color: #0000ff;">level</span><span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span>) <span style="color: #0000ff;">AS</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">高级店主</span><span style="color: #ff0000;">'</span>,<span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span> type<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">1</span> <span style="color: #808080;">AND</span> <span style="color: #0000ff;">level</span><span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">2</span> <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span>) <span style="color: #0000ff;">AS</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">特约店主</span><span style="color: #ff0000;">'</span>,<span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span> type<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span>) <span style="color: #0000ff;">AS</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">普通用户</span><span style="color: #ff0000;">'</span>,<span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span> is_partner<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span>) <span style="color: #0000ff;">AS</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">合伙人</span><span style="color: #ff0000;">'</span>,<span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span> is_insider<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span>) <span style="color: #0000ff;">AS</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">内部</span><span style="color: #ff0000;">'</span>,<span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span> is_city_agent<span style="color: #808080;">=</span><span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span>) <span style="color: #0000ff;">AS</span> <span style="color: #ff0000;">'</span><span style="color: #ff0000;">市级代理</span><span style="color: #ff0000;">'</span> <span style="color: #0000ff;">FROM</span><span style="color: #000000;"> ims_nets_hjk_members");
+</span><span style="color: #0000ff;">SELECT</span> <span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span><span style="color: #000000;">
+                     pay_status </span><span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #808080;">AND</span><span style="color: #000000;">
+                     date_format(from_UNIXTIME(`pay_time`),</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">%Y-%m-%d</span><span style="color: #ff0000;">'</span>) <span style="color: #808080;">=</span> date_format(now(),<span style="color: #ff0000;">'</span><span style="color: #ff0000;">%Y-%m-%d</span><span style="color: #ff0000;">'</span>) <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span><span style="color: #000000;">
+                     ) </span><span style="color: #0000ff;">AS</span><span style="color: #000000;"> S1,
+                 </span><span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span><span style="color: #000000;">
+                     pay_status </span><span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #808080;">AND</span><span style="color: #000000;">
+                     date_format(from_UNIXTIME(`pay_time`),</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">%Y-%m-%d</span><span style="color: #ff0000;">'</span>) <span style="color: #808080;">=</span> date_format(now(),<span style="color: #ff0000;">'</span><span style="color: #ff0000;">%Y-%m-%d</span><span style="color: #ff0000;">'</span>) <span style="color: #0000ff;">THEN</span> point <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span><span style="color: #000000;">
+                     ) </span><span style="color: #0000ff;">AS</span><span style="color: #000000;"> S2,
+                 </span><span style="color: #ff00ff;">SUM</span>(<span style="color: #ff00ff;">CASE</span> <span style="color: #0000ff;">WHEN</span><span style="color: #000000;">
+                     pay_status </span><span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #808080;">AND</span><span style="color: #000000;">
+                     order_status </span><span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">THEN</span> <span style="color: #800000; font-weight: bold;">1</span> <span style="color: #0000ff;">ELSE</span> <span style="color: #800000; font-weight: bold;">0</span> <span style="color: #0000ff;">END</span><span style="color: #000000;">
+                     ) </span><span style="color: #0000ff;">AS</span><span style="color: #000000;"> S3
+</span><span style="color: #0000ff;">FROM</span><span style="color: #000000;"> ims_integral_order;
+
+</span><span style="color: #808080;">//</span> 优化一个四表联查，以会员表作为临时表<span style="color: #008080;">--</span><span style="color: #008080;">------------------------</span>
+$list <span style="color: #808080;">=</span><span style="color: #000000;"> Db::query("
+                     </span><span style="color: #0000ff;">SELECT</span><span style="color: #000000;">
+                     M1s.</span><span style="color: #808080;">*</span>, M2.avatar <span style="color: #0000ff;">AS</span><span style="color: #000000;"> avatar_is,
+                     M2.avatar </span><span style="color: #0000ff;">AS</span> avatar_is,M2.nickname <span style="color: #0000ff;">AS</span> nickname_is,M2.pid <span style="color: #0000ff;">AS</span><span style="color: #000000;"> pid_is,
+                     M3.integral,M3.asset,M3.wallet,
+                     FROM_UNIXTIME(M4.addTime,</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">%Y-%m-%d %H:%i:%s</span><span style="color: #ff0000;">'</span>) <span style="color: #0000ff;">AS</span><span style="color: #000000;"> addTime
+                     </span><span style="color: #0000ff;">FROM</span><span style="color: #000000;">
+                     (
+                         </span><span style="color: #0000ff;">SELECT</span><span style="color: #000000;">
+                             memberid,pid,avatar,nickname,FROM_UNIXTIME(created_at,</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">%Y-%m-%d %H:%i:%s</span><span style="color: #ff0000;">'</span>) <span style="color: #0000ff;">AS</span> created_at,<span style="color: #0000ff;">level</span><span style="color: #000000;">,type,is_city_agent,is_partner,is_insider,realname,mobile,from_uid
+                         </span><span style="color: #0000ff;">FROM</span><span style="color: #000000;">
+                             ims_nets_hjk_members </span><span style="color: #0000ff;">AS</span><span style="color: #000000;"> M1
+                         </span><span style="color: #0000ff;">WHERE</span><span style="color: #000000;"> ".$whes."
+                         </span><span style="color: #0000ff;">ORDER</span> <span style="color: #0000ff;">BY</span><span style="color: #000000;">
+                             created_at </span><span style="color: #0000ff;">DESC</span><span style="color: #000000;">
+                         LIMIT ".(($pindex </span><span style="color: #808080;">-</span> <span style="color: #800000; font-weight: bold;">1</span>) <span style="color: #808080;">*</span><span style="color: #000000;"> $psize).",". $psize."
+                     ) </span><span style="color: #0000ff;">AS</span><span style="color: #000000;"> M1s
+                     </span><span style="color: #808080;">LEFT</span> <span style="color: #808080;">JOIN</span> ims_nets_hjk_members <span style="color: #0000ff;">AS</span> M2 <span style="color: #0000ff;">ON</span> M1s.from_uid <span style="color: #808080;">=</span><span style="color: #000000;"> M2.memberid
+                     </span><span style="color: #808080;">LEFT</span> <span style="color: #808080;">JOIN</span> ims_mc_members <span style="color: #0000ff;">AS</span> M3 <span style="color: #0000ff;">ON</span> M1s.memberid <span style="color: #808080;">=</span><span style="color: #000000;"> M3.uid
+                     </span><span style="color: #808080;">LEFT</span> <span style="color: #808080;">JOIN</span> t_fans_log <span style="color: #0000ff;">AS</span> M4 <span style="color: #0000ff;">ON</span> M1s.memberid <span style="color: #808080;">=</span><span style="color: #000000;"> M4.fans_memberId
+                     ");
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">TP自加和自减
+$res </span><span style="color: #808080;">=</span> $this<span style="color: #808080;">-&gt;</span><span style="color: #0000ff;">where</span>(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">single</span><span style="color: #ff0000;">'</span>,<span style="color: #ff0000;">'</span><span style="color: #ff0000;">gt</span><span style="color: #ff0000;">'</span>,<span style="color: #800000; font-weight: bold;">0</span><span style="color: #000000;">)
+　　　　</span><span style="color: #808080;">-&gt;</span><span style="color: #0000ff;">update</span>(<span style="color: #ff0000;">[</span><span style="color: #ff0000;">
+　　　　　　　　'red_fee'=&gt;['INC',$fee</span><span style="color: #ff0000;">]</span>,<span style="color: #808080;">//</span><span style="color: #000000;">自加
+　　　　　　　　</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">create_time</span><span style="color: #ff0000;">'</span><span style="color: #808080;">=&gt;</span><span style="color: #000000;">time(),
+　　　　　　　　</span><span style="color: #ff0000;">'</span><span style="color: #ff0000;">count</span><span style="color: #ff0000;">'</span><span style="color: #808080;">=&gt;</span><span style="color: #ff0000;">[</span><span style="color: #ff0000;">'DEC',1</span><span style="color: #ff0000;">]</span>,<span style="color: #808080;">//</span><span style="color: #000000;">自减
+　　　　　　　　　]);
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">TP大于或者小于
+$res </span><span style="color: #808080;">=</span> $this<span style="color: #808080;">-&gt;</span><span style="color: #0000ff;">where</span>(<span style="color: #ff0000;">[</span><span style="color: #ff0000;">
+　　　　　　['status','=',1</span><span style="color: #ff0000;">]</span><span style="color: #000000;">,
+　　　　　　</span><span style="color: #ff0000;">[</span><span style="color: #ff0000;">'page_id','&gt;',0</span><span style="color: #ff0000;">]</span><span style="color: #000000;">
+　　　　　　]);
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">DB操作批量插入
+$res </span><span style="color: #808080;">=</span> $db<span style="color: #808080;">-&gt;</span><span style="color: #0000ff;">table</span>(<span style="color: #ff0000;">'</span><span style="color: #ff0000;">ims_nets_hjk_sogo_licence</span><span style="color: #ff0000;">'</span>)<span style="color: #808080;">-&gt;</span><span style="color: #000000;">insertAll($sogo_licence);
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">查询指定会员已激活的设备，并且不在ims_nets_hjk_sogo_equipment表里面，EXISTS用法
+$list </span><span style="color: #808080;">=</span> $db<span style="color: #808080;">-&gt;</span>query("<span style="color: #0000ff;">SELECT</span> s_id <span style="color: #0000ff;">FROM</span><span style="color: #000000;"> `ims_nets_hjk_devices` 
+　　　　　　　　　　</span><span style="color: #0000ff;">WHERE</span> active_member_id <span style="color: #808080;">=</span><span style="color: #000000;"> ".$uid." 
+　　　　　　　　　　</span><span style="color: #808080;">AND</span> `status` <span style="color: #808080;">=</span> <span style="color: #800000; font-weight: bold;">1</span>
+　　　　　　　　　　<span style="color: #808080;">AND</span> <span style="color: #808080;">NOT</span> <span style="color: #808080;">EXISTS</span><span style="color: #000000;"> 
+　　　　　　　　　　　　(</span><span style="color: #0000ff;">SELECT</span> s_id <span style="color: #0000ff;">FROM</span> ims_nets_hjk_sogo_equipment <span style="color: #0000ff;">WHERE</span> s_id <span style="color: #808080;">=</span><span style="color: #000000;"> ims_nets_hjk_devices.s_id )
+
+</span><span style="color: #808080;">//</span><span style="color: #000000;">打印SQL语句
+</span><span style="color: #808080;">-&gt;</span>buildSql();</code></pre>
+
+<p>四、ThinkPHP5.0常用操作</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">模拟url传递数组</span>
+<span style="color: #800080;">$url</span> = 'http://niushop.jingjinglego.com/index.php?s=/admin/We7Config/addIndexAd&amp;type=2&amp;adList[0][sort]=456&amp;adList[0][img]=upad/test/1e.jpg&amp;adList[0][outerUrl]=www.bai.com&amp;adList[0][source]=1&amp;adList[1][sort]=456&amp;adList[1][img]=upad/test/1e.jpg&amp;adList[1][outerUrl]=www.bai.com&amp;adList[1][source]=1'<span style="color: #000000;">;
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">调用请求类request写法,接受数组</span>
+<span style="color: #800080;">$ids</span> = request-&gt;post('ids/a'<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;">获取参数</span>
+<span style="color: #0000ff;">use</span><span style="color: #000000;"> think\Request;
+</span><span style="color: #800080;">$request</span> = Request::<span style="color: #000000;">instance();
+</span><span style="color: #800080;">$method</span> = <span style="color: #800080;">$request</span>-&gt;method();<span style="color: #008000;">//</span><span style="color: #008000;">获取上传方式</span>
+<span style="color: #800080;">$request</span>-&gt;param();<span style="color: #008000;">//</span><span style="color: #008000;">获取所有参数，最全</span>
+<span style="color: #800080;">$get</span> = <span style="color: #800080;">$request</span>-&gt;get();<span style="color: #008000;">//</span><span style="color: #008000;">获取get上传的内容</span>
+<span style="color: #800080;">$post</span> = <span style="color: #800080;">$request</span>-&gt;post();<span style="color: #008000;">//</span><span style="color: #008000;">获取post上传的内容</span>
+<span style="color: #800080;">$request</span>-&gt;<span style="color: #008080;">file</span>('file')<span style="color: #008000;">//</span><span style="color: #008000;">获取文件
+
+//错误和正确提示及跳转error/success</span>
+<span style="color: #800080;">$this</span>-&gt;error("抱歉你不是最帅的人", __URL__ . "/wap/We7Store/storeManagement"<span style="color: #000000;">);
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 锁定跳转,url重定向</span>
+<span style="color: #800080;">$redirect</span> = __URL(__URL__ . "/wap/login/userlock"<span style="color: #000000;">);
+</span><span style="color: #800080;">$this</span>-&gt;redirect(<span style="color: #800080;">$redirect</span>);&nbsp;</code></pre>
+
+<p>&nbsp;四、检查字符串是否是URL</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">判断是否是url</span>
+<span style="color: #0000ff;">function</span> is_url(<span style="color: #800080;">$v</span><span style="color: #000000;">){
+    </span><span style="color: #800080;">$pattern</span>="#(http|https)://(.*\.)?.*\..*#i"<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">if</span>(<span style="color: #008080;">preg_match</span>(<span style="color: #800080;">$pattern</span>,<span style="color: #800080;">$v</span><span style="color: #000000;">)){ 
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">true</span><span style="color: #000000;">; 
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{ 
+        </span><span style="color: #0000ff;">return</span> <span style="color: #0000ff;">false</span><span style="color: #000000;">; 
+    } 
+}</span></code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,119 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP中const,static,public,private,protected的区别' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP中const,static,public,private,protected的区别</center></div><div class='banquan'>原文出处:本文由博客园博主小时刻提供。<br/>
+原文连接:https://www.cnblogs.com/smallKilts/p/10552968.html</div><br>
+    <blockquote>
+<p>原文地址：<a href="small.aiweimeng.top/index.php/archives" target="_blank">http://small.aiweimeng.top/index.php/archives/54.html</a></p>
+</blockquote>
+<p>const: 定义常量，一般定义后不可改变<br />static: 静态，类名可以访问<br />public: 表示全局，类内部外部子类都可以访问；<br />private: 表示私有的，只有本类内部可以使用；<br />protected: 表示受保护的，只有本类或子类或父类中可以访问；</p>
+<p>定义常量也可用```define```定义。</p>
+<p>const与define在定义常量时会有如下区别：</p>
+<p> 1. const用于类成员变量，一经定义不可修改，define用于全局常量，不可用于类成员变量的定义，<br />const可在类中使用，define不能。<br /> 2. const定义的常量大小写敏感，而define可通过第三个参数(为TRUE表示大小写不敏感)来指定大小写是否敏感。<br />在运行时定义一个常量。define('TXE',100,TRUE);<br /> 3. const不能在条件语句中定义常量，而define函数可以。if($a&gt;10){define('LE','hello');}</p>
+<src class="cnblogs_Highlighter">
+<pre><code>class Demo
+{
+
+    //定义常量【自php5.3后】,一个常量是属于一个类的，而不是某个对象的
+    //不可改变的
+    const EVENT = 'const';
+
+    static $event = 'static';
+
+    public $eventPublic = 'public';
+
+    private $eventPrivate = 'private';
+
+    protected $eventProtected = 'protected';
+
+
+    public function test()
+    {
+        //使用self访问类中定义的常量
+        echo self::EVENT.'&lt;br/&gt;';
+
+        //同常量一样使用self
+        echo self::$event.'&lt;br/&gt;';
+
+        //公共变量，受保护的变量，私密的变量通过$this访问
+        echo $this-&gt;eventPublic.'&lt;br/&gt;';
+
+        //受保护的和私密的变量只能在当前类中访问
+        echo $this-&gt;eventPrivate.'&lt;br/&gt;';
+        echo $this-&gt;eventProtected.'&lt;br/&gt;';
+    }
+
+
+    //魔术方法
+    public function __get($name)
+    {
+        return $this-&gt;$name;
+    }
+
+}
+
+
+class One extends Demo
+{
+
+    public function testOne()
+    {
+        //可继承父级使用parent访问
+        echo parent::EVENT.'&lt;br/&gt;';
+        echo parent::$event.'&lt;br/&gt;';
+
+        //也可通过父类直接访问
+        echo Demo::EVENT.'&lt;br/&gt;';
+        echo Demo::$event.'&lt;br/&gt;';
+
+        //继承父级中的成员变量后，只能访问公共变量
+        //私有变量和受保护的变量不能在子类中访问
+        echo $this-&gt;eventPublic;
+
+    }
+
+}
+$obj_1 = new Demo;
+$obj_1-&gt;test();
+echo "=================&lt;br/&gt;";
+$obj = new One;
+$obj-&gt;testOne();
+</code></pre>
+
+<p>　　</p>
+<p>运行结果:</p>
+<src class="cnblogs_Highlighter">
+<pre><code>const
+static
+public
+private
+protected
+=================
+const
+static
+const
+static
+public
+</code></pre>
+
+<p>　　</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

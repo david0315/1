@@ -1,0 +1,573 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Linux下PHP+Nginx环境搭建' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Linux下PHP+Nginx环境搭建</center></div><div class='banquan'>原文出处:本文由博客园博主王宇阳提供。<br/>
+原文连接:https://www.cnblogs.com/wangyuyang1016/p/11518203.html</div><br>
+    <h1 id="phpnginx环境搭建">PHP+Nginx环境搭建</h1>
+<blockquote>
+<p>作者：王宇阳（ Mirror ）^_^</p>
+<p>参考文章：</p>
+<p>​ <a href="https://www.cnblogs.com/yanqingxu/p/7927830.html">Nginx+PHP+MySQL安装参考</a></p>
+<p>​ <a href="https://www.cnblogs.com/hometown/p/8974624.html">PHP源码安装经验</a></p>
+<p>​ <a href="https://blog.csdn.net/qq_24334941/article/details/79808823">PHP源码环境搭建过程中常见问题</a></p>
+</blockquote>
+<h3 id="centos环境">CentOS环境</h3>
+<h4 id="配置centos-7网络">配置CentOS-7网络：</h4>
+<p>CentOS(最小安装)默认是不打开网络的</p>
+<ul>
+<li>启动网络</li>
+</ul>
+<p>vi打开：/etc/sysconfig/network-scripts/ifcfg-ens33 文件</p>
+<p>将 “ONBOOT:no”属性修改为：“ONBOOT:yes”</p>
+<ul>
+<li>重启网络服务</li>
+</ul>
+<pre><code><code># sudo service network restart </code></code></pre>
+<ul>
+<li><strong>OK</strong>：</li>
+</ul>
+<pre><code><code># ip addr</code></code></pre>
+<h2 id="nginx服务">Nginx服务：</h2>
+<h3 id="安装依赖包">安装依赖包</h3>
+<ul>
+<li><p>安装：</p>
+<pre><code><code># yum -y install build-essential</code></code></pre></li>
+<li><p>安装：更多依赖包</p>
+<pre><code><code># yum -y install gcc automake autoconf libtool make</code></code></pre></li>
+<li><p>安装：g++</p>
+<pre><code><code># yum -y install gcc gcc-c++</code></code></pre></li>
+</ul>
+<h3 id="安装pcre库">安装PCRE库</h3>
+<p><strong>选定源码目录</strong> ==&gt; ftp下载PCRE库 ==&gt; 安装PCRE库</p>
+<pre><code><code># cd /usr/local/src
+
+# wget ftp://ftp.pcre.org/pub/pcre/pcre-8.42.tar.gz
+
+# tar -zxvf pcre-8.42.tar.gz
+
+# cd /pcre-8.42
+
+# ./configure
+
+# make &amp;&amp; make install</code></code></pre>
+<h3 id="安装zlib源码包">安装zlib源码包</h3>
+<p>下载zlib源码包 ==&gt; 安装zlib包</p>
+<pre><code><code># cd /usr/local/src
+
+# wget http://zlib.net/zlib-1.2.11.tar.gz
+
+# tar -zxvf zlib-1.2.11.tar.gz
+
+# cd zlib-1.2.11
+
+# ./configure
+
+# make &amp;&amp; make install</code></code></pre>
+<h3 id="安装openssl源码包">安装openssl源码包</h3>
+<pre><code><code># cd /usr/local/src
+
+# wget https://www.openssl.org/source/openssl-1.1.0k.tar.gz
+
+# tar -zxvf openssl-1.1.0k.tar.gz
+
+# cd ./openssl-1.1.0k
+
+# ./configure
+
+# make &amp;&amp; make install</code></code></pre>
+<h3 id="安装nginx">安装Nginx</h3>
+<pre><code><code># cd /usr/local/src
+
+# wget http://nginx.org/download/nginx-1.16.1.tar.gz
+
+# tar -zxvf nginx-1.16.1.tar.gz
+
+# cd nginx-1.16.1
+
+# groupadd -r nginx
+# useradd -r -g nginx nginx
+
+# ./configure \
+--prefix=/usr/local/nginx \
+--sbin-path=/usr/local/nginx/sbin/nginx \
+--conf-path=/usr/local/nginx/nginx.conf \
+--pid-path=/usr/local/nginx/nginx.pid \
+--user=nginx \
+--group=nginx \
+--with-http_ssl_module \
+--with-http_flv_module \
+--with-http_mp4_module  \
+--with-http_stub_status_module \
+--with-http_gzip_static_module \
+--http-client-body-temp-path=/var/tmp/nginx/client/ \
+--http-proxy-temp-path=/var/tmp/nginx/proxy/ \
+--http-fastcgi-temp-path=/var/tmp/nginx/fcgi/ \
+--http-uwsgi-temp-path=/var/tmp/nginx/uwsgi \
+--http-scgi-temp-path=/var/tmp/nginx/scgi \
+--with-pcre=/usr/local/src/pcre-8.42 \
+--with-zlib=/usr/local/src/zlib-1.2.11 \
+--with-openssl=/usr/local/src/openssl-1.1.0k \
+
+[注：当前所在目录一定要是/usr/local/src/nginx-1.16.1
+
+--with-pcre=/usr/local/src/pcre-8.41 指的是pcre-8.42 的源码路径。
+
+--with-zlib=/usr/local/src/zlib-1.2.11 指的是zlib-1.2.11 的源码路径。
+
+--with-openssl=/usr/local/src/openssl-1.1.0g 指的是openssl-1.1.0k 的源码路径。]
+
+# make &amp;&amp; make install</code></code></pre>
+<p><strong>nginx编译选项</strong></p>
+<p>make是用来编译的，它从Makefile中读取指令，然后编译。</p>
+<p>make install是用来安装的，它也从Makefile中读取指令，安装到指定的位置。</p>
+<p>configure命令是用来检测你的安装平台的目标特征的。它定义了系统的各个方面，包括nginx的被允许使用的连接处理的方法，比如它会检测你是不是有CC或GCC，并不是需要CC或GCC，它是个shell脚本，执行结束时，它会创建一个Makefile文件。nginx的configure命令支持以下参数：</p>
+<ul>
+<li><code>--prefix=*path*</code> 定义一个目录，存放服务器上的文件 ，也就是nginx的安装目录。默认使用 <code>/usr/local/nginx。</code></li>
+<li><code>--sbin-path=*path*</code> 设置nginx的可执行文件的路径，默认为 <code>*prefix*/sbin/nginx</code>.</li>
+<li><code>--conf-path=*path*</code> 设置在nginx.conf配置文件的路径。nginx允许使用不同的配置文件启动，通过命令行中的-c选项。默认为<code>*prefix*/conf/nginx.conf</code>.</li>
+<li><code>--pid-path=*path*  设置nginx.pid文件，将存储的主进程的进程号。安装完成后，可以随时改变的文件名 ， 在nginx.conf配置文件中使用 PID指令。默认情况下，文件名 为``*prefix*/logs/nginx.pid</code>.</li>
+<li><code>--error-log-path=*path*</code> 设置主错误，警告，和诊断文件的名称。安装完成后，可以随时改变的文件名 ，在nginx.conf配置文件中 使用 的error_log指令。默认情况下，文件名 为<code>*prefix*/logs/error.log</code>.</li>
+<li><code>--http-log-path=*path*</code> 设置主请求的HTTP服务器的日志文件的名称。安装完成后，可以随时改变的文件名 ，在nginx.conf配置文件中 使用 的access_log指令。默认情况下，文件名 为<code>*prefix*/logs/access.log</code>.</li>
+<li><code>--user=*name*</code> 设置nginx工作进程的用户。安装完成后，可以随时更改的名称在nginx.conf配置文件中 使用的 user指令。默认的用户名是nobody。</li>
+<li><code>--group=*name*</code> 设置nginx工作进程的用户组。安装完成后，可以随时更改的名称在nginx.conf配置文件中 使用的 user指令。默认的为非特权用户。</li>
+<li><code>--with-select_module</code> <code>--without-select_module 启用或禁用构建一个模块来允许服务器使用select()方法。该模块将自动建立，如果平台不支持的kqueue，epoll，rtsig或/dev/poll。</code></li>
+<li><code>--with-poll_module</code> <code>--without-poll_module</code> 启用或禁用构建一个模块来允许服务器使用poll()方法。该模块将自动建立，如果平台不支持的kqueue，epoll，rtsig或/dev/poll。</li>
+<li><code>--without-http_gzip_module</code> — 不编译压缩的HTTP服务器的响应模块。编译并运行此模块需要zlib库。</li>
+<li><code>--without-http_rewrite_module</code> 不编译重写模块。编译并运行此模块需要PCRE库支持。</li>
+<li><code>--without-http_proxy_module</code> — 不编译http_proxy模块。</li>
+<li><code>--with-http_ssl_module</code> — 使用https协议模块。默认情况下，该模块没有被构建。建立并运行此模块的OpenSSL库是必需的。</li>
+<li><code>--with-pcre=*path*</code> — 设置PCRE库的源码路径。PCRE库的源码（版本4.4 - 8.30）需要从PCRE网站下载并解压。其余的工作是Nginx的./ configure和make来完成。正则表达式使用在location指令和 ngx_http_rewrite_module 模块中。</li>
+<li><code>--with-pcre-jit</code> —编译PCRE包含“just-in-time compilation”（1.1.12中， pcre_jit指令）。</li>
+<li><code>--with-zlib=*path*</code> —设置的zlib库的源码路径。要下载从 zlib（版本1.1.3 - 1.2.5）的并解压。其余的工作是Nginx的./ configure和make完成。ngx_http_gzip_module模块需要使用zlib 。</li>
+<li><code>--with-cc-opt=*parameters*</code> — 设置额外的参数将被添加到CFLAGS变量。例如,当你在FreeBSD上使用PCRE库时需要使用:<code>--with-cc-opt=&quot;-I /usr/local/include。</code>.如需要需要增加 <code>select()支持的文件数量</code>:<code>--with-cc-opt=&quot;-D FD_SETSIZE=2048&quot;.</code></li>
+<li><code>--with-ld-opt=*parameters*</code> —设置附加的参数，将用于在链接期间。例如，当在FreeBSD下使用该系统的PCRE库,应指定:<code>--with-ld-opt=&quot;-L /usr/local/lib&quot;.</code></li>
+</ul>
+<p><strong>安装完成后，按照安装的参数，安装的启动目录在/usr/local/nginx</strong></p>
+<pre><code><code>[root@localhost nginx]# ls -l
+总用量 76
+drwxr-xr-x. 2 root root 4096 9月   8 09:46 conf
+-rw-r--r--. 1 root root 1077 9月   8 10:34 fastcgi.conf
+-rw-r--r--. 1 root root 1077 9月   8 10:34 fastcgi.conf.default
+-rw-r--r--. 1 root root 1007 9月   8 10:34 fastcgi_params
+-rw-r--r--. 1 root root 1007 9月   8 10:34 fastcgi_params.default
+drwxr-xr-x. 2 root root   40 9月   8 09:46 html
+-rw-r--r--. 1 root root 2837 9月   8 10:34 koi-utf
+-rw-r--r--. 1 root root 2223 9月   8 10:34 koi-win
+drwxr-xr-x. 2 root root   41 9月   8 10:37 logs
+-rw-r--r--. 1 root root 5231 9月   8 10:34 mime.types
+-rw-r--r--. 1 root root 5231 9月   8 10:34 mime.types.default
+-rw-r--r--. 1 root root 2656 9月   8 10:34 nginx.conf
+-rw-r--r--. 1 root root 2656 9月   8 10:34 nginx.conf.default
+-rw-r--r--. 1 root root    6 9月   8 10:37 nginx.pid
+drwxr-xr-x. 2 root root   36 9月   8 10:34 sbin
+-rw-r--r--. 1 root root  636 9月   8 10:34 scgi_params
+-rw-r--r--. 1 root root  636 9月   8 10:34 scgi_params.default
+-rw-r--r--. 1 root root  664 9月   8 10:34 uwsgi_params
+-rw-r--r--. 1 root root  664 9月   8 10:34 uwsgi_params.default
+-rw-r--r--. 1 root root 3610 9月   8 10:34 win-utf
+[root@localhost nginx]# pwd
+/usr/local/nginx
+</code></code></pre>
+<h3 id="启动nginx服务">启动Nginx服务:</h3>
+<p>由于CentOS-7防火墙不开发端口，所以在本地测试中，可以选择关闭防火墙或者允许开发80端口</p>
+<h4 id="centos防火墙">CentOS防火墙</h4>
+<pre><code><code># systemctl status firewalld     ==&gt; 防火墙状态
+# systemctl start firewalld      ==&gt; 开启防火墙
+# systemctl stop firewalld       ==&gt; 关闭防火墙
+# systemctl restart firewalld    ==&gt; 重启防火墙
+# firewall-cmd --reload          ==&gt; 防火墙重载
+# firewall-cmd --permanent --zone=public --add-port=80/tcp
+    permanent: 永久有效
+    zone：作用域
+    --add-port=80/tcp：添加-端口=端口/通信协议</code></code></pre>
+<p><em>开放端口或关闭防火墙后就可以启动nginx服务</em></p>
+<h4 id="服务启动">服务启动</h4>
+<pre><code><code>[root@localhost nginx]# netstat -ano | grep 80
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      off (0.00/0/0)
+unix  3      [ ]         STREAM     CONNECTED     80900    
+unix  3      [ ]         STREAM     CONNECTED     80899    
+[root@localhost nginx]# /usr/local/nginx/sbin/nginx
+nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+nginx: [emerg] still could not bind()
+</code></code></pre>
+<p><em>通过netstat查看端口网络状态，是否有服务占用80端口；通过调用nginx的启动目录实现nginx服务启动</em></p>
+<p><img src="./images/Linux下PHP+Nginx环境搭建0.jpg" /></p>
+<p><em>如图：启动成功</em></p>
+<h4 id="nginx服务维护">Nginx服务维护</h4>
+<p>为了避免每次开机手动启动，可以使用命令脚本，注册服务，开机自启动等</p>
+<p>创建nginx启动命令脚本</p>
+<pre><code><code>`vi /etc/init.d/nginx`</code></code></pre>
+<p>插入以下内容, 注意修改PATH和NAME字段, 匹配自己的安装路径 (这段是从网上copy的)</p>
+<pre><code><code>`#! /bin/bash``# chkconfig: - 85 15``PATH=/usr/local/nginx``DESC=``&quot;nginx daemon&quot;``NAME=nginx``DAEMON=$PATH/sbin/$NAME``CONFIGFILE=$PATH/$NAME.conf``PIDFILE=$PATH/logs/$NAME.pid``SCRIPTNAME=/etc/init.d/$NAME``set` `-e``[ -x ``&quot;$DAEMON&quot;` `] || exit 0``do_start() {``$DAEMON -c $CONFIGFILE || echo -n ``&quot;nginx already running&quot;``}``do_stop() {``$DAEMON -s stop || echo -n ``&quot;nginx not running&quot;``}``do_reload() {``$DAEMON -s reload || echo -n ``&quot;nginx can&#39;t reload&quot;``}``case` `&quot;$1&quot;` `in``start)``echo -n ``&quot;Starting $DESC: $NAME&quot;``do_start``echo ``&quot;.&quot;``;;``stop)``echo -n ``&quot;Stopping $DESC: $NAME&quot;``do_stop``echo ``&quot;.&quot;``;;``reload|graceful)``echo -n ``&quot;Reloading $DESC configuration...&quot;``do_reload``echo ``&quot;.&quot;``;;``restart)``echo -n ``&quot;Restarting $DESC: $NAME&quot;``do_stop``do_start``echo ``&quot;.&quot;``;;``*)``echo ``&quot;Usage: $SCRIPTNAME {start|stop|reload|restart}&quot;` `&gt;&amp;2``exit 3``;;``esac``exit 0`</code></code></pre>
+<p>设置执行权限</p>
+<pre><code><code>`chmod a+x /etc/init.d/nginx`</code></code></pre>
+<p>注册成服务</p>
+<pre><code><code>`chkconfig --add nginx`</code></code></pre>
+<p>设置开机启动</p>
+<pre><code><code>`chkconfig nginx ``on`</code></code></pre>
+<p>重启, 查看nginx服务是否自动启动</p>
+<pre><code><code>`shutdown -h 0 -r``ss -apn|grep nginx`</code></code></pre>
+<p>对nginx服务执行停止/启动/重新读取配置文件操作</p>
+<pre><code><code>`#启动nginx服务``systemctl start nginx.service``#停止nginx服务``systemctl stop nginx.service``#重启nginx服务``systemctl restart nginx.service``#重新读取nginx配置(这个最常用, 不用停止nginx服务就能使修改的配置生效)``systemctl reload nginx.service`</code></code></pre>
+<h2 id="mysql安装">MySQL安装：</h2>
+<h3 id="linux-yum-rpm">Linux yum-rpm</h3>
+<pre><code><code>[root@localhost src]# rpm -qa |grep mysql
+
+[root@localhost src]# wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+
+[root@localhost src]# rpm -ivh mysql-community-release-el7-5.noarch.rpm
+
+[root@localhost src]# yum dpdate
+
+[root@localhost src]# yum install mysql-server 
+
+
+[root@localhost src]# chown mysql:mysql -R /var/lib/mysql   设置权限
+
+[root@localhost src]# mysqld --initialize 初始化mysql
+
+[root@localhost src]# systemctl start mysqld  启动mysql
+</code></code></pre>
+<h2 id="php环境">PHP环境：</h2>
+<h3 id="编译安装php-fpm">编译安装php-fpm</h3>
+<p>PHP-FPM是一个PHP FastCGI管理器，是只用于PHP的</p>
+<ul>
+<li>安装依赖包</li>
+</ul>
+<pre><code><code># yum -y install libmcrypt-devel mhash-devel libxslt-devel \
+libjpeg libjpeg-devel libpng libpng-dvevl freetype freetype-devel libxml2 libxml2-devel \
+zlib zlib-devel glibc glibc-devel glib2 glib2-devel bzip2 bzip2-devel \
+ncurses ncurses-devel curl curl-devel e2fsprogs e2fsprogs-devel \
+krb5 krb5-devel libidn libidn-devel openssl openssl-devel
+
+
+# yum -y install libzip 
+# wget http://103.40.19.56/lnmp/libzip-1.3.2.tar.gz 
+# tar -zxvf libzip-1.3.2.tar.gz cd libzip-1.3.2 
+# ./configure 
+# make &amp;&amp; make install
+
+# wget ftp://mcrypt.hellug.gr/pub/crypto/mcrypt/attic/libmcrypt/libmcrypt-2.5.7.tar.gz
+# tar -zxvf libmcrypt-2.5.7.tar.gz
+# cd libmcrypt-2.5.7
+# ./configure  –prefix=/usr/local
+# make &amp;&amp; make install</code></code></pre>
+<ul>
+<li>源码安装PHP：</li>
+</ul>
+<pre><code><code># cd /usr/local/src
+# wget http://php.net/get/php-5.6.27.tar.gz/from/a/mirror
+# tar -zxvf php-5.6.27.tar.gz
+# ./configure --prefix=/usr/local/php  --enable-fpm --with-mcrypt \
+--enable-mbstring --enable-pdo --with-curl --disable-debug  --disable-rpath \
+--enable-inline-optimization --with-bz2  --with-zlib --enable-sockets \
+--enable-sysvsem --enable-sysvshm --enable-pcntl --enable-mbregex \
+--with-mhash --enable-zip --with-pcre-regex --with-pdo-mysql --with-mysqli \
+--with-gd --with-jpeg-dir --with-freetype-dir --enable-calendar\
+# make &amp;&amp; make install</code></code></pre>
+<blockquote>
+<p>我在执行configure时，发生报错：Please reinstall the libzip distribution 于是我删除了旧版的libzip“<u>yum remove libzip</u>”，之后下载libzip源码包进行本地执行configure+make&amp;&amp;make install</p>
+</blockquote>
+<p>执行libzip的安装：</p>
+<pre><code><code># wget https://libzip.org/download/libzip-1.5.2.tar.gz
+# tar -zxf libzip-1.2.0.tar.gz
+
+# cd libzip-1.2.0
+
+# ./configure
+
+# make &amp;&amp; make install</code></code></pre>
+<blockquote>
+<p>PHP安装新问题：安装执行configure时报错</p>
+</blockquote>
+<pre><code><code>configure: error: off_t undefined; check your library configuration</code></code></pre>
+<blockquote>
+<p>解决方法：</p>
+</blockquote>
+<pre><code><code>vim /etc/ld.so.conf 
+#添加如下几行
+/usr/local/lib64
+/usr/local/lib
+/usr/lib
+/usr/lib64 
+#保存退出
+:wq
+ldconfig -v # 执行命令，使之生效</code></code></pre>
+<blockquote>
+<p>报错：configure: WARNING: unrecognized options: --with-mcrypt</p>
+</blockquote>
+<blockquote>
+<p>解决方法：PHP 7.2+不支持 --with-mcrypt ; --enable-gd-native-ttf</p>
+</blockquote>
+<pre><code><code># ./configure --prefix=/usr/local/php  --enable-fpm \
+--enable-mbstring --enable-pdo --with-curl --disable-debug  --disable-rpath \
+--enable-inline-optimization --with-bz2  --with-zlib --enable-sockets \
+--enable-sysvsem --enable-sysvshm --enable-pcntl --enable-mbregex \
+--with-mhash --enable-zip --with-pcre-regex --with-pdo-mysql --with-mysqli \
+--with-gd --with-jpeg-dir --with-freetype-dir --enable-calendar\</code></code></pre>
+<p><strong>其它错误可以参考<a href="https://blog.csdn.net/qq_24334941/article/details/79808823">百度/Google解决(常见php安装的方案)</a>！</strong></p>
+<p><strong>至此！PHP-fpm安装的基本流程结束了，下一步就需要配置文件</strong></p>
+<h3 id="用户配置文件">用户配置文件</h3>
+<ul>
+<li>为php提供配置文件：php.ini</li>
+</ul>
+<pre><code><code># cp php.ini-production /usr/local/php/lib/php.ini</code></code></pre>
+<ul>
+<li>为php-fpm提供配置文件</li>
+</ul>
+<pre><code><code># cd /usr/local/php
+# cp etc/php.fpm.conf.default etc/php-fpm.conf
+# vi etc/php-fpm.conf</code></code></pre>
+<p>vi打开php-fpm.conf文件：</p>
+<p>将文件的尾部的索引；修改成实际的目录</p>
+<pre><code><code>include=/usr/local/php/etc/php-fpm.d/*.conf</code></code></pre>
+<p>添加用户和组：</p>
+<pre><code><code>useradd mirror
+groupadd -g mirror mirror</code></code></pre>
+<p>默认情况下，etc/php-fpm.d/目录下有一个“www .conf.defalut”用户配置文件</p>
+<pre><code><code># cp /usr/local/php/etc/php-fpm.d/www.conf.default /usr/local/php/etc/php-fpm.d/www.conf
+# vi /usr/local/php/etc/php-fpm.d/www.conf</code></code></pre>
+<p>修改“www.conf&quot;文件中的user和group的value；添加用户和组</p>
+<pre><code><code>user = mirror
+group = mirror</code></code></pre>
+<ul>
+<li>启动php-fpm服务</li>
+</ul>
+<pre><code><code># /usr/local/php/sbin/php-fpm
+# ps aux | grep php-fpm [验证服务启动]
+# netstat -tln | grep 9000 [验证网络端口是否使用]</code></code></pre>
+<pre><code><code>[root@localhost /]# ps aux | grep php-fpm
+root      41831  0.0  0.3 221264  6220 ?        Ss   08:54   0:00 php-fpm: master process (/usr/local/php/etc/php-fpm.conf)
+mirror    41832  0.0  0.2 221264  5748 ?        S    08:54   0:00 php-fpm: pool www
+mirror    41833  0.0  0.2 221264  5748 ?        S    08:54   0:00 php-fpm: pool www
+root      41835  0.0  0.0 110292   916 pts/0    R+   08:54   0:00 grep --color=auto php-fpm
+[root@localhost /]# netstat -tln | grep 9000
+tcp        0      0 127.0.0.1:9000          0.0.0.0:*               LISTEN   </code></code></pre>
+<p><strong>至此！php-fpm服务启动成功！</strong></p>
+<h3 id="nginxphp环境配置">Nginx+PHP环境配置</h3>
+<ul>
+<li>打开nginx.conf（nginx配置文件）</li>
+</ul>
+<pre><code><code>[root@localhost nginx]# vi ./nginx.conf
+
+
+#user  nobody;
+worker_processes  1;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #log_format  main  &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
+    #                  &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;
+    #                  &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;
+
+    #access_log  logs/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    server {
+        listen       80;
+        server_name  localhost;
+
+        #charset koi8-r;
+
+        #access_log  logs/host.access.log  main;
+
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+        #
+        #location ~ \.php$ {
+        #    proxy_pass   http://127.0.0.1;
+        #}
+
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        #
+        #location ~ \.php$ {
+        #    root           html;
+        #    fastcgi_pass   127.0.0.1:9000;
+        #    fastcgi_index  index.php;
+        #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+        #    include        fastcgi_params;
+        #}
+
+        # deny access to .htaccess files, if Apache&#39;s document root
+        # concurs with nginx&#39;s one
+        #
+        #location ~ /\.ht {
+        #    deny  all;
+        #}
+    }
+
+
+    # another virtual host using mix of IP-, name-, and port-based configuration
+    #
+    #server {
+    #    listen       8000;
+    #    listen       somename:8080;
+    #    server_name  somename  alias  another.alias;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+
+
+    # HTTPS server
+    #
+    #server {
+    #    listen       443 ssl;
+    #    server_name  localhost;
+
+    #    ssl_certificate      cert.pem;
+    #    ssl_certificate_key  cert.key;
+
+    #    ssl_session_cache    shared:SSL:1m;
+    #    ssl_session_timeout  5m;
+
+    #    ssl_ciphers  HIGH:!aNULL:!MD5;
+    #    ssl_prefer_server_ciphers  on;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+}</code></code></pre>
+<p><strong>修改server配置块中的location和php后端请求配置块</strong></p>
+<pre><code><code>  server {
+        listen       80;
+        server_name  localhost;
+
+        #charset koi8-r;
+
+        #access_log  logs/host.access.log  main;
+
+        location / {
+            root   html;
+            index  index.html index.htm index.php
+        }
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+        #
+        #location ~ \.php$ {
+        #    proxy_pass   http://127.0.0.1;
+        #}
+
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        #
+        location ~ \.php$ {
+            root           html;
+            fastcgi_pass   127.0.0.1:9000;
+            fastcgi_index  index.php;
+            fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+            include        fastcgi_params;
+        }
+
+        # deny access to .htaccess files, if Apache&#39;s document root
+        # concurs with nginx&#39;s one
+        #
+        #location ~ /\.ht {
+        #    deny  all;
+        #}
+    }
+</code></code></pre>
+<p><em>在location配置块中添加index.php首页</em></p>
+<p><em>php请求和后端php-fpm模块进行通信，需要配置location ~ .php$配置块</em></p>
+<p>​ root：配置php程序文件的根目录</p>
+<p>*** 修改配置文件的第一行：”user“属性为我们之前配置的用户**，表示nginx的权限</p>
+<p><strong>至此！我们的Nginx和php的环境完成简单的配置！</strong></p>
+<h3 id="大功告成">大功告成</h3>
+<h4 id="启动步骤">启动步骤：</h4>
+<ul>
+<li><p>启动Nginx服务</p>
+<pre><code><code># /usr/local/nginx/sbin/nginx</code></code></pre></li>
+<li><p>启动php-fpm服务</p>
+<pre><code><code># /usr/local/php/sbin/php-fpm</code></code></pre></li>
+<li><p>启动mysql服务</p>
+<pre><code><code># systemctl start mysqld</code></code></pre></li>
+</ul>
+<h4 id="phpinfo">phpinfo():</h4>
+<p><img src="./images/Linux下PHP+Nginx环境搭建1.jpg" /></p>
+<p>在Nginx的目录html中添加一个php文件：”index.php“</p>
+<pre class="php"><code>&lt;?php
+    phpinfo();
+?&gt;</code></code></pre>
+<h4 id="测试数据库连接">测试数据库连接：</h4>
+<p>编写一个连接数据库行为的php文件：”mysql.php“</p>
+<p><em>php和mysql之间的连接操作依靠的是”mysqli“</em></p>
+<pre><code><code>&lt;?php
+    $conn = mysqli_connect(&quot;127.0.0.1&quot;,&quot;root&quot;,&quot;926498&quot;);
+    if(! $conn ) {
+        echo &quot;连接失败&quot;.mysqli_connect_error();
+    } else {
+        echo &quot;连接成功&quot;;
+    }
+?&gt;</code></code></pre>
+<p><strong>至此！PHP+Nginx+MySQL环境完成了基本的搭建!</strong></p>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

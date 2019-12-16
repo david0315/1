@@ -1,0 +1,105 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境</center></div><div class='banquan'>原文出处:本文由博客园博主阿安安提供。<br/>
+原文连接:https://www.cnblogs.com/ydwzhang/p/11111508.html</div><br>
+    <p>配置环境：</p>
+<p>操作系统：Windows Server 2003 sp2企业版</p>
+<p>Web服务器：系统自带的IIS6.0</p>
+<p>所需工具：</p>
+<p>PHP：php-5.2.12-Win32.zip(官方网址:<a href="http://www.php.net/">http://www.php.net</a>)</p>
+<p>数据库：mysql-5.0.22-win32.zip(官方网址:<a href="http://www.mysql.com/">http://www.mysql.com</a>)</p>
+<p>数据库管理：phpMyAdmin-3.2.5-all-languages.zip(官方网址:<a href="http://www.phpmyadmin.net/">http://www.phpmyadmin.net</a>)</p>
+<p>注：我这里用的基本上都是最新版本的软件，未必是最好用的，但是比较好下到的。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>配置过程：</p>
+<p>首先我们来安装PHP:</p>
+<ol>
+<li>把php-5.2.12-Win32.zip解压到任意一个路径下，我这里解压到了D:\php</li>
+<li>把D:\php\里的php.ini-recommended重命名为:php.ini</li>
+<li>我们来修改一下PHP的配置文件php.ini</li>
+</ol>
+<ul>
+<li>找到470行的register_globals = Off 改为:On</li>
+<li>找到542行的extension_dir = "./" 路径改为:" D:\php\ext\"，这里要根据你把php-5.2.12-Win32.zip解压的路径来的填</li>
+<li>找到677行的; extension=php_mbstring.dll 放开前面的注释，删掉";"</li>
+<li>找到678行的; extension=php_mcrypt.dll 放开前面的注释，删掉";"</li>
+<li>找到684行的; extension=php_mysql.dll 放开前面的注释，删掉";</li>
+</ul>
+<ol><ol>
+<li>
+<src>下来我们来配置IIS，让它能够解析PHP
+<ol>
+<li>打开Internet 信息服务(IIS)管理器=&gt;服务器，反手键点击"Web服务扩展"，再点击"添加一个新的Web服务扩展<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境0.jpg" alt="" /><br />如图配置，点击确定。</li>
+<li>点击网站=&gt;反手键点击"默认网站"=&gt;点击属性=&gt;点击"主目录"选项卡=&gt;点击"配置"按钮=&gt;点击"映射"选项卡=&gt;点击应用程序扩展的"添加"按钮<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境1.jpg" alt="" /><br />如图配置，点击确定。</li>
+<li>我们在IIS默认根目录wwwroot下新建一个phpinfo.php文件，来检测一下，我们是否安装成功了。<br />在phpinfo.php中写入：&lt;?php phpinfo(); ?&gt;</li>
+<li>在浏览器中输入:http://localhost/phpinfo.php<br />这时我们就可以看到如下页面&darr;<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境2.jpg" alt="" /><br />证明我们的IIS可以解析PHP了。</li>
+<li>
+<src>不过我们通过浏览该页面可以发现libmysql.dll，却未被加载，为解决此问题，我们把libmysql.dll拷贝到C:\WINDOWS\System32\下，并且在"Configuration File (php.ini) Path"这一项中看出php.ini的路径是在C:\WINDOWS下，所以我们把php.ini文件给放到它指定的C:\WINDOWS这个路径下。重新启动电脑后再打开http://localhost/phpinfo.php这个页面我们可以找到如下图&darr;<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境3.jpg" alt="" /><br />此时证明我们的libmysql.dll已经加载成功了。OK！
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>下面我们就来安装MySql了:</p>
+<p>MySql的安装，非常简单，这里我就不再敷述。下面图示了我的配置:</p>
+<p>1.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境4.jpg" alt="" /></p>
+<p>2.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境5.jpg" alt="" /></p>
+<p>3.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境6.jpg" alt="" /></p>
+<p>4.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境7.jpg" alt="" /></p>
+<p>5.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境8.jpg" alt="" /></p>
+<p>6.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境9.jpg" alt="" /></p>
+<p>7.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境10.jpg" alt="" /></p>
+<p>8.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境11.jpg" alt="" /></p>
+<p>9.<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境12.jpg" alt="" /><br />安装与配置MySql非常简单，网上也有不少的教程，写的都非常好，我这里只是大概让大家看一下我的配置。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>最后，我们来配置一下PHPMyAdmin:</p>
+<ol>
+<li>将phpMyAdmin-3.2.5-all-languages.zip解压到wwwroot下，为了便于管理，我们将文件夹名字改为phpMyAdmin。</li>
+<li>把phpMyAdmin\libraries下的config.default.php，这个文件拷贝到phpMyAdmin下，并改名为config.inc.php。</li>
+<li>
+<src>在浏览器中输入:http://localhost/phpMyAdmin/index.php 如下图：&darr;<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境13.jpg" alt="" /><br />注：a.无法加载mcrypt扩展，请检查您的PHP配置。<br />b.必须启用Cookies才能登录。
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>下面我们就来解决这些问题：</p>
+<p>第一个问题a，是因为D:\php\&nbsp;libmcrypt.dll没有被加载，解决方法如libmysql.dll，把libmcrypt.dll拷贝到C:\WINDOWS\system32\下，重启电脑。</p>
+<p>第二个问题b，是因为C:\Inetpub\wwwroot\phpMyAdmin下的config.inc.php配置文件的第177行$cfg['Servers'][$i]['auth_type'] = 'cookie';没有生效，重启电脑后就生效了，如果不是cookie，就改为cookie。</p>
+<p>&nbsp;</p>
+<p>这时我们再来浏览一下http://localhost/phpMyAdmin/index.php，如下图：&darr;<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境14.jpg" alt="" /></p>
+<p>&nbsp;</p>
+<p>这时我们输入数据库的用户名和密码，我这里的用户名是:root，密码是:123123，点击执行。</p>
+<p>&nbsp;</p>
+<p>这时我也遇到了一点小麻烦，在点击执行的时候它又回到了这个登录页面。<br />我的解决方法是在输入完用户名和密码点击执行的时候，连续点击，便可进入，进入后有时会提示一些这样或那样的错误，不要紧，多刷新几次后再登录后就好了。我也没有找到是什么原因，也可能是新的软件存在一些BUG吧！到这里我们的环境就搭建成功了！欢迎朋友们批评指教！<br /><img src="./images/Windows Server 2003下配置IIS6.0+php5+MySql5+PHPMyAdmin环境15.jpg" alt="" /></p>
+
+</li>
+
+</ol></li>
+
+</ol></li>
+
+</ol></ol>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,285 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修discuss!X3.4 帖子显示昵称而不是用户名的解决办法' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>discuss!X3.4 帖子显示昵称而不是用户名的解决办法</center></div><div class='banquan'>原文出处:本文由博客园博主早上六点半遇见五月天提供。<br/>
+原文连接:https://www.cnblogs.com/pawn-i/p/10784192.html</div><br>
+    <p>问题：dedecmsV5.7和discuz!X3.4整合之后，实现免激活登陆之后，从dede过来的用户在discuz 直接展示的用户名，因为我们的用户名是手机号，所以不想帖子都展示的是用户名。</p>
+<p>因为我们dedecms注册有一个笔名/昵称，所以就想把昵称展示出来而不是直接展示用户名。</p>
+<p>思路：参考我之前发的免激活登陆，在x_common_member表里添加一个字段nickname varchar(50)，在免激活的登陆的代码中，多添加一个nickname的值，然后修改discuz帖子列表，帖子详情页的用户名改成nickname。</p>
+<p>涉及文件比较多，篇幅可能不较长。</p>
+<p>解决办法：</p>
+<p><span style="background-color: #ffff00;"><strong>在discuz的数据库的x_common_member表中添加一个字段nickname varchar(50)。</strong></span></p>
+<p><span style="background-color: #99cc00;"><strong>dedecms项目中修改：</strong></span></p>
+<p><strong>1.dedecms会员注册时</strong></p>
+<ul>
+<li>打开member/reg_new.php(会员注册页面)，查找</li>
+</ul>
+<pre><code>　　　 uc_user_register($userid, $pwd, $email），在后面在添加一个参数$uname</code></pre>
+<p>　　　　$uname 是我们注册时候的昵称字段</p>
+<pre><code>　　　　uc_user_register($userid, $pwd, $email,$uname）</code></pre>
+<ul>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">#</span><span style="color: #008000;">api{{</span>
+<span style="color: #0000ff;">if</span>(<span style="color: #008080;">defined</span>('UC_API') &amp;&amp; @<span style="color: #0000ff;">include_once</span> DEDEROOT.'/uc_client/client.php'<span style="color: #000000;">)
+{
+ </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 二次开发
+ * 新增昵称字段
+ * $uname
+ </span><span style="color: #008000;">*/</span>
+ <span style="color: #800080;">$uid</span> = uc_user_register(<span style="color: #800080;">$userid</span>, <span style="color: #800080;">$pwd</span>, <span style="color: #800080;">$email</span><strong>,<span style="color: #800080;">$uname</span></strong><span style="color: #000000;">);
+ </span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$uid</span> &lt;= 0<span style="color: #000000;">)
+{
+i    f(</span><span style="color: #800080;">$uid</span> == -1<span style="color: #000000;">)
+    {
+        ShowMsg(</span>"用户名不合法！","-1"<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">exit</span><span style="color: #000000;">();
+      }
+
+&hellip;&hellip;</span></code></pre>
+
+</li>
+</ul>
+<p><strong>2.dedecms会员登陆时</strong></p>
+<ul>
+<li>打开member/index_do.php,查找
+<pre><code>uc_user_register($userid, $pwd, $row['email']）</code></pre>
+</li>
+<li>
+<pre><code>多查找一个uname字段，将查出来的字段，传给</code></pre>
+</li>
+<li>
+<pre><code>uc_user_register($userid, $pwd, $row['email'],$row['uname']）</code></pre>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">//</span><span style="color: #008000;">当UC不存在该用而CMS存在,就注册一个.</span>
+<span style="color: #0000ff;">if</span>(<span style="color: #800080;">$rs</span><span style="color: #000000;">) {
+ </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+  * 二次开发
+  * 新增昵称
+　* 多查找一个`uname`字段　　　　
+  </span><span style="color: #008000;">*/</span>
+<span style="color: #800080;">     $row</span> = <span style="color: #800080;">$dsql</span>-&gt;GetOne("SELECT `email`<strong>,`uname`</strong> FROM #@__member WHERE userid='<span style="color: #800080;">$userid</span>'"<span style="color: #000000;">);
+
+</span><span style="color: #800080;">     $uid</span> = uc_user_register(<span style="color: #800080;">$userid</span>, <span style="color: #800080;">$pwd</span>, <span style="color: #800080;">$row</span>['email'],<strong><span style="color: #800080;">$row</span>['uname'</strong><span style="color: #000000;"><strong>]</strong>);
+　　　</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$uid</span> &gt; 0) <span style="color: #800080;">$ucsynlogin</span> = uc_user_synlogin(<span style="color: #800080;">$uid</span><span style="color: #000000;">);
+} </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+&hellip;&hellip;&hellip;<br /></span></code></pre>
+
+</li>
+</ul>
+<p>&nbsp;<strong>3.打开uc_client/client.php，找到uc_user_register方法</strong>（如果你用的是phpstorm的话，按住ctrl,点击uc_user_register($userid, $pwd, $email）方法名，就会跳转到uc_client/client.php里的uc_user_register方法这里。</p>
+<ul>
+<li>在$email，后面添加$nickname，形参（什么名字）</li>
+<li>并把它放在return 的数组里面</li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 二次开发
+ * 新增昵称字段
+ * $nickname
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">function</span> uc_user_register(<span style="color: #800080;">$username</span>, <span style="color: #800080;">$password</span>, <span style="color: #800080;">$email</span><strong>,<span style="color: #800080;">$nickname</span>=''</strong>, <span style="color: #800080;">$questionid</span> = '', <span style="color: #800080;">$answer</span> = ''<span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">call_user_func</span>(UC_API_FUNC, 'user', 'register', <span style="color: #0000ff;">array</span>('username'=&gt;<span style="color: #800080;">$username</span>, 'password'=&gt;<span style="color: #800080;">$password</span>, 'email'=&gt;<span style="color: #800080;">$email</span>, 'questionid'=&gt;<span style="color: #800080;">$questionid</span>, 'answer'=&gt;<span style="color: #800080;">$answer</span><strong>,'<span style="background-color: #ff6600;">nickname</span>'=&gt;<span style="color: #800080;">$nickname</span></strong><span style="color: #000000;"><strong>)</strong>);
+}</span></code></pre>
+
+</li>
+</ul>
+<p>&nbsp;<strong>4.打开uc_client/control/user.php，找到</strong>onregister()这个方法，</p>
+<ul>
+<li>在里面添加<strong>$nickname = $this-&gt;input('<span style="background-color: #ff6600;">nickname</span>');</strong></li>
+<li><strong><strong>在</strong></strong><span style="font-family: 'Courier New'; font-size: 12px;">$_ENV['user']-&gt;add_user($username, $password, $email, 0, $questionid, $answer</span><strong style="font-family: 'Courier New'; font-size: 12px;">,$nickname</strong><span style="font-family: 'Courier New'; font-size: 12px;">);</span></li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span><span style="color: #000000;"> onregister() {
+    </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">init_input();
+    </span><span style="color: #800080;">$username</span> = <span style="color: #800080;">$this</span>-&gt;input('username'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$password</span> =  <span style="color: #800080;">$this</span>-&gt;input('password'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$email</span> = <span style="color: #800080;">$this</span>-&gt;input('email'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$questionid</span> = <span style="color: #800080;">$this</span>-&gt;input('questionid'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$answer</span> = <span style="color: #800080;">$this</span>-&gt;input('answer'<span style="color: #000000;">);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*二次开发 新增昵称</span><span style="color: #008000;">*/</span>
+    <strong><span style="color: #800080; background-color: #ffff00;">$nickname</span> = <span style="color: #800080;">$this</span>-&gt;input('nickname'<span style="color: #000000;">);
+
+    </span></strong><span style="color: #0000ff;">if</span>((<span style="color: #800080;">$status</span> = <span style="color: #800080;">$this</span>-&gt;_check_username(<span style="color: #800080;">$username</span>)) &lt; 0<span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$status</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">if</span>((<span style="color: #800080;">$status</span> = <span style="color: #800080;">$this</span>-&gt;_check_email(<span style="color: #800080;">$email</span>)) &lt; 0<span style="color: #000000;">) {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$status</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #800080;">$uid</span> = <span style="color: #800080;">$_ENV</span>['user']-&gt;add_user(<span style="color: #800080;">$username</span>, <span style="color: #800080;">$password</span>, <span style="color: #800080;">$email</span>, 0, <span style="color: #800080;">$questionid</span>, <span style="color: #800080;">$answer</span><strong>,<span style="color: #800080; background-color: #ffff00;">$nickname</span></strong><span style="color: #000000;">);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$uid</span><span style="color: #000000;">;
+}</span></code></pre>
+
+</li>
+</ul>
+<p><strong>5.打开uc_client/model/user.php</strong></p>
+<ul>
+<li>查找<span style="font-family: 'Courier New'; font-size: 12px;">function add_user($username, $password, $email, $uid = 0, $questionid = '', $answer = ''）大概106行，添加一个$nickname的参数</span></li>
+<li><span style="font-family: 'Courier New';"><span style="font-size: 12px;">在免激活登陆代码中添加一个nickname</span></span></li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">function</span> add_user(<span style="color: #800080;">$username</span>, <span style="color: #800080;">$password</span>, <span style="color: #800080;">$email</span>, <span style="color: #800080;">$uid</span> = 0, <span style="color: #800080;">$questionid</span> = '', <span style="color: #800080;">$answer</span> = ''<strong>,<span style="color: #800080;">$nickname</span>=''</strong><span style="color: #000000;">) {
+    </span><span style="color: #800080;">$salt</span> = <span style="color: #008080;">substr</span>(<span style="color: #008080;">uniqid</span>(<span style="color: #008080;">rand</span>()), -6<span style="color: #000000;">);
+    </span><span style="color: #800080;">$password</span> = <span style="color: #008080;">md5</span>(<span style="color: #008080;">md5</span>(<span style="color: #800080;">$password</span>).<span style="color: #800080;">$salt</span><span style="color: #000000;">);
+    </span><span style="color: #800080;">$sqladd</span> = <span style="color: #800080;">$uid</span> ? "uid='".<span style="color: #008080;">intval</span>(<span style="color: #800080;">$uid</span>)."'," : ''<span style="color: #000000;">;
+    </span><span style="color: #800080;">$sqladd</span> .= <span style="color: #800080;">$questionid</span> &gt; 0 ? " secques='".<span style="color: #800080;">$this</span>-&gt;quescrypt(<span style="color: #800080;">$questionid</span>, <span style="color: #800080;">$answer</span>)."'," : " secques='',"<span style="color: #000000;">;
+    </span><span style="color: #800080;">$this</span>-&gt;db-&gt;query("INSERT INTO ".UC_DBTABLEPRE."members SET <span style="color: #800080;">$sqladd</span> username='<span style="color: #800080;">$username</span>', password='<span style="color: #800080;">$password</span>', email='<span style="color: #800080;">$email</span>', regip='".<span style="color: #800080;">$this</span>-&gt;base-&gt;onlineip."', regdate='".<span style="color: #800080;">$this</span>-&gt;base-&gt;<span style="color: #008080;">time</span>."', salt='<span style="color: #800080;">$salt</span>'"<span style="color: #000000;">);
+    </span><span style="color: #800080;">$uid</span> = <span style="color: #800080;">$this</span>-&gt;db-&gt;<span style="color: #000000;">insert_id();
+    </span><span style="color: #800080;">$this</span>-&gt;db-&gt;query("INSERT INTO ".UC_DBTABLEPRE."memberfields SET uid='<span style="color: #800080;">$uid</span>'"<span style="color: #000000;">);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+         * 二次开发
+         * 免激活的登录discuz
+         * 添加nickname
+         </span><span style="color: #008000;">*/</span>
+        <span style="color: #800080;">$regip</span> = <span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$regip</span>) ? <span style="color: #800080;">$this</span>-&gt;base-&gt;onlineip : <span style="color: #800080;">$regip</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;db-&gt;query("INSERT INTO ".UC_DBNAME.".x_common_member SET uid='<span style="color: #800080;">$uid</span>', username='<span style="color: #800080;">$username</span>', password='<span style="color: #800080;">$password</span>', email='<span style="color: #800080;">$email</span>', adminid='0', groupid='10', regdate='".<span style="color: #800080;">$this</span>-&gt;base-&gt;<span style="color: #008080;">time</span>."', credits='0', timeoffset='9999'<strong>,<span style="background-color: #ffff00;">nickname='<span style="color: #800080;">$nickname</span>'</span></strong>"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;db-&gt;query("INSERT INTO ".UC_DBNAME.".x_common_member_status SET uid='<span style="color: #800080;">$uid</span>', regip='<span style="color: #800080;">$regip</span>', lastip='<span style="color: #800080;">$regip</span>', lastvisit='".<span style="color: #800080;">$this</span>-&gt;base-&gt;<span style="color: #008080;">time</span>."', lastactivity='".<span style="color: #800080;">$this</span>-&gt;base-&gt;<span style="color: #008080;">time</span>."', lastpost='0', lastsendmail='0'"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;db-&gt;query("INSERT INTO ".UC_DBNAME.".x_common_member_profile SET uid='<span style="color: #800080;">$uid</span>'"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;db-&gt;query("INSERT INTO ".UC_DBNAME.".x_common_member_field_forum SET uid='<span style="color: #800080;">$uid</span>'"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;db-&gt;query("INSERT INTO ".UC_DBNAME.".x_common_member_field_home SET uid='<span style="color: #800080;">$uid</span>'"<span style="color: #000000;">);
+        </span><span style="color: #800080;">$this</span>-&gt;db-&gt;query("INSERT INTO ".UC_DBNAME.".x_common_member_count SET uid='<span style="color: #800080;">$uid</span>', extcredits1='0', extcredits2='0', extcredits3='0', extcredits4='0', extcredits5='0', extcredits6='0', extcredits7='0', extcredits8='0'"<span style="color: #000000;">);
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$uid</span><span style="color: #000000;">;
+    }</span></code></pre>
+
+</li>
+</ul>
+<p><strong>以上dedecms修改完之后，新用户登陆/注册dedecms的时候，就会在在discuz的会员表中添加基本信息，和nickname了！</strong></p>
+<p>&nbsp;</p>
+<hr />
+<p>&nbsp;</p>
+<p><strong>&nbsp;</strong></p>
+<p><strong>下面，修改一下discuz!X3.4中的一些模版文件</strong></p>
+<p><span style="background-color: #99cc00;"><strong><strong>在discuz!X3.4(样式用的是默认模版)中修改：</strong></strong></span><span><strong>&nbsp;</strong></span></p>
+<p>&nbsp;</p>
+<p><img src="./images/discuss!X3.4 帖子显示昵称而不是用户名的解决办法0.jpg" alt="" /></p>
+<p><strong>1.打开discuz项目下的template/default/common/header_userstatus.html</strong></p>
+<p><strong>查找：</strong></p>
+<pre><code>{$_G[member][username]}</code></pre>
+<p>修改为：</p>
+<pre><code>{$_G[member][nickname]}</code></pre>
+<p>　　</p>
+<p><img src="./images/discuss!X3.4 帖子显示昵称而不是用户名的解决办法1.jpg" alt="" width="1000" /></p>
+<p>2.帖子列表主要是从帖子表里查询出来的，所以不能单纯的把username改成nickname，所以我们需要找到查询帖子数据的php文件，把nickname 查询出来，放进数组里面。</p>
+<ul>
+<li><strong>打开source/module/forum/forum_forumdisplay.php</strong>，查询</li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$threadlist</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$thread</span>) {</code></pre>
+
+<p>&nbsp;大概在677行左右；在循环里添加下面四行代码：</p>
+</li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #0000ff;">foreach</span>(<span style="color: #800080;">$threadlist</span> <span style="color: #0000ff;">as</span> <span style="color: #800080;">$thread</span><span style="color: #000000;">) {
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 二次开发
+     * 查询该帖子的用户昵称
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #800080;">$nick</span> = C::t('common_member')-&gt;fetch_by_username(<span style="color: #800080;">$thread</span>['author'<span style="color: #000000;">]);
+    </span><span style="color: #800080;">$thread</span>['nickname'] = <span style="color: #800080;">$nick</span>['nickname'<span style="color: #000000;">];
+    </span><span style="color: #800080;">$lastnick</span> = C::t('common_member')-&gt;fetch_by_username(<span style="color: #800080;">$thread</span>['lastposter'<span style="color: #000000;">]);
+    </span><span style="color: #800080;">$thread</span>['lastnickname'] = <span style="color: #800080;">$lastnick</span>['nickname'<span style="color: #000000;">];
+
+&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</span></code></pre>
+
+</li>
+<li><strong>打开模版文件：template/default/forum/forum_forumdisplay.htm</strong>，查询</li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$thread</span>[author]</code></pre>
+
+</li>
+修改为：
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$thread</span>[nickname]</code></pre>
+
+</li>
+查询：
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$thread</span>[lastposter]</code></pre>
+
+</li>
+修改为：
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$thread</span>[lastnickname]</code></pre>
+
+</li>
+</ul>
+<pre><code><span style="font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;">&nbsp;</span></code></pre>
+<p><img src="./images/discuss!X3.4 帖子显示昵称而不是用户名的解决办法2.jpg" alt="" width="742" height="667" /></p>
+<p>3.帖子详情页的用户名改成昵称，也是需要修改php文件</p>
+<ul>
+<li>打开source/module/forum/forum_viewthread.php。在这个文件的任何地方都可做查询，我是在文件的40-45之间加的下面加粗的代码</li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">&hellip;&hellip;
+</span><span style="color: #0000ff;">if</span>(<span style="color: #800080;">$_G</span>['setting']['cachethreadlife'] &amp;&amp; <span style="color: #800080;">$_G</span>['forum']['threadcaches'] &amp;&amp; !<span style="color: #800080;">$_G</span>['uid'] &amp;&amp; <span style="color: #800080;">$page</span> == 1 &amp;&amp; !<span style="color: #800080;">$_G</span>['forum']['special'] &amp;&amp; <span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_GET</span>['do']) &amp;&amp; !<span style="color: #008080;">defined</span>('IN_ARCHIVER') &amp;&amp; !<span style="color: #008080;">defined</span>('IN_MOBILE'<span style="color: #000000;">)) {
+    viewthread_loadcache();
+}
+</span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+ * 二次开发
+ * 查询帖子的昵称
+ </span><span style="color: #008000;">*/</span>
+<strong><span style="color: #800080;">$nick</span> = C::t('common_member')-&gt;fetch_by_username(<span style="color: #800080;">$thread</span>['author'<span style="color: #000000;">]);
+</span><span style="color: #800080;">$thread</span>['nickname']=<span style="color: #800080;">$nick</span>['nickname'<span style="color: #000000;">];
+</span></strong><span style="color: #800080;">$threadtableids</span> = !<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_G</span>['cache']['threadtableids']) ? <span style="color: #800080;">$_G</span>['cache']['threadtableids'] : <span style="color: #0000ff;">array</span><span style="color: #000000;">();
+&hellip;&hellip;</span></code></pre>
+
+<p>&nbsp;</p>
+</li>
+<li>
+<p>打开template/default/forum/viewthread_node.htm，把所有查找：</p>
+</li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$post</span>[author]</code></pre>
+
+<p>&nbsp;</p>
+<p>&nbsp;把查找到的所有的（<strong>超链接里面（2处）的别改</strong>）都修改为（一共6处）：</p>
+</li>
+<li>
+<src class="cnblogs_code">
+<pre><code><span style="color: #800080;">$post</span>[nickname]</code></pre>
+
+<p>&nbsp;</p>
+</li>
+</ul>
+<hr />
+<p>&nbsp;</p>
+<p><strong>以上，就全部修改好了</strong>&nbsp;！</p>
+<p>&nbsp;</p>
+<p>我不是在修改的过程中记录的，做完之后才改的（应该流程过程是没问题），如果有什么问题，大家可以留言，我就及时更改的！</p>
+<p>如果有更简单的方法，也可以分享一下！</p>
+<p>&nbsp;</p>
+<p>好了，我要去看discuz的文档了！</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<hr />
+<p>2019/7/11 后来发现改的地方挺多的，不止这三个地方&hellip;&hellip;</p>
+<p>有什么好的方法可以分享一下</p>
+<p>大家有什么好的</p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

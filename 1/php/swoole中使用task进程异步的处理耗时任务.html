@@ -1,0 +1,159 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修swoole中使用task进程异步的处理耗时任务' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>swoole中使用task进程异步的处理耗时任务</center></div><div class='banquan'>原文出处:本文由博客园博主我爱读活法提供。<br/>
+原文连接:https://www.cnblogs.com/wadhf/p/11823293.html</div><br>
+    <p>我们知道，swoole中有两大进程，分别是 master 主进程和 manager 管理进程。</p>
+<p>其中 master 主进程中会有一个主 reactor 线程和多个 reactor 线程，主要的作用就是用来维护TCP连接，处理网络IO，收发数据。</p>
+<p>而 manager 管理进程，作用则是 fork 和管理 worker 和 task 进程。</p>
+<p>worker 进程的作用是接收 reactor 线程传递的数据，并处理数据，返回处理结果给 reactor 线程。</p>
+<p>task 进程的作用是处理一些相对耗时的任务，task 与 worker 进程是独立的，不会影响 worker 进程处理客户端的请求。</p>
+<p>&nbsp;</p>
+<p>一、task 进程的应用场景：</p>
+<p>1、相对耗时的邮件群发，比如某某活动，需要给100W用户发送活动邮件。</p>
+<p>2、推送某些大V的动态，比如某大V发了条新消息，粉丝需要及时获取到该动态。</p>
+<p>&nbsp;</p>
+<p>二、worker 与 task 的相互关系：</p>
+<p>1、worker 进程中能过调用 task() 来投递任务，task 进程中 通过 onTask 事件来响应投递来的任务。</p>
+<p>2、task 进程中 通过 直接返回 或 调用&nbsp;finish() 来告诉 worker 进程任务处理完毕，worker 进程中 通过&nbsp;onFinish 事件响应任务完成。</p>
+<p>&nbsp;</p>
+<p>三、使用 task 的前题：</p>
+<p>1、在 Server 中 配置&nbsp;task_worker_num 数量。</p>
+<p>2、设置 Server 的&nbsp;onTask 和 onFinish 事件回调函数。</p>
+<p>&nbsp;</p>
+<p>四、简单的使用task进行累加和的计算例子</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+ 
+</span><span style="color: #800080;">$server</span> = <span style="color: #0000ff;">new</span> swoole_server('0.0.0.0', 6666<span style="color: #000000;">);
+ 
+</span><span style="color: #800080;">$server</span>-&gt;<span style="color: #000000;">set([
+    </span>'worker_num' =&gt; 2,
+    'task_worker_num' =&gt; 16,<span style="color: #000000;">
+]);
+ 
+</span><span style="color: #800080;">$server</span>-&gt;on('WorkerStart', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$worker_id</span><span style="color: #000000;">) {
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">注意这里，我们通过taskworker来判断是task进程还是worker进程
+    //需要在worker进程中调用task()，不然会报出警告
+    //这里会执行两遍，因为我们设置了worker_num数为2</span>
+    <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$server</span>-&gt;<span style="color: #000000;">taskworker) {
+        </span><span style="color: #0000ff;">echo</span> '投递任务开始...', <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">投递32个累加计算任务给16个task进程</span>
+        <span style="color: #0000ff;">for</span> (<span style="color: #800080;">$ix</span> = 0; <span style="color: #800080;">$ix</span> &lt; 32; <span style="color: #800080;">$ix</span>++<span style="color: #000000;">) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">注意这里的投递是异步的</span>
+            <span style="color: #800080;">$server</span>-&gt;task([<span style="color: #008080;">mt_rand</span>(1, 100), <span style="color: #008080;">mt_rand</span>(1000, 9999<span style="color: #000000;">)]);
+        }
+        </span><span style="color: #0000ff;">echo</span> '投递任务结束...', <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+    }
+});
+ 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">server服务必须要有onReceive回调</span>
+<span style="color: #800080;">$server</span>-&gt;on('Receive', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$reactor_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+ 
+});
+ 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">注意，task进程完全是同步阻塞模式的</span>
+<span style="color: #800080;">$server</span>-&gt;on('Task', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$task_id</span>, <span style="color: #800080;">$src_worker_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">echo</span> "task {<span style="color: #800080;">$task_id</span>} 进程正在工作...", <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$start</span> = <span style="color: #800080;">$data</span>[0<span style="color: #000000;">];
+    </span><span style="color: #800080;">$end</span> = <span style="color: #800080;">$data</span>[1<span style="color: #000000;">];
+    </span><span style="color: #800080;">$total</span> = 0<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">for</span> (; <span style="color: #800080;">$start</span> &lt;= <span style="color: #800080;">$end</span>; <span style="color: #800080;">$start</span>++<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$total</span> += <span style="color: #800080;">$start</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">echo</span> "task {<span style="color: #800080;">$task_id</span>} 进程完成工作...", <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$total</span><span style="color: #000000;">;
+});
+ 
+</span><span style="color: #800080;">$server</span>-&gt;on('Finish', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$task_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">echo</span> "task {<span style="color: #800080;">$task_id</span>} 进程处理完成, 结果为 {<span style="color: #800080;">$data</span>}", <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+});
+ 
+</span><span style="color: #800080;">$server</span>-&gt;start();</code></pre>
+
+<p>注意，我们通过调用 task() 往任务池中投递任务，swoole 底层会轮询的投递任务到各个 task 进程。</p>
+<p>当你投递任务的数量超过 onTask 的处理速度，这会导致任务池被塞满，进而导致 worker 进程发生阻塞，所以需合理设置&nbsp;task_worker_num 数量和处理速度之间的关系。</p>
+<p>当然，我们也可以人为的把任务投递到指定的 task 进程。task() 函数的第二个参数可以指定要投递的 task 进程ID，ID范围为 0 到 (task_worker_num - 1)。</p>
+<p>&nbsp;</p>
+<p>五、对任务进行切分，人为控制投递到 task 进程</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+ 
+</span><span style="color: #800080;">$server</span> = <span style="color: #0000ff;">new</span> swoole_server('0.0.0.0', 6666<span style="color: #000000;">);
+ 
+</span><span style="color: #800080;">$server</span>-&gt;<span style="color: #000000;">set([
+    </span>'worker_num' =&gt; 1,
+    'task_worker_num' =&gt; 10,<span style="color: #000000;">
+]);
+ 
+</span><span style="color: #800080;">$server</span>-&gt;on('WorkerStart', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$worker_id</span><span style="color: #000000;">) {
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">为了方便演示，把worker_num设置为1，这里只会执行一次</span>
+    <span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$server</span>-&gt;<span style="color: #000000;">taskworker) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">通过swoole_table共享内存，在不同进程中共享数据</span>
+        <span style="color: #800080;">$server</span>-&gt;result = <span style="color: #0000ff;">new</span> swoole_table(10240<span style="color: #000000;">);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">用于保存task进程完成数量</span>
+        <span style="color: #800080;">$server</span>-&gt;result-&gt;column('finish_nums', swoole_table::<span style="color: #000000;">TYPE_INT);
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">用于保存最终计算结果</span>
+        <span style="color: #800080;">$server</span>-&gt;result-&gt;column('result', swoole_table::<span style="color: #000000;">TYPE_INT);
+        </span><span style="color: #800080;">$server</span>-&gt;result-&gt;<span style="color: #000000;">create();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">计算1000的累加和，并把计算任务分配到10个task进程上</span>
+        <span style="color: #800080;">$num</span> = 1000<span style="color: #000000;">;
+        </span><span style="color: #800080;">$step</span> = <span style="color: #800080;">$num</span> / <span style="color: #800080;">$server</span>-&gt;setting['task_worker_num'<span style="color: #000000;">];
+        </span><span style="color: #0000ff;">for</span> (<span style="color: #800080;">$ix</span> = 0; <span style="color: #800080;">$ix</span> &lt; <span style="color: #800080;">$server</span>-&gt;setting['task_worker_num']; <span style="color: #800080;">$ix</span>++<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$start</span> = <span style="color: #800080;">$ix</span> * <span style="color: #800080;">$step</span><span style="color: #000000;">;
+            </span><span style="color: #800080;">$server</span>-&gt;task([<span style="color: #800080;">$start</span>, <span style="color: #800080;">$start</span> + <span style="color: #800080;">$step</span>], <span style="color: #800080;">$ix</span><span style="color: #000000;">);
+        }
+    }
+});
+ 
+</span><span style="color: #800080;">$server</span>-&gt;on('Receive', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$fd</span>, <span style="color: #800080;">$reactor_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+ 
+});
+ 
+</span><span style="color: #008000;">//</span><span style="color: #008000;">注意，task进程完全是同步阻塞模式的</span>
+<span style="color: #800080;">$server</span>-&gt;on('Task', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$task_id</span>, <span style="color: #800080;">$src_worker_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">echo</span> "task {<span style="color: #800080;">$task_id</span>} 进程正在工作... 计算 {<span style="color: #800080;">$data</span>[0]} - {<span style="color: #800080;">$data</span>[1]} ", <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$start</span> = ++<span style="color: #800080;">$data</span>[0<span style="color: #000000;">];
+    </span><span style="color: #800080;">$end</span> = <span style="color: #800080;">$data</span>[1<span style="color: #000000;">];
+    </span><span style="color: #800080;">$total</span> = 0<span style="color: #000000;">;
+    </span><span style="color: #0000ff;">for</span> (; <span style="color: #800080;">$start</span> &lt;= <span style="color: #800080;">$end</span>; <span style="color: #800080;">$start</span>++<span style="color: #000000;">) {
+        </span><span style="color: #800080;">$total</span> += <span style="color: #800080;">$start</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">echo</span> "task {<span style="color: #800080;">$task_id</span>} 进程完成工作...", <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$total</span><span style="color: #000000;">;
+});
+ 
+</span><span style="color: #800080;">$server</span>-&gt;on('Finish', <span style="color: #0000ff;">function</span> (<span style="color: #800080;">$server</span>, <span style="color: #800080;">$task_id</span>, <span style="color: #800080;">$data</span><span style="color: #000000;">) {
+    </span><span style="color: #0000ff;">echo</span> "task {<span style="color: #800080;">$task_id</span>} 进程处理完成, 结果为 {<span style="color: #800080;">$data</span>}", <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+    </span><span style="color: #800080;">$server</span>-&gt;result-&gt;incr('finish_nums', 'finish_nums'<span style="color: #000000;">);
+    </span><span style="color: #800080;">$server</span>-&gt;result-&gt;set('result', ['result' =&gt; <span style="color: #800080;">$data</span> + <span style="color: #800080;">$server</span>-&gt;result-&gt;get('result', 'result'<span style="color: #000000;">)]);
+ 
+    </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$server</span>-&gt;result-&gt;get('finish_nums', 'finish_nums') == <span style="color: #800080;">$server</span>-&gt;setting['task_worker_num'<span style="color: #000000;">]) {
+        </span><span style="color: #0000ff;">echo</span> "最终计算结果：{<span style="color: #800080;">$server</span>-&gt;result-&gt;get('result', 'result')}", <span style="color: #ff00ff;">PHP_EOL</span><span style="color: #000000;">;
+    }
+});
+ 
+</span><span style="color: #800080;">$server</span>-&gt;<span style="color: #000000;">s
+tart();</span></code></pre>
+
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

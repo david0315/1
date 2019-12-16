@@ -1,0 +1,139 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP composer 日常使用命令和理解' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP composer 日常使用命令和理解</center></div><div class='banquan'>原文出处:本文由博客园博主saopanda提供。<br/>
+原文连接:https://www.cnblogs.com/saopanda/p/10819243.html</div><br>
+    <p>composer的操作很多很杂，平时大都用不上，正要找又一时半会难找到</p>
+<p>日常操作，走起</p>
+<p><strong>第一部分</strong><em><strong> ： 安装 composer.json</strong></em></p>
+<src class="cnblogs_code">
+<pre><code>composer init</code></pre>
+
+<p>这个命令创建了一个 composer.json 文件，也可以手动创建编辑，申明依赖及版本。</p>
+<p>composer.json 内容格式详见</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">{
+    </span>"require":<span style="color: #000000;"> {
+        </span>"monolog/monolog": "1.0.*"<span style="color: #000000;">
+    }
+}</span></code></pre>
+
+<p>其中版本约束&nbsp;<a href="https://docs.phpcomposer.com" target="_blank">详见</a></p>
+<table>
+<thead>
+<tr><th>名称</th><th>实例</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>确切的版本号</td>
+<td><code>1.0.2</code></td>
+<td>你可以指定包的确切版本。</td>
+</tr>
+<tr>
+<td>范围</td>
+<td><code>&gt;=1.0</code>&nbsp;<code>&gt;=1.0,&lt;2.0</code><code>&gt;=1.0,&lt;1.1|&gt;=1.2</code></td>
+<td>通过使用比较操作符可以指定有效的版本范围。&nbsp;<br />有效的运算符：<code>&gt;</code>、<code>&gt;=</code>、<code>&lt;</code>、<code>&lt;=</code>、<code>!=</code>。&nbsp;<br />你可以定义多个范围，用逗号隔开，这将被视为一个逻辑AND处理。一个管道符号<code>|</code>将作为逻辑OR处理。&nbsp;<br />AND 的优先级高于 OR。</td>
+
+
+
+
+
+
+</tr>
+<tr>
+<td>通配符</td>
+<td><code>1.0.*</code></td>
+<td>你可以使用通配符<code>*</code>来指定一种模式。<code>1.0.*</code>与<code>&gt;=1.0,&lt;1.1</code>是等效的。</td>
+
+
+
+
+
+
+</tr>
+<tr>
+<td>赋值运算符</td>
+<td><code>~1.2</code></td>
+<td>这对于遵循语义化版本号的项目非常有用。<code>~1.2</code>相当于<code>&gt;=1.2,&lt;2.0</code>。想要了解更多，请阅读下一小节。<br /><br /></td>
+
+
+
+
+
+
+</tr>
+
+
+
+
+
+
+</tbody>
+
+
+
+
+
+</table>
+<p>&nbsp;</p>
+<src class="cnblogs_code">
+<pre><code>composer install</code></pre>
+
+<p>创建并填写好composer.json&nbsp;，执行 install 命令来进行第一次安装</p>
+<p>第一次安装会检查里面列的软件包，依赖等，寻找合适（通过约束）的版本号</p>
+<p>之后会生成一个锁文件&nbsp;composer.lock</p>
+<p>锁文件里记录了每一个包确切的版本号</p>
+<p>再次执行安装的时候会检查锁文件是否存在，存在就按照锁文件中指定的直接安装</p>
+<p>&nbsp;</p>
+<p><strong>第二部分</strong><em><strong> ： 向项目（已存在composer.json）中添加包</strong></em></p>
+<src class="cnblogs_code">
+<pre><code>composer <span style="color: #0000ff;">require 依赖包/依赖包:版本号</span></code></pre>
+
+<p>还可以同时添加多个 空格空开 eg:&nbsp;&nbsp;<span class="cnblogs_code">doctrine/orm:1.0.0</span>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>第三部分</strong><em><strong> ： 更新</strong></em></p>
+<src class="cnblogs_code">
+<pre><code>composer update</code></pre>
+
+<p>这条命令无视锁文件，把 composer.json 里列的依赖更新一遍，重新生成锁文件</p>
+<p>&nbsp;</p>
+<p><strong>第四部分</strong><em><strong>：用依赖包创建项目</strong></em></p>
+<src class="cnblogs_code">
+<pre><code>composer create-project  依赖包/依赖包  路径路径  版本版本</code></pre>
+
+<p>注意 用包创建项目时，也可以指定版本，但版本约束在第三个参数，第二个参数是项目路径（相对）。未指定版本默认安装最新版本</p>
+<p>eg：&nbsp;<span class="cnblogs_code">laravel/laravel path 5.8.0</span>&nbsp;</p>
+<p>&nbsp;</p>
+<p><em><strong>附录</strong></em></p>
+<ol>
+<li>切换中国镜像源
+<src class="cnblogs_code">
+<pre><code>composer config -g repo.packagist composer https:<span style="color: #008000;">//</span><span style="color: #008000;">packagist.phpcomposer.com</span></code></pre>
+
+</li>
+<li>在生产环境中，安装初始化项目使用&nbsp;&nbsp;<span class="cnblogs_code">-o</span>&nbsp;选项。详见官方文档<br /><span class="cnblogs_code">--optimize-autoloader (-o)</span>&nbsp;:<br />转换 PSR-0/4 autoloading 到 classmap 可以获得更快的加载支持。特别是在生产环境下建议这么做，但由于运行需要一些时间，因此并没有作为默认值。</li>
+
+</ol>
+<p>&nbsp;</p>
+<p>作者：saopanda 地址&nbsp;<a id="Editor_Edit_hlEntryLink" title="view: PHP composer 日常使用和理解" href="https://www.cnblogs.com/saopanda/p/10819243.html" target="_blank">https://www.cnblogs.com/saopanda/p/10819243.html</a>&nbsp;</p>
+<p>转载请附原链接，谢谢！</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

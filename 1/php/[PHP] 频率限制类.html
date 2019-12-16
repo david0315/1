@@ -1,0 +1,318 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修[PHP] 频率限制类' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>[PHP] 频率限制类</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/10610036.html</div><br>
+    <p>比如要实现</p>
+<p>单个ip限制60秒1次<br />单个关键字,比如手机号,限制60秒1次,3600秒10次</p>
+<p>&nbsp;</p>
+<src class="cnblogs_Highlighter">
+<pre><code>&lt;?php
+class Sina_Mail_WebAntispam {
+
+    const PREFIX_WHITELIST = 'w:';
+    const PREFIX_KILL = 'k:';
+    const PREFIX_VERIFYCODE = 'c:';
+    const PREFIX_VERIFIED = 'v:';
+    const STATUS_UPDATE = '[U]';
+
+    private $mc = null;
+    private $config = null;
+    private $whitelist = array();
+    private $keyPrefix = '';
+    private $intervals = array();
+    private $updates = array();
+    private $status = array();
+
+    public function __construct($mc, $config) {
+        $this-&gt;mc = $mc;
+        $this-&gt;config = $config;
+        if (isset($this-&gt;config-&gt;prefix)) {
+            $this-&gt;keyPrefix = $this-&gt;config-&gt;prefix;
+        }
+        if (isset($this-&gt;config-&gt;whitelistKey)) {
+            $wls = $this-&gt;mc-&gt;get($this-&gt;config-&gt;whitelistKey);
+            if (!empty($wls)) {
+                $this-&gt;whitelist = &amp; $wls;
+            }
+        }
+    }
+
+    public function setWhitelist(&amp;$whitelist) {
+        $this-&gt;whitelist = &amp; $whitelist;
+    }
+    /*验证限制规则*/
+    public function check($ip = null, $key = null) {
+        if (!$ip &amp;&amp; !$key) {
+            return false;
+        }
+
+        if ($key) {
+            if (!is_array($key)) {
+                $keys = array($key);
+            } else {
+                $keys = $key;
+            }
+        }
+
+        // first filter by whitelist
+        if (!empty($this-&gt;whitelist)) {
+            if ($ip &amp;&amp; $this-&gt;filterByWhitelist($ip, 'ip')) {
+                $this-&gt;status[self::PREFIX_WHITELIST . $ip] = 1;
+                return true;
+            }
+            if ($keys) {
+                foreach ($keys as $key) {
+                    if ($this-&gt;filterByWhitelist($key, 'key')) {
+                        $this-&gt;status[self::PREFIX_WHITELIST . $key] = 1;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ($ip) {
+            $ip = $this-&gt;keyPrefix . $ip;
+        }
+
+        // second, check verified ok
+        if (!empty($this-&gt;config-&gt;verified)) {
+            if ($ip &amp;&amp; $this-&gt;mc-&gt;get(self::PREFIX_VERIFIED . $ip)) {
+                $this-&gt;status[self::PREFIX_VERIFIED . $ip] = 1;
+                return true;
+            }
+            if ($keys) {
+                foreach ($keys as $key) {
+                    $verifiedKey = self::PREFIX_VERIFIED . $this-&gt;keyPrefix . $key;
+                    if ($this-&gt;mc-&gt;get($verifiedKey)) {
+                        $this-&gt;status[$verifiedKey] = 1;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        $kos = !empty($this-&gt;config-&gt;kill);
+        // check killed
+        if ($kos) {
+            if ($ip &amp;&amp; $this-&gt;mc-&gt;get(self::PREFIX_KILL . $ip)) {
+                $this-&gt;status[self::PREFIX_KILL . $ip] = 1;
+                return false;
+            }
+            if ($keys) {
+                foreach ($keys as $key) {
+                    $killKey = self::PREFIX_KILL . $this-&gt;keyPrefix . $key;
+                    if ($this-&gt;mc-&gt;get($killKey)) {
+                        $this-&gt;status[$killKey] = 1;
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // check ip rule
+        if ($ip &amp;&amp; isset($this-&gt;config-&gt;ip)) {
+            if (!$this-&gt;checkRule($ip, $this-&gt;config-&gt;ip)) {
+                if ($kos &amp;&amp; $this-&gt;mc-&gt;set(self::PREFIX_KILL . $ip, 1, intval($this-&gt;config-&gt;kill))) {
+                    $this-&gt;status[self::PREFIX_KILL . $ip] = 1;
+                }
+                return false;
+            }
+        }
+
+        // check keys rule
+        if ($keys &amp;&amp; isset($this-&gt;config-&gt;key)) {
+            foreach ($keys as $key) {
+                if (!$this-&gt;checkRule($this-&gt;keyPrefix . $key, $this-&gt;config-&gt;key)) {
+                    $killKey = self::PREFIX_KILL . $this-&gt;keyPrefix . $key;
+                    if ($kos &amp;&amp; $this-&gt;mc-&gt;set($killKey, 1, intval($this-&gt;config-&gt;kill))) {
+                        $this-&gt;status[$killKey] = 1;
+                    }
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+    /*更新限制规则*/
+    public function update($c = 1, $ip = null, $key = null) {
+        if (is_null($ip) &amp;&amp; is_null($key)) {
+            if (!empty($this-&gt;updates)) {
+                foreach ($this-&gt;updates as $k =&gt; $v) {
+                    if (!$v &amp;&amp; isset($this-&gt;intervals[$k])) {
+                        if ($this-&gt;mc-&gt;add($k, $c, false,$this-&gt;intervals[$k])) {
+                            $this-&gt;status[self::STATUS_UPDATE . $k] = $c;
+                            continue;
+                        }
+                    }
+                    $r = $this-&gt;mc-&gt;increment($k, $c);
+                    $this-&gt;status[self::STATUS_UPDATE . $k] = $r;
+                }
+            }
+        } else {
+            if (!is_null($ip) &amp;&amp; isset($this-&gt;config-&gt;ip)) {
+                $rule = $this-&gt;config-&gt;ip;
+                foreach ($rule as $interval =&gt; $limit) {
+                    $k = $this-&gt;keyPrefix . $ip . '_' . $interval;
+                    if ($this-&gt;mc-&gt;add($k, $c,false,$interval)) {
+                        $this-&gt;status[self::STATUS_UPDATE . $k] = true;
+                        continue;
+                    }
+                    $r = $this-&gt;mc-&gt;increment($k, $c);
+                    $this-&gt;status[self::STATUS_UPDATE . $k] = $r;
+                }
+            }
+            if (!is_null($key) &amp;&amp; isset($this-&gt;config-&gt;key)) {
+                $rule = $this-&gt;config-&gt;key;
+                if (!is_array($key)) {
+                    $keys = array($key);
+                } else {
+                    $keys = $key;
+                }
+                foreach ($keys as $key) {
+                    foreach ($rule as $interval =&gt; $limit) {
+                        $k = $this-&gt;keyPrefix . $key . '_' . $interval;
+                        if ($this-&gt;mc-&gt;add($k, $c,false,$interval)) {
+                            $this-&gt;status[self::STATUS_UPDATE . $k] = true;
+                            continue;
+                        }
+                        $r = $this-&gt;mc-&gt;increment($k, $c);
+                        $this-&gt;status[self::STATUS_UPDATE . $k] = $r;
+                    }
+                }
+            }
+        }
+    }
+
+    public function checkVerifyCode($key, $code) {
+        $servcode = $this-&gt;mc-&gt;get(self::PREFIX_VERIFYCODE . $this-&gt;keyPrefix . $key);
+        if (strcasecmp($servcode, $code) == 0) {
+            $verified = intval($this-&gt;config-&gt;verified);
+            if ($verified &gt; 0) {
+                $r = $this-&gt;mc-&gt;set(self::PREFIX_VERIFIED . $this-&gt;keyPrefix . $key, 1, false, $verified);
+            } else {
+                $r = true;
+            }
+            if ($r) {
+                $this-&gt;mc-&gt;delete(self::PREFIX_VERIFYCODE . $this-&gt;keyPrefix . $key);
+            }
+            return $r;
+        }
+        return false;
+    }
+
+    public function isVerified($key) {
+        $r = $this-&gt;mc-&gt;get(self::PREFIX_VERIFIED . $this-&gt;keyPrefix . $key);
+        if (!empty($r)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function setVerifyCode($key, $code) {
+        $verifytime = intval($this-&gt;config-&gt;verifytime);
+        if ($verifytime &lt; 1) {
+            return false;
+        }
+        return $this-&gt;mc-&gt;set(self::PREFIX_VERIFYCODE . $this-&gt;keyPrefix . $key, $code, false, $verifytime);
+    }
+
+    public function getStatus() {
+        return $this-&gt;status;
+    }
+
+    private function filterByWhitelist($value, $key) {
+//        if (empty($this-&gt;whitelist[$key])) {
+//            return false;
+//        }
+//        $ls = &amp; $this-&gt;whitelist[$key];
+        $ls = &amp; $this-&gt;whitelist;
+        foreach ($ls as $i) {
+            if ($i[strlen($i) - 1] == '.') { // ip segment
+                if (strpos($value, $i) === 0) {
+                    return true;
+                }
+            } else {
+                if (strcmp($i, $value) === 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private function checkRule($key, $rule) {
+        $flag = true;
+        if (!empty($rule)) {
+            foreach ($rule as $interval =&gt; $limit) {
+                $k = $key . '_' . $interval;
+                $c = $this-&gt;mc-&gt;get($k);
+                if (!$c) {
+                    $this-&gt;updates[$k] = 0;
+                    $this-&gt;intervals[$k] = $interval;
+                    $this-&gt;status[$k] = 0;
+                } else {
+                    $this-&gt;updates[$k] = $c;
+                    $this-&gt;status[$k] = $c;
+                    if ($c &gt;= $limit) {
+                        $flag = false;
+                    }
+                }
+            }
+        }
+        return $flag;
+    }
+
+    public static function getInstance($conf) {
+        $mc = new Memcache();
+        $mc-&gt;connect("115.159.28.112");
+        $conf=json_decode(json_encode($conf));
+        return new self($mc, $conf);
+    }
+
+}
+/*
+单个ip限制60秒1次
+单个关键字,比如手机号,限制60秒1次,3600秒10次
+*/
+$conf=array(
+            'prefix' =&gt; 'selfservice:',
+            'key' =&gt; array(60 =&gt; 1,3600=&gt;10),
+            'ip' =&gt; array(60 =&gt; 1),
+        );
+$spam=Sina_Mail_WebAntispam::getInstance($conf);
+if(!$spam-&gt;check('127.25.12.123',17610725730)){
+	echo "limit...";
+	exit;
+}
+
+//更新频率限制
+$spam-&gt;update();
+</code></pre>
+
+<p>　　</p>
+<p>&nbsp;memache中最终的存储key</p>
+<p><img src="./images/[PHP] 频率限制类0.jpg" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,517 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修LNMP+Redis架构部署' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>LNMP+Redis架构部署</center></div><div class='banquan'>原文出处:本文由博客园博主避凉闲庭提供。<br/>
+原文连接:https://www.cnblogs.com/kuiyajia/p/11857519.html</div><br>
+    <h1>工作机制</h1>
+<ul>
+<li>L（Linux）N（Nginx）M（Mysql）P（PHP）架构想必大家都知道，LNMP架构主要作用是让前端服务与后端存储以及后端的一下服务进行连接起来，来实现php程序的动态请求。</li>
+</ul>
+<p>　　　而今天我们又在LNMP架构上面加一个Redis程序，而Redis在整个架构中起到了一个数据缓存的作用。</p>
+<ul>
+<li>LNMP+Redis工作机制：当用户通过浏览器访问网站时，并使用账号密码进行登陆时，此时会向Redis发出查询请求，若Redis缓存中没有相关信息，则php会查询mysql数据库中的相关信息，然后将相关信息缓存在redis中；在下次此用户访问时，php无需再从mysql数据库中读取数据，直接从redis中读取缓存并将数据返回，这样就可以减少数据库的读取压力。</li>
+<li>下面是简单的工作机制示意图</li>
+</ul>
+<p>&nbsp;<img src="./images/LNMP+Redis架构部署0.jpg" alt="工作机制&middot;" width="1416" height="364" /></p>
+<h1>系统环境描述</h1>
+<ul>
+<li>Linux系统版本：我这里使用的是Ubuntu系统，大家可以选用不同的Linux版本</li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>   jia@uduntu:~$ lsb_release -a</code></pre>
+<p> 　　　　No LSB modules are available.<br />		　　　　Distributor ID:	Ubuntu<br />		　　　　Description:	Ubuntu 19.10<br />		　　　　Release:	19.10<br />		　　　　Codename:	eoan</p>
+
+
+<ul>
+<li>Nginx软件版本</li>
+
+
+</ul>
+<src class="cnblogs_code">
+<pre><code>　　nginx/<span style="color: #800080;">1.16</span>.<span style="color: #800080;">1</span> (Ubuntu)</code></pre>
+
+<ul>
+<li>&nbsp;PHP软件版本</li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>　　 <span style="color: #800080;">7.3</span>.<span style="color: #800080;">11</span>-0ubuntu0.<span style="color: #800080;">19.10</span>.<span style="color: #800080;">1</span> amd64</code></pre>
+
+<ul>
+<li>MariaDB软件版本</li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>　　 <span style="color: #800080;">1</span>:<span style="color: #800080;">10.3</span>.<span style="color: #800080;">17</span>-<span style="color: #800080;">1</span> all</code></pre>
+
+<p>&nbsp;</p>
+<ul>
+<li>Redis软件版本</li>
+</ul>
+<src class="cnblogs_code">
+<pre><code>　　 <span style="color: #800080;">5</span>:<span style="color: #800080;">5.0</span>.<span style="color: #800080;">5</span>-2build1 all</code></pre>
+
+<p>&nbsp;</p>
+<h1>部署Nginx</h1>
+<p>Nginx描述：Nginx (engine x) 是一个高性能的HTTP和反向代理web服务器，同时也提供了MAP/POP3/SMTP服务。Nginx是一款轻量级的Web 服务器/反向代理服务器及电子邮件（IMAP/POP3）代理服务器，在BSD-like 协议下发行。其特点是占有内存少，并发能力强，事实上nginx的并发能力在同类型的网页服务器中表现较好。</p>
+<h2>安装</h2>
+<p>安装Nginx软件包有很多种方法比如：RPM包安装、编译安装等，我在这里软件就全部使用RPM进行安装了</p>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~$ sudo apt -<span style="color: #000000;">y install nginx
+</span><span style="color: #000000;">
+    Setting up fonts</span>-dejavu-core (<span style="color: #800080;">2.37</span>-<span style="color: #800080;">1</span><span style="color: #000000;">) ...
+    Setting up libjpeg</span>-turbo8:amd64 (<span style="color: #800080;">2.0</span>.<span style="color: #800080;">3</span>-<span style="color: #000000;">0ubuntu1) ...
+    Setting up libjpeg8:amd64 (8c</span>-<span style="color: #000000;">2ubuntu8) ...    
+    Setting up libnginx</span>-mod-mail (<span style="color: #800080;">1.16</span>.<span style="color: #800080;">1</span>-<span style="color: #000000;">0ubuntu2) ...
+    Setting up fontconfig</span>-config (<span style="color: #800080;">2.13</span>.<span style="color: #800080;">1</span>-<span style="color: #000000;">2ubuntu2) ...
+    Setting up libnginx</span>-mod-stream (<span style="color: #800080;">1.16</span>.<span style="color: #800080;">1</span>-<span style="color: #000000;">0ubuntu2) ...
+    Setting up libtiff5:amd64 (</span><span style="color: #800080;">4.0</span>.<span style="color: #800080;">10</span>+git191003-<span style="color: #800080;">1</span><span style="color: #000000;">) ...
+    Setting up libfontconfig1:amd64 (</span><span style="color: #800080;">2.13</span>.<span style="color: #800080;">1</span>-<span style="color: #000000;">2ubuntu2) ...
+    Setting up libgd3:amd64 (</span><span style="color: #800080;">2.2</span>.<span style="color: #800080;">5</span>-<span style="color: #800080;">5.2</span><span style="color: #000000;">) ...
+    Setting up libnginx</span>-mod-http-image-filter (<span style="color: #800080;">1.16</span>.<span style="color: #800080;">1</span>-<span style="color: #000000;">0ubuntu2) ...
+    Setting up nginx</span>-core (<span style="color: #800080;">1.16</span>.<span style="color: #800080;">1</span>-<span style="color: #000000;">0ubuntu2) ...
+    Setting up nginx (</span><span style="color: #800080;">1.16</span>.<span style="color: #800080;">1</span>-<span style="color: #000000;">0ubuntu2) ...
+    Processing triggers </span><span style="color: #0000ff;">for</span> ufw (<span style="color: #800080;">0.36</span>-<span style="color: #000000;">1ubuntu3) ...
+    Processing triggers </span><span style="color: #0000ff;">for</span> systemd (<span style="color: #800080;">242</span>-<span style="color: #000000;">7ubuntu3) ...
+    Processing triggers </span><span style="color: #0000ff;">for</span> man-db (<span style="color: #800080;">2.8</span>.<span style="color: #800080;">7</span>-<span style="color: #800080;">3</span><span style="color: #000000;">) ...
+    Processing triggers </span><span style="color: #0000ff;">for</span> libc-bin (<span style="color: #800080;">2.30</span>-<span style="color: #000000;">0ubuntu2) ...<br />
+jia@uduntu:</span>~<span style="color: #000000;">$ <br /></span></code></pre>
+
+<p>&nbsp;</p>
+<p>出现上面字符即为安装成功</p>
+<h2>启动</h2>
+<p>程序启动有两种方法</p>
+<ol>
+<li>作为系统服务进行启动，启动方法：</li>
+</ol>
+<p>Ubuntu以及rhel7以上版本使用下面方式：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">    systemctl  start nginx        \\启动Nginx
+    systemctl  stop  nginx        \\停止Nginx
+    systemctl  restart  nginx        \\重新启动Nginx</span></code></pre>
+
+<p>&nbsp;</p>
+<p>rhel7一下版本使用下面方式：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">    server  nginx  start        \\启动Nginx
+    server  nginx  stop            \\停止Nginx
+    server  nginx  restart        \\重新启动Nginx</span></code></pre>
+
+<p>&nbsp;</p>
+<ol start="2">
+<li>使用Nginx启动脚本进行控制Nginx启停：</li>
+</ol>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">    sh nginx        \\启动Nginx
+    停止nginx可以使用结束进程的方式进行停止</span></code></pre>
+
+<p>&nbsp;</p>
+<h2>测试并访问</h2>
+<p>接下来让我们启动nginx并进行访问：</p>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~<span style="color: #000000;">$ systemctl start nginx        \\我这里使用的非root用户所以要求输入密码
+    </span>==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===<span style="color: #000000;">
+    Authentication </span><span style="color: #0000ff;">is</span> required to start <span style="color: #800000;">'</span><span style="color: #800000;">nginx.service</span><span style="color: #800000;">'</span><span style="color: #000000;">.
+    Authenticating </span><span style="color: #0000ff;">as</span><span style="color: #000000;">: jia
+    Password: 
+    </span>====<span style="color: #000000;"> AUTHENTICATION COMPLET
+jia@uduntu:~$<br /></span></code></pre>
+
+<p>&nbsp;</p>
+<p>启动成功后访问：<br />访问地址：</p>
+<src class="cnblogs_code">
+<pre><code>    http:<span style="color: #008000;">//</span><span style="color: #008000;">Server IP Address</span></code></pre>
+
+<p>&nbsp;</p>
+<p>看到下面内容证明安装并启动成功：</p>
+<p><img src="./images/LNMP+Redis架构部署1.jpg" alt="" width="636" height="311" /></p>
+<h1>部署PHP</h1>
+<p>PHP描述：PHP即&ldquo;超文本预处理器&rdquo;，是一种通用开源脚本语言。PHP是在服务器端执行的脚本语言，与C语言类似，是常用的网站编程语言。PHP独特的语法混合了C、Java、Perl以及 PHP 自创的语法。利于学习，使用广泛，主要适用于Web开发领域。</p>
+<h2>安装</h2>
+<src class="cnblogs_code">
+<pre><code>    jia@uduntu:~$ sudo apt -y install php php7.<span style="color: #800080;">3</span>-<span style="color: #000000;">fpm
+    [sudo] password </span><span style="color: #0000ff;">for</span> jia:             <span style="color: #008000;">//</span><span style="color: #008000;">这里正常输入密码</span>
+<span style="color: #000000;">        \\安装最后出现下面显示表示安装成功
+    Creating config file </span>/etc/php/<span style="color: #800080;">7.3</span>/mods-available/json.ini with <span style="color: #0000ff;">new</span><span style="color: #000000;"> version
+    Setting up php7.</span><span style="color: #800080;">3</span>-readline (<span style="color: #800080;">7.3</span>.<span style="color: #800080;">11</span>-0ubuntu0.<span style="color: #800080;">19.10</span>.<span style="color: #800080;">1</span><span style="color: #000000;">) ...
+
+    Creating config file </span>/etc/php/<span style="color: #800080;">7.3</span>/mods-available/readline.ini with <span style="color: #0000ff;">new</span><span style="color: #000000;"> version
+    Setting up php7.</span><span style="color: #800080;">3</span>-cli (<span style="color: #800080;">7.3</span>.<span style="color: #800080;">11</span>-0ubuntu0.<span style="color: #800080;">19.10</span>.<span style="color: #800080;">1</span><span style="color: #000000;">) ...
+    update</span>-alternatives: <span style="color: #0000ff;">using</span> /usr/bin/php7.<span style="color: #800080;">3</span> to provide /usr/bin/php (php) <span style="color: #0000ff;">in</span><span style="color: #000000;"> auto mode
+    update</span>-alternatives: <span style="color: #0000ff;">using</span> /usr/bin/phar7.<span style="color: #800080;">3</span> to provide /usr/bin/phar (phar) <span style="color: #0000ff;">in</span><span style="color: #000000;"> auto mode
+    update</span>-alternatives: <span style="color: #0000ff;">using</span> /usr/bin/phar.phar7.<span style="color: #800080;">3</span> to provide /usr/bin/phar.phar     (phar.phar) <span style="color: #0000ff;">in</span><span style="color: #000000;"> auto mode
+
+    Creating config file </span>/etc/php/<span style="color: #800080;">7.3</span>/cli/php.ini with <span style="color: #0000ff;">new</span><span style="color: #000000;"> version
+    Setting up php7.</span><span style="color: #800080;">3</span>-fpm (<span style="color: #800080;">7.3</span>.<span style="color: #800080;">11</span>-0ubuntu0.<span style="color: #800080;">19.10</span>.<span style="color: #800080;">1</span><span style="color: #000000;">) ...
+
+    Creating config file </span>/etc/php/<span style="color: #800080;">7.3</span>/fpm/php.ini with <span style="color: #0000ff;">new</span><span style="color: #000000;"> version
+    Created symlink </span>/etc/systemd/system/multi-user.target.wants/php7.<span style="color: #800080;">3</span>-fpm.service &rarr;     /lib/systemd/system/php7.<span style="color: #800080;">3</span>-<span style="color: #000000;">fpm.service.
+    Setting up php7.</span><span style="color: #800080;">3</span> (<span style="color: #800080;">7.3</span>.<span style="color: #800080;">11</span>-0ubuntu0.<span style="color: #800080;">19.10</span>.<span style="color: #800080;">1</span><span style="color: #000000;">) ...
+    Setting up php (</span><span style="color: #800080;">2</span>:<span style="color: #800080;">7.3</span>+<span style="color: #000000;">69ubuntu2) ...
+    Processing triggers </span><span style="color: #0000ff;">for</span> man-db (<span style="color: #800080;">2.8</span>.<span style="color: #800080;">7</span>-<span style="color: #800080;">3</span><span style="color: #000000;">) ...
+    Processing triggers </span><span style="color: #0000ff;">for</span> systemd (<span style="color: #800080;">242</span>-7ubuntu3) ...</code></pre>
+
+<p>&nbsp;</p>
+<h2>启动</h2>
+<p>上面已经给大家说过Nginx的启动方法了，php启动方法与Nginx基本一样</p>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~$ systemctl start  php7.<span style="color: #800080;">3</span>-<span style="color: #000000;">fpm
+    </span>==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===<span style="color: #000000;">
+    Authentication </span><span style="color: #0000ff;">is</span> required to start <span style="color: #800000;">'</span><span style="color: #800000;">php7.3-fpm.service</span><span style="color: #800000;">'</span><span style="color: #000000;">.
+    Authenticating </span><span style="color: #0000ff;">as</span><span style="color: #000000;">: jia
+    Password:             \\输入密码
+    </span>==== AUTHENTICATION COMPLETE ===<span style="color: #000000;">
+jia@uduntu:</span>~$ </code></pre>
+
+<p>&nbsp;</p>
+<p>启动成功，可以使用查看进程的方式进行查看</p>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~$ ps uax |<span style="color: #000000;"> grep php            \\下面进程表示php运行进程
+    root      </span><span style="color: #800080;">10346</span>  <span style="color: #800080;">0.0</span>  <span style="color: #800080;">2.5</span> <span style="color: #800080;">193732</span> <span style="color: #800080;">17384</span> ?        Ss   <span style="color: #800080;">08</span>:<span style="color: #800080;">29</span>   <span style="color: #800080;">0</span>:<span style="color: #800080;">00</span> php-fpm: master process     (/etc/php/<span style="color: #800080;">7.3</span>/fpm/php-<span style="color: #000000;">fpm.conf)
+    www</span>-data  <span style="color: #800080;">10357</span>  <span style="color: #800080;">0.0</span>  <span style="color: #800080;">0.9</span> <span style="color: #800080;">194044</span>  <span style="color: #800080;">6348</span> ?        S    <span style="color: #800080;">08</span>:<span style="color: #800080;">29</span>   <span style="color: #800080;">0</span>:<span style="color: #800080;">00</span> php-<span style="color: #000000;">fpm: pool www
+    www</span>-data  <span style="color: #800080;">10358</span>  <span style="color: #800080;">0.0</span>  <span style="color: #800080;">0.9</span> <span style="color: #800080;">194044</span>  <span style="color: #800080;">6348</span> ?        S    <span style="color: #800080;">08</span>:<span style="color: #800080;">29</span>   <span style="color: #800080;">0</span>:<span style="color: #800080;">00</span> php-<span style="color: #000000;">fpm: pool www
+    jia       </span><span style="color: #800080;">10572</span>  <span style="color: #800080;">0.0</span>  <span style="color: #800080;">0.1</span>   <span style="color: #800080;">6296</span>   <span style="color: #800080;">920</span> pts/<span style="color: #800080;">0</span>    S+   <span style="color: #800080;">08</span>:<span style="color: #800080;">33</span>   <span style="color: #800080;">0</span>:<span style="color: #800080;">00</span> grep --color=<span style="color: #000000;">auto php
+jia@uduntu:</span>~$</code></pre>
+
+<p>&nbsp;</p>
+<h2>配置Nginx</h2>
+<p>php启动成功后下面配置Nginx，让Nginx接收到的php请求转交给php服务器进行解析<br />nginx配置文件：</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">    server {
+        listen </span><span style="color: #800080;">80</span><span style="color: #000000;"> default_server;
+        listen [::]:</span><span style="color: #800080;">80</span><span style="color: #000000;"> default_server;
+        root </span>/<span style="color: #0000ff;">var</span>/www/<span style="color: #000000;">html;
+        index index.html index.htm index.nginx</span>-<span style="color: #000000;">debian.html index.php ;        \\此处需要在后面添加index.php
+        server_name _;
+        location </span>/<span style="color: #000000;"> {
+        try_files $uri $uri</span>/ =<span style="color: #800080;">404</span><span style="color: #000000;">;
+        }
+        location </span>~<span style="color: #000000;"> \.php$ {            \\取消注释
+               include snippets</span>/fastcgi-<span style="color: #000000;">php.conf;        \\取消注释
+               fastcgi_pass unix:</span>/<span style="color: #0000ff;">var</span>/run/php/php7.<span style="color: #800080;">2</span>-<span style="color: #000000;">fpm.sock;        \\这一行和下面一行指的是php侦听方式，查看php是侦听那种方式然后取消注释哪一行
+               fastcgi_pass </span><span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span>:<span style="color: #800080;">9000</span><span style="color: #000000;">;            \\
+        }</span></code></pre>
+
+<p>在php-fpm配置文件种查看php的侦听方式：</p>
+<src class="cnblogs_code">
+<pre><code>    listen = /run/php/php7.<span style="color: #800080;">3</span>-<span style="color: #000000;">fpm.sock        \\这种侦听方式适用于本地php
+    listen </span>= <span style="color: #800080;">127.0</span>.<span style="color: #800080;">0.1</span>：<span style="color: #800080;">9000</span>        \\这种侦听方式适用于远程PHP</code></pre>
+
+<p>&nbsp;</p>
+<p>看你的那个php是那种方式侦听的，然后将nginx配置文件中的一行取消注释，然后再重新启动nginx使改动生效</p>
+<h2>测试</h2>
+<p>默认网页代码的存放位置：</p>
+<src class="cnblogs_code">
+<pre><code>    /<span style="color: #0000ff;">var</span>/www/html</code></pre>
+
+<p>&nbsp;测试只需要将index,html该名为<span style="color: #ff0000;">index.php</span>，内容更改为你的php代码<br />我的php代码内容为：</p>
+<src class="cnblogs_code">
+<pre><code>    &lt;?<span style="color: #000000;">php
+        phpifo();
+    </span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>下面来访问一下，访问地址不变</p>
+<p><img src="./images/LNMP+Redis架构部署2.jpg" alt="" width="984" height="612" /></p>
+<p>只要可以解析PHP代码了就表示配置安装成功</p>
+<h1>部署MariaDB</h1>
+<p>部署MariaDBMariaDB描述：MariaDB数据库管理系统是MySQL的一个分支，主要由开源社区在维护，采用GPL授权许可 MariaDB的目的是完全兼容MySQL，包括API和命令行，使之能轻松成为MySQL的代替品。MariaDB基于事务的Maria存储引擎，替换了MySQL的MyISAM存储引擎，它使用了Percona的 XtraDB，InnoDB的变体，分支的开发者希望提供访问即将到来的MySQL 5.4 InnoDB性能。这个版本还包括了 PrimeBase XT (PBXT) 和 FederatedX存储引擎。</p>
+<h2>安装</h2>
+<src class="cnblogs_code">
+<pre><code> jia@uduntu:~$ sudo apt -y install mariadb-<span style="color: #000000;">server
+    Setting up mariadb</span>-client-10.3 (1:10.3.17-1) ...<span style="color: #000000;">
+    Setting up libdbd</span>-<span style="color: #008080;">mysql</span>-perl:amd64 (4.050-2build1) ...<span style="color: #000000;">
+    Setting up libhtml</span>-parser-perl (3.72-3build2) ...<span style="color: #000000;">
+    Setting up mariadb</span>-server-10.3 (1:10.3.17-1) ...<span style="color: #000000;">
+    Created symlink </span>/etc/systemd/<span style="color: #008080;">system</span>/<span style="color: #008080;">mysql</span>.service &rarr; /lib/systemd/<span style="color: #008080;">system</span>/mariadb.service.<span style="color: #000000;">
+    Created symlink </span>/etc/systemd/<span style="color: #008080;">system</span>/mysqld.service &rarr; /lib/systemd/<span style="color: #008080;">system</span>/mariadb.service.<span style="color: #000000;">
+    Created symlink </span>/etc/systemd/<span style="color: #008080;">system</span>/multi-user.target.wants/mariadb.service &rarr; /lib/systemd/<span style="color: #008080;">system</span>/mariadb.service.<span style="color: #000000;">
+    Setting up libhttp</span>-message-perl (6.18-1) ...<span style="color: #000000;">
+    Setting up libcgi</span>-pm-perl (4.44-1) ...<span style="color: #000000;">
+    Setting up libhtml</span>-template-perl (2.97-1) ...<span style="color: #000000;">
+    Setting up mariadb</span>-server (1:10.3.17-1) ...<span style="color: #000000;">
+    Setting up libcgi</span>-fast-perl (1:2.15-1) ...<span style="color: #000000;">
+    Processing triggers </span><span style="color: #0000ff;">for</span> systemd (242-7ubuntu3) ...<span style="color: #000000;">
+    Processing triggers </span><span style="color: #0000ff;">for</span> man-db (2.8.7-3) ...<span style="color: #000000;">
+    Processing triggers </span><span style="color: #0000ff;">for</span> libc-bin (2.30-0ubuntu2) ...<span style="color: #000000;">
+jia@uduntu</span>:~$            \\出现上面代码表示安装成功</code></pre>
+
+<p>&nbsp;</p>
+<h2>启动</h2>
+<p>同Nginx：</p>
+<src class="cnblogs_code">
+<pre><code> jia@uduntu:~<span style="color: #000000;">$ systemctl start mariadb
+    </span>==== AUTHENTICATING <span style="color: #0000ff;">FOR</span> org.freedesktop.systemd1.manage-units ===<span style="color: #000000;">
+    Authentication is required to start </span>'mariadb.service'.<span style="color: #000000;">
+    Authenticating </span><span style="color: #0000ff;">as</span>:<span style="color: #000000;"> jia
+    Password</span>:<span style="color: #000000;">         \\此处输入密码
+    </span>==== AUTHENTICATION COMPLETE ===<span style="color: #000000;">
+ jia@uduntu</span>:~$ </code></pre>
+
+<p>&nbsp;</p>
+<p>查看是否启动成功：</p>
+<src class="cnblogs_code">
+<pre><code> jia@uduntu:~$ ps uax |<span style="color: #000000;"> grep mysqld
+    </span><span style="color: #008080;">mysql</span>     11669  0.2 11.5 1713056 78488 ?       Ssl  09:17   0:00 /usr/sbin/<span style="color: #000000;">mysqld
+    jia       </span>12614  0.0  0.1   6296   924 pts/0    S+   09:23   0:00 grep --color=<span style="color: #000000;">auto mysqld
+ jia@uduntu</span>:~$ </code></pre>
+
+<p>&nbsp;</p>
+<p>初始化数据库：</p>
+<src class="cnblogs_code">
+<pre><code> jia@uduntu:~<span style="color: #000000;">$ sudo mysql_secure_installation 
+     \\下面是初始化过程
+NOTE</span>: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED <span style="color: #0000ff;">FOR</span><span style="color: #000000;"> ALL MariaDB
+      SERVERS IN PRODUCTION </span><span style="color: #0000ff;">USE</span>!  PLEASE READ <span style="color: #008080;">EACH</span> STEP CAREFULLY!<span style="color: #000000;">
+
+In order to </span><span style="color: #008080;">log</span> into MariaDB to secure it, we'<span style="color: #000000;">ll need the current
+password for the root user.  If you</span>'ve just installed MariaDB,<span style="color: #000000;"> and
+you haven</span>'<span style="color: #000000;">t set the root password yet, the password will be blank,
+so you should just press enter here.
+
+Enter current password for root (enter for none): 
+OK, successfully used password, moving on...
+
+Setting the root password ensures that nobody can log into the MariaDB
+root user without the proper authorisation.
+
+Set root password? [Y/n] y
+New password: 
+Re-enter new password: 
+Password updated successfully!
+Reloading privilege tables..
+ ... Success!
+
+
+By default, a MariaDB installation has an anonymous user, allowing anyone
+to log into MariaDB without having to have a user account created for
+them.  This is intended only for testing, and to make the installation
+go a bit smoother.  You should remove them before moving into a
+production environment.
+
+Remove anonymous users? [Y/n] y
+ ... Success!
+
+Normally, root should only be allowed to connect from </span>'localhost'<span style="color: #000000;">.  This
+ensures that someone cannot guess at the root password from the network.
+
+Disallow root login remotely? [Y/n] y
+ ... Success!
+
+By default, MariaDB comes with a database named </span>'test'<span style="color: #000000;"> that anyone can
+access.  This is also intended only for testing, and should be removed
+before moving into a production environment.
+
+Remove test database and access to it? [Y/n] y
+ - Dropping test database...
+ ... Success!
+ - Removing privileges on test database...
+ ... Success!
+
+Reloading the privilege tables will ensure that all changes made so far
+will take effect immediately.
+
+Reload privilege tables now? [Y/n] y
+ ... Success!
+
+Cleaning up...
+
+All done!  If you</span>'ve completed all of the above steps,<span style="color: #000000;"> your MariaDB
+installation should now be secure</span>.<span style="color: #000000;">
+
+Thanks </span><span style="color: #0000ff;">for</span> using MariaDB!<span style="color: #000000;">
+jia@uduntu</span>:~$ </code></pre>
+
+<p>&nbsp;</p>
+<p>初始化完成后，可直接使用自带的mysql客户端进行连接</p>
+<src class="cnblogs_code">
+<pre><code> jia@uduntu:~$ sudo <span style="color: #008080;">mysql</span> -u root -<span style="color: #000000;">p
+    Enter password</span>:<span style="color: #000000;"> 
+    Welcome to the MariaDB monitor</span>.  Commands <span style="color: #008080;">end</span> with ; or \g.<span style="color: #000000;">
+    Your MariaDB connection id is </span>56<span style="color: #000000;">
+    Server version</span>: 10.3.17-MariaDB-1 Ubuntu 19.10<span style="color: #000000;">
+
+    Copyright (c) </span>2000, 2018, Oracle, MariaDB Corporation Ab and others.<span style="color: #000000;">
+
+    Type </span>'help;' or '\h' <span style="color: #0000ff;">for</span> help. Type '\c' to clear the <span style="color: #008080;">current</span> input statement.<span style="color: #000000;">
+
+    MariaDB [(none)]</span>&gt;<span style="color: #000000;"> show databases;
+    </span>+--------------------+
+    | Database           |
+    +--------------------+
+    | ifnormation_schema |
+    | <span style="color: #008080;">mysql</span>              |
+    | performance_schema |
+    +--------------------+
+    3 rows in set (0.000<span style="color: #000000;"> sec)
+
+     MariaDB [(none)]</span>&gt; </code></pre>
+
+<h2>配置php支持</h2>
+<p>安装php连接数据库的中间件：php-mysql</p>
+<src class="cnblogs_code">
+<pre><code> jia@uduntu:~$ sudo apt -y install php-<span style="color: #008080;">mysql</span><span style="color: #000000;">
+    Preparing to </span><span style="color: #008080;">unpack</span> .../php-mysql_2%3a7.3+69ubuntu2_all.deb ...<span style="color: #000000;">
+    Unpacking php</span>-<span style="color: #008080;">mysql</span> (2:7.3+69ubuntu2) ...<span style="color: #000000;">
+    Setting up php7</span>.3-<span style="color: #008080;">mysql</span> (7.3.11-0ubuntu0.19.10.1) ...<span style="color: #000000;">
+
+    Creating config </span><span style="color: #008080;">file</span> /etc/php/7.3/mods-available/mysqlnd.ini with <span style="color: #0000ff;">new</span><span style="color: #000000;"> version
+
+    Creating config </span><span style="color: #008080;">file</span> /etc/php/7.3/mods-available/mysqli.ini with <span style="color: #0000ff;">new</span><span style="color: #000000;"> version
+
+    Creating config </span><span style="color: #008080;">file</span> /etc/php/7.3/mods-available/pdo_mysql.ini with <span style="color: #0000ff;">new</span><span style="color: #000000;"> version
+    Setting up php</span>-<span style="color: #008080;">mysql</span> (2:7.3+69ubuntu2) ...<span style="color: #000000;">
+    Processing triggers </span><span style="color: #0000ff;">for</span> php7.3-fpm (7.3.11-0ubuntu0.19.10.1) ...<span style="color: #000000;">
+jia@uduntu</span>:~$             <span style="color: #008000;">//</span><span style="color: #008000;">安装成功</span></code></pre>
+
+<p>&nbsp;</p>
+<p>配置php.ini文件，将配置文件中extension=mysqli这一行取消注释就可以了，然后重新启动php-fpm</p>
+<src class="cnblogs_code">
+<pre><code> jia@uduntu:/etc/php/7.3/fpm$ systemctl restart php7.3-<span style="color: #000000;">fpm
+    </span>==== AUTHENTICATING <span style="color: #0000ff;">FOR</span> org.freedesktop.systemd1.manage-units ===<span style="color: #000000;">
+    Authentication is required to restart </span>'php7.3-fpm.service'.<span style="color: #000000;">
+    Authenticating </span><span style="color: #0000ff;">as</span>:<span style="color: #000000;"> jia
+    Password</span>:<span style="color: #000000;">             \\输入密码
+    </span>==== AUTHENTICATION COMPLETE ===<span style="color: #000000;">
+ jia@uduntu</span>:/etc/php/7.3/fpm$ </code></pre>
+
+<h2>测试</h2>
+<p>测试php是否可使用数据库，最好的方法就是使用php代码写一个连接数据库就可以了<br />代码如下：</p>
+<src class="cnblogs_code">
+<pre><code>    &lt;?<span style="color: #000000;">php
+        </span><span style="color: #800080;">$host</span> = "localhost";    <span style="color: #008000;">//</span><span style="color: #008000;">mysql主机</span>
+        <span style="color: #800080;">$user</span> = "root";            <span style="color: #008000;">//</span><span style="color: #008000;">mysql用户</span>
+        <span style="color: #800080;">$passwd</span> = "redhat";        <span style="color: #008000;">//</span><span style="color: #008000;">mysql密码</span>
+        <span style="color: #800080;">$conn</span> = <span style="color: #0000ff;">new</span> mysqli(<span style="color: #800080;">$host</span>,<span style="color: #800080;">$user</span>,<span style="color: #800080;">$passwd</span><span style="color: #000000;">);
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #800080;">$conn</span><span style="color: #000000;">){
+            </span><span style="color: #0000ff;">die</span>("连接数据库失败"<span style="color: #000000;">);
+        }
+        </span><span style="color: #0000ff;">echo</span> "连接数据库成功"<span style="color: #000000;">;        
+    </span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>显示数据库连接成功示安装成功</p>
+<h1>部署Redis</h1>
+<p>Redis描述：Redis（全称：Remote Dictionary Server 远程字典服务）是一个开源的使用ANSI C语言编写、支持网络、可基于内存亦可持久化的日志型、Key-Value数据库，并提供多种语言的API。</p>
+<h2>安装</h2>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~$ sudo apt -<span style="color: #000000;">y install redis                \\出现下面提示表示安装成功
+    Setting up lua</span>-cjson:amd64 (2.1.0+dfsg-2.1) ...<span style="color: #000000;">
+    Setting up libatomic1</span>:amd64 (9.2.1-9ubuntu2) ...<span style="color: #000000;">
+    Setting up lua</span>-bitop:amd64 (1.0.2-5) ...<span style="color: #000000;">
+    Setting up liblua5</span>.1-0:amd64 (5.1.5-8.1build3) ...<span style="color: #000000;">
+    Setting up libhiredis0</span>.14:amd64 (0.14.0-3) ...<span style="color: #000000;">
+    Setting up redis</span>-tools (5:5.0.5-2build1) ...<span style="color: #000000;">
+    Setting up redis</span>-server (5:5.0.5-2build1) ...<span style="color: #000000;">
+    Created symlink </span>/etc/systemd/<span style="color: #008080;">system</span>/redis.service &rarr; /lib/systemd/<span style="color: #008080;">system</span>/redis-                                        server.service.<span style="color: #000000;">
+    Created symlink </span>/etc/systemd/<span style="color: #008080;">system</span>/multi-user.target.wants/redis-server.service &rarr;     /lib/systemd/<span style="color: #008080;">system</span>/redis-server.service.<span style="color: #000000;">
+    Setting up redis (</span>5:5.0.5-2build1) ...<span style="color: #000000;">
+    Processing triggers </span><span style="color: #0000ff;">for</span> systemd (242-7ubuntu3) ...<span style="color: #000000;">
+    Processing triggers </span><span style="color: #0000ff;">for</span> man-db (2.8.7-3) ...<span style="color: #000000;">
+    Processing triggers </span><span style="color: #0000ff;">for</span> libc-bin (2.30-0ubuntu2) ...<span style="color: #000000;">
+jia@uduntu</span>:~$ </code></pre>
+
+<p>&nbsp;</p>
+<h2>启动</h2>
+<p>启动等同于Nginx启动</p>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~$ sudo systemctl start redis</code></pre>
+
+<p>&nbsp;</p>
+<p>启动成功后进行检查</p>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~$ sudo netstat -anpl |<span style="color: #000000;">  grep redis
+    tcp        </span>0      0 127.0.0.1:6379          0.0.0.0:*               LISTEN          2094/redis-server 1<span style="color: #000000;"> 
+    tcp6       </span>0      0 ::1:6379                :::*                    LISTEN          2094/redis-server 1<span style="color: #000000;"> 
+jia@uduntu</span>:~$ </code></pre>
+
+<p>可以看到redis端口（6379）就证明启动成功<br />下面让我们使用redis客户端测试一下：</p>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~$ sudo redis-<span style="color: #000000;">cli         \\启动redis客户端
+    </span>127.0.0.1:6379&gt; set test "hellow word"<span style="color: #000000;">            \\设置变量
+        OK
+    </span>127.0.0.1:6379&gt;<span style="color: #000000;"> get test        \\输出变量
+        </span>"hellow word"
+    127.0.0.1:6379&gt;<span style="color: #000000;"> del test        \\删除变量
+        (</span><span style="color: #0000ff;">integer</span>) 1
+    127.0.0.1:6379&gt;<span style="color: #000000;"> get test    
+        (nil)
+    </span>127.0.0.1:6379&gt; </code></pre>
+
+<p>&nbsp;</p>
+<p>上面测试可以看出redis安装成功，并启动成功</p>
+<h2>配置php支持</h2>
+<p>安装php连接redis中间件</p>
+<src class="cnblogs_code">
+<pre><code>jia@uduntu:~$ sudo apt -y install php-<span style="color: #000000;">redis                \\输出以下内容表示安装成功
+    Reading package lists</span>... <span style="color: #0000ff;">Done</span><span style="color: #000000;">
+    Building dependency tree       
+    Reading state information</span>... <span style="color: #0000ff;">Done</span><span style="color: #000000;">
+    The following additional packages will be installed</span>:<span style="color: #000000;">
+      php</span>-<span style="color: #000000;">igbinary
+    The following </span><span style="color: #0000ff;">NEW</span> packages will be installed:<span style="color: #000000;">
+      php</span>-igbinary php-<span style="color: #000000;">redis
+    </span>0 upgraded, 2 newly installed, 0 to remove and 18 not upgraded.<span style="color: #000000;">
+    Needto get </span>239 kB of archives.<span style="color: #000000;">
+    After this operation</span>, 1,052 kB of additional disk space will be used.<span style="color: #000000;">
+    Get</span>:1 http:<span style="color: #008000;">//</span><span style="color: #008000;">cn.archive.ubuntu.com/ubuntu eoan/universe amd64 php-igbinary amd64 3.0.0-    1build1 [101 kB]</span>
+    Get:2 http:<span style="color: #008000;">//</span><span style="color: #008000;">cn.archive.ubuntu.com/ubuntu eoan/universe amd64 php-redis amd64 5.0.2+4.3.0-2build1 [138 kB]</span>
+    Fetched 239 kB in 13s (19.0 kB/<span style="color: #000000;">s)                                                                                  
+    Selecting previously unselected package php</span>-igbinary.<span style="color: #000000;">
+    (Reading database </span>... 70748 files and directories currently installed.<span style="color: #000000;">)
+    Preparing to </span><span style="color: #008080;">unpack</span> .../php-igbinary_3.0.0-1build1_amd64.deb ...<span style="color: #000000;">
+    Unpacking php</span>-igbinary (3.0.0-1build1) ...<span style="color: #000000;">
+    Seleting previously unselected package php</span>-redis.<span style="color: #000000;">
+    Preparing to </span><span style="color: #008080;">unpack</span> .../php-redis_5.0.2+4.3.0-2build1_amd64.deb ...<span style="color: #000000;">
+    Unpacking php</span>-redis (5.0.2+4.3.0-2build1) ...<span style="color: #000000;">
+    Setting up php</span>-igbinary (3.0.0-1build1) ...<span style="color: #000000;">
+    Setting up php</span>-redis (5.0.2+4.3.0-2build1) ...<span style="color: #000000;">
+jia@uduntu</span>:~$ </code></pre>
+
+<p>&nbsp;</p>
+<p>安装成功后，配置php支持redis<br />找到php.ini这个配置文件，添加下面配置,找到exension=mysql这一条，然后将下面代码粘贴到下一行</p>
+<src class="cnblogs_code">
+<pre><code>    extension=redis.so</code></pre>
+
+<p>&nbsp;</p>
+<h2>测试</h2>
+<p>测试php是否可以使用redis，下面页面简单既可以进行测试</p>
+<src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+   </span><span style="color: #800080;">$redis</span> = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Redis();        \\redis连接参数
+   </span><span style="color: #800080;">$redis</span>-&gt;connect('127.0.0.1', 6379);        \\括号内第一项是指的redis server ip,<span style="color: #000000;">第二项是 redis port
+   </span><span style="color: #0000ff;">echo</span> "Connection to server successfully &lt;/br&gt;"<span style="color: #000000;">;
+   </span><span style="color: #0000ff;">echo</span> "Server is running: " . <span style="color: #800080;">$redis</span>-&gt;<span style="color: #000000;">ping();
+</span>?&gt;</code></pre>
+
+<p>&nbsp;</p>
+<p>将/var/www/html下面的index.php文件内容替换为上面内容，然后直接访问即可<br />连接地址：</p>
+<src class="cnblogs_code">
+<pre><code>    http:<span style="color: #008000;">//</span><span style="color: #008000;">nginx server ip</span></code></pre>
+
+<p>&nbsp;</p>
+<p>显示下面内容表示连接成功</p>
+<src class="cnblogs_code">
+<pre><code><span style="color: #000000;">Connection to server successfully
+Server is running</span>: 1</code></pre>
+
+<p>&nbsp;</p>
+<p><img src="./images/LNMP+Redis架构部署3.jpg" alt="" width="443" height="150" /></p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

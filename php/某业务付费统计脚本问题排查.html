@@ -1,0 +1,34 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修某业务付费统计脚本问题排查' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>某业务付费统计脚本问题排查</center></div><div class='banquan'>原文出处:本文由博客园博主陶士涵提供。<br/>
+原文连接:https://www.cnblogs.com/taoshihan/p/11558299.html</div><br>
+    <p>现象:产品反馈未收到每周五的VIP邮箱付费统计邮件</p>
+<p><br />1. 这个统计脚本我从未经手过,因此不知道逻辑是什么,也不知道代码在哪里.通过查看邮件源文件中的来源IP,找到了发出邮件所在的服务器,信头中有类似这样的来源IP<br />X-Originating-IP: [xx.xx.xx.86]</p>
+<p>2.登陆服务器后,查看crontab的定时规则,找到定时规则是0 0 * * * /bin/sh  /xxx/feeUser.sh.每天都会执行一次feeUser.sh的脚本.通过cron.log可以看到该脚本已经执行过了</p>
+<p><br />3.脚本中的逻辑是,每天判断今天的日志文件是否存在,如果不存在就执行一个php脚本,把该脚本的输出重定向到这个日志文件中.<br />判断如果是周五,就调用php脚本发送一封通知邮件,邮件的内容是对每天日志文件的wc -l行数统计.</p>
+<p>4.今天是周五但是邮件没有发出,说明根本就没有执行到发送邮件的逻辑.在前面的统计今天用户付费情况时就已经断掉了.</p>
+<p>5.查看php.ini的配置文件,看到没有开启log_errors,也没有指定error_log的位置,所以没法通过php的日志看到发生了什么错误</p>
+<p>6.此脚本是14年左右开始运行的,时间也比较久了.在研究php代码的逻辑后发现,在查询数据库的时候,先查出第一个数据库的某表信息后,循环查询另一个数据库的另一张表,在这个循环的过程中,连接数据库的逻辑放在了循环块里面,猜测可能因为连接过多,被数据库拒绝后读取失败吧.</p>
+<p>7.里面还有处逻辑挺有想法,读取第一张表的时候,每次只查询10000条,然后再从新连接数据库new PDO对象,估计也是为了防止执行时间太长连接断掉.<br />每天php脚本把用户查询出来后,重定向到比如2019-9-20-user.log,周五在统计每天的日志行数发送给产品,这样就可以如果产品需要具体用户时也可以留着这个结果</p>
+<p><br />8.先把连接数据库逻辑挪出来,补齐了强两天断掉的数据,把错误日志打开暂时先观察观察</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

@@ -1,0 +1,213 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修PHP学习之分页类' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>PHP学习之分页类</center></div><div class='banquan'>原文出处:本文由博客园博主随缘盛世提供。<br/>
+原文连接:https://www.cnblogs.com/shengChristine/p/10941657.html</div><br>
+    <src class="cnblogs_code">
+<pre><code>&lt;?<span style="color: #000000;">php
+</span><span style="color: #800080;">$page</span> = <span style="color: #0000ff;">new</span> Page(2, 40<span style="color: #000000;">);
+</span><span style="color: #008080;">var_dump</span>(<span style="color: #800080;">$page</span>-&gt;<span style="color: #000000;">allUrl());
+</span><span style="color: #0000ff;">class</span><span style="color: #000000;"> Page
+{
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">每页显示多少条数据</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$number</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">一共有多少条数据</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$totalCount</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">当前页</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$page</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">总页数</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$totalPage</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">url</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #800080;">$url</span><span style="color: #000000;">;
+
+    </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> __construct(<span style="color: #800080;">$number</span>, <span style="color: #800080;">$totalCount</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span> = <span style="color: #800080;">$number</span><span style="color: #000000;">;
+        </span><span style="color: #800080;">$this</span>-&gt;totalCount = <span style="color: #800080;">$totalCount</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到总页数</span>
+        <span style="color: #800080;">$this</span>-&gt;totalPage = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getTotalPage();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到当前页数</span>
+        <span style="color: #800080;">$this</span>-&gt;page = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getPage();
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到url</span>
+        <span style="color: #800080;">$this</span>-&gt;url = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">getUrl();
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取总页数
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getTotalPage()
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #008080;">ceil</span>(<span style="color: #800080;">$this</span>-&gt;totalCount / <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取当前页码
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getPage()
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$_GET</span>['page'<span style="color: #000000;">])) {
+            </span><span style="color: #800080;">$page</span> = 1<span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$_GET</span>['page'] &gt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">totalPage) {
+            </span><span style="color: #800080;">$page</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">totalPage;
+        } </span><span style="color: #0000ff;">elseif</span> (<span style="color: #800080;">$_GET</span>['page'] &lt; 1<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$page</span> = 1<span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$page</span> = <span style="color: #800080;">$_GET</span>['page'<span style="color: #000000;">];
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$page</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 获取去掉page之后的url
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> getUrl()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到协议名</span>
+        <span style="color: #800080;">$scheme</span> = <span style="color: #800080;">$_SERVER</span>['REQUEST_SCHEME'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到主机名</span>
+        <span style="color: #800080;">$host</span> = <span style="color: #800080;">$_SERVER</span>['SERVER_NAME'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到端口号</span>
+        <span style="color: #800080;">$port</span> = <span style="color: #800080;">$_SERVER</span>['SERVER_PORT'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">得到路径和请求字符串</span>
+        <span style="color: #800080;">$uri</span> = <span style="color: #800080;">$_SERVER</span>['REQUEST_URI'<span style="color: #000000;">];
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">中间做处理，要将page=5等这种字符串拼接url中，所以如果原来url中有page这个参数，我们首先需要先将原来的page参数给清空</span>
+        <span style="color: #800080;">$uriArray</span> = <span style="color: #008080;">parse_url</span>(<span style="color: #800080;">$uri</span><span style="color: #000000;">);
+        </span><span style="color: #800080;">$path</span> = <span style="color: #800080;">$uriArray</span>['path'<span style="color: #000000;">];
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">empty</span>(<span style="color: #800080;">$uriArray</span>['query'<span style="color: #000000;">])) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">首先将请求字符串变为关联数组</span>
+            <span style="color: #008080;">parse_str</span>(<span style="color: #800080;">$uriArray</span>['query'], <span style="color: #800080;">$array</span><span style="color: #000000;">);
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">清除掉关联数组中的page键值对</span>
+            <span style="color: #0000ff;">unset</span>(<span style="color: #800080;">$array</span>['page'<span style="color: #000000;">]);
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">将剩下的参数拼接为请求字符串</span>
+            <span style="color: #800080;">$query</span> = <span style="color: #008080;">http_build_query</span>(<span style="color: #800080;">$array</span><span style="color: #000000;">);
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">再将请求字符串拼接到路径的后面</span>
+            <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$query</span> != ''<span style="color: #000000;">) {
+                </span><span style="color: #800080;">$path</span> = <span style="color: #800080;">$path</span> . '?' . <span style="color: #800080;">$query</span><span style="color: #000000;">;
+            }
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$scheme</span> . '://' . <span style="color: #800080;">$host</span> . ':' . <span style="color: #800080;">$port</span> . <span style="color: #800080;">$path</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 设置url
+     *
+     * @param [type] $str
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">function</span> setUrl(<span style="color: #800080;">$str</span><span style="color: #000000;">)
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #008080;">strstr</span>(<span style="color: #800080;">$this</span>-&gt;url, '?'<span style="color: #000000;">)) {
+            </span><span style="color: #800080;">$url</span> = <span style="color: #800080;">$this</span>-&gt;url . '&amp;' . <span style="color: #800080;">$str</span><span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$url</span> = <span style="color: #800080;">$this</span>-&gt;url . '?' . <span style="color: #800080;">$str</span><span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$url</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 返回所有url
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> allUrl()
+    {
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> [
+            </span>'first' =&gt; <span style="color: #800080;">$this</span>-&gt;first(),
+            'prev' =&gt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">prev</span>(),
+            'next' =&gt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">next</span>(),
+            'end' =&gt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #008080;">end</span><span style="color: #000000;">()
+        ];
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 首页
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> first()
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;setUrl('page=1'<span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 下一页
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">next</span><span style="color: #000000;">()
+    {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">根据当前page得到下一页的页码</span>
+        <span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;page + 1 &gt; <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">totalPage) {
+            </span><span style="color: #800080;">$page</span> = <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">totalPage;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$page</span> = <span style="color: #800080;">$this</span>-&gt;page + 1<span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;setUrl('page=' . <span style="color: #800080;">$page</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 上一页
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">prev</span><span style="color: #000000;">()
+    {
+        </span><span style="color: #0000ff;">if</span> (<span style="color: #800080;">$this</span>-&gt;page - 1 &lt; 1<span style="color: #000000;">) {
+            </span><span style="color: #800080;">$page</span> = 1<span style="color: #000000;">;
+        } </span><span style="color: #0000ff;">else</span><span style="color: #000000;"> {
+            </span><span style="color: #800080;">$page</span> = <span style="color: #800080;">$this</span>-&gt;page - 1<span style="color: #000000;">;
+        }
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;setUrl('page=' . <span style="color: #800080;">$page</span><span style="color: #000000;">);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 尾页
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span> <span style="color: #008080;">end</span><span style="color: #000000;">()
+    {
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$this</span>-&gt;setUrl('page=' . <span style="color: #800080;">$this</span>-&gt;<span style="color: #000000;">totalPage);
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">*
+     * 偏移量，方便数据库查找
+     *
+     * @return void
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">function</span><span style="color: #000000;"> limit()
+    {
+        </span><span style="color: #800080;">$offset</span> = (<span style="color: #800080;">$this</span>-&gt;page - 1) * <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span><span style="color: #000000;">;
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">$offset</span> . ',' . <span style="color: #800080;">$this</span>-&gt;<span style="color: #0000ff;">number</span><span style="color: #000000;">;
+    }
+}</span></code></pre>
+
+<p>运行结果：</p>
+<p><img src="https://img2018.cnblogs.com/blog/1318317/201905/1318317-20190529084200581-343388774.png" alt="" /></p>
+<p>&nbsp;</p>
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>

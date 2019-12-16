@@ -1,0 +1,143 @@
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name='applicable-device' content='pc'><meta name='keywords' content='电脑,电脑讲解,电脑技术,编程,电脑故障维修php手撸轻量级开发（三）composer小白入门' />
+<script src='../../highlight/highlight.pack.js'></script>
+<link rel='stylesheet' type='text/css' href='../../highlight/styles/monokai.css'/>
+
+<link rel='stylesheet' href='../../fenxiang/dist/css/share.min.css'>
+<script src='../../fenxiang/src/js/social-share.js'></script>
+<script src='../../fenxiang/src/js/qrcode.js'></script>
+
+</head><body><script>hljs.initHighlightingOnLoad();</script><script>
+var system ={};
+var p = navigator.platform;       
+system.win = p.indexOf('Win') == 0;  
+system.mac = p.indexOf('Mac') == 0;  
+system.x11 = (p == 'X11') || (p.indexOf('Linux') == 0);     
+if(system.win||system.mac||system.xll){
+document.write("<link href='../css/3.css' rel='stylesheet' type='text/css'>");}else{ document.write("<link href='../css/3wap.css' rel='stylesheet' type='text/css'>");}</script><script src='../../js/3.js'></script><div class='div2'><div class='heading_nav'><ul><div><li><a href='../../index.html'>首页</a></li>
+</div><div onclick='hidden1()' >分享</div>
+</ul></div></div>
+<div id='heading_nav2'> 
+<li class='row' >
+<div class='social-share' data-mode='prepend'><a href='javascript:' class='social-share-icon icon-heart'></a></div></li></div><script charset='utf-8' src='../../3/js/hengfu.js'></script><script charset='utf-8' src='../../3/js/hengfu2.js'></script><hr><div class='div1'><div class='biaoti'><center>php手撸轻量级开发（三）composer小白入门</center></div><div class='banquan'>原文出处:本文由博客园博主我全都要啊提供。<br/>
+原文连接:https://www.cnblogs.com/alexfly/p/10532057.html</div><br>
+    <h3 id="composer介绍">composer介绍</h3>
+<p>composer是php的一个依赖管理工具,在项目中声明所依赖的外部工具库，会自动安装这些工具库及所依赖的库文件。<br />
+对我等初阶工程狮来说，就是拉别人的代码，用别人的库，一个进阶版的cp命令 &lt;(￣︶￣)&gt;</p>
+<h3 id="安装流程">安装流程</h3>
+<pre><code><code>curl -sS https://getcomposer.org/installer | php  </code></code></pre>
+<p>然后当前文件夹下应该会有一个composer.phar文件，然后把它放到全局路径里或者在PATH里加入它的位置</p>
+<pre><code><code>mv composer.phar /usr/local/bin/composer</code></code></pre>
+<blockquote>
+<p>windows用户添加到环境变量里的PATH中<br />
+不会的这里有百度经验 <a href="https://jingyan.baidu.com/article/8ebacdf02d3c2949f65cd5d0.html" class="uri">https://jingyan.baidu.com/article/8ebacdf02d3c2949f65cd5d0.html</a></p>
+</blockquote>
+<p>运行命令看看安装成功没有</p>
+<pre><code><code>composer --versio
+//输出： Composer version 1.5.6 2017-12-18 12:09:18
+//输出这种样子的就是成功了</code></code></pre>
+<p>也可以看个图，直接运行 composer命令：</p>
+<pre><code><code>composer</code></code></pre>
+<p><img src="./images/php手撸轻量级开发（三）composer小白入门0.jpg" alt="image" /></p>
+<h3 id="介绍下composer.json文件">介绍下composer.json文件</h3>
+<pre><code><code>{
+  &quot;name&quot;: &quot;HiPHP&quot;,
+  &quot;description&quot;: &quot;hi world&quot;,
+  &quot;type&quot;: &quot;Framework&quot;,
+  &quot;keywords&quot;: [
+    &quot;PHP&quot;,
+    &quot;PHP FRAMEWORK&quot;
+  ],
+  &quot;require&quot;: {
+    &quot;php&quot;: &quot;&gt;5.3.0&quot;,
+    &quot;catfan/Medoo&quot;: &quot;*&quot;,
+    &quot;monolog/monolog&quot;: &quot;1.2.*&quot;
+  },
+  &quot;repositories&quot;: {
+    &quot;packagist&quot;: {
+      &quot;type&quot;: &quot;composer&quot;,
+      &quot;url&quot;: &quot;https://packagist.phpcomposer.com&quot;
+    }
+  }
+}</code></code></pre>
+<ol>
+<li>这部分是一些自己项目的介绍，名称描述类型关键字</li>
+<li>加载的第三方库，包括第三方库的版本</li>
+<li><p>国内的镜像服务，由于众所周知的原因，使用国外的会很慢很卡，具体方法查看composer国内镜像的官网介绍。 <a href="https://pkg.phpcomposer.com/" class="uri">https://pkg.phpcomposer.com/</a></p>
+<h3 id="引入一个新的包">引入一个新的包</h3>
+<p>搞个例子，我们还缺少一个正式的日志功能，php有个很牛x的开源日志库，我们这就使用composer把他加载进来。（开源就是光明正大让你copy过来的写好了的代码，然而cp太麻烦，于是大佬们就发明了composer一次行复制过来）。</p>
+<blockquote>
+<p>这是github地址<br />
+<a href="https://github.com/Seldaek/monolog" class="uri">https://github.com/Seldaek/monolog</a></p>
+</blockquote></li>
+</ol>
+<p>这是是我们之前 composer.json 文件中requeire部分</p>
+<pre><code><code>&quot;require&quot;: {
+    &quot;php&quot;: &quot;&gt;5.3.0&quot;,
+    &quot;catfan/Medoo&quot;: &quot;*&quot;
+  },</code></code></pre>
+<p>现在加上monolog的部分</p>
+<pre><code><code>  &quot;require&quot;: {
+    &quot;php&quot;: &quot;&gt;5.3.0&quot;,
+    &quot;catfan/Medoo&quot;: &quot;*&quot;,
+    &quot;monolog/monolog&quot;: &quot;1.2.*&quot;
+  },</code></code></pre>
+<p>然后我们执行 <code>composer update</code></p>
+<p><img src="./images/php手撸轻量级开发（三）composer小白入门1.jpg" alt="image" /><br />
+打印出来的数据没问题，我们去看看vender里的文件，多了这么一个monolog的文件夹。</p>
+<p><img src="./images/php手撸轻量级开发（三）composer小白入门2.jpg" alt="image" /></p>
+<p>现在我们在代码里测试一下,这是修改之后的testCtrl控制器</p>
+<pre><code><code>namespace controller;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+class testCtrl
+{
+    public function index()
+    {
+        $log = new Logger(&#39;name&#39;);
+        $log-&gt;pushHandler(new StreamHandler(&#39;my.log&#39;, Logger::WARNING));
+        $log-&gt;warn(&#39;warn警告&#39;);
+        $log-&gt;err(&#39;err错误&#39;);
+    }
+}</code></code></pre>
+<p>运行之后根目录下多出来一个文件，my.log，打开里边有这样的内容。<br />
+<img src="./images/php手撸轻量级开发（三）composer小白入门3.jpg" alt="image" /></p>
+<h3 id="另一种加载第三方库的方式">另一种加载第三方库的方式</h3>
+<p>还可以直接跑命令<code>composer require</code>。<br />
+比如我们还是添加这个monolog库，把我们刚才修改的composer.json文件里的引入monolog的这一行删除掉，然后运行 <code>composer update</code>，会发现刚才自动下载的monolog文件夹消失了，回到了最初的状态。<br />
+然后我们运行</p>
+<pre><code><code>composer require monolog/monolog</code></code></pre>
+<p>看输出：<br />
+<img src="./images/php手撸轻量级开发（三）composer小白入门4.jpg" alt="image" /><br />
+看看composer.json文件，发现已经多出了一行</p>
+<pre><code><code>&quot;monolog/monolog&quot;: &quot;^1.24&quot;</code></code></pre>
+<p>版本详细到了1.24，比我们最开始指定的要详细一些，文件夹也出来了，代码也可以正常调用。</p>
+<h3 id="关于composer.lock">关于composer.lock</h3>
+<p>看一下我们的composer.lock,这是个运行了composer install或者update之后就存在的文件。<br />
+composer.json是用来配置我们要引入的库，那这个composer.lock是用来干嘛的呢？答案是，用来精确指定版本。<br />
+比如我们一开始手动添加版本的时候，添加的是1.2.*,这样我们在拉取的时候，可能会拉去1.2.1或者1.2.4，但加入他官方的版本升级了，之后使用这个项目的人，install的时候拉去的可能就是1.2.5了，说不定有一些不兼容的问题。于是compsoer便设计了一个lock文件，lock文件里会有完整的包信息和版本号。<br />
+关于compser.lock的具体情景：</p>
+<ol>
+<li>composer install 的时候会首先检查lock文件是否存在，如果存在，就按照composer.lock文件指定的版本，取拉取对应的版本，如果不存在，就拉取默认的版本，并且创建composer.lock文件<br />
+</li>
+<li>如果在composer.json文件中修改了版本号，一定要执行composer update，这样，composer.lock文件就会被更新。<br />
+</li>
+<li>团队开发的时候，一定要把composer.lock文件上传到仓库里，这样才能保证团队里的每一个成员的版本都是一致的。</li>
+</ol>
+<h3 id="composer常用命令汇总">composer常用命令汇总</h3>
+<ol>
+<li><code>composer install</code></li>
+<li><code>composer update</code></li>
+<li><code>composer require 库名 [版本]</code> 引入新库或者修改原来库版本</li>
+<li><code>composer selfupdate</code> composer自身更新</li>
+<li><code>composer self-update --rollback</code> 更新之后回退到上次的版本<br />
+</li>
+<li><code>composer create-project</code> 从现有的包里创建一个新的项目 如：<code>composer create-project topthink/think=5.0.* tp5  --prefer-dist</code> 就可以直接下载一个thinkphp5.0的代码<br />
+</li>
+<li><code>composer search 包名</code> 比如 <code>composer search monolog</code>就可以搜索composer的官方网站 <a href="https://packagist.org/" class="uri">https://packagist.org/</a> 上的有的包</li>
+<li><code>composer config</code> composer配置命令，比如全局设置composer的国内镜像 <code>composer config -g repo.packagist composer https://packagist.phpcomposer.com</code></li>
+</ol>
+
+
+</div></div><hr><script charset='utf-8' src='../../js/sming.js'></script></body></html>
